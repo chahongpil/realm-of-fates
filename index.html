@@ -182,23 +182,22 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 /* BATTLE */
 #battle-screen{background:url('img/bg_battle.png') center/cover no-repeat,#0a0a1a;position:relative;overflow:hidden;height:100vh;max-height:100vh;}
 /* TURN-BASED BATTLE */
-.tb-field{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:600px;margin:0 auto;position:relative;overflow:hidden;gap:0;padding:0 10px;}
-.tb-side{position:relative;width:100%;height:180px;}
-.tb-side .td-slot{position:absolute;cursor:pointer;transition:all .2s;text-align:center;}
-.tb-side .td-slot:hover{transform:translate(-50%,-50%) scale(1.05);}
-.tb-vs{text-align:center;color:#ff4444;font-size:1rem;font-family:'Cinzel',serif;letter-spacing:4px;padding:2px 0;text-shadow:0 0 10px rgba(255,68,68,.4);}
-.tb-enemy .td-slot .td-card{opacity:.85;border-color:#ff4444 !important;}
-.tb-diamond{position:relative;width:100%;height:180px;}
-.tb-diamond .td-slot{position:absolute;cursor:pointer;transition:all .2s;text-align:center;}
-.tb-diamond .td-slot:hover{transform:translate(-50%,-50%) scale(1.05);}
-.tb-diamond .td-slot.td-selected{transform:translate(-50%,-50%) scale(1.1);filter:drop-shadow(0 0 15px rgba(255,215,0,.7));}
-.td-slot .td-card{border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:90px;}
-.td-slot .td-card img{width:55px;height:55px;border-radius:5px;object-fit:cover;}
-.td-slot .td-name{font-size:.6rem;color:#fff;font-weight:bold;margin-top:2px;}
+/* TURN BATTLE — HORIZONTAL LAYOUT */
+.tb-field{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;margin:0 auto;position:relative;overflow:hidden;gap:8px;padding:5px 10px;}
+.tb-side{display:flex;gap:8px;justify-content:center;align-items:center;width:100%;flex-shrink:0;padding:4px 0;}
+.tb-vs{text-align:center;color:#ff4444;font-size:.85rem;font-family:'Cinzel',serif;letter-spacing:6px;padding:4px 0;text-shadow:0 0 10px rgba(255,68,68,.4);width:100%;}
+.tb-enemy .td-slot .td-card{border-color:#ff4444 !important;}
+.tb-diamond{display:flex;gap:8px;justify-content:center;align-items:center;width:100%;flex-shrink:0;padding:4px 0;}
+.td-slot{cursor:pointer;transition:all .2s;text-align:center;flex-shrink:0;}
+.td-slot:hover{transform:scale(1.06);}
+.td-slot.td-selected{transform:scale(1.1);filter:drop-shadow(0 0 15px rgba(255,215,0,.7));}
+.td-slot .td-card{border-radius:8px;padding:5px;display:flex;flex-direction:column;align-items:center;text-align:center;width:110px;}
+.td-slot .td-card img{width:65px;height:65px;border-radius:6px;object-fit:cover;}
+.td-slot .td-name{font-size:.6rem;color:#fff;font-weight:bold;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px;}
 .td-slot .td-hp{font-size:.5rem;margin-top:1px;}
-.td-slot .td-hp-bar{width:80px;height:3px;background:#333;border-radius:2px;margin-top:1px;overflow:hidden;}
+.td-slot .td-hp-bar{width:85px;height:3px;background:#333;border-radius:2px;margin-top:1px;overflow:hidden;}
 .td-slot .td-hp-fill{height:100%;border-radius:2px;}
-.td-slot .td-order{position:absolute;top:-5px;right:-5px;width:20px;height:20px;border-radius:50%;background:#ffd700;color:#000;font-size:.6rem;font-weight:bold;display:flex;align-items:center;justify-content:center;display:none;}
+.td-slot .td-order{position:absolute;top:-5px;right:-5px;width:20px;height:20px;border-radius:50%;background:#ffd700;color:#000;font-size:.6rem;font-weight:bold;display:none;align-items:center;justify-content:center;}
 .td-slot.td-ordered .td-order{display:flex;}
 .tb-actions{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:450px;text-align:center;padding:15px;background:rgba(0,0,0,.85);border:1px solid #8b6914;border-radius:12px;z-index:5;box-shadow:0 0 30px rgba(0,0,0,.8);}
 .tb-actions .ta-selected{margin-bottom:10px;}
@@ -2870,7 +2869,7 @@ const Game={
       const isSel=this.selectedForBattle.includes(c.uid);
       const cardCost=c.isHero?0:(c.level||1);
       const selUnitCount=this.selectedForBattle.filter(uid=>uid!==(hero?hero.uid:'')).length;
-      const canAdd=!isSel&&!c.isHero&&!isInjured&&(usedSlots+cardCost<=maxSlots)&&selUnitCount<3;
+      const canAdd=!isSel&&!c.isHero&&!isInjured&&(usedSlots+cardCost<=maxSlots)&&selUnitCount<4;
       const el=mkCardEl(c);
       if(c.isHero){
         el.style.opacity='1';
@@ -2891,7 +2890,7 @@ const Game={
         el.onclick=()=>{
           if(isSel){this.selectedForBattle=this.selectedForBattle.filter(u=>u!==c.uid);}
           else{
-            if(selUnitCount>=3){document.getElementById('cs-info').textContent=`⚠️ 최대 3명까지 출전 가능! (영웅 제외)`;return;}
+            if(selUnitCount>=4){document.getElementById('cs-info').textContent=`⚠️ 최대 4명까지 출전 가능! (영웅 제외)`;return;}
             if(usedSlots+cardCost>maxSlots){document.getElementById('cs-info').textContent=`⚠️ 지휘권 부족! (필요:${cardCost}, 남은:${maxSlots-usedSlots})`;return;}
             this.selectedForBattle.push(c.uid);
           }
@@ -2945,7 +2944,7 @@ const Game={
 
     const newUsed=this.getUsedSlots();
     const finalUnitCount=this.selectedForBattle.filter(uid=>uid!==(hero?hero.uid:'')).length;
-    document.getElementById('cs-info').textContent=`동료 ${finalUnitCount}/3 | 지휘권 ${newUsed}/${maxSlots} | 유물 ${usedR}/${maxRSlots}`;
+    document.getElementById('cs-info').textContent=`동료 ${finalUnitCount}/4 | 지휘권 ${newUsed}/${maxSlots} | 유물 ${usedR}/${maxRSlots}`;
     document.getElementById('cs-rslots').textContent=maxRSlots;
     document.getElementById('cs-go-btn').disabled=false;
   },
@@ -4313,29 +4312,15 @@ const TurnBattle={
   turnTimer:null,turnTimeLeft:60,
   _keyHandler:null,
 
-  // Diamond positions (CSS %) — 유저 시점: 위=전방, 아래=후방
-  // slot 0=top(front), 1=left(front), 2=right(front), 3=bottom(back)
+  // Horizontal 5 slots
   SLOTS:[
-    {x:50,y:8,row:'front',label:'전방 상단'},
-    {x:18,y:45,row:'front',label:'전방 좌측'},
-    {x:82,y:45,row:'front',label:'전방 우측'},
-    {x:50,y:82,row:'back',label:'후방 하단'},
+    {idx:0,label:'1번'},
+    {idx:1,label:'2번'},
+    {idx:2,label:'3번'},
+    {idx:3,label:'4번'},
+    {idx:4,label:'5번'},
   ],
-  // Check if target is reachable (front guards back)
-  _canTarget(attacker,targetIdx,targetSide){
-    const slot=this.SLOTS[targetIdx];
-    if(slot.row==='front')return true; // front always targetable
-    // Back row: check if any front row alive
-    const cards=targetSide==='enemy'?this.bs.eCards:this.bs.pCards;
-    const alive=cards.filter(c=>c.currentHp>0);
-    // Find which alive cards are in front slots
-    const frontAlive=alive.some((c,i)=>{
-      const si=this.SLOTS[i];return si&&si.row==='front';
-    });
-    if(!frontAlive)return true; // no front guard → can target back
-    // Ranged units can't bypass front either in this system
-    return false;
-  },
+  _canTarget(attacker,targetIdx,targetSide){return true;},
 
   // Start turn-based battle
   start(battleState){
@@ -4364,28 +4349,21 @@ const TurnBattle={
   renderEnemyDiamond(){
     const enemies=this.bs?this.bs.eCards:[];
     const container=document.getElementById('tb-enemy-diamond');container.innerHTML='';
-    for(let i=0;i<4;i++){
+    for(let i=0;i<5;i++){
       const c=enemies[i];
-      const pos=this.SLOTS[i];
-      const slot=document.createElement('div');
-      slot.className='td-slot';
-      slot.style.cssText=`left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);`;
+      const slot=document.createElement('div');slot.className='td-slot';
       if(c&&c.currentHp>0){
         const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
-        const img=getCardImg(c);
-        slot.id=`bc-${c.uid}`;
-        slot.innerHTML=`
-          <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid #ff4444;background:linear-gradient(180deg,rgba(30,10,10,.85),rgba(10,5,5,.9));">
-            ${img?`<img src="${img}">`:`<div style="font-size:1.5rem;">${c.icon}</div>`}
-            <div class="td-name">${c.name}</div>
-            <div class="td-hp">♥${Math.ceil(c.currentHp)} ⚔${c.atk}</div>
-            <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
-          </div>`;
-      } else {
-        slot.innerHTML=`<div class="td-card" style="border:2px dashed #333;background:rgba(0,0,0,.3);opacity:.3;min-width:90px;padding:15px 4px;">
-          <div style="font-size:1.2rem;color:#333;">✕</div>
-          <div style="font-size:.5rem;color:#444;">${pos.label||'빈 자리'}</div>
+        const img=getCardImg(c);slot.id=`bc-${c.uid}`;
+        slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:2px solid #ff4444;background:linear-gradient(180deg,rgba(30,10,10,.85),rgba(10,5,5,.9));">
+          ${img?`<img src="${img}">`:`<div style="font-size:1.5rem;">${c.icon}</div>`}
+          <div class="td-name">${c.name}</div>
+          <div class="td-hp">♥${Math.ceil(c.currentHp)} ⚔${c.atk}</div>
+          <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
         </div>`;
+      } else {
+        slot.innerHTML=`<div class="td-card" style="border:2px dashed #333;background:rgba(0,0,0,.3);opacity:.3;padding:12px 4px;">
+          <div style="font-size:1rem;color:#333;">✕</div></div>`;
       }
       container.appendChild(slot);
     }
@@ -4396,8 +4374,7 @@ const TurnBattle={
     const src=cards||(this.bs?this.bs.pCards.filter(c=>c.currentHp>0):[]);
     const diamond=document.getElementById('tb-diamond');diamond.innerHTML='';
     document.getElementById('tb-actions').style.display='none';
-    src.slice(0,4).forEach((c,i)=>{
-      const pos=this.SLOTS[i];
+    src.slice(0,5).forEach((c,i)=>{
       const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);
       const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
       const img=getCardImg(c);
@@ -4405,15 +4382,14 @@ const TurnBattle={
       const isHighlighted=i===this._highlightIdx&&!isEnemy;
       const slot=document.createElement('div');
       slot.className=`td-slot ${isHighlighted?'td-selected':''} ${ordered?'td-ordered':''}`;
-      slot.style.cssText=`left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);`;
-      const borderColor=isHighlighted?'#ffd700':ordered?'#44ff88':'#555';
+      const borderColor=isHighlighted?'#ffd700':ordered?'#44ff88':'#44aaff';
       // Status icons
       const frozen=c.frozen>0;const burning=c.burn>0;const defending=c._defending;
       const statusIcons=(frozen?'❄️':'')+(burning?'🔥':'')+(defending?'🛡️':'');
       // Order display
       const orderDesc=ordered?({attack:'⚔️',defend:'🛡️',skill:'🔮'})[ordered.action]||'✓':'';
       // Row label
-      const rowLabel=this.SLOTS[i].row==='front'?'전방':'후방';
+      const rowLabel=`${i+1}번`;
       slot.innerHTML=`
         <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid ${borderColor};background:linear-gradient(180deg,rgba(20,15,10,.9),rgba(5,5,5,.95));">
           ${img?`<img src="${img}">`:`<div style="font-size:2rem;">${c.icon}</div>`}
@@ -4546,20 +4522,25 @@ const TurnBattle={
     }
     // Enemy target — highlight enemy diamond directly
     this.phase='target_enemy';this._pendingAction={unit,action};this._enemyHighlight=-1;
-    document.getElementById('b-status').textContent='대상을 선택하세요 (WASD + Enter)';
+    // Hide action panel, show diamonds
+    document.getElementById('tb-actions').style.display='none';
+    document.getElementById('b-status').textContent='⚔️ 대상을 선택하세요 (WASD + Enter)';
+    document.getElementById('b-status').style.color='#ff6644';
     const eDiamond=document.getElementById('tb-enemy-diamond');
-    const enemies=this.bs.eCards.filter(c=>c.currentHp>0);
+    const allEnemies=this.bs.eCards; // full 4 slots
     eDiamond.querySelectorAll('.td-slot').forEach((el,i)=>{
+      const c=allEnemies[i];
+      if(!c||c.currentHp<=0){el.style.cursor='not-allowed';el.style.opacity='.2';return;}
       const canReach=this._canTarget(unit,i,'enemy');
       if(canReach){
         el.style.cursor='pointer';el.style.opacity='1';
-        el.onclick=()=>{if(enemies[i])this._selectTarget(enemies[i]);};
+        el.style.border='2px solid #ff4444';
+        el.onclick=()=>{this._selectTarget(c);};
       } else {
         el.style.cursor='not-allowed';el.style.opacity='.4';
         el.onclick=()=>{
           document.getElementById('b-status').textContent='⚠️ 전방의 적이 살아있어 후방을 공격할 수 없습니다!';
-          document.getElementById('b-status').style.color='#ff4444';
-          setTimeout(()=>{document.getElementById('b-status').textContent='대상을 선택하세요';document.getElementById('b-status').style.color='';},1500);
+          setTimeout(()=>{document.getElementById('b-status').textContent='대상을 선택하세요';document.getElementById('b-status').style.color='#ff6644';},1500);
         };
       }
     });
@@ -4689,14 +4670,15 @@ const TurnBattle={
     this._keyHandler=(e)=>{
       const key=e.key.toLowerCase();
       if(this.phase==='select'){
-        // WASD moves highlight
-        if(key==='w'||key==='arrowup')this._moveHighlight(0);
-        if(key==='a'||key==='arrowleft')this._moveHighlight(1);
-        if(key==='d'||key==='arrowright')this._moveHighlight(2);
-        if(key==='s'||key==='arrowdown')this._moveHighlight(3);
-        // Enter/Space confirms highlighted card
+        const alive=this.bs.pCards.filter(c=>c.currentHp>0);
+        const max=Math.min(alive.length,5);
+        // A/D or Left/Right moves highlight
+        if(key==='a'||key==='arrowleft'){this._moveHighlight(Math.max(0,(this._highlightIdx<0?0:this._highlightIdx)-1));}
+        if(key==='d'||key==='arrowright'){this._moveHighlight(Math.min(max-1,(this._highlightIdx<0?0:this._highlightIdx)+1));}
+        // Number keys 1-5 direct select
+        if(key>='1'&&key<='5'){const idx=parseInt(key)-1;if(idx<max)this._moveHighlight(idx);}
+        // Enter/Space confirms
         if((key==='enter'||key===' ')&&this._highlightIdx>=0)this._confirmHighlight();
-        // Enter with no highlight = start combat
         if((key==='enter'||key===' ')&&this._highlightIdx<0)this.startCombat();
       } else if(this.phase==='action'){
         if(key>='1'&&key<='5'){
@@ -4716,49 +4698,46 @@ const TurnBattle={
         }
         if(key==='escape'||key==='backspace')this.goBack();
       } else if(this.phase==='target_enemy'){
-        const enemies=this.bs.eCards.filter(c=>c.currentHp>0);
-        if(key==='w'||key==='arrowup'){this._enemyHighlight=0;this._renderEnemyHighlight(enemies);}
-        if(key==='a'||key==='arrowleft'){this._enemyHighlight=1;this._renderEnemyHighlight(enemies);}
-        if(key==='d'||key==='arrowright'){this._enemyHighlight=2;this._renderEnemyHighlight(enemies);}
-        if(key==='s'||key==='arrowdown'){this._enemyHighlight=3;this._renderEnemyHighlight(enemies);}
-        if((key==='enter'||key===' ')&&this._enemyHighlight>=0&&enemies[this._enemyHighlight]){
-          const atk=this._pendingAction?this._pendingAction.unit:null;
-          if(this._canTarget(atk,this._enemyHighlight,'enemy')){
-            this._selectTarget(enemies[this._enemyHighlight]);
-          } else {
-            document.getElementById('b-status').textContent='⚠️ 전방의 적이 살아있어 후방을 공격할 수 없습니다!';
-            document.getElementById('b-status').style.color='#ff4444';
-            setTimeout(()=>{document.getElementById('b-status').textContent='대상을 선택하세요';document.getElementById('b-status').style.color='';},1500);
-          }
+        const allEnemies=this.bs.eCards;
+        const maxE=Math.min(allEnemies.length,5);
+        if(key==='a'||key==='arrowleft'){this._enemyHighlight=Math.max(0,(this._enemyHighlight<0?0:this._enemyHighlight)-1);this._renderEnemyHighlight();}
+        if(key==='d'||key==='arrowright'){this._enemyHighlight=Math.min(maxE-1,(this._enemyHighlight<0?0:this._enemyHighlight)+1);this._renderEnemyHighlight();}
+        if(key>='1'&&key<='5'){const idx=parseInt(key)-1;if(idx<maxE){this._enemyHighlight=idx;this._renderEnemyHighlight();}}
+        if((key==='enter'||key===' ')&&this._enemyHighlight>=0){
+          const c=allEnemies[this._enemyHighlight];
+          if(c&&c.currentHp>0)this._selectTarget(c);
         }
-        if(key==='escape'){this.phase='action';document.getElementById('tb-enemy-diamond').querySelectorAll('.td-slot').forEach(el=>{el.style.cursor='';el.onclick=null;el.style.filter='';el.style.opacity='';el.style.transform='translate(-50%,-50%)';});}
+        if(key==='escape'){this.phase='action';this._resetEnemySlots();this.showActions(this._currentUnit);}
       } else if(this.phase==='target_ally'){
         const alive=this.bs.pCards.filter(c=>c.currentHp>0);
-        if(key==='w'||key==='arrowup')this._moveHighlight(0);
-        if(key==='a'||key==='arrowleft')this._moveHighlight(1);
-        if(key==='d'||key==='arrowright')this._moveHighlight(2);
-        if(key==='s'||key==='arrowdown')this._moveHighlight(3);
-        if((key==='enter'||key===' ')&&this._highlightIdx>=0&&alive[this._highlightIdx]){
-          this._selectAllyTarget(alive[this._highlightIdx]);
-        }
+        const maxA=Math.min(alive.length,5);
+        if(key==='a'||key==='arrowleft')this._moveHighlight(Math.max(0,(this._highlightIdx<0?0:this._highlightIdx)-1));
+        if(key==='d'||key==='arrowright')this._moveHighlight(Math.min(maxA-1,(this._highlightIdx<0?0:this._highlightIdx)+1));
+        if(key>='1'&&key<='5'){const idx=parseInt(key)-1;if(idx<maxA)this._moveHighlight(idx);}
+        if((key==='enter'||key===' ')&&this._highlightIdx>=0&&alive[this._highlightIdx])this._selectAllyTarget(alive[this._highlightIdx]);
         if(key==='escape')this.goBack();
       }
     };
     document.addEventListener('keydown',this._keyHandler);
   },
 
-  _renderEnemyHighlight(enemies){
+  _renderEnemyHighlight(){
     SFX.play('click');
     const container=document.getElementById('tb-enemy-diamond');if(!container)return;
     container.querySelectorAll('.td-slot').forEach((el,i)=>{
       if(i===this._enemyHighlight){
         el.style.filter='drop-shadow(0 0 15px rgba(255,68,68,.8))';
-        el.style.transform='translate(-50%,-50%) scale(1.12)';
+        el.style.transform='scale(1.12)';
       } else {
-        el.style.filter='';
-        el.style.transform='translate(-50%,-50%)';
+        el.style.filter='';el.style.transform='';
       }
     });
+  },
+
+  _resetEnemySlots(){
+    const container=document.getElementById('tb-enemy-diamond');if(!container)return;
+    container.querySelectorAll('.td-slot').forEach(el=>{el.style.cursor='';el.onclick=null;el.style.filter='';el.style.opacity='';el.style.transform='';});
+    document.getElementById('b-status').style.color='';
   },
 
   unbindKeys(){

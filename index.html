@@ -2819,12 +2819,12 @@ const Game={
   },
 
   startBattleFromMatch(){
-    // 매칭 확인 후 → 배치 → 전투
+    // 매칭 확인 후 → 바로 전투 (배치 없음)
     const battleDeck=this.deck.filter(c=>this.selectedForBattle.includes(c.uid));
     const battleRelics=(this.ownedRelics||[]).filter(r=>this.selectedRelics.includes(r.uid));
     this._deckSnapshot=this.deck.map(c=>({...c,equips:[...(c.equips||[])]}));
     this.battleState={currentRound:0,pCards:null,eCards:null,battleDeck:battleDeck.map(c=>({...c,equips:[...(c.equips||[])]})),battleRelics:battleRelics};
-    Formation.showForBattle(battleDeck);
+    this.launchBattle();
   },
 
   startBattle(){
@@ -4320,7 +4320,15 @@ const TurnBattle={
     {idx:3,label:'4번'},
     {idx:4,label:'5번'},
   ],
-  _canTarget(attacker,targetIdx,targetSide){return true;},
+  _canTarget(attacker,targetIdx,targetSide){
+    // Taunt system: if any enemy has taunt, only taunt units can be targeted
+    const cards=targetSide==='enemy'?this.bs.eCards:this.bs.pCards;
+    const target=cards[targetIdx];
+    if(!target||target.currentHp<=0)return false;
+    const taunters=cards.filter(c=>c.currentHp>0&&c.skill==='taunt');
+    if(taunters.length>0&&target.skill!=='taunt')return false;// must target taunter
+    return true;
+  },
 
   // Start turn-based battle
   start(battleState){
@@ -4355,7 +4363,9 @@ const TurnBattle={
       if(c&&c.currentHp>0){
         const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
         const img=getCardImg(c);slot.id=`bc-${c.uid}`;
-        slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:2px solid #ff4444;background:linear-gradient(180deg,rgba(30,10,10,.85),rgba(10,5,5,.9));">
+        const isTaunt=c.skill==='taunt';
+        slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:2px solid ${isTaunt?'#ffd700':'#ff4444'};background:linear-gradient(180deg,rgba(30,10,10,.85),rgba(10,5,5,.9));${isTaunt?'box-shadow:0 0 12px rgba(255,215,0,.4);':''}">
+          ${isTaunt?'<div style="position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:.8rem;">🛡️</div>':''}
           ${img?`<img src="${img}">`:`<div style="font-size:1.5rem;">${c.icon}</div>`}
           <div class="td-name">${c.name}</div>
           <div class="td-hp">♥${Math.ceil(c.currentHp)} ⚔${c.atk}</div>
@@ -4520,26 +4530,25 @@ const TurnBattle={
       this.renderDiamond();// show my cards for ally targeting
       return;
     }
-    // Enemy target — highlight enemy diamond directly
+    // Enemy target — highlight enemy cards
     this.phase='target_enemy';this._pendingAction={unit,action};this._enemyHighlight=-1;
-    // Hide action panel, show diamonds
     document.getElementById('tb-actions').style.display='none';
-    document.getElementById('b-status').textContent='⚔️ 대상을 선택하세요 (WASD + Enter)';
+    const hasTaunt=this.bs.eCards.some(c=>c.currentHp>0&&c.skill==='taunt');
+    document.getElementById('b-status').textContent=hasTaunt?'🛡️ 도발 유닛을 먼저 처치해야 합니다!':'⚔️ 대상을 선택하세요 (좌우 + Enter)';
     document.getElementById('b-status').style.color='#ff6644';
     const eDiamond=document.getElementById('tb-enemy-diamond');
-    const allEnemies=this.bs.eCards; // full 4 slots
+    const allEnemies=this.bs.eCards;
     eDiamond.querySelectorAll('.td-slot').forEach((el,i)=>{
       const c=allEnemies[i];
       if(!c||c.currentHp<=0){el.style.cursor='not-allowed';el.style.opacity='.2';return;}
       const canReach=this._canTarget(unit,i,'enemy');
       if(canReach){
         el.style.cursor='pointer';el.style.opacity='1';
-        el.style.border='2px solid #ff4444';
         el.onclick=()=>{this._selectTarget(c);};
       } else {
-        el.style.cursor='not-allowed';el.style.opacity='.4';
+        el.style.cursor='not-allowed';el.style.opacity='.35';
         el.onclick=()=>{
-          document.getElementById('b-status').textContent='⚠️ 전방의 적이 살아있어 후방을 공격할 수 없습니다!';
+          document.getElementById('b-status').textContent='🛡️ 도발 유닛을 먼저 처치해야 합니다!';
           setTimeout(()=>{document.getElementById('b-status').textContent='대상을 선택하세요';document.getElementById('b-status').style.color='#ff6644';},1500);
         };
       }
@@ -4767,12 +4776,12 @@ const TurnBattle={
       }
     });
 
-    // Enemy AI orders (respects front/back targeting)
+    // Enemy AI orders (respects taunt)
     const eOrders=[];
     eAlive.forEach(c=>{
-      // Find valid targets (front first, then back if front dead)
-      const frontTargets=pAlive.filter((_,i)=>this.SLOTS[i]&&this.SLOTS[i].row==='front');
-      const validTargets=frontTargets.length?frontTargets:pAlive;
+      // Taunt: must target taunters first
+      const taunters=pAlive.filter(p=>p.skill==='taunt'&&p.currentHp>0);
+      const validTargets=taunters.length?taunters:pAlive;
       const target=validTargets[Math.floor(Math.random()*validTargets.length)];
       const roll=Math.random();
       if(roll<0.1){eOrders.push({uid:c.uid,action:'defend',targetUid:null});}

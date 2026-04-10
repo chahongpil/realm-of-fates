@@ -182,20 +182,23 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 /* BATTLE */
 #battle-screen{background:url('img/bg_battle.png') center/cover no-repeat,#0a0a1a;position:relative;overflow:hidden;height:100vh;max-height:100vh;}
 /* TURN-BASED BATTLE */
-.tb-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;position:relative;overflow:hidden;}
-.tb-diamond{position:relative;width:100%;max-width:500px;height:320px;margin:0 auto;}
+.tb-field{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;position:relative;overflow:hidden;gap:0;}
+.tb-side{position:relative;width:100%;max-width:500px;height:180px;}
+.tb-vs{text-align:center;color:#ff4444;font-size:1rem;font-family:'Cinzel',serif;letter-spacing:4px;padding:2px 0;text-shadow:0 0 10px rgba(255,68,68,.4);}
+.tb-enemy .td-slot .td-card{opacity:.8;border-color:#ff4444 !important;}
+.tb-diamond{position:relative;width:100%;max-width:500px;height:180px;margin:0 auto;}
 .tb-diamond .td-slot{position:absolute;cursor:pointer;transition:all .2s;text-align:center;}
 .tb-diamond .td-slot:hover{transform:translate(-50%,-50%) scale(1.05);}
 .tb-diamond .td-slot.td-selected{transform:translate(-50%,-50%) scale(1.1);filter:drop-shadow(0 0 15px rgba(255,215,0,.7));}
-.tb-diamond .td-slot .td-card{border-radius:10px;padding:6px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:120px;}
-.tb-diamond .td-slot .td-card img{width:80px;height:80px;border-radius:6px;object-fit:cover;}
-.tb-diamond .td-slot .td-name{font-size:.75rem;color:#fff;font-weight:bold;margin-top:3px;}
-.tb-diamond .td-slot .td-hp{font-size:.6rem;margin-top:2px;}
-.tb-diamond .td-slot .td-hp-bar{width:100px;height:4px;background:#333;border-radius:2px;margin-top:2px;overflow:hidden;}
+.tb-diamond .td-slot .td-card,.tb-side .td-slot .td-card{border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:90px;}
+.tb-diamond .td-slot .td-card img,.tb-side .td-slot .td-card img{width:55px;height:55px;border-radius:5px;object-fit:cover;}
+.tb-diamond .td-slot .td-name,.tb-side .td-slot .td-name{font-size:.6rem;color:#fff;font-weight:bold;margin-top:2px;}
+.tb-diamond .td-slot .td-hp,.tb-side .td-slot .td-hp{font-size:.5rem;margin-top:1px;}
+.tb-diamond .td-slot .td-hp-bar,.tb-side .td-slot .td-hp-bar{width:80px;height:3px;background:#333;border-radius:2px;margin-top:1px;overflow:hidden;}
 .tb-diamond .td-slot .td-hp-fill{height:100%;border-radius:2px;}
 .tb-diamond .td-slot .td-order{position:absolute;top:-5px;right:-5px;width:20px;height:20px;border-radius:50%;background:#ffd700;color:#000;font-size:.6rem;font-weight:bold;display:flex;align-items:center;justify-content:center;display:none;}
 .tb-diamond .td-slot.td-ordered .td-order{display:flex;}
-.tb-actions{width:100%;max-width:500px;text-align:center;padding:10px;}
+.tb-actions{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:450px;text-align:center;padding:15px;background:rgba(0,0,0,.85);border:1px solid #8b6914;border-radius:12px;z-index:5;box-shadow:0 0 30px rgba(0,0,0,.8);}
 .tb-actions .ta-selected{margin-bottom:10px;}
 .tb-actions .ta-selected img{width:90px;height:90px;border-radius:8px;object-fit:cover;border:2px solid #ffd700;}
 .tb-actions .ta-name{font-size:1rem;color:#ffd700;font-weight:bold;}
@@ -771,23 +774,20 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 
 <!-- BATTLE -->
 <div id="battle-screen" class="screen">
-  <div class="hud">
+  <div class="hud" style="padding:4px 15px;">
     <div class="hud-left"><div class="hud-name" id="b-name"></div><div class="hud-stat">라운드 <span id="b-round">1</span></div></div>
     <div class="hud-right"><div class="hud-stat" id="b-status">내 턴</div><div class="hud-stat" id="b-timer-display">⏱️ 60</div></div>
   </div>
-  <!-- Top button -->
-  <div id="b-top-btn" style="text-align:center;padding:4px;">
-    <button class="btn btn-s" id="btn-check-enemy" onclick="TurnBattle.showEnemyView()">👁️ 상대 확인하기</button>
+  <!-- Full battle field: enemy + VS + player -->
+  <div class="tb-field" id="tb-field">
+    <div class="tb-side tb-enemy" id="tb-enemy-diamond"></div>
+    <div class="tb-vs">⚔ VS ⚔</div>
+    <div class="tb-side tb-player" id="tb-diamond"></div>
   </div>
-  <!-- Main battle area -->
-  <div class="tb-main" id="tb-main">
-    <!-- Diamond grid for cards -->
-    <div class="tb-diamond" id="tb-diamond"></div>
-    <!-- Selected card + action cards -->
-    <div class="tb-actions" id="tb-actions" style="display:none;"></div>
-  </div>
-  <!-- Battle log (small) -->
-  <div class="battle-log" id="battle-log" style="max-height:40px;"></div>
+  <!-- Action overlay (appears over field when card selected) -->
+  <div class="tb-actions" id="tb-actions" style="display:none;"></div>
+  <!-- Battle log -->
+  <div class="battle-log" id="battle-log" style="max-height:35px;"></div>
   <!-- Bottom bar -->
   <div class="tb-bottom" id="tb-bottom">
     <button class="btn btn-s" id="btn-back" onclick="TurnBattle.goBack()" style="display:none;">← 돌아가기</button>
@@ -4255,10 +4255,34 @@ const TurnBattle={
     document.getElementById('b-status').textContent='카드를 선택하세요 (WASD 이동, Enter 확인)';
     document.getElementById('btn-back').style.display='none';
     document.getElementById('btn-fight').textContent='⚔️ 전투 개시!';
+    document.getElementById('btn-fight').disabled=false;
     document.getElementById('battle-log').innerHTML='';
+    this.renderEnemyDiamond();
     this.renderDiamond();
     this.startTimer();
     this.bindKeys();
+  },
+
+  // Render enemy diamond (top half, non-interactive during select)
+  renderEnemyDiamond(){
+    const enemies=this.bs?this.bs.eCards.filter(c=>c.currentHp>0):[];
+    const container=document.getElementById('tb-enemy-diamond');container.innerHTML='';
+    enemies.slice(0,4).forEach((c,i)=>{
+      const pos=this.SLOTS[i];
+      const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
+      const img=getCardImg(c);
+      const slot=document.createElement('div');
+      slot.className='td-slot';slot.id=`bc-${c.uid}`;
+      slot.style.cssText=`left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);`;
+      slot.innerHTML=`
+        <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid #ff4444;background:linear-gradient(180deg,rgba(30,10,10,.85),rgba(10,5,5,.9));">
+          ${img?`<img src="${img}">`:`<div style="font-size:1.5rem;">${c.icon}</div>`}
+          <div class="td-name">${c.name}</div>
+          <div class="td-hp">♥${Math.ceil(c.currentHp)} ⚔${c.atk}</div>
+          <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
+        </div>`;
+      container.appendChild(slot);
+    });
   },
 
   // Render diamond grid with my cards
@@ -4328,8 +4352,7 @@ const TurnBattle={
       grid.appendChild(card);
     });
 
-    // Hide diamond, show actions
-    document.getElementById('tb-diamond').style.display='none';
+    // Actions overlay on top of diamond (don't hide diamond)
   },
 
   _getActions(unit){
@@ -4373,9 +4396,16 @@ const TurnBattle={
       this.renderDiamond();// show my cards for ally targeting
       return;
     }
-    // Enemy target
-    this.phase='target_enemy';this._pendingAction={unit,action};
-    this.showEnemyView(true);
+    // Enemy target — highlight enemy diamond directly
+    this.phase='target_enemy';this._pendingAction={unit,action};this._enemyHighlight=-1;
+    document.getElementById('b-status').textContent='대상을 선택하세요 (WASD + Enter)';
+    // Make enemy cards clickable
+    const eDiamond=document.getElementById('tb-enemy-diamond');
+    const enemies=this.bs.eCards.filter(c=>c.currentHp>0);
+    eDiamond.querySelectorAll('.td-slot').forEach((el,i)=>{
+      el.style.cursor='pointer';
+      el.onclick=()=>{if(enemies[i])this._selectTarget(enemies[i]);};
+    });
   },
 
   _selectTarget(enemy){
@@ -4383,7 +4413,8 @@ const TurnBattle={
     const{unit,action}=this._pendingAction;
     this._queueOrder(unit.uid,action.id,enemy.uid);
     this._pendingAction=null;
-    this._closeOverlay();
+    // Reset enemy interactivity
+    document.getElementById('tb-enemy-diamond').querySelectorAll('.td-slot').forEach(el=>{el.style.cursor='';el.onclick=null;el.style.filter='';el.style.transform='translate(-50%,-50%)';});
   },
 
   _selectAllyTarget(ally){
@@ -4419,8 +4450,7 @@ const TurnBattle={
       this.phase='select';this.selectedIdx=-1;this._highlightIdx=-1;this._pendingAction=null;
       document.getElementById('btn-back').style.display='none';
       document.getElementById('tb-actions').style.display='none';
-      document.getElementById('tb-diamond').style.display='';
-      document.getElementById('b-status').textContent='카드를 선택하세요 (WASD로 이동, Enter로 확인)';
+      document.getElementById('b-status').textContent='카드를 선택하세요 (WASD 이동, Enter 확인)';
       this.renderDiamond();
     }
   },
@@ -4547,11 +4577,11 @@ const TurnBattle={
 
   _renderEnemyHighlight(enemies){
     SFX.play('click');
-    const ov=document.getElementById('tb-view-ov');if(!ov)return;
-    ov.querySelectorAll('.td-slot').forEach((el,i)=>{
+    const container=document.getElementById('tb-enemy-diamond');if(!container)return;
+    container.querySelectorAll('.td-slot').forEach((el,i)=>{
       if(i===this._enemyHighlight){
         el.style.filter='drop-shadow(0 0 15px rgba(255,68,68,.8))';
-        el.style.transform='translate(-50%,-50%) scale(1.1)';
+        el.style.transform='translate(-50%,-50%) scale(1.12)';
       } else {
         el.style.filter='';
         el.style.transform='translate(-50%,-50%)';
@@ -4667,7 +4697,7 @@ const TurnBattle={
         }
       }
       // Render after each action
-      this.renderDiamond();
+      this.renderEnemyDiamond();this.renderDiamond();
       await wait(Math.floor(500/Game.battleMultiplier));
 
       // Check hero death

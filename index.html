@@ -1257,8 +1257,8 @@ const SFX={
     if(this.master)this.master.gain.value=vol;
     if(this._bgmAudio)this._bgmAudio.volume=vol;
     document.getElementById('vol-display').textContent=v;
-    // Update icon
     document.getElementById('sound-toggle').textContent=vol===0?'🔇':vol<.3?'🔉':'🔊';
+    localStorage.setItem('rof8_vol',v);// 볼륨 저장
   },
   // Helper: create oscillator+gain connected to master
   _osc(type,freq,vol,start,dur){
@@ -4582,28 +4582,42 @@ const TurnBattle={
       this.renderDiamond();// show my cards for ally targeting
       return;
     }
-    // Enemy target — highlight enemy cards
-    this.phase='target_enemy';this._pendingAction={unit,action};this._enemyHighlight=-1;
-    document.getElementById('tb-actions').style.display='none';
+    // Enemy target — show target selection overlay (keeps layout stable)
+    this.phase='target_enemy';this._pendingAction={unit,action};this._enemyHighlight=0;
     const hasTaunt=this.bs.eCards.some(c=>c.currentHp>0&&c.skill==='taunt');
-    document.getElementById('b-status').textContent=hasTaunt?'🛡️ 도발 유닛을 먼저 처치해야 합니다!':'⚔️ 대상을 선택하세요 (좌우 + Enter)';
-    document.getElementById('b-status').style.color='#ff6644';
-    const eDiamond=document.getElementById('tb-enemy-diamond');
+    // Replace actions content with target selection
+    const act=document.getElementById('tb-actions');
+    act.innerHTML=`
+      <div style="color:#ff6644;font-size:1.1rem;margin-bottom:15px;">${hasTaunt?'🛡️ 도발 유닛을 먼저 처치하세요!':'⚔️ 대상을 선택하세요'}</div>
+      <div style="font-size:.8rem;color:#888;margin-bottom:10px;">좌우 방향키로 이동, Enter로 확정, ESC로 취소</div>
+      <div class="tb-side" id="target-enemy-row" style="gap:10px;"></div>
+      <button class="btn btn-s" onclick="TurnBattle.goBack()" style="margin-top:15px;">← 취소</button>`;
+    // Render enemy cards in target row
+    const row=document.getElementById('target-enemy-row');
     const allEnemies=this.bs.eCards;
-    eDiamond.querySelectorAll('.td-slot').forEach((el,i)=>{
-      const c=allEnemies[i];
-      if(!c||c.currentHp<=0){el.style.cursor='not-allowed';el.style.opacity='.2';return;}
-      const canReach=this._canTarget(unit,i,'enemy');
-      if(canReach){
-        el.style.cursor='pointer';el.style.opacity='1';
-        el.onclick=()=>{this._selectTarget(c);};
-      } else {
-        el.style.cursor='not-allowed';el.style.opacity='.35';
-        el.onclick=()=>{
-          document.getElementById('b-status').textContent='🛡️ 도발 유닛을 먼저 처치해야 합니다!';
-          setTimeout(()=>{document.getElementById('b-status').textContent='대상을 선택하세요';document.getElementById('b-status').style.color='#ff6644';},1500);
-        };
+    allEnemies.slice(0,5).forEach((c,i)=>{
+      const slot=document.createElement('div');slot.className='td-slot';slot.style.flex='1';
+      if(!c||c.currentHp<=0){
+        slot.innerHTML=`<div class="td-card" style="border:2px dashed #333;background:rgba(0,0,0,.3);opacity:.3;padding:15px;"><div style="color:#333;">✕</div></div>`;
+        row.appendChild(slot);return;
       }
+      const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
+      const img=getCardImg(c);const canReach=this._canTarget(unit,i,'enemy');
+      const isTaunt=c.skill==='taunt';const isHL=i===this._enemyHighlight;
+      slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:3px solid ${isHL?'#ff4444':isTaunt?'#ffd700':'#555'};background:linear-gradient(180deg,rgba(30,10,10,.9),rgba(10,5,5,.95));${isHL?'box-shadow:0 0 20px rgba(255,68,68,.5);transform:scale(1.05);':''}${!canReach?'opacity:.3;':''}">
+        ${isTaunt?'<div style="position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:.8rem;">🛡️</div>':''}
+        ${img?`<img src="${img}" style="width:80px;height:80px;border-radius:6px;object-fit:cover;">`:`<div style="font-size:2rem;">${c.icon}</div>`}
+        <div class="td-name">${c.name}</div>
+        <div class="td-hp">♥${Math.ceil(c.currentHp)} ⚔${c.atk}</div>
+        <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
+      </div>`;
+      if(canReach){
+        slot.style.cursor='pointer';
+        slot.onclick=()=>{this._selectTarget(c);};
+      } else {
+        slot.style.cursor='not-allowed';
+      }
+      row.appendChild(slot);
     });
   },
 
@@ -4612,8 +4626,6 @@ const TurnBattle={
     const{unit,action}=this._pendingAction;
     this._queueOrder(unit.uid,action.id,enemy.uid);
     this._pendingAction=null;
-    // Reset enemy interactivity
-    document.getElementById('tb-enemy-diamond').querySelectorAll('.td-slot').forEach(el=>{el.style.cursor='';el.onclick=null;el.style.filter='';el.style.transform='translate(-50%,-50%)';});
   },
 
   _selectAllyTarget(ally){
@@ -4761,14 +4773,14 @@ const TurnBattle={
       } else if(this.phase==='target_enemy'){
         const allEnemies=this.bs.eCards;
         const maxE=Math.min(allEnemies.length,5);
-        if(key==='a'||key==='arrowleft'){this._enemyHighlight=Math.max(0,(this._enemyHighlight<0?0:this._enemyHighlight)-1);this._renderEnemyHighlight();}
-        if(key==='d'||key==='arrowright'){this._enemyHighlight=Math.min(maxE-1,(this._enemyHighlight<0?0:this._enemyHighlight)+1);this._renderEnemyHighlight();}
-        if(key>='1'&&key<='5'){const idx=parseInt(key)-1;if(idx<maxE){this._enemyHighlight=idx;this._renderEnemyHighlight();}}
+        if(key==='a'||key==='arrowleft'){this._enemyHighlight=Math.max(0,this._enemyHighlight-1);this._refreshTargetView();}
+        if(key==='d'||key==='arrowright'){this._enemyHighlight=Math.min(maxE-1,this._enemyHighlight+1);this._refreshTargetView();}
+        if(key>='1'&&key<='5'){const idx=parseInt(key)-1;if(idx<maxE){this._enemyHighlight=idx;this._refreshTargetView();}}
         if((key==='enter'||key===' ')&&this._enemyHighlight>=0){
           const c=allEnemies[this._enemyHighlight];
-          if(c&&c.currentHp>0)this._selectTarget(c);
+          if(c&&c.currentHp>0&&this._canTarget(null,this._enemyHighlight,'enemy'))this._selectTarget(c);
         }
-        if(key==='escape'){this.phase='action';this._resetEnemySlots();this.showActions(this._currentUnit);}
+        if(key==='escape')this.goBack();
       } else if(this.phase==='target_ally'){
         const alive=this.bs.pCards.filter(c=>c.currentHp>0);
         const maxA=Math.min(alive.length,5);
@@ -4795,11 +4807,16 @@ const TurnBattle={
     });
   },
 
-  _resetEnemySlots(){
-    const container=document.getElementById('tb-enemy-diamond');if(!container)return;
-    container.querySelectorAll('.td-slot').forEach(el=>{el.style.cursor='';el.onclick=null;el.style.filter='';el.style.opacity='';el.style.transform='';});
-    document.getElementById('b-status').style.color='';
+  _refreshTargetView(){
+    SFX.play('click');
+    const row=document.getElementById('target-enemy-row');if(!row)return;
+    row.querySelectorAll('.td-slot .td-card').forEach((el,i)=>{
+      if(i===this._enemyHighlight){el.style.border='3px solid #ff4444';el.style.boxShadow='0 0 20px rgba(255,68,68,.5)';el.style.transform='scale(1.05)';}
+      else{el.style.border='';el.style.boxShadow='';el.style.transform='';}
+    });
   },
+
+  _resetEnemySlots(){document.getElementById('b-status').style.color='';},
 
   unbindKeys(){
     if(this._keyHandler){document.removeEventListener('keydown',this._keyHandler);this._keyHandler=null;}
@@ -4869,7 +4886,10 @@ const TurnBattle={
         Game.log(`${u.icon}${u.name} 방어 태세!`,'ability-log');
       } else if(order.action==='attack'){
         let target=foes.find(c=>c.uid===order.targetUid&&c.currentHp>0);
-        if(!target)target=foes.find(c=>c.currentHp>0);
+        // Taunt override: if taunters exist, must target them
+        const taunters=foes.filter(c=>c.currentHp>0&&c.skill==='taunt');
+        if(taunters.length&&target&&target.skill!=='taunt')target=taunters[0];
+        if(!target)target=taunters[0]||foes.find(c=>c.currentHp>0);
         if(!target)continue;
         await this._showCombatAction(u,'⚔️ 공격!',target);
         // Damage calc
@@ -5142,6 +5162,9 @@ document.getElementById('signup-pw2').addEventListener('keydown',e=>{if(e.key===
   const u=localStorage.getItem('rof8_last_user'),p=localStorage.getItem('rof8_last_pw');
   if(u)document.getElementById('login-id').value=u;
   if(p)document.getElementById('login-pw').value=p;
+  // Restore volume
+  const sv=localStorage.getItem('rof8_vol');
+  if(sv){document.getElementById('vol-slider').value=sv;document.getElementById('vol-display').textContent=sv;SFX.vol=parseInt(sv)/100;}
 })();
 </script>
 </body>

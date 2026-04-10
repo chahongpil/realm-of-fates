@@ -3002,10 +3002,8 @@ const Game={
       bs.eCards=rawE.map(c=>({...c,currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'enemy',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:0,curShield:c.shield||0,burn:0}));
       this.enemyMirrorDeploy(bs);
     }
-    bs.currentRound++;
-    if(bs.currentRound>this.bestRound)this.bestRound=bs.currentRound;
+    bs.currentRound=1;
     this.persist();
-    // Use new turn-based system
     TurnBattle.start(bs);
   },
 
@@ -4387,7 +4385,7 @@ const TurnBattle={
   renderDiamond(cards,isEnemy){
     const src=cards||(this.bs?this.bs.pCards.filter(c=>c.currentHp>0):[]);
     const diamond=document.getElementById('tb-diamond');diamond.innerHTML='';
-    document.getElementById('tb-actions').style.display='none';
+    if(this.phase!=='combat')document.getElementById('tb-actions').style.display='none';
     src.slice(0,5).forEach((c,i)=>{
       const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);
       const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
@@ -4762,9 +4760,11 @@ const TurnBattle={
     if(this.turnTimer)clearInterval(this.turnTimer);
     this.unbindKeys();
     this.phase='combat';
-    document.getElementById('b-status').textContent='전투 진행 중...';
+    document.getElementById('b-status').textContent='⚔️ 전투 진행 중...';
+    document.getElementById('b-status').style.color='#ff6644';
     document.getElementById('btn-fight').disabled=true;
     document.getElementById('btn-back').style.display='none';
+    document.getElementById('tb-actions').style.display='none';
 
     const bs=this.bs;
     const pAlive=bs.pCards.filter(c=>c.currentHp>0);
@@ -4883,6 +4883,9 @@ const TurnBattle={
       if(c.hpReg>0)c.currentHp=Math.min(c.currentHp+c.hpReg,c.maxBHp);
     });
 
+    // Round increment
+    bs.currentRound++;
+    if(bs.currentRound>Game.bestRound)Game.bestRound=bs.currentRound;
     Game.persist();
 
     // Next turn — back to command phase
@@ -4891,7 +4894,9 @@ const TurnBattle={
     this.selectedIdx=-1;
     this._highlightIdx=-1;
     this._activeCardIdx=-1;
-    document.getElementById('b-status').textContent='카드를 선택하세요 (WASD 이동, Enter 확인)';
+    document.getElementById('b-round').textContent=bs.currentRound;
+    document.getElementById('b-status').textContent=`라운드 ${bs.currentRound} — 카드를 선택하세요`;
+    document.getElementById('b-status').style.color='';
     document.getElementById('btn-back').style.display='none';
     document.getElementById('btn-fight').textContent='⚔️ 전투 개시!';
     document.getElementById('btn-fight').disabled=false;

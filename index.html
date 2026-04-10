@@ -12,8 +12,15 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 .screen.active{display:flex;flex-direction:column;align-items:center;}
 
 /* TITLE */
-#title-screen{justify-content:center;background:url('img/bg_title.png') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);}
-#title-screen h1{font-size:3.2rem;color:#e6cc80;text-shadow:0 0 30px rgba(230,204,128,.5),0 2px 4px rgba(0,0,0,.8);margin-bottom:.3rem;letter-spacing:6px;font-family:'Noto Serif KR','Cinzel','Georgia',serif;font-weight:700;}
+#title-screen{justify-content:center;background:url('img/bg_title2.png') center/cover no-repeat,url('img/bg_title.png') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);position:relative;overflow:hidden;}
+/* Epic title effects */
+#title-screen::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.3);pointer-events:none;}
+#title-screen::after{content:'';position:absolute;inset:0;pointer-events:none;animation:titleLightning 4s infinite;opacity:0;}
+@keyframes titleLightning{0%{opacity:0;}48%{opacity:0;}50%{opacity:.15;background:radial-gradient(ellipse at 40% 30%,rgba(150,180,255,.4),transparent 60%);}52%{opacity:0;}53%{opacity:.1;background:radial-gradient(ellipse at 60% 40%,rgba(255,200,100,.3),transparent 50%);}55%{opacity:0;}100%{opacity:0;}}
+.title-fire{position:absolute;bottom:0;left:0;width:100%;height:30%;background:linear-gradient(0deg,rgba(255,60,0,.08),transparent);pointer-events:none;animation:titleFire 3s infinite alternate;}
+@keyframes titleFire{0%{opacity:.3;height:25%;}100%{opacity:.6;height:35%;}}
+#title-screen h1{font-size:3.5rem;color:#e6cc80;text-shadow:0 0 40px rgba(230,204,128,.6),0 0 80px rgba(255,215,0,.3),0 3px 6px rgba(0,0,0,.9);margin-bottom:.5rem;letter-spacing:8px;font-family:'Noto Serif KR','Cinzel','Georgia',serif;font-weight:700;animation:titleGlow 3s infinite alternate;}
+@keyframes titleGlow{0%{text-shadow:0 0 30px rgba(230,204,128,.4),0 0 60px rgba(255,215,0,.2),0 3px 6px rgba(0,0,0,.9);}100%{text-shadow:0 0 50px rgba(230,204,128,.7),0 0 100px rgba(255,215,0,.4),0 3px 6px rgba(0,0,0,.9);}}
 #title-screen .subtitle{color:#aaa;font-size:1rem;margin-bottom:2rem;}
 .title-buttons{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;}
 
@@ -586,12 +593,15 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 
 <!-- TITLE -->
 <div id="title-screen" class="screen active">
-  <div style="font-size:1rem;color:#8899aa;letter-spacing:6px;font-family:'Cinzel',serif;margin-bottom:4px;">LEAGUE OF THE GODS</div>
-  <h1>신들의 리그</h1>
-  <p class="subtitle" style="font-size:1.1rem;letter-spacing:3px;">운명의 왕좌를 차지하라</p>
-  <div class="title-buttons">
-    <button class="btn" onclick="UI.show('login-screen')">⚔️ 왕좌로 돌아가기</button>
-    <button class="btn btn-green" onclick="UI.show('signup-screen')">✨ 새로운 운명</button>
+  <div class="title-fire"></div>
+  <div style="position:relative;z-index:2;text-align:center;">
+    <div style="font-size:1.2rem;color:#8899bb;letter-spacing:8px;font-family:'Cinzel',serif;margin-bottom:6px;text-shadow:0 0 20px rgba(136,153,187,.3);">LEAGUE OF THE GODS</div>
+    <h1>신들의 리그</h1>
+    <p class="subtitle" style="font-size:1.1rem;letter-spacing:4px;color:#aaa;text-shadow:0 2px 10px rgba(0,0,0,.8);">운명의 왕좌를 차지하라</p>
+    <div class="title-buttons" style="margin-top:25px;">
+      <button class="btn" onclick="UI.show('login-screen')" style="font-size:1.1rem;padding:14px 30px;">⚔️ 왕좌로 돌아가기</button>
+      <button class="btn btn-green" onclick="UI.show('signup-screen')" style="font-size:1.1rem;padding:14px 30px;">✨ 새로운 운명</button>
+    </div>
   </div>
 </div>
 

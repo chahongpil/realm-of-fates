@@ -4246,11 +4246,13 @@ const TurnBattle={
     this.orders=[];
     this.phase='select';
     this.selectedIdx=-1;
+    this._highlightIdx=-1;
+    this._enemyHighlight=-1;
     this.turnTimeLeft=60;
     this._orderedCount=0;
     UI.show('battle-screen');SFX.bgm('battle');
     document.getElementById('b-round').textContent=this.bs.currentRound;
-    document.getElementById('b-status').textContent='내 턴 — 지시를 내리세요';
+    document.getElementById('b-status').textContent='카드를 선택하세요 (WASD 이동, Enter 확인)';
     document.getElementById('btn-back').style.display='none';
     document.getElementById('btn-fight').textContent='⚔️ 전투 개시!';
     document.getElementById('battle-log').innerHTML='';
@@ -4270,11 +4272,13 @@ const TurnBattle={
       const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
       const img=getCardImg(c);
       const ordered=this.orders.find(o=>o.uid===c.uid);
+      const isHighlighted=i===this._highlightIdx&&!isEnemy;
       const slot=document.createElement('div');
-      slot.className=`td-slot ${i===this.selectedIdx?'td-selected':''} ${ordered?'td-ordered':''}`;
+      slot.className=`td-slot ${isHighlighted?'td-selected':''} ${ordered?'td-ordered':''}`;
       slot.style.cssText=`left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);`;
+      const borderColor=isHighlighted?'#ffd700':ordered?'#44ff88':'#555';
       slot.innerHTML=`
-        <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid ${ordered?'#44ff88':i===this.selectedIdx?'#ffd700':'#555'};background:linear-gradient(180deg,rgba(20,15,10,.9),rgba(5,5,5,.95));">
+        <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid ${borderColor};background:linear-gradient(180deg,rgba(20,15,10,.9),rgba(5,5,5,.95));">
           ${img?`<img src="${img}">`:`<div style="font-size:2rem;">${c.icon}</div>`}
           <div class="td-name">${c.isHero?'⭐':''}${c.name}</div>
           <div class="td-hp">♥${Math.ceil(c.currentHp)}/${c.maxBHp} ⚔${c.atk} ⚡${Math.floor(c.curNrg||0)}</div>
@@ -4284,9 +4288,13 @@ const TurnBattle={
       slot.onclick=()=>{
         if(isEnemy){this._selectTarget(c);return;}
         if(this.phase==='target_ally'){this._selectAllyTarget(c);return;}
-        this.selectedIdx=i;this.phase='action';
-        document.getElementById('btn-back').style.display='';
-        this.showActions(c);
+        // Click = highlight first, click again = confirm
+        if(this._highlightIdx===i){
+          this._confirmHighlight();
+        } else {
+          this._highlightIdx=i;SFX.play('click');
+          this.renderDiamond(cards,isEnemy);
+        }
       };
       diamond.appendChild(slot);
     });
@@ -4408,11 +4416,11 @@ const TurnBattle={
 
   goBack(){
     if(this.phase==='action'||this.phase==='target_ally'){
-      this.phase='select';this.selectedIdx=-1;this._pendingAction=null;
+      this.phase='select';this.selectedIdx=-1;this._highlightIdx=-1;this._pendingAction=null;
       document.getElementById('btn-back').style.display='none';
       document.getElementById('tb-actions').style.display='none';
       document.getElementById('tb-diamond').style.display='';
-      document.getElementById('b-status').textContent='카드를 선택하세요';
+      document.getElementById('b-status').textContent='카드를 선택하세요 (WASD로 이동, Enter로 확인)';
       this.renderDiamond();
     }
   },
@@ -4467,20 +4475,43 @@ const TurnBattle={
     },1000);
   },
 
-  // Keyboard
+  // Keyboard — WASD moves highlight, Enter confirms
+  _highlightIdx:-1, // which card is highlighted (not yet confirmed)
+  _enemyHighlight:-1,
+
+  _moveHighlight(idx){
+    const alive=this.bs.pCards.filter(c=>c.currentHp>0);
+    if(idx<0||idx>=alive.length)return;
+    this._highlightIdx=idx;
+    SFX.play('click');
+    this.renderDiamond(); // re-render with highlight
+  },
+
+  _confirmHighlight(){
+    const alive=this.bs.pCards.filter(c=>c.currentHp>0);
+    if(this._highlightIdx<0||this._highlightIdx>=alive.length)return;
+    this.selectedIdx=this._highlightIdx;
+    this.phase='action';
+    document.getElementById('btn-back').style.display='';
+    this.showActions(alive[this.selectedIdx]);
+    SFX.play('magic');
+  },
+
   bindKeys(){
     if(this._keyHandler)document.removeEventListener('keydown',this._keyHandler);
     this._keyHandler=(e)=>{
       const key=e.key.toLowerCase();
       if(this.phase==='select'){
-        const alive=this.bs.pCards.filter(c=>c.currentHp>0);
-        if(key==='w'||key==='arrowup'){this.selectedIdx=0;this.phase='action';document.getElementById('btn-back').style.display='';this.showActions(alive[0]);SFX.play('click');}
-        if(key==='a'||key==='arrowleft'){if(alive[1]){this.selectedIdx=1;this.phase='action';document.getElementById('btn-back').style.display='';this.showActions(alive[1]);SFX.play('click');}}
-        if(key==='d'||key==='arrowright'){if(alive[2]){this.selectedIdx=2;this.phase='action';document.getElementById('btn-back').style.display='';this.showActions(alive[2]);SFX.play('click');}}
-        if(key==='s'||key==='arrowdown'){if(alive[3]){this.selectedIdx=3;this.phase='action';document.getElementById('btn-back').style.display='';this.showActions(alive[3]);SFX.play('click');}}
-        if(key==='enter'||key===' ')this.startCombat();
+        // WASD moves highlight
+        if(key==='w'||key==='arrowup')this._moveHighlight(0);
+        if(key==='a'||key==='arrowleft')this._moveHighlight(1);
+        if(key==='d'||key==='arrowright')this._moveHighlight(2);
+        if(key==='s'||key==='arrowdown')this._moveHighlight(3);
+        // Enter/Space confirms highlighted card
+        if((key==='enter'||key===' ')&&this._highlightIdx>=0)this._confirmHighlight();
+        // Enter with no highlight = start combat
+        if((key==='enter'||key===' ')&&this._highlightIdx<0)this.startCombat();
       } else if(this.phase==='action'){
-        // Number keys for action cards
         if(key>='1'&&key<='5'){
           const cards=document.querySelectorAll('#ta-cards .ta-card:not(.tac-disabled)');
           const idx=parseInt(key)-1;
@@ -4489,14 +4520,43 @@ const TurnBattle={
         if(key==='escape'||key==='backspace')this.goBack();
       } else if(this.phase==='target_enemy'){
         const enemies=this.bs.eCards.filter(c=>c.currentHp>0);
-        if(key==='w'||key==='arrowup'){if(enemies[0])this._selectTarget(enemies[0]);}
-        if(key==='a'||key==='arrowleft'){if(enemies[1])this._selectTarget(enemies[1]);}
-        if(key==='d'||key==='arrowright'){if(enemies[2])this._selectTarget(enemies[2]);}
-        if(key==='s'||key==='arrowdown'){if(enemies[3])this._selectTarget(enemies[3]);}
+        // WASD moves enemy highlight
+        if(key==='w'||key==='arrowup'){this._enemyHighlight=0;this._renderEnemyHighlight(enemies);}
+        if(key==='a'||key==='arrowleft'){this._enemyHighlight=1;this._renderEnemyHighlight(enemies);}
+        if(key==='d'||key==='arrowright'){this._enemyHighlight=2;this._renderEnemyHighlight(enemies);}
+        if(key==='s'||key==='arrowdown'){this._enemyHighlight=3;this._renderEnemyHighlight(enemies);}
+        // Enter confirms enemy target
+        if((key==='enter'||key===' ')&&this._enemyHighlight>=0&&enemies[this._enemyHighlight]){
+          this._selectTarget(enemies[this._enemyHighlight]);
+        }
         if(key==='escape')this._closeOverlay();
+      } else if(this.phase==='target_ally'){
+        const alive=this.bs.pCards.filter(c=>c.currentHp>0);
+        if(key==='w'||key==='arrowup')this._moveHighlight(0);
+        if(key==='a'||key==='arrowleft')this._moveHighlight(1);
+        if(key==='d'||key==='arrowright')this._moveHighlight(2);
+        if(key==='s'||key==='arrowdown')this._moveHighlight(3);
+        if((key==='enter'||key===' ')&&this._highlightIdx>=0&&alive[this._highlightIdx]){
+          this._selectAllyTarget(alive[this._highlightIdx]);
+        }
+        if(key==='escape')this.goBack();
       }
     };
     document.addEventListener('keydown',this._keyHandler);
+  },
+
+  _renderEnemyHighlight(enemies){
+    SFX.play('click');
+    const ov=document.getElementById('tb-view-ov');if(!ov)return;
+    ov.querySelectorAll('.td-slot').forEach((el,i)=>{
+      if(i===this._enemyHighlight){
+        el.style.filter='drop-shadow(0 0 15px rgba(255,68,68,.8))';
+        el.style.transform='translate(-50%,-50%) scale(1.1)';
+      } else {
+        el.style.filter='';
+        el.style.transform='translate(-50%,-50%)';
+      }
+    });
   },
 
   unbindKeys(){

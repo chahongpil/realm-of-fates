@@ -53,17 +53,20 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 
 /* MAIN MENU / TOWN */
 #menu-screen{justify-content:flex-start;background:linear-gradient(180deg,#0a0820 0%,#0d1230 30%,#1a1a3e 60%,#0a0a1a 100%);overflow:hidden;position:relative;}
-.town-sky{position:absolute;top:0;left:0;width:100%;height:100%;background:url('img/bg_town.png') center/cover no-repeat,linear-gradient(180deg,#05061a 0%,#101840 50%,#1a2550 100%);pointer-events:none;z-index:0;opacity:.4;}
+.town-sky{position:absolute;top:0;left:0;width:100%;height:100%;background:url('img/bg_town.png') center/cover no-repeat,linear-gradient(180deg,#05061a 0%,#101840 50%,#1a2550 100%);pointer-events:none;z-index:0;opacity:.7;}
 .town-sky .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.6;animation:twinkle 3s infinite alternate;}
 @keyframes twinkle{0%{opacity:.3;}100%{opacity:.9;}}
 .town-hud{width:100%;padding:8px 15px;background:linear-gradient(180deg,rgba(10,8,20,.95),rgba(10,8,20,.6));border-bottom:1px solid rgba(139,105,20,.3);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;z-index:5;position:relative;}
 .town-hud-left,.town-hud-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .town-hud .th-stat{font-size:.8rem;color:#ccc;}.town-hud .th-stat span{color:#ffd700;font-weight:bold;}
-.town-container{position:relative;width:100%;max-width:700px;height:520px;margin:0 auto;z-index:1;overflow:visible;}
-.town-building{position:absolute;text-align:center;cursor:pointer;transition:all .3s;z-index:2;padding:8px;min-width:80px;}
-.town-building:hover{transform:scale(1.08);z-index:3;}
-.town-building:hover .tb-label{opacity:1;transform:translateY(-2px);}
-.tb-upgrade{font-size:.55rem;color:#ffd700;cursor:pointer;margin-top:2px;opacity:.5;transition:all .2s;}
+.town-container{position:relative;width:100%;max-width:900px;height:70vh;max-height:600px;margin:0 auto;z-index:1;overflow:visible;}
+.town-building{position:absolute;text-align:center;cursor:pointer;transition:all .3s;z-index:2;padding:4px;}
+.town-building:hover{z-index:3;}
+.town-building:hover .tb-icon img{transform:scale(1.1);filter:drop-shadow(0 0 20px rgba(255,215,0,.6)) brightness(1.2);}
+.town-building:hover .tb-label{opacity:1;color:#ffd700;text-shadow:0 0 10px rgba(255,215,0,.5);}
+.tb-icon img{transition:all .3s;border-radius:10px;}
+.tb-label{font-size:.65rem;color:#ccc;opacity:.7;transition:all .3s;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,.9);white-space:nowrap;}
+.tb-upgrade{font-size:.5rem;color:#ffd700;cursor:pointer;margin-top:1px;opacity:.4;transition:all .2s;}
 .tb-upgrade:hover{opacity:1;text-decoration:underline;}
 .tb-icon{font-size:2.8rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));transition:all .3s;}
 .tb-label{font-size:.7rem;color:#e6cc80;opacity:.7;transition:all .3s;margin-top:2px;text-shadow:0 1px 3px rgba(0,0,0,.8);white-space:nowrap;}
@@ -1898,28 +1901,28 @@ const Game={
   // ── TOWN BUILDINGS ──
   // cost = array[5] for levels 1~5. level 0 = ruins.
   BUILDINGS:[
-    {id:'castle',name:'성',icon:'🏰',desc:'퀘스트 & 동료 단련',cost:[0,30,80,180,400],x:50,y:8,action:'showCastle',
+    {id:'castle',name:'성',icon:'🏰',desc:'퀘스트 & 동료 단련',cost:[0,30,80,180,400],x:50,y:5,action:'showCastle',
       lvNames:['오두막','목조관저','석조성채','왕의성','왕궁'],
       lvDesc:['Lv1: 기본 단련','Lv2: 단련비용 -10%','Lv3: 단련비용 -20%','Lv4: 등급업 4단계마다','Lv5: 단련 시 보너스+1']},
-    {id:'gate',name:'성문',icon:'🚪',desc:'리그 전투 참여',cost:[0,20,55,130,300],x:50,y:35,action:'startBattle',
+    {id:'gate',name:'성문',icon:'🚪',desc:'리그 전투 참여',cost:[0,20,55,130,300],x:50,y:28,action:'startBattle',
       lvNames:['나무문','철문','성문','요새문','천공문'],
       lvDesc:['Lv1: 리그 참여 가능','Lv2: 승리 보상+20%','Lv3: 승리 보상+40%','Lv4: 리그점수+20%','Lv5: 전설 보상 확률↑']},
-    {id:'forge',name:'대장간',icon:'⚒️',desc:'장비 제작 & 분해',cost:[10,30,75,170,380],x:22,y:25,action:'showForge',
+    {id:'forge',name:'대장간',icon:'⚒️',desc:'장비 제작 & 분해',cost:[10,30,75,170,380],x:15,y:48,action:'showForge',
       lvNames:['모루터','대장간','용광로','마법대장간','신의대장간'],
       lvDesc:['Lv1: 장비 제작 가능','Lv2: 제작비용 -10%','Lv3: 분해 수율 +20%','Lv4: 레어 제작 해금','Lv5: 전설 제작 해금']},
-    {id:'shop',name:'상점',icon:'🏪',desc:'비전/유물 구매',cost:[15,40,90,200,450],x:78,y:25,action:'showShop',
+    {id:'shop',name:'상점',icon:'🏪',desc:'비전/유물 구매',cost:[15,40,90,200,450],x:85,y:35,action:'showShop',
       lvNames:['노점','잡화점','상점','교역소','대상회'],
       lvDesc:['Lv1: 기본 상점 개점','Lv2: 상품 4→5개','Lv3: 할인 -10%','Lv4: 희귀 상품 등장','Lv5: 전설 상품 등장']},
-    {id:'tavern',name:'선술집',icon:'🍺',desc:'용병 고용',cost:[10,30,75,170,380],x:22,y:60,action:'showTavern',
+    {id:'tavern',name:'선술집',icon:'🍺',desc:'용병 고용',cost:[10,30,75,170,380],x:18,y:70,action:'showTavern',
       lvNames:['주막','선술집','주점','대주점','영웅의전당'],
       lvDesc:['Lv1: 용병 고용 가능','Lv2: 용병 4→5명','Lv3: 고용비 -10%','Lv4: 실버 용병 등장↑','Lv5: 골드 용병 등장↑']},
-    {id:'training',name:'훈련장',icon:'🏟️',desc:'동료 수련 & 경험',cost:[10,25,65,150,350],x:50,y:60,action:'showTraining',
+    {id:'training',name:'훈련장',icon:'🏟️',desc:'동료 수련 & 경험',cost:[10,25,65,150,350],x:50,y:55,action:'showTraining',
       lvNames:['빈터','훈련장','검투장','투기장','콜로세움'],
       lvDesc:['Lv1: 기본 수련 가능','Lv2: 수련 경험+20%','Lv3: 수련 경험+40%','Lv4: 합동 수련 해금','Lv5: 명예 수련 해금']},
-    {id:'library',name:'서고',icon:'📋',desc:'전력 편성 & 생명의 서',cost:[5,18,50,120,280],x:78,y:60,action:'showDeckView',
+    {id:'library',name:'서고',icon:'📋',desc:'전력 편성 & 생명의 서',cost:[5,18,50,120,280],x:82,y:58,action:'showDeckView',
       lvNames:['책장','서재','서고','도서관','대도서관'],
       lvDesc:['Lv1: 전력 편성 & 생명의 서','Lv2: 적 정보 해금','Lv3: 비전 설명 상세화','Lv4: 모의 전투 해금','Lv5: 숨겨진 기록 해금']},
-    {id:'church',name:'교회',icon:'⛪',desc:'치료 & 장례',cost:[8,22,55,130,300],x:50,y:78,action:'showChurch',
+    {id:'church',name:'교회',icon:'⛪',desc:'치료 & 장례',cost:[8,22,55,130,300],x:75,y:75,action:'showChurch',
       lvNames:['기도처','예배당','교회','성당','대성당'],
       lvDesc:['Lv1: 치료 & 장례 가능','Lv2: 치료비용 -10%','Lv3: 장례 명예+20%','Lv4: 치료비용 -20%','Lv5: 무료 치료 1회/전투']},
   ],
@@ -2065,7 +2068,7 @@ const Game={
       if(built){
         const canUpgrade=lv<b.cost.length;
         const upgBlocked=b.id!=='castle'&&lv>=castleLv;
-        div.innerHTML=`<div class="tb-icon"><img src="${bImg}" style="width:64px;height:64px;border-radius:8px;border:1px solid rgba(139,105,20,.4);object-fit:cover;"></div><div class="tb-label">${lvName} <span style="font-size:.55rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:'<div class="tb-upgrade" style="color:#44ff88;">✅ 최고 경지</div>'}`;
+        div.innerHTML=`<div class="tb-icon"><img src="${bImg}" style="width:90px;height:90px;border-radius:10px;object-fit:cover;"></div><div class="tb-label">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:'<div class="tb-upgrade" style="color:#44ff88;">✅ 최고 경지</div>'}`;
         div.querySelector('.tb-icon').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
         div.querySelector('.tb-label').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
         const upgEl=div.querySelector('.tb-upgrade');

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <title>Realm of Fates - Card Auto Battler</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -13,7 +13,7 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 
 /* TITLE */
 #title-screen{justify-content:center;background:url('img/bg_title.png') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);}
-#title-screen h1{font-size:2.8rem;color:#e6cc80;text-shadow:0 0 30px rgba(230,204,128,.5),0 2px 4px rgba(0,0,0,.8);margin-bottom:.3rem;letter-spacing:4px;font-family:'Cinzel','Georgia',serif;}
+#title-screen h1{font-size:3.2rem;color:#e6cc80;text-shadow:0 0 30px rgba(230,204,128,.5),0 2px 4px rgba(0,0,0,.8);margin-bottom:.3rem;letter-spacing:6px;font-family:'Noto Serif KR','Cinzel','Georgia',serif;font-weight:700;}
 #title-screen .subtitle{color:#aaa;font-size:1rem;margin-bottom:2rem;}
 .title-buttons{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;}
 
@@ -586,11 +586,11 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 
 <!-- TITLE -->
 <div id="title-screen" class="screen active">
-  <h1>REALM OF FATES</h1>
-  <p class="subtitle">운명의 왕좌를 차지하라</p>
+  <h1>신들의 리그</h1>
+  <p class="subtitle" style="font-size:1.1rem;letter-spacing:3px;">운명의 왕좌를 차지하라</p>
   <div class="title-buttons">
-    <button class="btn" onclick="UI.show('login-screen')" style="display:flex;align-items:center;gap:8px;"><img src="img/icon_throne.png" style="width:28px;height:28px;border-radius:4px;"> 왕좌로 돌아가기</button>
-    <button class="btn btn-green" onclick="UI.show('signup-screen')" style="display:flex;align-items:center;gap:8px;"><img src="img/icon_newgame.png" style="width:28px;height:28px;border-radius:4px;"> 새로운 운명</button>
+    <button class="btn" onclick="UI.show('login-screen')" style="display:flex;align-items:center;gap:8px;"><img src="img/icon_throne.png" style="width:28px;height:28px;border-radius:50%;object-fit:cover;background:transparent;mix-blend-mode:screen;"> 왕좌로 돌아가기</button>
+    <button class="btn btn-green" onclick="UI.show('signup-screen')" style="display:flex;align-items:center;gap:8px;"><img src="img/icon_newgame.png" style="width:28px;height:28px;border-radius:50%;object-fit:cover;background:transparent;mix-blend-mode:screen;"> 새로운 운명</button>
   </div>
 </div>
 
@@ -3053,7 +3053,7 @@ const Game={
       bs.eCards=rawE.map(c=>({...c,currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'enemy',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:0,curShield:c.shield||0,burn:0}));
       this.enemyMirrorDeploy(bs);
     }
-    bs.currentRound=1;
+    if(!bs.currentRound)bs.currentRound=1;// 첫 진입시만
     this.persist();
     TurnBattle.start(bs);
   },
@@ -4972,22 +4972,11 @@ const TurnBattle={
     if(bs.currentRound>Game.bestRound)Game.bestRound=bs.currentRound;
     Game.persist();
 
-    // Next turn — back to command phase
-    this.orders=[];
-    this.phase='select';
-    this.selectedIdx=-1;
-    this._highlightIdx=-1;
-    this._activeCardIdx=-1;
-    document.getElementById('b-round').textContent=bs.currentRound;
-    document.getElementById('b-status').textContent=`라운드 ${bs.currentRound} — 카드를 선택하세요`;
-    document.getElementById('b-status').style.color='';
-    document.getElementById('btn-back').style.display='none';
-    document.getElementById('btn-fight').textContent='⚔️ 전투 개시!';
-    document.getElementById('btn-fight').disabled=false;
-    document.getElementById('tb-actions').style.display='none';
-    this.renderEnemyDiamond();
-    this.renderDiamond();
-    this.startTimer();
+    // Show round choice (행동력 선택지) before next turn
+    Game.battleState=bs;
+    Game.skipReq=false;
+    Game.showRoundChoice();
+    // After round choice completes → finishRound → askFormation → launchBattle → TurnBattle.start
     this.bindKeys();
   },
 
@@ -5178,7 +5167,13 @@ document.getElementById('signup-pw2').addEventListener('keydown',e=>{if(e.key===
   if(p)document.getElementById('login-pw').value=p;
   // Restore volume
   const sv=localStorage.getItem('rof8_vol');
-  if(sv){document.getElementById('vol-slider').value=sv;document.getElementById('vol-display').textContent=sv;SFX.vol=parseInt(sv)/100;}
+  if(sv){
+    const v=parseInt(sv);
+    document.getElementById('vol-slider').value=v;
+    document.getElementById('vol-display').textContent=v;
+    SFX.vol=v/100;
+    document.getElementById('sound-toggle').textContent=v===0?'🔇':v<30?'🔉':'🔊';
+  }
 })();
 </script>
 </body>

@@ -2796,25 +2796,27 @@ const Game={
       SFX.play('magic');
       const botImg=getCardImg(bot.heroBase);
       box.innerHTML=`
-        <div style="color:#44ff88;font-size:1rem;margin-bottom:12px;" class="match-found">도전자가 나타났다!</div>
-        <!-- 상대 (위) -->
-        <div style="text-align:center;margin-bottom:8px;" class="match-found">
-          ${botImg?`<img src="${botImg}" style="width:110px;height:110px;border-radius:12px;border:3px solid ${ELEM_COLOR[bot.element]||'#888'};object-fit:cover;box-shadow:0 0 15px ${ELEM_COLOR[bot.element]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:3.5rem;">${ELEM_ICON[bot.element]}</div>`}
-          <div style="color:#fff;font-size:1.1rem;font-weight:bold;margin-top:6px;font-family:'Cinzel','Georgia',serif;">${bot.name}</div>
-          <div style="color:${bot.league.color};font-size:.8rem;">${bot.league.icon} ${bot.league.name} Lv.${bot.level}</div>
-          <div style="color:#aaa;font-size:.75rem;">${bot.roleName||bot.role} · ${ELEM_ICON[bot.element]} ${ELEM_L[bot.element]}</div>
+        <div style="color:#44ff88;font-size:1.2rem;margin-bottom:15px;" class="match-found">도전자가 나타났다!</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:30px;width:100%;" class="match-found">
+          <!-- 상대 (왼쪽) -->
+          <div style="text-align:center;flex:1;">
+            ${botImg?`<img src="${botImg}" style="width:35vw;max-width:250px;aspect-ratio:1;border-radius:15px;border:4px solid ${ELEM_COLOR[bot.element]||'#888'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[bot.element]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${ELEM_ICON[bot.element]}</div>`}
+            <div style="color:#fff;font-size:1.3rem;font-weight:bold;margin-top:8px;font-family:'Cinzel','Georgia',serif;">${bot.name}</div>
+            <div style="color:${bot.league.color};font-size:.9rem;">${bot.league.icon} ${bot.league.name} Lv.${bot.level}</div>
+            <div style="color:#aaa;font-size:.8rem;">${bot.roleName||bot.role} · ${ELEM_ICON[bot.element]} ${ELEM_L[bot.element]}</div>
+          </div>
+          <!-- VS -->
+          <div class="match-vs" style="font-size:2rem;">⚔<br>VS<br>⚔</div>
+          <!-- 나 (오른쪽) -->
+          <div style="text-align:center;flex:1;">
+            ${heroImg?`<img src="${heroImg}" style="width:35vw;max-width:250px;aspect-ratio:1;border-radius:15px;border:4px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[heroElem]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${hero?hero.icon:'⚔️'}</div>`}
+            <div style="color:#fff;font-size:1.3rem;font-weight:bold;margin-top:8px;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>
+            <div style="color:${lg.color};font-size:.9rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>
+            <div style="color:#aaa;font-size:.8rem;">${heroClass} · ${heroElem?ELEM_ICON[heroElem]+' '+ELEM_L[heroElem]:''}</div>
+          </div>
         </div>
-        <!-- VS -->
-        <div class="match-vs" style="margin:8px 0;">⚔ VS ⚔</div>
-        <!-- 나 (아래) -->
-        <div style="text-align:center;margin-bottom:12px;" class="match-found">
-          ${heroImg?`<img src="${heroImg}" style="width:110px;height:110px;border-radius:12px;border:3px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;box-shadow:0 0 15px ${ELEM_COLOR[heroElem]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:3.5rem;">${hero?hero.icon:'⚔️'}</div>`}
-          <div style="color:#fff;font-size:1.1rem;font-weight:bold;margin-top:6px;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>
-          <div style="color:${lg.color};font-size:.8rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>
-          <div style="color:#aaa;font-size:.75rem;">${heroClass} · ${heroElem?ELEM_ICON[heroElem]+' '+ELEM_L[heroElem]:''}</div>
-        </div>
-        <div style="display:flex;gap:10px;justify-content:center;">
-          <button class="btn" onclick="Game.startBattleFromMatch()">⚔️ 출전!</button>
+        <div style="display:flex;gap:15px;justify-content:center;margin-top:20px;">
+          <button class="btn" onclick="Game.startBattleFromMatch()" style="font-size:1.2rem;padding:14px 40px;">⚔️ 출전!</button>
           <button class="btn btn-s btn-red" onclick="Game.showMenu()">철수</button>
         </div>`;
     },delay);

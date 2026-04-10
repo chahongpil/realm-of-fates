@@ -4623,12 +4623,12 @@ const TurnBattle={
     act.innerHTML=`
       <div style="color:#ff6644;font-size:1.1rem;margin-bottom:10px;">${hasTaunt?'🛡️ 도발 유닛을 먼저 처치하세요!':'⚔️ 대상을 선택하세요'}</div>
       <div style="font-size:.75rem;color:#888;margin-bottom:8px;">좌우 방향키 이동 · Enter 확정 · ESC 취소</div>
-      <div class="tb-side" id="target-enemy-row" style="gap:8px;flex-wrap:wrap;"></div>
+      <div class="tb-side" id="target-enemy-row" style="gap:6px;flex-wrap:nowrap;width:100%;"></div>
       <button class="btn btn-s" onclick="TurnBattle.goBack()" style="margin-top:12px;">← 취소</button>`;
     const row=document.getElementById('target-enemy-row');
     const allEnemies=this.bs.eCards;
     allEnemies.slice(0,5).forEach((c,i)=>{
-      const slot=document.createElement('div');slot.className='td-slot';slot.style.cssText='flex:1;max-width:180px;';
+      const slot=document.createElement('div');slot.className='td-slot';slot.style.cssText='flex:1;max-width:19%;';
       if(!c||c.currentHp<=0){
         slot.innerHTML=`<div class="td-card" style="border:2px dashed #333;background:rgba(0,0,0,.3);opacity:.3;padding:20px;"><div style="color:#333;font-size:1.5rem;">✕</div></div>`;
         row.appendChild(slot);return;
@@ -4651,7 +4651,7 @@ const TurnBattle={
       slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:3px solid ${isHL?'#ff4444':isTaunt?'#ffd700':'#555'};background:linear-gradient(180deg,rgba(30,10,10,.9),rgba(10,5,5,.95));${!canReach?'opacity:.35;':''}position:relative;">
         ${isTaunt?'<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:1rem;">🛡️</div>':''}
         ${willDie?'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2rem;z-index:2;">💀</div>':''}
-        ${img?`<img src="${img}" style="width:100px;height:100px;border-radius:8px;object-fit:cover;${willDie?'opacity:.4;':''}">`:`<div style="font-size:2.5rem;">${c.icon}</div>`}
+        ${img?`<img src="${img}" style="width:95%;max-width:200px;aspect-ratio:1;border-radius:8px;object-fit:cover;${willDie?'opacity:.4;':''}">`:`<div style="font-size:2.5rem;">${c.icon}</div>`}
         <div class="td-name" style="font-size:.8rem;">${c.name}</div>
         <div style="font-size:.7rem;margin-top:3px;">♥${currentHp}${alreadyQueued>0?`<span style="color:#ff8800;">-${alreadyQueued}</span>`:''}${canReach&&estDmg>0?`<span style="color:#ff4444;font-weight:bold;">-${estDmg}</span>`:''} → <span style="color:${willDie?'#ff4444':'#44ff88'};font-weight:bold;">${willDie?'처치!':'♥'+afterThis}</span></div>
         <div style="width:90%;height:6px;background:#222;border-radius:3px;margin:4px auto;overflow:hidden;position:relative;">

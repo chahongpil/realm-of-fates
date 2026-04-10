@@ -182,35 +182,51 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 /* BATTLE */
 #battle-screen{background:url('img/bg_battle.png') center/cover no-repeat,#0a0a1a;position:relative;overflow:hidden;height:100vh;max-height:100vh;}
 /* TURN-BASED BATTLE */
-.tb-field{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;position:relative;overflow:hidden;gap:0;}
-.tb-side{position:relative;width:100%;max-width:500px;height:180px;}
+.tb-field{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:600px;margin:0 auto;position:relative;overflow:hidden;gap:0;padding:0 10px;}
+.tb-side{position:relative;width:100%;height:180px;}
+.tb-side .td-slot{position:absolute;cursor:pointer;transition:all .2s;text-align:center;}
+.tb-side .td-slot:hover{transform:translate(-50%,-50%) scale(1.05);}
 .tb-vs{text-align:center;color:#ff4444;font-size:1rem;font-family:'Cinzel',serif;letter-spacing:4px;padding:2px 0;text-shadow:0 0 10px rgba(255,68,68,.4);}
-.tb-enemy .td-slot .td-card{opacity:.8;border-color:#ff4444 !important;}
-.tb-diamond{position:relative;width:100%;max-width:500px;height:180px;margin:0 auto;}
+.tb-enemy .td-slot .td-card{opacity:.85;border-color:#ff4444 !important;}
+.tb-diamond{position:relative;width:100%;height:180px;}
 .tb-diamond .td-slot{position:absolute;cursor:pointer;transition:all .2s;text-align:center;}
 .tb-diamond .td-slot:hover{transform:translate(-50%,-50%) scale(1.05);}
 .tb-diamond .td-slot.td-selected{transform:translate(-50%,-50%) scale(1.1);filter:drop-shadow(0 0 15px rgba(255,215,0,.7));}
-.tb-diamond .td-slot .td-card,.tb-side .td-slot .td-card{border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:90px;}
-.tb-diamond .td-slot .td-card img,.tb-side .td-slot .td-card img{width:55px;height:55px;border-radius:5px;object-fit:cover;}
-.tb-diamond .td-slot .td-name,.tb-side .td-slot .td-name{font-size:.6rem;color:#fff;font-weight:bold;margin-top:2px;}
-.tb-diamond .td-slot .td-hp,.tb-side .td-slot .td-hp{font-size:.5rem;margin-top:1px;}
-.tb-diamond .td-slot .td-hp-bar,.tb-side .td-slot .td-hp-bar{width:80px;height:3px;background:#333;border-radius:2px;margin-top:1px;overflow:hidden;}
-.tb-diamond .td-slot .td-hp-fill{height:100%;border-radius:2px;}
-.tb-diamond .td-slot .td-order{position:absolute;top:-5px;right:-5px;width:20px;height:20px;border-radius:50%;background:#ffd700;color:#000;font-size:.6rem;font-weight:bold;display:flex;align-items:center;justify-content:center;display:none;}
-.tb-diamond .td-slot.td-ordered .td-order{display:flex;}
+.td-slot .td-card{border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:90px;}
+.td-slot .td-card img{width:55px;height:55px;border-radius:5px;object-fit:cover;}
+.td-slot .td-name{font-size:.6rem;color:#fff;font-weight:bold;margin-top:2px;}
+.td-slot .td-hp{font-size:.5rem;margin-top:1px;}
+.td-slot .td-hp-bar{width:80px;height:3px;background:#333;border-radius:2px;margin-top:1px;overflow:hidden;}
+.td-slot .td-hp-fill{height:100%;border-radius:2px;}
+.td-slot .td-order{position:absolute;top:-5px;right:-5px;width:20px;height:20px;border-radius:50%;background:#ffd700;color:#000;font-size:.6rem;font-weight:bold;display:flex;align-items:center;justify-content:center;display:none;}
+.td-slot.td-ordered .td-order{display:flex;}
 .tb-actions{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:450px;text-align:center;padding:15px;background:rgba(0,0,0,.85);border:1px solid #8b6914;border-radius:12px;z-index:5;box-shadow:0 0 30px rgba(0,0,0,.8);}
 .tb-actions .ta-selected{margin-bottom:10px;}
 .tb-actions .ta-selected img{width:90px;height:90px;border-radius:8px;object-fit:cover;border:2px solid #ffd700;}
 .tb-actions .ta-name{font-size:1rem;color:#ffd700;font-weight:bold;}
 .tb-actions .ta-stats{font-size:.75rem;color:#ccc;margin-top:2px;}
-.ta-cards{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
-.ta-card{width:100px;min-height:80px;border-radius:8px;border:2px solid #555;background:linear-gradient(180deg,rgba(30,25,15,.8),rgba(10,8,5,.9));padding:8px;text-align:center;cursor:pointer;transition:all .2s;}
-.ta-card:hover{border-color:#ffd700;transform:translateY(-3px);box-shadow:0 0 10px rgba(255,215,0,.3);}
-.ta-card .tac-icon{font-size:1.5rem;}
-.ta-card .tac-name{font-size:.7rem;color:#e8d5a3;margin-top:3px;font-weight:bold;}
-.ta-card .tac-desc{font-size:.55rem;color:#888;margin-top:2px;}
-.ta-card .tac-key{position:absolute;top:3px;left:3px;font-size:.5rem;color:#ffd700;background:rgba(0,0,0,.6);padding:1px 4px;border-radius:2px;}
-.ta-card.tac-disabled{opacity:.3;pointer-events:none;}
+/* Card hand (fan layout) */
+.ta-hand{position:relative;display:flex;justify-content:center;align-items:flex-end;height:160px;margin-top:10px;perspective:800px;}
+.ta-card{width:95px;height:140px;border-radius:10px;border:2px solid #555;background:linear-gradient(180deg,rgba(30,25,15,.9),rgba(10,8,5,.95));padding:6px;text-align:center;cursor:pointer;transition:all .3s;position:relative;transform-origin:bottom center;flex-shrink:0;margin:0 -12px;}
+.ta-card:nth-child(1){transform:rotate(-12deg) translateY(8px);}
+.ta-card:nth-child(2){transform:rotate(-6deg) translateY(3px);}
+.ta-card:nth-child(3){transform:rotate(0deg) translateY(0);}
+.ta-card:nth-child(4){transform:rotate(6deg) translateY(3px);}
+.ta-card:nth-child(5){transform:rotate(12deg) translateY(8px);}
+.ta-card:hover{transform:translateY(-20px) scale(1.1) !important;z-index:10;border-color:#ffd700;box-shadow:0 0 20px rgba(255,215,0,.4);}
+.ta-card.tac-active{transform:translateY(-30px) scale(1.15) !important;z-index:11;border-color:#44ff88;box-shadow:0 0 25px rgba(68,255,136,.5);}
+.ta-card .tac-icon{font-size:1.8rem;margin-top:4px;}
+.ta-card .tac-name{font-size:.65rem;color:#e8d5a3;margin-top:4px;font-weight:bold;}
+.ta-card .tac-desc{font-size:.5rem;color:#888;margin-top:2px;line-height:1.3;}
+.ta-card .tac-key{position:absolute;top:4px;left:4px;font-size:.55rem;color:#ffd700;background:rgba(0,0,0,.7);padding:2px 6px;border-radius:3px;font-weight:bold;}
+.ta-card.tac-disabled{opacity:.25;pointer-events:none;filter:grayscale(.8);}
+/* Selected card zoom */
+.ta-zoom{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;text-align:center;animation:cardZoomIn .3s ease-out;}
+@keyframes cardZoomIn{0%{transform:translate(-50%,-50%) scale(.5);opacity:0;}100%{transform:translate(-50%,-50%) scale(1);opacity:1;}}
+.ta-zoom .taz-card{width:160px;border-radius:12px;border:3px solid #ffd700;background:linear-gradient(180deg,rgba(30,25,15,.95),rgba(10,8,5,.98));padding:12px;box-shadow:0 0 30px rgba(255,215,0,.4);}
+.ta-zoom .taz-card img{width:120px;height:120px;border-radius:8px;object-fit:cover;}
+.ta-zoom .taz-name{font-size:1rem;color:#ffd700;font-weight:bold;margin-top:6px;}
+.ta-zoom .taz-desc{font-size:.75rem;color:#ccc;margin-top:4px;line-height:1.4;}
 .tb-bottom{padding:8px;display:flex;gap:10px;justify-content:center;align-items:center;}
 .tb-timer-bar{width:100%;height:4px;background:#222;}
 .tb-timer-fill{height:100%;background:linear-gradient(90deg,#44ff88,#ffdd44,#ff4444);transition:width 1s linear;width:100%;}
@@ -4364,35 +4380,68 @@ const TurnBattle={
     });
   },
 
-  // Show action cards for selected unit
+  // Show action cards for selected unit (fan card hand)
+  _activeCardIdx:-1,_currentUnit:null,_currentActions:null,
+
   showActions(unit){
+    this._currentUnit=unit;this._activeCardIdx=-1;
     const act=document.getElementById('tb-actions');act.style.display='';act.innerHTML='';
     const img=getCardImg(unit);
     const traits=getTraits(unit);
     const traitIcons=traits.map(tid=>{const tr=TRAITS[tid];return tr?`<span style="color:${tr.color};">${tr.icon}</span>`:''}).join(' ');
 
+    // Character portrait top
     act.innerHTML=`
       <div class="ta-selected">
         ${img?`<img src="${img}">`:`<div style="font-size:2.5rem;">${unit.icon}</div>`}
         <div class="ta-name">${unit.isHero?'⭐ ':''}${unit.name} ${traitIcons}</div>
         <div class="ta-stats">♥${Math.ceil(unit.currentHp)}/${unit.maxBHp} ⚔${unit.atk} 🛡${unit.def||0} 💨${unit.spd} ⚡${Math.floor(unit.curNrg||0)}</div>
       </div>
-      <div class="ta-cards" id="ta-cards"></div>`;
+      <div class="ta-hand" id="ta-hand"></div>
+      <div id="ta-zoom-area"></div>`;
 
-    const grid=document.getElementById('ta-cards');
-    // Action cards
+    const hand=document.getElementById('ta-hand');
     const actions=this._getActions(unit);
+    this._currentActions=actions;
+
     actions.forEach((a,i)=>{
       const card=document.createElement('div');
-      card.className=`ta-card${a.disabled?' tac-disabled':''}`;card.style.position='relative';
+      card.className=`ta-card${a.disabled?' tac-disabled':''}`;
       card.innerHTML=`<div class="tac-key">${i+1}</div><div class="tac-icon">${a.icon}</div><div class="tac-name">${a.name}</div><div class="tac-desc">${a.desc}</div>`;
       if(!a.disabled){
-        card.onclick=()=>{SFX.play('click');this._chooseAction(unit,a);};
+        card.onclick=()=>{
+          // First click = zoom card to center
+          if(this._activeCardIdx===i){
+            // Second click = use it
+            SFX.play('magic');this._chooseAction(unit,a);
+          } else {
+            this._activeCardIdx=i;SFX.play('click');
+            this._highlightHandCard(i,a);
+          }
+        };
       }
-      grid.appendChild(card);
+      hand.appendChild(card);
     });
+  },
 
-    // Actions overlay on top of diamond (don't hide diamond)
+  _highlightHandCard(idx,action){
+    // Remove previous active
+    document.querySelectorAll('#ta-hand .ta-card').forEach((c,i)=>c.classList.toggle('tac-active',i===idx));
+    // Show zoomed card detail
+    const zoom=document.getElementById('ta-zoom-area');
+    const a=action||this._currentActions[idx];
+    zoom.innerHTML=`<div style="text-align:center;margin-top:8px;">
+      <div style="font-size:2rem;">${a.icon}</div>
+      <div style="font-size:.9rem;color:#ffd700;font-weight:bold;margin-top:4px;">${a.name}</div>
+      <div style="font-size:.7rem;color:#ccc;margin-top:4px;">${a.desc}</div>
+      <button class="btn btn-s btn-green" style="margin-top:8px;" onclick="TurnBattle._useActiveCard()">사용하기 (Enter)</button>
+    </div>`;
+  },
+
+  _useActiveCard(){
+    if(this._activeCardIdx<0||!this._currentUnit||!this._currentActions)return;
+    const a=this._currentActions[this._activeCardIdx];
+    if(a&&!a.disabled){SFX.play('magic');this._chooseAction(this._currentUnit,a);}
   },
 
   _getActions(unit){
@@ -4592,9 +4641,19 @@ const TurnBattle={
         if((key==='enter'||key===' ')&&this._highlightIdx<0)this.startCombat();
       } else if(this.phase==='action'){
         if(key>='1'&&key<='5'){
-          const cards=document.querySelectorAll('#ta-cards .ta-card:not(.tac-disabled)');
           const idx=parseInt(key)-1;
-          if(cards[idx])cards[idx].click();
+          if(this._currentActions&&this._currentActions[idx]&&!this._currentActions[idx].disabled){
+            if(this._activeCardIdx===idx){
+              // Already highlighted → use it
+              this._useActiveCard();
+            } else {
+              this._activeCardIdx=idx;SFX.play('click');
+              this._highlightHandCard(idx);
+            }
+          }
+        }
+        if(key==='enter'||key===' '){
+          if(this._activeCardIdx>=0)this._useActiveCard();
         }
         if(key==='escape'||key==='backspace')this.goBack();
       } else if(this.phase==='target_enemy'){

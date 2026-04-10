@@ -343,8 +343,13 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 .modal-buttons{display:flex;gap:10px;justify-content:center;}
 
 /* SOUND TOGGLE */
-.sound-toggle{position:fixed;top:10px;right:10px;z-index:50;background:rgba(0,0,0,.5);border:1px solid #444;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:#ccc;transition:all .2s;}
-.sound-toggle:hover{border-color:#ffd700;color:#ffd700;}
+.sound-panel{position:fixed;top:10px;right:10px;z-index:50;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.6);border:1px solid #444;border-radius:20px;padding:4px 10px;transition:all .2s;}
+.sound-panel:hover{border-color:#ffd700;}
+.sound-panel .sp-btn{cursor:pointer;font-size:1rem;color:#ccc;transition:color .2s;}
+.sound-panel .sp-btn:hover{color:#ffd700;}
+.sound-panel input[type=range]{width:70px;height:4px;-webkit-appearance:none;appearance:none;background:#333;border-radius:2px;outline:none;cursor:pointer;}
+.sound-panel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#ffd700;cursor:pointer;}
+.sound-panel .sp-vol{font-size:.6rem;color:#888;width:22px;text-align:center;}
 
 /* UPGRADE EFFECTS */
 .upgrade-flash{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:200;animation:upgFlash .6s ease-out forwards;}
@@ -550,7 +555,11 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 <body>
 
 <!-- SOUND TOGGLE -->
-<div class="sound-toggle" id="sound-toggle" onclick="SFX.toggle()">🔊</div>
+<div class="sound-panel" id="sound-panel">
+  <span class="sp-btn" id="sound-toggle" onclick="SFX.toggle()">🔊</span>
+  <input type="range" id="vol-slider" min="0" max="100" value="40" oninput="SFX.setVolume(this.value)">
+  <span class="sp-vol" id="vol-display">40</span>
+</div>
 
 <!-- TITLE -->
 <div id="title-screen" class="screen active">
@@ -1226,7 +1235,16 @@ const SFX={
     // Reverb (convolver simulation with delay)
     this.reverb=this.ctx.createGain();this.reverb.gain.value=.3;this.reverb.connect(this.master);
     this.on=true;document.getElementById('sound-toggle').textContent='🔊';}catch(e){}},
-  toggle(){if(!this.ctx)this.init();else{this.on=!this.on;document.getElementById('sound-toggle').textContent=this.on?'🔊':'🔇';}},
+  toggle(){if(!this.ctx)this.init();else{this.on=!this.on;document.getElementById('sound-toggle').textContent=this.on?'🔊':'🔇';if(!this.on&&this._bgmAudio)this._bgmAudio.pause();if(this.on&&this._bgmAudio)this._bgmAudio.play().catch(()=>{});}},
+  setVolume(v){
+    const vol=parseInt(v)/100;
+    this.vol=vol;
+    if(this.master)this.master.gain.value=vol;
+    if(this._bgmAudio)this._bgmAudio.volume=vol;
+    document.getElementById('vol-display').textContent=v;
+    // Update icon
+    document.getElementById('sound-toggle').textContent=vol===0?'🔇':vol<.3?'🔉':'🔊';
+  },
   // Helper: create oscillator+gain connected to master
   _osc(type,freq,vol,start,dur){
     const c=this.ctx,o=c.createOscillator(),g=c.createGain();
@@ -1318,10 +1336,10 @@ const SFX={
     this._bgmTimers.forEach(t=>clearInterval(t));this._bgmTimers=[];
   },
 
-  _playMp3(tracks,vol){
+  _playMp3(tracks,volOverride){
     const src=tracks[Math.floor(Math.random()*tracks.length)];
     const audio=new Audio(src);
-    audio.loop=true;audio.volume=vol||0.4;
+    audio.loop=true;audio.volume=volOverride||this.vol||0.4;
     audio.play().catch(()=>{});
     this._bgmAudio=audio;
   },

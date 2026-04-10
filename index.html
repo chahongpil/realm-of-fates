@@ -4264,12 +4264,13 @@ const TurnBattle={
   turnTimer:null,turnTimeLeft:60,
   _keyHandler:null,
 
-  // Diamond positions (CSS %) — slot 0,3=back row, 1,2=front row
+  // Diamond positions (CSS %) — 유저 시점: 위=전방, 아래=후방
+  // slot 0=top(front), 1=left(front), 2=right(front), 3=bottom(back)
   SLOTS:[
-    {x:50,y:8,row:'back'},   // slot 0: top (back)
-    {x:18,y:45,row:'front'}, // slot 1: left (front)
-    {x:82,y:45,row:'front'}, // slot 2: right (front)
-    {x:50,y:82,row:'back'},  // slot 3: bottom (back)
+    {x:50,y:8,row:'front',label:'전방 상단'},
+    {x:18,y:45,row:'front',label:'전방 좌측'},
+    {x:82,y:45,row:'front',label:'전방 우측'},
+    {x:50,y:82,row:'back',label:'후방 하단'},
   ],
   // Check if target is reachable (front guards back)
   _canTarget(attacker,targetIdx,targetSide){
@@ -4312,24 +4313,33 @@ const TurnBattle={
 
   // Render enemy diamond (top half, non-interactive during select)
   renderEnemyDiamond(){
-    const enemies=this.bs?this.bs.eCards.filter(c=>c.currentHp>0):[];
+    const enemies=this.bs?this.bs.eCards:[];
     const container=document.getElementById('tb-enemy-diamond');container.innerHTML='';
-    enemies.slice(0,4).forEach((c,i)=>{
+    for(let i=0;i<4;i++){
+      const c=enemies[i];
       const pos=this.SLOTS[i];
-      const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
-      const img=getCardImg(c);
       const slot=document.createElement('div');
-      slot.className='td-slot';slot.id=`bc-${c.uid}`;
+      slot.className='td-slot';
       slot.style.cssText=`left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);`;
-      slot.innerHTML=`
-        <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid #ff4444;background:linear-gradient(180deg,rgba(30,10,10,.85),rgba(10,5,5,.9));">
-          ${img?`<img src="${img}">`:`<div style="font-size:1.5rem;">${c.icon}</div>`}
-          <div class="td-name">${c.name}</div>
-          <div class="td-hp">♥${Math.ceil(c.currentHp)} ⚔${c.atk}</div>
-          <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
+      if(c&&c.currentHp>0){
+        const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
+        const img=getCardImg(c);
+        slot.id=`bc-${c.uid}`;
+        slot.innerHTML=`
+          <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid #ff4444;background:linear-gradient(180deg,rgba(30,10,10,.85),rgba(10,5,5,.9));">
+            ${img?`<img src="${img}">`:`<div style="font-size:1.5rem;">${c.icon}</div>`}
+            <div class="td-name">${c.name}</div>
+            <div class="td-hp">♥${Math.ceil(c.currentHp)} ⚔${c.atk}</div>
+            <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
+          </div>`;
+      } else {
+        slot.innerHTML=`<div class="td-card" style="border:2px dashed #333;background:rgba(0,0,0,.3);opacity:.3;min-width:90px;padding:15px 4px;">
+          <div style="font-size:1.2rem;color:#333;">✕</div>
+          <div style="font-size:.5rem;color:#444;">${pos.label||'빈 자리'}</div>
         </div>`;
+      }
       container.appendChild(slot);
-    });
+    }
   },
 
   // Render diamond grid with my cards
@@ -4823,15 +4833,32 @@ const TurnBattle={
       if(eH&&eH.currentHp<=0){this._endBattle(true);return;}
     }
 
-    // Clear defend flags
+    // Round survived → next turn
     [...bs.pCards,...bs.eCards].forEach(c=>{c._defending=false;});
 
-    // Round survived → next turn
-    bs.currentRound++;
-    if(bs.currentRound>Game.bestRound)Game.bestRound=bs.currentRound;
-    // Round choice (행동력 사용)
-    Game.skipReq=false;
-    Game.showRoundChoice();
+    // Energy regen for next turn
+    [...bs.pCards,...bs.eCards].filter(c=>c.currentHp>0).forEach(c=>{
+      c.curNrg=(c.curNrg||0)+(c.nrgReg||0);
+      if(c.hpReg>0)c.currentHp=Math.min(c.currentHp+c.hpReg,c.maxBHp);
+    });
+
+    Game.persist();
+
+    // Next turn — back to command phase
+    this.orders=[];
+    this.phase='select';
+    this.selectedIdx=-1;
+    this._highlightIdx=-1;
+    this._activeCardIdx=-1;
+    document.getElementById('b-status').textContent='카드를 선택하세요 (WASD 이동, Enter 확인)';
+    document.getElementById('btn-back').style.display='none';
+    document.getElementById('btn-fight').textContent='⚔️ 전투 개시!';
+    document.getElementById('btn-fight').disabled=false;
+    document.getElementById('tb-actions').style.display='none';
+    this.renderEnemyDiamond();
+    this.renderDiamond();
+    this.startTimer();
+    this.bindKeys();
   },
 
   async _showCombatAction(unit,text,target){
@@ -4869,7 +4896,7 @@ const Formation={
   // Diamond 4 slots: 0=top(back), 1=left(front), 2=right(front), 3=bottom(back)
   slots:[null,null,null,null],
   POSITIONS:[
-    {x:50,y:5,row:'back',label:'후방 상단'},
+    {x:50,y:5,row:'front',label:'전방 상단'},
     {x:15,y:45,row:'front',label:'전방 좌측'},
     {x:85,y:45,row:'front',label:'전방 우측'},
     {x:50,y:85,row:'back',label:'후방 하단'},

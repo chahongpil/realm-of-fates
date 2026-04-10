@@ -1587,11 +1587,14 @@ const SFX={
 };
 
 // Auto-init sound on first click anywhere (browser requires user gesture)
-document.addEventListener('click',function _initBgm(){
-  SFX.init();
-  if(!SFX._bgmStarted){SFX._bgmStarted=true;SFX.bgm('title');}
-  document.removeEventListener('click',_initBgm);
-},{once:true});
+// Auto-init sound on any user interaction
+['click','touchstart','keydown'].forEach(evt=>{
+  document.addEventListener(evt,function _initBgm(){
+    SFX.init();
+    if(!SFX._bgmStarted){SFX._bgmStarted=true;SFX.bgm('title');}
+    ['click','touchstart','keydown'].forEach(e=>document.removeEventListener(e,_initBgm));
+  },{once:true});
+});
 
 // ============ UI ============
 const UI={

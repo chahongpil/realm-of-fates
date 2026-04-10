@@ -586,11 +586,12 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 
 <!-- TITLE -->
 <div id="title-screen" class="screen active">
+  <div style="font-size:1rem;color:#8899aa;letter-spacing:6px;font-family:'Cinzel',serif;margin-bottom:4px;">LEAGUE OF THE GODS</div>
   <h1>신들의 리그</h1>
   <p class="subtitle" style="font-size:1.1rem;letter-spacing:3px;">운명의 왕좌를 차지하라</p>
   <div class="title-buttons">
-    <button class="btn" onclick="UI.show('login-screen')" style="display:flex;align-items:center;gap:8px;"><img src="img/icon_throne.png" style="width:28px;height:28px;border-radius:50%;object-fit:cover;background:transparent;mix-blend-mode:screen;"> 왕좌로 돌아가기</button>
-    <button class="btn btn-green" onclick="UI.show('signup-screen')" style="display:flex;align-items:center;gap:8px;"><img src="img/icon_newgame.png" style="width:28px;height:28px;border-radius:50%;object-fit:cover;background:transparent;mix-blend-mode:screen;"> 새로운 운명</button>
+    <button class="btn" onclick="UI.show('login-screen')">⚔️ 왕좌로 돌아가기</button>
+    <button class="btn btn-green" onclick="UI.show('signup-screen')">✨ 새로운 운명</button>
   </div>
 </div>
 
@@ -2064,11 +2065,14 @@ const Game={
       div.style.left=b.x+'%';div.style.top=b.y+'%';div.style.transform='translateX(-50%)';
       const lvName=(b.lvNames&&lv>0)?b.lvNames[lv-1]:b.name;
       const castleLv=this.getBuildingLv('castle');
-      const bImg=`img/building_${b.id}.png`;
+      // Level-specific building image (lv1~5), fallback to generic
+      const bImg=`img/building_${b.id}_lv${lv}.png`;
+      const bImgFallback=`img/building_${b.id}.png`;
       if(built){
         const canUpgrade=lv<b.cost.length;
         const upgBlocked=b.id!=='castle'&&lv>=castleLv;
-        div.innerHTML=`<div class="tb-icon"><img src="${bImg}" style="width:90px;height:90px;border-radius:10px;object-fit:cover;"></div><div class="tb-label">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:'<div class="tb-upgrade" style="color:#44ff88;">✅ 최고 경지</div>'}`;
+        const imgSize=70+lv*5;// 레벨 올라갈수록 약간 커짐
+        div.innerHTML=`<div class="tb-icon"><img src="${bImg}" onerror="this.src='${bImgFallback}'" style="width:${imgSize}px;height:${imgSize}px;border-radius:10px;object-fit:cover;"></div><div class="tb-label">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:'<div class="tb-upgrade" style="color:#44ff88;">✅ 최고 경지</div>'}`;
         div.querySelector('.tb-icon').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
         div.querySelector('.tb-label').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
         const upgEl=div.querySelector('.tb-upgrade');
@@ -2076,7 +2080,7 @@ const Game={
           upgEl.onclick=(e)=>{e.stopPropagation();this.upgradeBuilding(b);};
         }
       } else {
-        div.innerHTML=`<div class="tb-icon">🏚️</div><div class="tb-label">${b.name} (폐허)</div><div class="tb-cost">🔨 건설: ${b.cost[0]}💰</div>`;
+        div.innerHTML=`<div class="tb-icon" style="width:70px;height:70px;border:2px dashed rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.2);"><div style="font-size:1.5rem;opacity:.3;">➕</div></div><div class="tb-label">${b.name}</div><div class="tb-cost">🔨 ${b.cost[0]}💰</div>`;
         div.onclick=()=>this.buildBuilding(b);
       }
       tc.appendChild(div);

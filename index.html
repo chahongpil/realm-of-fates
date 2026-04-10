@@ -1303,15 +1303,40 @@ const SFX={
       this._chord('sine',[400,500,600],.05,t+.6,.4);
     }
   },
-  bgmNodes:[],_bgmTimers:[],
+  bgmNodes:[],_bgmTimers:[],_bgmAudio:null,
   _drone(ty,f,v){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(this.master);o.start();this.bgmNodes.push(o);},
-  bgm(type){
-    if(!this.ctx)this.init();
+
+  // MP3 BGM tracks
+  _townTracks:['snd/town1.mp3','snd/town2.mp3'],
+  _battleTracks:['snd/battle1.mp3','snd/battle2.mp3','snd/battle3.mp3','snd/battle4.mp3','snd/battle5.mp3'],
+
+  _stopBgm(){
+    // Stop MP3
+    if(this._bgmAudio){this._bgmAudio.pause();this._bgmAudio.currentTime=0;this._bgmAudio=null;}
+    // Stop Web Audio
     this.bgmNodes.forEach(n=>{try{n.stop();}catch(e){}});this.bgmNodes=[];
     this._bgmTimers.forEach(t=>clearInterval(t));this._bgmTimers=[];
+  },
+
+  _playMp3(tracks){
+    const src=tracks[Math.floor(Math.random()*tracks.length)];
+    const audio=new Audio(src);
+    audio.loop=true;audio.volume=0.4;
+    audio.play().catch(()=>{});
+    this._bgmAudio=audio;
+  },
+
+  bgm(type){
+    if(!this.ctx)this.init();
+    this._stopBgm();
     if(!type||!this.on)return;
     const c=this.ctx;
 
+    // ═══ MP3 BGM (priority) ═══
+    if(type==='town'){this._playMp3(this._townTracks);return;}
+    if(type==='battle'){this._playMp3(this._battleTracks);return;}
+
+    // ═══ Web Audio fallback for menu/title/match ═══
     if(type==='menu'||type==='title'){
       // ═══ TITLE/MENU: 장엄한 오르간 + 성가 코드 진행 ═══
       // Deep organ drone: C2 + G2

@@ -757,14 +757,10 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 <!-- FORMATION -->
 <div id="formation-screen" class="screen">
   <div class="form-title">⚔️ 진형 배치</div>
-  <div class="form-sub">동료를 드래그하여 앞열/뒷열에 배치하세요 (각 3칸)</div>
-  <div class="form-grid">
-    <div class="form-row-label">— 앞열 (전사/야수 추천) —</div>
-    <div class="form-row" id="form-front"></div>
-    <div class="form-row-label">— 뒷열 (사수/마법사 추천) —</div>
-    <div class="form-row" id="form-back"></div>
-  </div>
-  <div class="form-bench-label">대기석 (클릭하여 배치)</div>
+  <div class="form-sub">슬롯을 클릭하여 동료를 배치하세요 (최대 4칸)</div>
+  <!-- Diamond formation -->
+  <div class="form-diamond" id="form-diamond" style="position:relative;width:100%;max-width:400px;height:300px;margin:10px auto;"></div>
+  <div class="form-bench-label">대기석 (클릭하여 선택 후 슬롯 클릭)</div>
   <div class="form-bench" id="form-bench"></div>
   <div style="padding:10px;display:flex;gap:10px;justify-content:center;">
     <button class="btn btn-s" onclick="Formation.auto()">자동 배치</button>
@@ -4811,120 +4807,131 @@ const TurnBattle={
 };
 
 const Formation={
-  front:[null,null], // 2 front slots (left, right in diamond)
-  back:[null,null],  // 2 back slots (top, bottom in diamond)
-  selected:null, // {row,idx} of selected slot or 'bench_'+uid
+  // Diamond 4 slots: 0=top(back), 1=left(front), 2=right(front), 3=bottom(back)
+  slots:[null,null,null,null],
+  POSITIONS:[
+    {x:50,y:5,row:'back',label:'후방 상단'},
+    {x:15,y:45,row:'front',label:'전방 좌측'},
+    {x:85,y:45,row:'front',label:'전방 우측'},
+    {x:50,y:85,row:'back',label:'후방 하단'},
+  ],
+  selected:null, // {type:'slot',idx} or {type:'bench',card}
+  _cards:[],
 
-  _cards:[], // cards to arrange
+  showForBattle(battleDeck){this._cards=battleDeck;this._init();},
+  show(){this._cards=Game.deck;this._init();},
 
-  showForBattle(battleDeck){
-    this._cards=battleDeck;
-    this._initFromCards();
-  },
-
-  show(){
-    this._cards=Game.deck;
-    this._initFromCards();
-  },
-
-  _initFromCards(){
+  _init(){
     UI.show('formation-screen');
-    this.front=[null,null];
-    this.back=[null,null];
+    this.slots=[null,null,null,null];
     const deck=this._cards;
+    // Restore saved positions
     deck.forEach(c=>{
-      if(c.formRow==='front'){const i=c.formIdx;if(i!=null&&i<2&&!this.front[i]){this.front[i]=c;return;}}
-      if(c.formRow==='back'){const i=c.formIdx;if(i!=null&&i<2&&!this.back[i]){this.back[i]=c;return;}}
+      if(c.formSlot!=null&&c.formSlot<4&&!this.slots[c.formSlot]){this.slots[c.formSlot]=c;return;}
     });
-    const placed=new Set([...this.front,...this.back].filter(Boolean).map(c=>c.uid));
+    // Auto-place unplaced
+    const placed=new Set(this.slots.filter(Boolean).map(c=>c.uid));
     const unplaced=deck.filter(c=>!placed.has(c.uid));
     unplaced.forEach(c=>{
-      if(c.type==='사수'||c.type==='마법사'){
-        const i=this.back.indexOf(null);if(i>=0){this.back[i]=c;return;}
+      // Front slots (1,2) for warriors, back (0,3) for ranged/mage
+      if(c.type==='전사'||c.type==='야수'){
+        if(!this.slots[1]){this.slots[1]=c;return;}if(!this.slots[2]){this.slots[2]=c;return;}
+      } else {
+        if(!this.slots[0]){this.slots[0]=c;return;}if(!this.slots[3]){this.slots[3]=c;return;}
       }
-      const fi=this.front.indexOf(null);if(fi>=0){this.front[fi]=c;return;}
-      const bi=this.back.indexOf(null);if(bi>=0){this.back[bi]=c;}
+      // Any empty slot
+      const ei=this.slots.indexOf(null);if(ei>=0)this.slots[ei]=c;
     });
     this.selected=null;
     this.render();
   },
 
   auto(){
-    this.front=[null,null];this.back=[null,null];
+    this.slots=[null,null,null,null];
     const deck=[...this._cards];
-    const frontTypes=deck.filter(c=>c.type==='전사'||c.type==='야수');
-    const backTypes=deck.filter(c=>c.type==='사수'||c.type==='마법사');
-    let fi=0,bi=0;
-    frontTypes.forEach(c=>{if(fi<2)this.front[fi++]=c;else if(bi<2)this.back[bi++]=c;});
-    backTypes.forEach(c=>{if(bi<2)this.back[bi++]=c;else if(fi<2)this.front[fi++]=c;});
-    this.render();
+    const front=deck.filter(c=>c.type==='전사'||c.type==='야수');
+    const back=deck.filter(c=>c.type==='사수'||c.type==='마법사');
+    if(front[0])this.slots[1]=front[0];if(front[1])this.slots[2]=front[1];
+    if(back[0])this.slots[0]=back[0];if(back[1])this.slots[3]=back[1];
+    // Overflow
+    const placed=new Set(this.slots.filter(Boolean).map(c=>c.uid));
+    [...front,...back].filter(c=>!placed.has(c.uid)).forEach(c=>{
+      const ei=this.slots.indexOf(null);if(ei>=0)this.slots[ei]=c;
+    });
+    SFX.play('click');this.render();
   },
 
   render(){
-    const renderRow=(arr,containerId)=>{
-      const ct=document.getElementById(containerId);ct.innerHTML='';
-      arr.forEach((c,i)=>{
-        const d=document.createElement('div');
-        d.className=`form-slot ${c?'occupied':''} ${this.selected&&this.selected.row===containerId&&this.selected.idx===i?'selected':''}`;
-        if(c){d.innerHTML=`<div class="fs-icon">${c.icon}</div><div class="fs-name">${c.isHero?'⭐':''}${c.name}</div>`;}
-        else{d.innerHTML=`<div class="fs-empty">빈 칸</div>`;}
-        d.onclick=()=>this.clickSlot(containerId,i);
-        ct.appendChild(d);
-      });
-    };
-    renderRow(this.front,'form-front');
-    renderRow(this.back,'form-back');
+    const diamond=document.getElementById('form-diamond');diamond.innerHTML='';
+    this.POSITIONS.forEach((pos,i)=>{
+      const c=this.slots[i];
+      const isSel=this.selected&&this.selected.type==='slot'&&this.selected.idx===i;
+      const slot=document.createElement('div');
+      slot.className='form-slot'+(c?' occupied':'')+(isSel?' selected':'');
+      slot.style.cssText=`position:absolute;left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,0);width:120px;`;
+      const img=c?getCardImg(c):'';
+      if(c){
+        slot.innerHTML=`<div style="text-align:center;">
+          ${img?`<img src="${img}" style="width:60px;height:60px;border-radius:6px;object-fit:cover;border:2px solid ${isSel?'#44ff88':'#8b6914'};">`:`<div style="font-size:2rem;">${c.icon}</div>`}
+          <div class="fs-name">${c.isHero?'⭐':''}${c.name}</div>
+          <div style="font-size:.5rem;color:#888;">${pos.label}</div>
+        </div>`;
+      } else {
+        slot.innerHTML=`<div style="text-align:center;padding:15px 0;">
+          <div style="font-size:1.5rem;color:#333;">➕</div>
+          <div style="font-size:.55rem;color:#555;">${pos.label}</div>
+        </div>`;
+      }
+      slot.onclick=()=>this.clickSlot(i);
+      diamond.appendChild(slot);
+    });
 
-    // Bench: cards not placed
-    const placed=new Set([...this.front,...this.back].filter(Boolean).map(c=>c.uid));
+    // Bench
+    const placed=new Set(this.slots.filter(Boolean).map(c=>c.uid));
     const bench=this._cards.filter(c=>!placed.has(c.uid));
     const bc=document.getElementById('form-bench');bc.innerHTML='';
+    if(!bench.length){bc.innerHTML='<div style="color:#555;font-size:.75rem;text-align:center;">모든 동료가 배치됨</div>';}
     bench.forEach(c=>{
+      const isSel=this.selected&&this.selected.type==='bench'&&this.selected.card.uid===c.uid;
       const d=document.createElement('div');d.className=`deck-mini ${c.rarity||'bronze'}`;
-      d.innerHTML=`<div class="dm-icon">${c.icon}</div><div class="dm-name">${c.isHero?'⭐':''}${c.name}</div>`;
+      d.style.border=isSel?'2px solid #44ff88':'';
+      const img=getCardImg(c);
+      d.innerHTML=`${img?`<img src="${img}" style="width:30px;height:30px;border-radius:4px;object-fit:cover;">`:`<div class="dm-icon">${c.icon}</div>`}<div class="dm-name">${c.isHero?'⭐':''}${c.name}</div>`;
       d.onclick=()=>this.clickBench(c);
       bc.appendChild(d);
     });
   },
 
-  clickSlot(row,idx){
-    const arr=row==='form-front'?this.front:this.back;
+  clickSlot(idx){
     if(this.selected){
-      // Swap or place
       if(this.selected.type==='bench'){
         // Place bench card into slot
-        const benchCard=this.selected.card;
-        if(arr[idx]){
-          // Swap: put current slot card back to bench (just remove from slot)
-          const old=arr[idx];old.formRow=null;old.formIdx=null;
-        }
-        arr[idx]=benchCard;
-        benchCard.formRow=row==='form-front'?'front':'back';benchCard.formIdx=idx;
-      } else {
+        const old=this.slots[idx];
+        if(old){old.formSlot=null;}
+        this.slots[idx]=this.selected.card;
+        this.selected.card.formSlot=idx;
+      } else if(this.selected.type==='slot'){
         // Swap two slots
-        const srcArr=this.selected.row==='form-front'?this.front:this.back;
-        const srcCard=srcArr[this.selected.idx];
-        const dstCard=arr[idx];
-        srcArr[this.selected.idx]=dstCard;
-        arr[idx]=srcCard;
-        if(srcCard){srcCard.formRow=row==='form-front'?'front':'back';srcCard.formIdx=idx;}
-        if(dstCard){dstCard.formRow=this.selected.row==='form-front'?'front':'back';dstCard.formIdx=this.selected.idx;}
+        const src=this.slots[this.selected.idx];
+        const dst=this.slots[idx];
+        this.slots[this.selected.idx]=dst;
+        this.slots[idx]=src;
+        if(src)src.formSlot=idx;
+        if(dst)dst.formSlot=this.selected.idx;
       }
       this.selected=null;SFX.play('click');
     } else {
-      if(arr[idx]){this.selected={type:'slot',row,idx};SFX.play('click');}
+      if(this.slots[idx]){this.selected={type:'slot',idx};SFX.play('click');}
     }
     this.render();
   },
 
   clickBench(card){
     if(this.selected&&this.selected.type==='slot'){
-      // Place selected slot card back, put bench card in
-      const arr=this.selected.row==='form-front'?this.front:this.back;
-      const old=arr[this.selected.idx];
-      if(old){old.formRow=null;old.formIdx=null;}
-      arr[this.selected.idx]=card;
-      card.formRow=this.selected.row==='form-front'?'front':'back';card.formIdx=this.selected.idx;
+      const old=this.slots[this.selected.idx];
+      if(old){old.formSlot=null;}
+      this.slots[this.selected.idx]=card;
+      card.formSlot=this.selected.idx;
       this.selected=null;SFX.play('click');
     } else {
       this.selected={type:'bench',card};SFX.play('click');
@@ -4933,9 +4940,13 @@ const Formation={
   },
 
   confirm(){
-    // Save formation to deck cards
-    this.front.forEach((c,i)=>{if(c){c.formRow='front';c.formIdx=i;}});
-    this.back.forEach((c,i)=>{if(c){c.formRow='back';c.formIdx=i;}});
+    this.slots.forEach((c,i)=>{
+      if(c){
+        c.formSlot=i;
+        c.formRow=this.POSITIONS[i].row;
+        c.formIdx=i;
+      }
+    });
     Game.persist();
     Game.launchBattle();
   },

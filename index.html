@@ -4232,13 +4232,28 @@ const TurnBattle={
   turnTimer:null,turnTimeLeft:60,
   _keyHandler:null,
 
-  // Diamond positions (CSS %)
+  // Diamond positions (CSS %) — slot 0,3=back row, 1,2=front row
   SLOTS:[
-    {x:50,y:10},  // slot 0: top
-    {x:20,y:45},  // slot 1: left
-    {x:80,y:45},  // slot 2: right
-    {x:50,y:80},  // slot 3: bottom
+    {x:50,y:8,row:'back'},   // slot 0: top (back)
+    {x:18,y:45,row:'front'}, // slot 1: left (front)
+    {x:82,y:45,row:'front'}, // slot 2: right (front)
+    {x:50,y:82,row:'back'},  // slot 3: bottom (back)
   ],
+  // Check if target is reachable (front guards back)
+  _canTarget(attacker,targetIdx,targetSide){
+    const slot=this.SLOTS[targetIdx];
+    if(slot.row==='front')return true; // front always targetable
+    // Back row: check if any front row alive
+    const cards=targetSide==='enemy'?this.bs.eCards:this.bs.pCards;
+    const alive=cards.filter(c=>c.currentHp>0);
+    // Find which alive cards are in front slots
+    const frontAlive=alive.some((c,i)=>{
+      const si=this.SLOTS[i];return si&&si.row==='front';
+    });
+    if(!frontAlive)return true; // no front guard → can target back
+    // Ranged units can't bypass front either in this system
+    return false;
+  },
 
   // Start turn-based battle
   start(battleState){
@@ -4301,13 +4316,22 @@ const TurnBattle={
       slot.className=`td-slot ${isHighlighted?'td-selected':''} ${ordered?'td-ordered':''}`;
       slot.style.cssText=`left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);`;
       const borderColor=isHighlighted?'#ffd700':ordered?'#44ff88':'#555';
+      // Status icons
+      const frozen=c.frozen>0;const burning=c.burn>0;const defending=c._defending;
+      const statusIcons=(frozen?'❄️':'')+(burning?'🔥':'')+(defending?'🛡️':'');
+      // Order display
+      const orderDesc=ordered?({attack:'⚔️',defend:'🛡️',skill:'🔮'})[ordered.action]||'✓':'';
+      // Row label
+      const rowLabel=this.SLOTS[i].row==='front'?'전방':'후방';
       slot.innerHTML=`
         <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid ${borderColor};background:linear-gradient(180deg,rgba(20,15,10,.9),rgba(5,5,5,.95));">
           ${img?`<img src="${img}">`:`<div style="font-size:2rem;">${c.icon}</div>`}
           <div class="td-name">${c.isHero?'⭐':''}${c.name}</div>
           <div class="td-hp">♥${Math.ceil(c.currentHp)}/${c.maxBHp} ⚔${c.atk} ⚡${Math.floor(c.curNrg||0)}</div>
           <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
-          <div class="td-order">${ordered?'✓':''}</div>
+          ${statusIcons?`<div style="font-size:.6rem;margin-top:1px;">${statusIcons}</div>`:''}
+          <div class="td-order" style="${ordered?'display:flex;background:#44ff88;':''}">${orderDesc}</div>
+          <div style="font-size:.4rem;color:#666;margin-top:1px;">${rowLabel}</div>
         </div>`;
       slot.onclick=()=>{
         if(isEnemy){this._selectTarget(c);return;}
@@ -4399,12 +4423,21 @@ const TurnBattle={
     // Enemy target — highlight enemy diamond directly
     this.phase='target_enemy';this._pendingAction={unit,action};this._enemyHighlight=-1;
     document.getElementById('b-status').textContent='대상을 선택하세요 (WASD + Enter)';
-    // Make enemy cards clickable
     const eDiamond=document.getElementById('tb-enemy-diamond');
     const enemies=this.bs.eCards.filter(c=>c.currentHp>0);
     eDiamond.querySelectorAll('.td-slot').forEach((el,i)=>{
-      el.style.cursor='pointer';
-      el.onclick=()=>{if(enemies[i])this._selectTarget(enemies[i]);};
+      const canReach=this._canTarget(unit,i,'enemy');
+      if(canReach){
+        el.style.cursor='pointer';el.style.opacity='1';
+        el.onclick=()=>{if(enemies[i])this._selectTarget(enemies[i]);};
+      } else {
+        el.style.cursor='not-allowed';el.style.opacity='.4';
+        el.onclick=()=>{
+          document.getElementById('b-status').textContent='⚠️ 전방의 적이 살아있어 후방을 공격할 수 없습니다!';
+          document.getElementById('b-status').style.color='#ff4444';
+          setTimeout(()=>{document.getElementById('b-status').textContent='대상을 선택하세요';document.getElementById('b-status').style.color='';},1500);
+        };
+      }
     });
   },
 
@@ -4550,16 +4583,21 @@ const TurnBattle={
         if(key==='escape'||key==='backspace')this.goBack();
       } else if(this.phase==='target_enemy'){
         const enemies=this.bs.eCards.filter(c=>c.currentHp>0);
-        // WASD moves enemy highlight
         if(key==='w'||key==='arrowup'){this._enemyHighlight=0;this._renderEnemyHighlight(enemies);}
         if(key==='a'||key==='arrowleft'){this._enemyHighlight=1;this._renderEnemyHighlight(enemies);}
         if(key==='d'||key==='arrowright'){this._enemyHighlight=2;this._renderEnemyHighlight(enemies);}
         if(key==='s'||key==='arrowdown'){this._enemyHighlight=3;this._renderEnemyHighlight(enemies);}
-        // Enter confirms enemy target
         if((key==='enter'||key===' ')&&this._enemyHighlight>=0&&enemies[this._enemyHighlight]){
-          this._selectTarget(enemies[this._enemyHighlight]);
+          const atk=this._pendingAction?this._pendingAction.unit:null;
+          if(this._canTarget(atk,this._enemyHighlight,'enemy')){
+            this._selectTarget(enemies[this._enemyHighlight]);
+          } else {
+            document.getElementById('b-status').textContent='⚠️ 전방의 적이 살아있어 후방을 공격할 수 없습니다!';
+            document.getElementById('b-status').style.color='#ff4444';
+            setTimeout(()=>{document.getElementById('b-status').textContent='대상을 선택하세요';document.getElementById('b-status').style.color='';},1500);
+          }
         }
-        if(key==='escape')this._closeOverlay();
+        if(key==='escape'){this.phase='action';document.getElementById('tb-enemy-diamond').querySelectorAll('.td-slot').forEach(el=>{el.style.cursor='';el.onclick=null;el.style.filter='';el.style.opacity='';el.style.transform='translate(-50%,-50%)';});}
       } else if(this.phase==='target_ally'){
         const alive=this.bs.pCards.filter(c=>c.currentHp>0);
         if(key==='w'||key==='arrowup')this._moveHighlight(0);
@@ -4606,6 +4644,8 @@ const TurnBattle={
     const pAlive=bs.pCards.filter(c=>c.currentHp>0);
     const eAlive=bs.eCards.filter(c=>c.currentHp>0);
 
+    // Energy regen at turn start
+    [...pAlive,...eAlive].forEach(c=>{c.curNrg=(c.curNrg||0)+(c.nrgReg||0);if(c.hpReg>0)c.currentHp=Math.min(c.currentHp+c.hpReg,c.maxBHp);});
     // Fill missing orders with default attack
     pAlive.forEach(c=>{
       if(!this.orders.find(o=>o.uid===c.uid)){
@@ -4614,11 +4654,13 @@ const TurnBattle={
       }
     });
 
-    // Enemy AI orders
+    // Enemy AI orders (respects front/back targeting)
     const eOrders=[];
     eAlive.forEach(c=>{
-      const target=pAlive[Math.floor(Math.random()*pAlive.length)];
-      // Simple AI: 70% attack, 20% skill, 10% defend
+      // Find valid targets (front first, then back if front dead)
+      const frontTargets=pAlive.filter((_,i)=>this.SLOTS[i]&&this.SLOTS[i].row==='front');
+      const validTargets=frontTargets.length?frontTargets:pAlive;
+      const target=validTargets[Math.floor(Math.random()*validTargets.length)];
       const roll=Math.random();
       if(roll<0.1){eOrders.push({uid:c.uid,action:'defend',targetUid:null});}
       else if(roll<0.3&&c.skill&&c.skillType==='active'&&(c.curNrg||0)>=c.skillNrg){

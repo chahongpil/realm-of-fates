@@ -69,13 +69,27 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 .tb-label{font-size:.7rem;color:#e6cc80;opacity:.7;transition:all .3s;margin-top:2px;text-shadow:0 1px 3px rgba(0,0,0,.8);white-space:nowrap;}
 .tb-cost{font-size:.6rem;color:#ffaa44;margin-top:1px;}
 /* Ruins */
-.town-building.ruins .tb-icon{filter:grayscale(.8) brightness(.4) drop-shadow(0 4px 8px rgba(0,0,0,.6));}
-.town-building.ruins .tb-label{color:#666;}
-.town-building.ruins:hover .tb-icon{filter:grayscale(.4) brightness(.7) drop-shadow(0 0 10px rgba(218,165,32,.3));}
+/* Ruins: dark, cracked, desaturated */
+.town-building.ruins .tb-icon{filter:grayscale(.9) brightness(.3) sepia(.3) drop-shadow(0 4px 8px rgba(0,0,0,.8));}
+.town-building.ruins .tb-icon img{opacity:.5;}
+.town-building.ruins .tb-label{color:#555;}
+.town-building.ruins:hover .tb-icon{filter:grayscale(.4) brightness(.6) drop-shadow(0 0 12px rgba(218,165,32,.4));}
 .town-building.ruins:hover .tb-label{color:#daa520;}
-/* Built glow */
-.town-building.built .tb-icon{filter:drop-shadow(0 0 8px rgba(255,215,0,.2)) drop-shadow(0 4px 8px rgba(0,0,0,.5));}
-.town-building.built:hover .tb-icon{filter:drop-shadow(0 0 15px rgba(255,215,0,.4)) drop-shadow(0 4px 8px rgba(0,0,0,.5));}
+.town-building.ruins::after{content:'🏚️';position:absolute;top:0;right:-5px;font-size:.8rem;opacity:.6;}
+/* Built: warm glow, alive */
+.town-building.built .tb-icon{filter:drop-shadow(0 0 10px rgba(255,215,0,.25)) drop-shadow(0 4px 8px rgba(0,0,0,.5));}
+.town-building.built .tb-icon img{border:1px solid rgba(255,215,0,.3);border-radius:8px;}
+.town-building.built:hover .tb-icon{filter:drop-shadow(0 0 18px rgba(255,215,0,.5)) drop-shadow(0 4px 8px rgba(0,0,0,.5));}
+/* Building lights (built buildings glow at windows) */
+.town-building.built .tb-icon::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 70%,rgba(255,200,100,.08),transparent 60%);pointer-events:none;border-radius:8px;}
+/* Walking NPCs on roads */
+.town-npc{position:absolute;font-size:.7rem;z-index:1;pointer-events:none;opacity:.6;}
+.town-npc.walk-right{animation:walkRight 20s linear infinite;}
+.town-npc.walk-left{animation:walkLeft 25s linear infinite;}
+.town-npc.walk-up{animation:walkUp 18s linear infinite;}
+@keyframes walkRight{0%{left:-5%;opacity:0;}5%{opacity:.6;}90%{opacity:.6;}100%{left:105%;opacity:0;}}
+@keyframes walkLeft{0%{left:105%;opacity:0;}5%{opacity:.6;}90%{opacity:.6;}100%{left:-5%;opacity:0;}}
+@keyframes walkUp{0%{top:95%;opacity:0;}5%{opacity:.5;}90%{opacity:.5;}100%{top:5%;opacity:0;}}
 /* Build animation */
 .town-building.building .tb-icon{animation:buildPulse 1s ease-out;}
 @keyframes buildPulse{0%{transform:scale(.5);opacity:0;filter:brightness(3);}50%{transform:scale(1.3);opacity:1;}100%{transform:scale(1);filter:brightness(1);}}
@@ -2059,6 +2073,27 @@ const Game={
       }
       tc.appendChild(div);
     });
+
+    // Walking NPCs (only add once, and only if buildings exist)
+    if(!document.querySelector('.town-npc')){
+      const npcs=['🚶','🚶‍♂️','🧙','⚔️','🛡️','🏹'];
+      const routes=[
+        {cls:'walk-right',top:'75%',delay:0},
+        {cls:'walk-left',top:'70%',delay:5},
+        {cls:'walk-right',top:'82%',delay:10},
+        {cls:'walk-left',top:'65%',delay:3},
+        {cls:'walk-up',left:'30%',delay:7},
+        {cls:'walk-up',left:'70%',delay:12},
+      ];
+      routes.forEach((r,i)=>{
+        const npc=document.createElement('div');npc.className=`town-npc ${r.cls}`;
+        npc.textContent=npcs[i%npcs.length];
+        if(r.top)npc.style.top=r.top;
+        if(r.left)npc.style.left=r.left;
+        npc.style.animationDelay=r.delay+'s';
+        tc.appendChild(npc);
+      });
+    }
 
     // Deck preview
     const md=document.getElementById('menu-deck');md.innerHTML='';
@@ -4462,7 +4497,7 @@ const TurnBattle={
     actions.forEach((a,i)=>{
       const card=document.createElement('div');
       card.className=`ta-card${a.disabled?' tac-disabled':''}`;
-      card.innerHTML=`<div class="tac-key">${i+1}</div><div class="tac-icon">${a.icon}</div><div class="tac-name">${a.name}</div><div class="tac-desc">${a.desc}</div>`;
+      card.innerHTML=`<div class="tac-key">${i+1}</div>${a.img?`<img src="${a.img}" style="width:70px;height:70px;border-radius:6px;object-fit:cover;margin-top:4px;">`:`<div class="tac-icon">${a.icon}</div>`}<div class="tac-name">${a.name}</div><div class="tac-desc">${a.desc}</div>`;
       if(!a.disabled){
         card.onclick=()=>{
           // First click = zoom card to center
@@ -4502,15 +4537,22 @@ const TurnBattle={
   _getActions(unit){
     const nrg=unit.curNrg||0;
     const sk=unit.skill;const skNrg=unit.skillNrg||0;const skT=unit.skillType;
+    // Skill image mapping
+    const skillImgMap={attack:'skill_attack',defend:'skill_defend',taunt:'skill_taunt',
+      aoe:'skill_aoe',breath:'skill_aoe',heal_ally:'skill_heal',heal_self:'skill_heal',mass_heal:'skill_heal',
+      freeze:'skill_ice',inspire:'skill_inspire',drain:'skill_drain',life_steal:'skill_drain',
+      dark_bolt:'skill_drain',pierce:'skill_pierce',crit:'skill_crit',first_strike:'skill_attack',
+      frenzy:'skill_attack',aura_buff:'skill_inspire',double_cast:'skill_lightning'};
+    const getSkillImg=(id)=>{const k=skillImgMap[id];return k?`img/${k}.png`:null;};
+
     const actions=[
-      {id:'attack',icon:'⚔️',name:'공격',desc:'기본 물리 공격',target:'enemy'},
-      {id:'defend',icon:'🛡️',name:'방어',desc:'이번 턴 피해 50% 감소',target:'self'},
+      {id:'attack',icon:'⚔️',name:'공격',desc:'기본 물리 공격',target:'enemy',img:getSkillImg('attack')},
+      {id:'defend',icon:'🛡️',name:'방어',desc:'이번 턴 피해 50% 감소',target:'self',img:getSkillImg('defend')},
     ];
-    // Innate active skill
     if(sk&&sk!=='none'&&skT==='active'){
       actions.push({id:'skill',icon:'🔮',name:unit.skillDesc?unit.skillDesc.split(']')[0].replace('[',''):'비전',
         desc:`${unit.skillDesc||sk} (에너지${skNrg})`,target:this._skillTarget(sk),
-        disabled:nrg<skNrg});
+        disabled:nrg<skNrg,img:getSkillImg(sk)});
     }
     // Equipped skills
     (unit.equips||[]).forEach((eq,i)=>{

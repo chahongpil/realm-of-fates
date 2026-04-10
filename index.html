@@ -817,9 +817,9 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 <!-- FORMATION -->
 <div id="formation-screen" class="screen">
   <div class="form-title">⚔️ 진형 배치</div>
-  <div class="form-sub">슬롯을 클릭하여 동료를 배치하세요 (최대 4칸)</div>
-  <!-- Diamond formation -->
-  <div class="form-diamond" id="form-diamond" style="position:relative;width:100%;max-width:400px;height:300px;margin:10px auto;"></div>
+  <div class="form-sub">슬롯을 클릭하여 동료를 배치하세요 (최대 5칸)</div>
+  <!-- Horizontal 5 slots -->
+  <div id="form-diamond" style="display:flex;gap:8px;justify-content:center;align-items:center;padding:15px 10px;flex-wrap:wrap;"></div>
   <div class="form-bench-label">대기석 (클릭하여 선택 후 슬롯 클릭)</div>
   <div class="form-bench" id="form-bench"></div>
   <div style="padding:10px;display:flex;gap:10px;justify-content:center;">
@@ -2960,7 +2960,7 @@ const Game={
         el.onclick=()=>{
           if(isSel){this.selectedForBattle=this.selectedForBattle.filter(u=>u!==c.uid);}
           else{
-            if(selUnitCount>=4){document.getElementById('cs-info').textContent=`⚠️ 최대 4명까지 출전 가능! (영웅 제외)`;return;}
+            if(selUnitCount>=4){document.getElementById('cs-info').textContent=`⚠️ 최대 4명까지 출전 가능!`;return;}
             if(usedSlots+cardCost>maxSlots){document.getElementById('cs-info').textContent=`⚠️ 지휘권 부족! (필요:${cardCost}, 남은:${maxSlots-usedSlots})`;return;}
             this.selectedForBattle.push(c.uid);
           }
@@ -5051,13 +5051,10 @@ const TurnBattle={
 };
 
 const Formation={
-  // Diamond 4 slots: 0=top(back), 1=left(front), 2=right(front), 3=bottom(back)
-  slots:[null,null,null,null],
+  // Horizontal 5 slots
+  slots:[null,null,null,null,null],
   POSITIONS:[
-    {x:50,y:5,row:'front',label:'전방 상단'},
-    {x:15,y:45,row:'front',label:'전방 좌측'},
-    {x:85,y:45,row:'front',label:'전방 우측'},
-    {x:50,y:85,row:'back',label:'후방 하단'},
+    {label:'1번 슬롯'},{label:'2번 슬롯'},{label:'3번 슬롯'},{label:'4번 슬롯'},{label:'5번 슬롯'},
   ],
   selected:null, // {type:'slot',idx} or {type:'bench',card}
   _cards:[],
@@ -5067,23 +5064,14 @@ const Formation={
 
   _init(){
     UI.show('formation-screen');
-    this.slots=[null,null,null,null];
+    this.slots=[null,null,null,null,null];
     const deck=this._cards;
-    // Restore saved positions
     deck.forEach(c=>{
-      if(c.formSlot!=null&&c.formSlot<4&&!this.slots[c.formSlot]){this.slots[c.formSlot]=c;return;}
+      if(c.formSlot!=null&&c.formSlot<5&&!this.slots[c.formSlot]){this.slots[c.formSlot]=c;return;}
     });
-    // Auto-place unplaced
     const placed=new Set(this.slots.filter(Boolean).map(c=>c.uid));
     const unplaced=deck.filter(c=>!placed.has(c.uid));
     unplaced.forEach(c=>{
-      // Front slots (1,2) for warriors, back (0,3) for ranged/mage
-      if(c.type==='전사'||c.type==='야수'){
-        if(!this.slots[1]){this.slots[1]=c;return;}if(!this.slots[2]){this.slots[2]=c;return;}
-      } else {
-        if(!this.slots[0]){this.slots[0]=c;return;}if(!this.slots[3]){this.slots[3]=c;return;}
-      }
-      // Any empty slot
       const ei=this.slots.indexOf(null);if(ei>=0)this.slots[ei]=c;
     });
     this.selected=null;
@@ -5091,44 +5079,36 @@ const Formation={
   },
 
   auto(){
-    this.slots=[null,null,null,null];
+    this.slots=[null,null,null,null,null];
     const deck=[...this._cards];
-    const front=deck.filter(c=>c.type==='전사'||c.type==='야수');
-    const back=deck.filter(c=>c.type==='사수'||c.type==='마법사');
-    if(front[0])this.slots[1]=front[0];if(front[1])this.slots[2]=front[1];
-    if(back[0])this.slots[0]=back[0];if(back[1])this.slots[3]=back[1];
-    // Overflow
-    const placed=new Set(this.slots.filter(Boolean).map(c=>c.uid));
-    [...front,...back].filter(c=>!placed.has(c.uid)).forEach(c=>{
-      const ei=this.slots.indexOf(null);if(ei>=0)this.slots[ei]=c;
-    });
+    let si=0;
+    deck.forEach(c=>{if(si<5)this.slots[si++]=c;});
     SFX.play('click');this.render();
   },
 
   render(){
     const diamond=document.getElementById('form-diamond');diamond.innerHTML='';
-    this.POSITIONS.forEach((pos,i)=>{
+    for(let i=0;i<5;i++){
       const c=this.slots[i];
       const isSel=this.selected&&this.selected.type==='slot'&&this.selected.idx===i;
       const slot=document.createElement('div');
       slot.className='form-slot'+(c?' occupied':'')+(isSel?' selected':'');
-      slot.style.cssText=`position:absolute;left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,0);width:120px;`;
+      slot.style.cssText='flex:1;max-width:18%;min-width:100px;';
       const img=c?getCardImg(c):'';
       if(c){
         slot.innerHTML=`<div style="text-align:center;">
-          ${img?`<img src="${img}" style="width:60px;height:60px;border-radius:6px;object-fit:cover;border:2px solid ${isSel?'#44ff88':'#8b6914'};">`:`<div style="font-size:2rem;">${c.icon}</div>`}
-          <div class="fs-name">${c.isHero?'⭐':''}${c.name}</div>
-          <div style="font-size:.5rem;color:#888;">${pos.label}</div>
+          ${img?`<img src="${img}" style="width:100%;max-width:150px;aspect-ratio:1;border-radius:8px;object-fit:cover;border:3px solid ${isSel?'#44ff88':'#8b6914'};box-shadow:${isSel?'0 0 15px rgba(68,255,136,.5)':'none'};">`:`<div style="font-size:2.5rem;">${c.icon}</div>`}
+          <div class="fs-name" style="font-size:.8rem;margin-top:4px;">${c.isHero?'⭐':''}${c.name}</div>
         </div>`;
       } else {
-        slot.innerHTML=`<div style="text-align:center;padding:15px 0;">
-          <div style="font-size:1.5rem;color:#333;">➕</div>
-          <div style="font-size:.55rem;color:#555;">${pos.label}</div>
+        slot.innerHTML=`<div style="text-align:center;padding:25px 0;border:2px dashed #333;border-radius:10px;background:rgba(0,0,0,.2);">
+          <div style="font-size:2rem;color:#333;">➕</div>
+          <div style="font-size:.6rem;color:#555;">${i+1}번 슬롯</div>
         </div>`;
       }
       slot.onclick=()=>this.clickSlot(i);
       diamond.appendChild(slot);
-    });
+    }
 
     // Bench
     const placed=new Set(this.slots.filter(Boolean).map(c=>c.uid));
@@ -5185,11 +5165,7 @@ const Formation={
 
   confirm(){
     this.slots.forEach((c,i)=>{
-      if(c){
-        c.formSlot=i;
-        c.formRow=this.POSITIONS[i].row;
-        c.formIdx=i;
-      }
+      if(c){c.formSlot=i;c.formIdx=i;}
     });
     Game.persist();
     Game.launchBattle();

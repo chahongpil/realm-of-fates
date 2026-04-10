@@ -181,10 +181,40 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 
 /* BATTLE */
 #battle-screen{background:url('img/bg_battle.png') center/cover no-repeat,#0a0a1a;position:relative;overflow:hidden;height:100vh;max-height:100vh;}
-.battlefield{width:100%;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:2px 6px;position:relative;flex:1;overflow:hidden;}
-.battle-side{display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;width:100%;}
-.battle-row{display:flex;gap:4px;justify-content:center;align-items:center;width:100%;}
-.battle-row-label{font-size:.5rem;color:#555;text-align:center;}
+/* TURN-BASED BATTLE */
+.tb-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;position:relative;overflow:hidden;}
+.tb-diamond{position:relative;width:100%;max-width:500px;height:320px;margin:0 auto;}
+.tb-diamond .td-slot{position:absolute;cursor:pointer;transition:all .2s;text-align:center;}
+.tb-diamond .td-slot:hover{transform:translate(-50%,-50%) scale(1.05);}
+.tb-diamond .td-slot.td-selected{transform:translate(-50%,-50%) scale(1.1);filter:drop-shadow(0 0 15px rgba(255,215,0,.7));}
+.tb-diamond .td-slot .td-card{border-radius:10px;padding:6px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:120px;}
+.tb-diamond .td-slot .td-card img{width:80px;height:80px;border-radius:6px;object-fit:cover;}
+.tb-diamond .td-slot .td-name{font-size:.75rem;color:#fff;font-weight:bold;margin-top:3px;}
+.tb-diamond .td-slot .td-hp{font-size:.6rem;margin-top:2px;}
+.tb-diamond .td-slot .td-hp-bar{width:100px;height:4px;background:#333;border-radius:2px;margin-top:2px;overflow:hidden;}
+.tb-diamond .td-slot .td-hp-fill{height:100%;border-radius:2px;}
+.tb-diamond .td-slot .td-order{position:absolute;top:-5px;right:-5px;width:20px;height:20px;border-radius:50%;background:#ffd700;color:#000;font-size:.6rem;font-weight:bold;display:flex;align-items:center;justify-content:center;display:none;}
+.tb-diamond .td-slot.td-ordered .td-order{display:flex;}
+.tb-actions{width:100%;max-width:500px;text-align:center;padding:10px;}
+.tb-actions .ta-selected{margin-bottom:10px;}
+.tb-actions .ta-selected img{width:90px;height:90px;border-radius:8px;object-fit:cover;border:2px solid #ffd700;}
+.tb-actions .ta-name{font-size:1rem;color:#ffd700;font-weight:bold;}
+.tb-actions .ta-stats{font-size:.75rem;color:#ccc;margin-top:2px;}
+.ta-cards{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+.ta-card{width:100px;min-height:80px;border-radius:8px;border:2px solid #555;background:linear-gradient(180deg,rgba(30,25,15,.8),rgba(10,8,5,.9));padding:8px;text-align:center;cursor:pointer;transition:all .2s;}
+.ta-card:hover{border-color:#ffd700;transform:translateY(-3px);box-shadow:0 0 10px rgba(255,215,0,.3);}
+.ta-card .tac-icon{font-size:1.5rem;}
+.ta-card .tac-name{font-size:.7rem;color:#e8d5a3;margin-top:3px;font-weight:bold;}
+.ta-card .tac-desc{font-size:.55rem;color:#888;margin-top:2px;}
+.ta-card .tac-key{position:absolute;top:3px;left:3px;font-size:.5rem;color:#ffd700;background:rgba(0,0,0,.6);padding:1px 4px;border-radius:2px;}
+.ta-card.tac-disabled{opacity:.3;pointer-events:none;}
+.tb-bottom{padding:8px;display:flex;gap:10px;justify-content:center;align-items:center;}
+.tb-timer-bar{width:100%;height:4px;background:#222;}
+.tb-timer-fill{height:100%;background:linear-gradient(90deg,#44ff88,#ffdd44,#ff4444);transition:width 1s linear;width:100%;}
+/* Enemy/ally view overlay */
+.tb-view-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.tb-view-overlay .tvo-title{color:#ffd700;font-size:1.1rem;margin-bottom:10px;}
+.tb-view-overlay .tvo-close{margin-top:15px;}
 .battle-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
 .battle-row-label{font-size:.5rem;color:#555;text-align:center;}
 
@@ -742,21 +772,28 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 <!-- BATTLE -->
 <div id="battle-screen" class="screen">
   <div class="hud">
-    <div class="hud-left"><div class="hud-name" id="b-name"></div><div class="hud-stat">라운드 <span id="b-round">1</span></div><div class="hud-stat">❤️<span id="b-hp">3</span></div></div>
-    <div class="hud-right"><div class="hud-stat" id="b-status">전투 중...</div></div>
+    <div class="hud-left"><div class="hud-name" id="b-name"></div><div class="hud-stat">라운드 <span id="b-round">1</span></div></div>
+    <div class="hud-right"><div class="hud-stat" id="b-status">내 턴</div><div class="hud-stat" id="b-timer-display">⏱️ 60</div></div>
   </div>
-  <div id="b-banner" style="text-align:center;padding:4px;font-size:1.1rem;color:#ffd700;">⚔️ 오토 배틀</div>
-  <div class="battlefield" id="battlefield">
-    <div class="battle-side enemy" id="enemy-side"></div>
-    <div class="battle-divider" id="b-divider">— VS —</div>
-    <div class="battle-side player" id="player-side"></div>
+  <!-- Top button -->
+  <div id="b-top-btn" style="text-align:center;padding:4px;">
+    <button class="btn btn-s" id="btn-check-enemy" onclick="TurnBattle.showEnemyView()">👁️ 상대 확인하기</button>
   </div>
-  <div class="battle-log" id="battle-log"></div>
-  <div id="skill-bar" style="display:none;width:100%;padding:4px 8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:40px;align-items:center;"></div>
-  <div class="battle-controls">
-    <button class="btn btn-s" id="speed-btn" onclick="Game.cycleSpeed()">⏱️ 일반</button>
-    <button class="btn btn-s btn-red" onclick="Game.skipBattle()">⏭️ 건너뛰기</button>
+  <!-- Main battle area -->
+  <div class="tb-main" id="tb-main">
+    <!-- Diamond grid for cards -->
+    <div class="tb-diamond" id="tb-diamond"></div>
+    <!-- Selected card + action cards -->
+    <div class="tb-actions" id="tb-actions" style="display:none;"></div>
   </div>
+  <!-- Battle log (small) -->
+  <div class="battle-log" id="battle-log" style="max-height:40px;"></div>
+  <!-- Bottom bar -->
+  <div class="tb-bottom" id="tb-bottom">
+    <button class="btn btn-s" id="btn-back" onclick="TurnBattle.goBack()" style="display:none;">← 돌아가기</button>
+    <button class="btn btn-green" id="btn-fight" onclick="TurnBattle.startCombat()">⚔️ 전투 개시!</button>
+  </div>
+  <div class="tb-timer-bar"><div class="tb-timer-fill" id="tb-timer-fill"></div></div>
 </div>
 
 <!-- ACTION OVERLAY (card zoom center) -->
@@ -2752,7 +2789,7 @@ const Game={
       const isSel=this.selectedForBattle.includes(c.uid);
       const cardCost=c.isHero?0:(c.level||1);
       const selUnitCount=this.selectedForBattle.filter(uid=>uid!==(hero?hero.uid:'')).length;
-      const canAdd=!isSel&&!c.isHero&&!isInjured&&(usedSlots+cardCost<=maxSlots)&&selUnitCount<5;
+      const canAdd=!isSel&&!c.isHero&&!isInjured&&(usedSlots+cardCost<=maxSlots)&&selUnitCount<3;
       const el=mkCardEl(c);
       if(c.isHero){
         el.style.opacity='1';
@@ -2773,7 +2810,7 @@ const Game={
         el.onclick=()=>{
           if(isSel){this.selectedForBattle=this.selectedForBattle.filter(u=>u!==c.uid);}
           else{
-            if(selUnitCount>=5){document.getElementById('cs-info').textContent=`⚠️ 최대 5명까지 출전 가능! (영웅 제외)`;return;}
+            if(selUnitCount>=3){document.getElementById('cs-info').textContent=`⚠️ 최대 3명까지 출전 가능! (영웅 제외)`;return;}
             if(usedSlots+cardCost>maxSlots){document.getElementById('cs-info').textContent=`⚠️ 지휘권 부족! (필요:${cardCost}, 남은:${maxSlots-usedSlots})`;return;}
             this.selectedForBattle.push(c.uid);
           }
@@ -2827,7 +2864,7 @@ const Game={
 
     const newUsed=this.getUsedSlots();
     const finalUnitCount=this.selectedForBattle.filter(uid=>uid!==(hero?hero.uid:'')).length;
-    document.getElementById('cs-info').textContent=`동료 ${finalUnitCount}/5 | 지휘권 ${newUsed}/${maxSlots} | 유물 ${usedR}/${maxRSlots}`;
+    document.getElementById('cs-info').textContent=`동료 ${finalUnitCount}/3 | 지휘권 ${newUsed}/${maxSlots} | 유물 ${usedR}/${maxRSlots}`;
     document.getElementById('cs-rslots').textContent=maxRSlots;
     document.getElementById('cs-go-btn').disabled=false;
   },
@@ -2876,20 +2913,16 @@ const Game={
     if(!bs.pCards){
       bs.pCards=bs.battleDeck.map(c=>({...c,currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'player',row:c.formRow||'front',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:0,curShield:c.shield||0,burn:0}));
       bs.battleRelics.forEach(r=>applyRelicBattle(r,bs.pCards));
-      // Generate enemy hero
       const rawE=this.genEnemy();
       rawE.forEach(c=>{c.row=(c.type==='전사'||c.type==='야수')?'front':'back';});
       bs.eCards=rawE.map(c=>({...c,currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'enemy',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:0,curShield:c.shield||0,burn:0}));
-      // Enemy mirrors player deployment (similar number of units/skills/relics)
       this.enemyMirrorDeploy(bs);
-    } else {
-      bs.pCards.forEach(c=>{if(c.formRow)c.row=c.formRow;});
     }
     bs.currentRound++;
     if(bs.currentRound>this.bestRound)this.bestRound=bs.currentRound;
     this.persist();
-    UI.show('battle-screen');SFX.bgm('battle');
-    this.runBattleRound();
+    // Use new turn-based system
+    TurnBattle.start(bs);
   },
 
   genEnemy(){
@@ -4188,9 +4221,446 @@ function mkMini(c){
 }
 
 // ============ FORMATION ============
+// ════════════════════════════════════
+// ══ TURN-BASED BATTLE SYSTEM ══
+// ════════════════════════════════════
+const TurnBattle={
+  bs:null, // battleState reference
+  phase:'select', // 'select','action','target_enemy','target_ally','combat','enemy_turn'
+  selectedIdx:-1, // which card slot is selected (0-3)
+  orders:[], // [{uid,action,targetUid}] queued orders for this turn
+  turnTimer:null,turnTimeLeft:60,
+  _keyHandler:null,
+
+  // Diamond positions (CSS %)
+  SLOTS:[
+    {x:50,y:10},  // slot 0: top
+    {x:20,y:45},  // slot 1: left
+    {x:80,y:45},  // slot 2: right
+    {x:50,y:80},  // slot 3: bottom
+  ],
+
+  // Start turn-based battle
+  start(battleState){
+    this.bs=battleState;
+    this.orders=[];
+    this.phase='select';
+    this.selectedIdx=-1;
+    this.turnTimeLeft=60;
+    this._orderedCount=0;
+    UI.show('battle-screen');SFX.bgm('battle');
+    document.getElementById('b-round').textContent=this.bs.currentRound;
+    document.getElementById('b-status').textContent='내 턴 — 지시를 내리세요';
+    document.getElementById('btn-back').style.display='none';
+    document.getElementById('btn-fight').textContent='⚔️ 전투 개시!';
+    document.getElementById('battle-log').innerHTML='';
+    this.renderDiamond();
+    this.startTimer();
+    this.bindKeys();
+  },
+
+  // Render diamond grid with my cards
+  renderDiamond(cards,isEnemy){
+    const src=cards||(this.bs?this.bs.pCards.filter(c=>c.currentHp>0):[]);
+    const diamond=document.getElementById('tb-diamond');diamond.innerHTML='';
+    document.getElementById('tb-actions').style.display='none';
+    src.slice(0,4).forEach((c,i)=>{
+      const pos=this.SLOTS[i];
+      const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);
+      const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
+      const img=getCardImg(c);
+      const ordered=this.orders.find(o=>o.uid===c.uid);
+      const slot=document.createElement('div');
+      slot.className=`td-slot ${i===this.selectedIdx?'td-selected':''} ${ordered?'td-ordered':''}`;
+      slot.style.cssText=`left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);`;
+      slot.innerHTML=`
+        <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid ${ordered?'#44ff88':i===this.selectedIdx?'#ffd700':'#555'};background:linear-gradient(180deg,rgba(20,15,10,.9),rgba(5,5,5,.95));">
+          ${img?`<img src="${img}">`:`<div style="font-size:2rem;">${c.icon}</div>`}
+          <div class="td-name">${c.isHero?'⭐':''}${c.name}</div>
+          <div class="td-hp">♥${Math.ceil(c.currentHp)}/${c.maxBHp} ⚔${c.atk} ⚡${Math.floor(c.curNrg||0)}</div>
+          <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
+          <div class="td-order">${ordered?'✓':''}</div>
+        </div>`;
+      slot.onclick=()=>{
+        if(isEnemy){this._selectTarget(c);return;}
+        if(this.phase==='target_ally'){this._selectAllyTarget(c);return;}
+        this.selectedIdx=i;this.phase='action';
+        document.getElementById('btn-back').style.display='';
+        this.showActions(c);
+      };
+      diamond.appendChild(slot);
+    });
+  },
+
+  // Show action cards for selected unit
+  showActions(unit){
+    const act=document.getElementById('tb-actions');act.style.display='';act.innerHTML='';
+    const img=getCardImg(unit);
+    const traits=getTraits(unit);
+    const traitIcons=traits.map(tid=>{const tr=TRAITS[tid];return tr?`<span style="color:${tr.color};">${tr.icon}</span>`:''}).join(' ');
+
+    act.innerHTML=`
+      <div class="ta-selected">
+        ${img?`<img src="${img}">`:`<div style="font-size:2.5rem;">${unit.icon}</div>`}
+        <div class="ta-name">${unit.isHero?'⭐ ':''}${unit.name} ${traitIcons}</div>
+        <div class="ta-stats">♥${Math.ceil(unit.currentHp)}/${unit.maxBHp} ⚔${unit.atk} 🛡${unit.def||0} 💨${unit.spd} ⚡${Math.floor(unit.curNrg||0)}</div>
+      </div>
+      <div class="ta-cards" id="ta-cards"></div>`;
+
+    const grid=document.getElementById('ta-cards');
+    // Action cards
+    const actions=this._getActions(unit);
+    actions.forEach((a,i)=>{
+      const card=document.createElement('div');
+      card.className=`ta-card${a.disabled?' tac-disabled':''}`;card.style.position='relative';
+      card.innerHTML=`<div class="tac-key">${i+1}</div><div class="tac-icon">${a.icon}</div><div class="tac-name">${a.name}</div><div class="tac-desc">${a.desc}</div>`;
+      if(!a.disabled){
+        card.onclick=()=>{SFX.play('click');this._chooseAction(unit,a);};
+      }
+      grid.appendChild(card);
+    });
+
+    // Hide diamond, show actions
+    document.getElementById('tb-diamond').style.display='none';
+  },
+
+  _getActions(unit){
+    const nrg=unit.curNrg||0;
+    const sk=unit.skill;const skNrg=unit.skillNrg||0;const skT=unit.skillType;
+    const actions=[
+      {id:'attack',icon:'⚔️',name:'공격',desc:'기본 물리 공격',target:'enemy'},
+      {id:'defend',icon:'🛡️',name:'방어',desc:'이번 턴 피해 50% 감소',target:'self'},
+    ];
+    // Innate active skill
+    if(sk&&sk!=='none'&&skT==='active'){
+      actions.push({id:'skill',icon:'🔮',name:unit.skillDesc?unit.skillDesc.split(']')[0].replace('[',''):'비전',
+        desc:`${unit.skillDesc||sk} (에너지${skNrg})`,target:this._skillTarget(sk),
+        disabled:nrg<skNrg});
+    }
+    // Equipped skills
+    (unit.equips||[]).forEach((eq,i)=>{
+      actions.push({id:'equip_'+i,icon:eq.icon||'🔮',name:eq.name,desc:`장착 비전`,target:'enemy'});
+    });
+    return actions;
+  },
+
+  _skillTarget(sk){
+    if(['heal_ally','heal_self'].includes(sk))return 'ally';
+    if(['mass_heal','inspire','aura_buff'].includes(sk))return 'all_ally';
+    if(['aoe','breath'].includes(sk))return 'all_enemy';
+    return 'enemy';
+  },
+
+  _chooseAction(unit,action){
+    if(action.target==='self'||action.target==='all_ally'||action.target==='all_enemy'){
+      // No target needed
+      this._queueOrder(unit.uid,action.id,null);
+      return;
+    }
+    if(action.target==='ally'){
+      this.phase='target_ally';this._pendingAction={unit,action};
+      document.getElementById('tb-actions').style.display='none';
+      document.getElementById('tb-diamond').style.display='';
+      document.getElementById('b-status').textContent='아군 대상을 선택하세요';
+      this.renderDiamond();// show my cards for ally targeting
+      return;
+    }
+    // Enemy target
+    this.phase='target_enemy';this._pendingAction={unit,action};
+    this.showEnemyView(true);
+  },
+
+  _selectTarget(enemy){
+    if(!this._pendingAction)return;
+    const{unit,action}=this._pendingAction;
+    this._queueOrder(unit.uid,action.id,enemy.uid);
+    this._pendingAction=null;
+    this._closeOverlay();
+  },
+
+  _selectAllyTarget(ally){
+    if(!this._pendingAction)return;
+    const{unit,action}=this._pendingAction;
+    this._queueOrder(unit.uid,action.id,ally.uid);
+    this._pendingAction=null;
+    this.phase='select';
+  },
+
+  _queueOrder(uid,actionId,targetUid){
+    // Remove existing order for this unit
+    this.orders=this.orders.filter(o=>o.uid!==uid);
+    this.orders.push({uid,action:actionId,targetUid});
+    this._orderedCount=this.orders.length;
+    SFX.play('click');
+    // Go back to select phase
+    this.phase='select';this.selectedIdx=-1;
+    document.getElementById('btn-back').style.display='none';
+    document.getElementById('tb-actions').style.display='none';
+    document.getElementById('tb-diamond').style.display='';
+    document.getElementById('b-status').textContent=`지시 완료 ${this._orderedCount}/${this.bs.pCards.filter(c=>c.currentHp>0).length}`;
+    this.renderDiamond();
+    // Auto-start if all ordered
+    const alive=this.bs.pCards.filter(c=>c.currentHp>0).length;
+    if(this._orderedCount>=alive){
+      document.getElementById('btn-fight').style.cssText='animation:tutPulse 1s infinite alternate;';
+    }
+  },
+
+  goBack(){
+    if(this.phase==='action'||this.phase==='target_ally'){
+      this.phase='select';this.selectedIdx=-1;this._pendingAction=null;
+      document.getElementById('btn-back').style.display='none';
+      document.getElementById('tb-actions').style.display='none';
+      document.getElementById('tb-diamond').style.display='';
+      document.getElementById('b-status').textContent='카드를 선택하세요';
+      this.renderDiamond();
+    }
+  },
+
+  showEnemyView(forTarget){
+    const ov=document.createElement('div');ov.className='tb-view-overlay';ov.id='tb-view-ov';
+    const enemies=this.bs.eCards.filter(c=>c.currentHp>0);
+    let html=`<div class="tvo-title">${forTarget?'대상을 선택하세요':'적 진영'}</div>`;
+    html+='<div class="tb-diamond" style="position:relative;width:100%;max-width:400px;height:280px;">';
+    enemies.slice(0,4).forEach((c,i)=>{
+      const pos=this.SLOTS[i];const img=getCardImg(c);
+      const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
+      html+=`<div class="td-slot" style="left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);cursor:${forTarget?'pointer':'default'};" data-euid="${c.uid}">
+        <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid #ff4444;background:linear-gradient(180deg,rgba(30,10,10,.9),rgba(10,5,5,.95));">
+          ${img?`<img src="${img}">`:`<div style="font-size:2rem;">${c.icon}</div>`}
+          <div class="td-name">${c.name}</div>
+          <div class="td-hp">♥${Math.ceil(c.currentHp)}/${c.maxBHp} ⚔${c.atk}</div>
+          <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
+        </div></div>`;
+    });
+    html+='</div>';
+    if(!forTarget)html+='<div class="tvo-close"><button class="btn btn-s" onclick="TurnBattle._closeOverlay()">← 돌아가기</button></div>';
+    ov.innerHTML=html;
+    document.getElementById('tb-main').appendChild(ov);
+    // Bind clicks for targeting
+    if(forTarget){
+      enemies.forEach(c=>{
+        const el=ov.querySelector(`[data-euid="${c.uid}"]`);
+        if(el)el.onclick=()=>this._selectTarget(c);
+      });
+    }
+  },
+
+  _closeOverlay(){
+    const ov=document.getElementById('tb-view-ov');if(ov)ov.remove();
+    if(this.phase==='target_enemy'){this.phase='action';/* go back to action select */}
+  },
+
+  // Timer
+  startTimer(){
+    this.turnTimeLeft=60;
+    document.getElementById('tb-timer-fill').style.width='100%';
+    document.getElementById('b-timer-display').textContent='⏱️ 60';
+    if(this.turnTimer)clearInterval(this.turnTimer);
+    this.turnTimer=setInterval(()=>{
+      this.turnTimeLeft--;
+      document.getElementById('b-timer-display').textContent=`⏱️ ${this.turnTimeLeft}`;
+      document.getElementById('tb-timer-fill').style.width=(this.turnTimeLeft/60*100)+'%';
+      if(this.turnTimeLeft<=10)document.getElementById('b-timer-display').style.color='#ff4444';
+      else document.getElementById('b-timer-display').style.color='';
+      if(this.turnTimeLeft<=0){clearInterval(this.turnTimer);this.startCombat();}
+    },1000);
+  },
+
+  // Keyboard
+  bindKeys(){
+    if(this._keyHandler)document.removeEventListener('keydown',this._keyHandler);
+    this._keyHandler=(e)=>{
+      const key=e.key.toLowerCase();
+      if(this.phase==='select'){
+        const alive=this.bs.pCards.filter(c=>c.currentHp>0);
+        if(key==='w'||key==='arrowup'){this.selectedIdx=0;this.phase='action';document.getElementById('btn-back').style.display='';this.showActions(alive[0]);SFX.play('click');}
+        if(key==='a'||key==='arrowleft'){if(alive[1]){this.selectedIdx=1;this.phase='action';document.getElementById('btn-back').style.display='';this.showActions(alive[1]);SFX.play('click');}}
+        if(key==='d'||key==='arrowright'){if(alive[2]){this.selectedIdx=2;this.phase='action';document.getElementById('btn-back').style.display='';this.showActions(alive[2]);SFX.play('click');}}
+        if(key==='s'||key==='arrowdown'){if(alive[3]){this.selectedIdx=3;this.phase='action';document.getElementById('btn-back').style.display='';this.showActions(alive[3]);SFX.play('click');}}
+        if(key==='enter'||key===' ')this.startCombat();
+      } else if(this.phase==='action'){
+        // Number keys for action cards
+        if(key>='1'&&key<='5'){
+          const cards=document.querySelectorAll('#ta-cards .ta-card:not(.tac-disabled)');
+          const idx=parseInt(key)-1;
+          if(cards[idx])cards[idx].click();
+        }
+        if(key==='escape'||key==='backspace')this.goBack();
+      } else if(this.phase==='target_enemy'){
+        const enemies=this.bs.eCards.filter(c=>c.currentHp>0);
+        if(key==='w'||key==='arrowup'){if(enemies[0])this._selectTarget(enemies[0]);}
+        if(key==='a'||key==='arrowleft'){if(enemies[1])this._selectTarget(enemies[1]);}
+        if(key==='d'||key==='arrowright'){if(enemies[2])this._selectTarget(enemies[2]);}
+        if(key==='s'||key==='arrowdown'){if(enemies[3])this._selectTarget(enemies[3]);}
+        if(key==='escape')this._closeOverlay();
+      }
+    };
+    document.addEventListener('keydown',this._keyHandler);
+  },
+
+  unbindKeys(){
+    if(this._keyHandler){document.removeEventListener('keydown',this._keyHandler);this._keyHandler=null;}
+  },
+
+  // Execute combat!
+  async startCombat(){
+    if(this.turnTimer)clearInterval(this.turnTimer);
+    this.unbindKeys();
+    this.phase='combat';
+    document.getElementById('b-status').textContent='전투 진행 중...';
+    document.getElementById('btn-fight').disabled=true;
+    document.getElementById('btn-back').style.display='none';
+
+    const bs=this.bs;
+    const pAlive=bs.pCards.filter(c=>c.currentHp>0);
+    const eAlive=bs.eCards.filter(c=>c.currentHp>0);
+
+    // Fill missing orders with default attack
+    pAlive.forEach(c=>{
+      if(!this.orders.find(o=>o.uid===c.uid)){
+        const target=eAlive[0];
+        this.orders.push({uid:c.uid,action:'attack',targetUid:target?target.uid:null});
+      }
+    });
+
+    // Enemy AI orders
+    const eOrders=[];
+    eAlive.forEach(c=>{
+      const target=pAlive[Math.floor(Math.random()*pAlive.length)];
+      // Simple AI: 70% attack, 20% skill, 10% defend
+      const roll=Math.random();
+      if(roll<0.1){eOrders.push({uid:c.uid,action:'defend',targetUid:null});}
+      else if(roll<0.3&&c.skill&&c.skillType==='active'&&(c.curNrg||0)>=c.skillNrg){
+        eOrders.push({uid:c.uid,action:'skill',targetUid:target?target.uid:null});
+      } else {
+        eOrders.push({uid:c.uid,action:'attack',targetUid:target?target.uid:null});
+      }
+    });
+
+    // Combine and sort by speed
+    const allOrders=[
+      ...this.orders.map(o=>({...o,side:'player',unit:pAlive.find(c=>c.uid===o.uid)})),
+      ...eOrders.map(o=>({...o,side:'enemy',unit:eAlive.find(c=>c.uid===o.uid)})),
+    ].filter(o=>o.unit&&o.unit.currentHp>0).sort((a,b)=>(b.unit.spd||0)-(a.unit.spd||0));
+
+    // Execute each order with animation
+    for(const order of allOrders){
+      const u=order.unit;
+      if(u.currentHp<=0)continue;
+      const foes=order.side==='player'?bs.eCards:bs.pCards;
+      const allies=order.side==='player'?bs.pCards:bs.eCards;
+
+      // Show action
+      document.getElementById('tb-diamond').style.display='';
+      document.getElementById('tb-actions').style.display='none';
+
+      if(order.action==='defend'){
+        u._defending=true;
+        await this._showCombatAction(u,'🛡️ 방어!',null);
+        Game.log(`${u.icon}${u.name} 방어 태세!`,'ability-log');
+      } else if(order.action==='attack'){
+        let target=foes.find(c=>c.uid===order.targetUid&&c.currentHp>0);
+        if(!target)target=foes.find(c=>c.currentHp>0);
+        if(!target)continue;
+        await this._showCombatAction(u,'⚔️ 공격!',target);
+        // Damage calc
+        let dmg=Math.max(1,u.atk-Math.floor((target.def||0)*.5));
+        if(target._defending){dmg=Math.floor(dmg*.5);target._defending=false;}
+        const isCrit=Math.random()<(u.luck||0)*.02;
+        if(isCrit)dmg=Math.floor(dmg*2);
+        target.currentHp-=dmg;
+        Game.showDmg(target,dmg,isCrit);SFX.play(isCrit?'crit':'hit');
+        if(isCrit)Game.triggerSlowMo(800,'crit');
+        Game.log(`${u.icon}${u.name}→${target.icon}${target.name} ${dmg}${isCrit?' 치명타!':''}`,'atk-log');
+        if(target.currentHp<=0){target.currentHp=0;SFX.play('death');Game.log(`${target.icon} 쓰러짐!`,'atk-log');}
+        // Regen energy
+        u.curNrg=(u.curNrg||0)+(u.nrgReg||0);
+      } else if(order.action==='skill'){
+        // Active skill execution (simplified)
+        const sk=u.skill,skNrg=u.skillNrg||0;
+        if((u.curNrg||0)<skNrg)continue;
+        u.curNrg-=skNrg;
+        let target=foes.find(c=>c.uid===order.targetUid&&c.currentHp>0)||foes.find(c=>c.currentHp>0);
+        await this._showCombatAction(u,`🔮 ${u.skillDesc?u.skillDesc.split(']')[0].replace('[',''):'비전'}!`,target);
+        SFX.play('magic');
+        if(['aoe','breath'].includes(sk)){
+          const d=sk==='breath'?5:3;foes.filter(c=>c.currentHp>0).forEach(e=>{e.currentHp-=d;Game.showDmg(e,d,false);if(e.currentHp<=0)e.currentHp=0;});
+          Game.log(`${u.icon} 전체 ${d} 데미지!`,'ability-log');
+        } else if(['heal_ally','heal_self'].includes(sk)){
+          const t=sk==='heal_self'?u:(allies.filter(c=>c.currentHp>0&&c.currentHp<c.maxBHp).sort((a,b)=>a.currentHp-b.currentHp)[0]||u);
+          const h=5;t.currentHp=Math.min(t.currentHp+h,t.maxBHp);Game.showHeal(t,h);SFX.play('heal');
+          Game.log(`${u.icon}→${t.icon} 치유+${h}`,'heal-log');
+        } else if(sk==='mass_heal'){
+          allies.filter(c=>c.currentHp>0).forEach(a=>{a.currentHp=Math.min(a.currentHp+3,a.maxBHp);});SFX.play('heal');
+          Game.log(`${u.icon} 대치유! 아군전체 HP+3`,'heal-log');
+        } else if(sk==='freeze'&&target){
+          target.frozen=1;Game.log(`${target.icon} 빙결!`,'ability-log');
+        } else if(sk==='inspire'){
+          allies.filter(c=>c.currentHp>0).forEach(a=>{a.atk+=2;});
+          Game.log(`${u.icon} 고무! 아군 공격+2`,'ability-log');
+        } else if(target){
+          // Generic damage skill
+          const d=u.atk;target.currentHp-=d;Game.showDmg(target,d,false);
+          if(target.currentHp<=0)target.currentHp=0;
+          Game.log(`${u.icon}→${target.icon} 비전 ${d}데미지`,'ability-log');
+        }
+      }
+      // Render after each action
+      this.renderDiamond();
+      await wait(Math.floor(500/Game.battleMultiplier));
+
+      // Check hero death
+      const pH=bs.pCards.find(c=>c.isHero);const eH=bs.eCards.find(c=>c.isHero);
+      if(pH&&pH.currentHp<=0){this._endBattle(false);return;}
+      if(eH&&eH.currentHp<=0){this._endBattle(true);return;}
+    }
+
+    // Clear defend flags
+    [...bs.pCards,...bs.eCards].forEach(c=>{c._defending=false;});
+
+    // Round survived → next turn
+    bs.currentRound++;
+    if(bs.currentRound>Game.bestRound)Game.bestRound=bs.currentRound;
+    // Round choice (행동력 사용)
+    Game.skipReq=false;
+    Game.showRoundChoice();
+  },
+
+  async _showCombatAction(unit,text,target){
+    if(Game.skipReq)return;
+    await Game.showAction(unit,text,target);
+  },
+
+  _endBattle(won){
+    this.unbindKeys();
+    if(this.turnTimer)clearInterval(this.turnTimer);
+    const bs=this.bs;
+    const rd=bs.currentRound;
+    // Same reward logic as before
+    if(won){
+      Game.totalWins++;SFX.play('fanfare');
+      const vb=document.createElement('div');vb.className='victory-banner';vb.textContent='승전!';document.body.appendChild(vb);setTimeout(()=>vb.remove(),2000);
+      const goldR=10,xpR=10,honorR=10,lpR=15;
+      Game.gold+=goldR;Game.leaguePoints=Math.max(0,(Game.leaguePoints||0)+lpR);
+      const participated=bs.battleDeck.map(c=>c.uid);const levelUps=[];
+      Game.deck.filter(c=>participated.includes(c.uid)).forEach(c=>{if(Game.giveCardXp(c,xpR))levelUps.push(c.name);Game.giveCardHonor(c,honorR);});
+      Game.persist();Game.showBattleEnd(true,goldR,xpR,honorR,levelUps);
+    } else {
+      SFX.play('death');
+      const hdo=document.createElement('div');hdo.className='hero-death-overlay';document.body.appendChild(hdo);setTimeout(()=>hdo.remove(),2000);
+      const goldR=3,xpR=10,honorR=1,lpR=-5;
+      Game.gold+=goldR;Game.leaguePoints=Math.max(0,(Game.leaguePoints||0)+lpR);
+      const participated=bs.battleDeck.map(c=>c.uid);const levelUps=[];
+      Game.deck.filter(c=>participated.includes(c.uid)).forEach(c=>{if(Game.giveCardXp(c,xpR))levelUps.push(c.name);Game.giveCardHonor(c,honorR);});
+      Game.persist();Game.showBattleEnd(false,goldR,xpR,honorR,levelUps);
+    }
+  },
+};
+
 const Formation={
-  front:[null,null,null], // 3 front slots
-  back:[null,null,null],  // 3 back slots
+  front:[null,null], // 2 front slots (left, right in diamond)
+  back:[null,null],  // 2 back slots (top, bottom in diamond)
   selected:null, // {row,idx} of selected slot or 'bench_'+uid
 
   _cards:[], // cards to arrange
@@ -4207,12 +4677,12 @@ const Formation={
 
   _initFromCards(){
     UI.show('formation-screen');
-    this.front=[null,null,null];
-    this.back=[null,null,null];
+    this.front=[null,null];
+    this.back=[null,null];
     const deck=this._cards;
     deck.forEach(c=>{
-      if(c.formRow==='front'){const i=c.formIdx;if(i!=null&&i<3&&!this.front[i]){this.front[i]=c;return;}}
-      if(c.formRow==='back'){const i=c.formIdx;if(i!=null&&i<3&&!this.back[i]){this.back[i]=c;return;}}
+      if(c.formRow==='front'){const i=c.formIdx;if(i!=null&&i<2&&!this.front[i]){this.front[i]=c;return;}}
+      if(c.formRow==='back'){const i=c.formIdx;if(i!=null&&i<2&&!this.back[i]){this.back[i]=c;return;}}
     });
     const placed=new Set([...this.front,...this.back].filter(Boolean).map(c=>c.uid));
     const unplaced=deck.filter(c=>!placed.has(c.uid));
@@ -4228,13 +4698,13 @@ const Formation={
   },
 
   auto(){
-    this.front=[null,null,null];this.back=[null,null,null];
+    this.front=[null,null];this.back=[null,null];
     const deck=[...this._cards];
     const frontTypes=deck.filter(c=>c.type==='전사'||c.type==='야수');
     const backTypes=deck.filter(c=>c.type==='사수'||c.type==='마법사');
     let fi=0,bi=0;
-    frontTypes.forEach(c=>{if(fi<3)this.front[fi++]=c;else if(bi<3)this.back[bi++]=c;});
-    backTypes.forEach(c=>{if(bi<3)this.back[bi++]=c;else if(fi<3)this.front[fi++]=c;});
+    frontTypes.forEach(c=>{if(fi<2)this.front[fi++]=c;else if(bi<2)this.back[bi++]=c;});
+    backTypes.forEach(c=>{if(bi<2)this.back[bi++]=c;else if(fi<2)this.front[fi++]=c;});
     this.render();
   },
 

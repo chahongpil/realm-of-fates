@@ -1318,10 +1318,10 @@ const SFX={
     this._bgmTimers.forEach(t=>clearInterval(t));this._bgmTimers=[];
   },
 
-  _playMp3(tracks){
+  _playMp3(tracks,vol){
     const src=tracks[Math.floor(Math.random()*tracks.length)];
     const audio=new Audio(src);
-    audio.loop=true;audio.volume=0.4;
+    audio.loop=true;audio.volume=vol||0.4;
     audio.play().catch(()=>{});
     this._bgmAudio=audio;
   },
@@ -1332,11 +1332,12 @@ const SFX={
     if(!type||!this.on)return;
     const c=this.ctx;
 
-    // ═══ MP3 BGM (priority) ═══
-    if(type==='town'){this._playMp3(this._townTracks);return;}
+    // ═══ MP3 BGM ═══
+    if(type==='town'||type==='menu'||type==='title'){this._playMp3(this._townTracks);return;}
     if(type==='battle'){this._playMp3(this._battleTracks);return;}
+    if(type==='match'){this._playMp3(this._battleTracks,.25);return;}// 매칭은 전투곡 작은 볼륨
 
-    // ═══ Web Audio fallback for menu/title/match ═══
+    // ═══ Web Audio fallback ═══
     if(type==='menu'||type==='title'){
       // ═══ TITLE/MENU: 장엄한 오르간 + 성가 코드 진행 ═══
       // Deep organ drone: C2 + G2

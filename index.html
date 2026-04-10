@@ -207,6 +207,8 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 .td-slot{cursor:pointer;transition:all .2s;text-align:center;flex-shrink:0;}
 .td-slot:hover{transform:scale(1.06);}
 .td-slot.td-selected{transform:scale(1.1);filter:drop-shadow(0 0 15px rgba(255,215,0,.7));}
+.td-slot.td-target-hl .td-card{border-color:#ff4444 !important;box-shadow:0 0 25px rgba(255,68,68,.6);animation:targetPulse 1s infinite alternate;}
+@keyframes targetPulse{0%{box-shadow:0 0 15px rgba(255,68,68,.4);}100%{box-shadow:0 0 30px rgba(255,68,68,.8);}}
 .td-slot .td-card{border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;text-align:center;width:100%;}
 .td-slot .td-card img{width:90%;max-width:120px;aspect-ratio:1;border-radius:8px;object-fit:cover;}
 .td-slot .td-name{font-size:.75rem;color:#fff;font-weight:bold;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;}
@@ -215,6 +217,9 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 .td-slot .td-hp-fill{height:100%;border-radius:2px;}
 .td-slot .td-order{position:absolute;top:-5px;right:-5px;width:20px;height:20px;border-radius:50%;background:#ffd700;color:#000;font-size:.6rem;font-weight:bold;display:none;align-items:center;justify-content:center;}
 .td-slot.td-ordered .td-order{display:flex;}
+.td-slot.td-ordered .td-card{opacity:.45;filter:brightness(.6);}
+.td-slot.td-ordered .td-card::after{content:'✅';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5rem;opacity:.8;}
+.td-slot.td-selected .td-card{border-color:#ffd700 !important;box-shadow:0 0 20px rgba(255,215,0,.6);}
 .tb-actions{position:absolute;top:0;left:0;width:100%;height:100%;text-align:center;padding:10px;background:rgba(0,0,0,.88);z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .tb-actions .ta-selected{margin-bottom:8px;}
 .tb-actions .ta-selected img{width:130px;height:130px;border-radius:10px;object-fit:cover;border:3px solid #ffd700;box-shadow:0 0 20px rgba(255,215,0,.3);}
@@ -4604,7 +4609,8 @@ const TurnBattle={
       const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
       const img=getCardImg(c);const canReach=this._canTarget(unit,i,'enemy');
       const isTaunt=c.skill==='taunt';const isHL=i===this._enemyHighlight;
-      slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:3px solid ${isHL?'#ff4444':isTaunt?'#ffd700':'#555'};background:linear-gradient(180deg,rgba(30,10,10,.9),rgba(10,5,5,.95));${isHL?'box-shadow:0 0 20px rgba(255,68,68,.5);transform:scale(1.05);':''}${!canReach?'opacity:.3;':''}">
+      if(isHL)slot.classList.add('td-target-hl');
+      slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:3px solid ${isTaunt?'#ffd700':'#555'};background:linear-gradient(180deg,rgba(30,10,10,.9),rgba(10,5,5,.95));${!canReach?'opacity:.3;':''}">
         ${isTaunt?'<div style="position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:.8rem;">🛡️</div>':''}
         ${img?`<img src="${img}" style="width:80px;height:80px;border-radius:6px;object-fit:cover;">`:`<div style="font-size:2rem;">${c.icon}</div>`}
         <div class="td-name">${c.name}</div>
@@ -4810,9 +4816,14 @@ const TurnBattle={
   _refreshTargetView(){
     SFX.play('click');
     const row=document.getElementById('target-enemy-row');if(!row)return;
-    row.querySelectorAll('.td-slot .td-card').forEach((el,i)=>{
-      if(i===this._enemyHighlight){el.style.border='3px solid #ff4444';el.style.boxShadow='0 0 20px rgba(255,68,68,.5)';el.style.transform='scale(1.05)';}
-      else{el.style.border='';el.style.boxShadow='';el.style.transform='';}
+    row.querySelectorAll('.td-slot').forEach((el,i)=>{
+      if(i===this._enemyHighlight){
+        el.classList.add('td-target-hl');
+        el.style.transform='scale(1.08)';
+      } else {
+        el.classList.remove('td-target-hl');
+        el.style.transform='';
+      }
     });
   },
 

@@ -407,16 +407,16 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 /* PROLOGUE */
 #prologue-screen{justify-content:center;align-items:center;background:url('img/bg_prologue.png') center/cover no-repeat,#050408;text-align:center;position:relative;}
 #prologue-screen::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.7);pointer-events:none;}
-.prologue-text{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;}
-.pl-line{position:absolute;font-family:'Cinzel','Georgia',serif;opacity:0;text-shadow:0 2px 12px rgba(0,0,0,.95),0 0 30px rgba(0,0,0,.8);max-width:85%;line-height:1.8;}
+.prologue-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;width:100%;text-align:center;}
+.pl-line{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80%;max-width:600px;text-align:center;font-family:'Georgia',serif;opacity:0;text-shadow:0 2px 12px rgba(0,0,0,.95),0 0 30px rgba(0,0,0,.8);line-height:1.8;word-break:keep-all;}
 .pl-line.pl-gold{color:#ffd700;font-size:1.3rem;font-weight:bold;text-shadow:0 0 15px rgba(255,215,0,.5),0 2px 12px rgba(0,0,0,.95);}
 .pl-line.pl-dim{color:#aaa;font-size:1rem;}
 .pl-line.pl-bright{color:#fff;font-size:1.15rem;text-shadow:0 0 12px rgba(255,255,255,.3),0 2px 12px rgba(0,0,0,.95);}
 .pl-line.pl-normal{color:#ccc;font-size:1.05rem;}
 .pl-line.pl-show{animation:plCinIn .8s ease-out forwards;}
 .pl-line.pl-hide{animation:plCinOut .6s ease-in forwards;}
-@keyframes plCinIn{0%{opacity:0;transform:translateY(15px) scale(.95);}100%{opacity:1;transform:translateY(0) scale(1);}}
-@keyframes plCinOut{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-10px);}}
+@keyframes plCinIn{0%{opacity:0;transform:translate(-50%,-50%) translateY(15px) scale(.95);}100%{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(1);}}
+@keyframes plCinOut{0%{opacity:1;transform:translate(-50%,-50%) translateY(0);}100%{opacity:0;transform:translate(-50%,-50%) translateY(-10px);}}
 
 /* TUTORIAL OVERLAY */
 .tut-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:300;display:flex;justify-content:center;align-items:flex-end;padding-bottom:60px;}
@@ -541,7 +541,7 @@ body{font-family:'Georgia','Segoe UI',serif;background:#080810;color:#d4c5a0;min
 <!-- PROLOGUE -->
 <div id="prologue-screen" class="screen">
   <div class="prologue-text" id="prologue-text"></div>
-  <div id="prologue-btns" style="display:none;position:relative;z-index:1;">
+  <div id="prologue-btns" style="display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;text-align:center;">
     <button class="btn" onclick="Auth.endPrologue()">운명을 받아들인다</button>
     <div style="margin-top:10px;"><span class="auth-back" onclick="Auth.skipPrologue()">건너뛰기</span></div>
   </div>
@@ -1489,7 +1489,12 @@ const Auth={
       },t);
       t+=fadeIn+s.hold+fadeOut+gap;
     });
-    setTimeout(()=>{document.getElementById('prologue-btns').style.display='';document.getElementById('prologue-btns').className='pl-line pl-show';document.getElementById('prologue-btns').style.position='relative';},t);
+    setTimeout(()=>{
+      const btn=document.getElementById('prologue-btns');
+      btn.style.display='';btn.style.opacity='0';
+      btn.style.transition='opacity .8s';
+      requestAnimationFrame(()=>btn.style.opacity='1');
+    },t);
     this._prologueUid=uid;
   },
   endPrologue(){SFX.play('magic');this.showCharSel(this._prologueUid||this.user);},

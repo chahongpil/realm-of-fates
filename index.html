@@ -2778,15 +2778,23 @@ const Game={
     const heroElem=hero?hero.element:'';
     // Phase 1: Searching
     box.innerHTML=`
-      <div class="match-search">⚔️ 도전자를 찾는 중<span class="dots">...</span></div>
-      <div style="margin:20px auto;width:120px;height:120px;border-radius:12px;border:2px solid #444;background:#111;display:flex;align-items:center;justify-content:center;">
-        <div style="font-size:3rem;opacity:.3;animation:dotPulse 1s infinite;">❓</div>
-      </div>
-      <div class="match-vs" style="opacity:.3;font-size:1.5rem;">⚔ VS ⚔</div>
-      <div style="margin:10px auto;">
-        ${heroImg?`<img src="${heroImg}" style="width:100px;height:100px;border-radius:10px;border:2px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;">`:`<div style="font-size:3rem;">${hero?hero.icon:'⚔️'}</div>`}
-        <div style="color:#fff;font-size:1rem;font-weight:bold;margin-top:4px;">${Auth.user}</div>
-        <div style="color:${lg.color};font-size:.8rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>
+      <div class="match-search" style="font-size:1.2rem;">⚔️ 도전자를 찾는 중<span class="dots">...</span></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:30px;width:100%;margin-top:20px;">
+        <!-- 상대 (왼쪽, 미확인) -->
+        <div style="text-align:center;flex:1;">
+          <div style="width:35vw;max-width:250px;aspect-ratio:1;border-radius:15px;border:3px dashed #444;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+            <div style="font-size:4rem;opacity:.3;animation:dotPulse 1s infinite;">❓</div>
+          </div>
+          <div style="color:#555;font-size:1.1rem;font-weight:bold;margin-top:8px;">검색중...</div>
+        </div>
+        <!-- VS -->
+        <div class="match-vs" style="opacity:.3;font-size:2rem;">⚔<br>VS<br>⚔</div>
+        <!-- 나 (오른쪽) -->
+        <div style="text-align:center;flex:1;">
+          ${heroImg?`<img src="${heroImg}" style="width:35vw;max-width:250px;aspect-ratio:1;border-radius:15px;border:4px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[heroElem]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${hero?hero.icon:'⚔️'}</div>`}
+          <div style="color:#fff;font-size:1.3rem;font-weight:bold;margin-top:8px;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>
+          <div style="color:${lg.color};font-size:.9rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>
+        </div>
       </div>`;
     // Phase 2: Found (after 2-3 sec)
     const delay=1500+Math.random()*1500;

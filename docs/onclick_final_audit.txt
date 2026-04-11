@@ -1,0 +1,41 @@
+46:  <span class="sp-btn" id="sound-toggle" onclick="SFX.toggle()">🔊</span>
+59:      <button class="btn" onclick="UI.show('login-screen')" style="font-size:1.1rem;padding:14px 30px;">⚔️ 왕좌로 돌아가기</button>
+60:      <button class="btn btn-green" onclick="UI.show('signup-screen')" style="font-size:1.1rem;padding:14px 30px;">✨ 새로운 운명</button>
+72:    <button class="btn" onclick="Auth.login()" style="width:100%">입장</button>
+73:    <div class="auth-back" onclick="UI.show('title-screen')">← 돌아가기</div>
+85:    <button class="btn btn-green" onclick="Auth.signup()" style="width:100%">운명의 문을 열다</button>
+86:    <div class="auth-back" onclick="UI.show('title-screen')">← 돌아가기</div>
+94:    <button class="btn" onclick="Auth.endPrologue()">운명을 받아들인다</button>
+95:    <div style="margin-top:10px;"><span class="auth-back" onclick="Auth.skipPrologue()">건너뛰기</span></div>
+106:    <button class="btn btn-s" id="btn-char-back" onclick="Auth.charBack()" style="display:none;">← 돌아가기</button>
+107:    <button class="btn" onclick="Auth.confirmChar()" id="btn-confirm-char" disabled>선택 완료</button>
+129:    <button class="btn btn-s btn-red" onclick="Game.logout()">🛏️ 휴식</button>
+141:      <button class="btn btn-s" id="tav-tab-unit" onclick="Game.showTavernUnit()" style="border-color:#ffd700;color:#ffd700;">🗡️ 용병 모병</button>
+142:      <button class="btn btn-s" id="tav-tab-hero" onclick="Game.showTavernHero()">✨ 영웅 모집</button>
+148:    <button class="btn btn-s btn-blue" onclick="Game.refreshTavern()">🔄 다른 동료 보기 (2💰)</button>
+149:    <button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button>
+162:  <div style="padding:10px;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+173:      <button class="btn btn-s" id="tab-deck" onclick="Game.showDeckTab()" style="border-color:#ffd700;color:#ffd700;">📋 전력 열람</button>
+174:      <button class="btn btn-s" id="tab-codex" onclick="Game.showCodexTab()">📖 생명의 서</button>
+194:  <div style="padding:8px;text-align:center;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+205:      <button class="btn btn-s" id="castle-tab-upgrade" onclick="Game.showCastleUpgradeTab()" style="border-color:#ffd700;color:#ffd700;">🔧 동료 단련</button>
+206:      <button class="btn btn-s" id="castle-tab-quest" onclick="Game.showCastleQuestTab()">📜 퀘스트</button>
+214:  <div style="padding:8px;text-align:center;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+228:  <div style="padding:8px;text-align:center;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+240:    <div style="text-align:center;margin-top:12px;"><button class="btn btn-s btn-red" onclick="document.getElementById('detail-modal').classList.remove('active')">닫기</button></div>
+258:    <button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button>
+259:    <button class="btn btn-s btn-blue" onclick="Game.saveFormation()">📜 편성 기억</button>
+260:    <button class="btn btn-s btn-purple" onclick="Game.loadFormation()">📜 편성 소환</button>
+261:    <button class="btn btn-green" id="cs-go-btn" onclick="Game.confirmCardSelect()" disabled style="font-size:1.1rem;padding:12px 36px;">⚔️ 도전자 찾기 →</button>
+282:    <button class="btn btn-s" onclick="Formation.auto()">자동 배치</button>
+283:    <button class="btn btn-s btn-green" onclick="Formation.confirm()">배치 완료 → 전투!</button>
+305:    <button class="btn btn-s" id="btn-back" onclick="TurnBattle.goBack()" style="display:none;">← 돌아가기</button>
+306:    <button class="btn btn-green" id="btn-fight" onclick="TurnBattle.startCombat()">⚔️ 전투 개시!</button>
+336:      <button class="btn btn-s btn-green" id="pick-confirm-btn" onclick="Game.finishPick()" disabled>✅ 완료</button>
+337:      <button class="btn btn-s" onclick="Game.finishPick()">⏭️ 건너뛰기</button>
+338:      <button class="btn btn-s btn-blue" onclick="Game.rerollPick()">🔄 다시 뽑기 (2💰)</button>
+349:    <button class="btn btn-s btn-red" onclick="document.getElementById('equip-modal').classList.remove('active')">취소</button>
+366:      <button class="btn btn-green" onclick="Game.afterBattle()" style="font-size:1.2rem;padding:14px 50px;">확인</button>
+376:    <button class="btn" onclick="Game.newRun()">⚔️ 다시 일어서다</button>
+377:    <button class="btn btn-red" onclick="Game.logout()">🛏️ 휴식</button>
+384:    <div class="modal-buttons"><button class="btn btn-s" id="modal-confirm">확인</button><button class="btn btn-s btn-red" onclick="UI.closeModal()">취소</button></div>

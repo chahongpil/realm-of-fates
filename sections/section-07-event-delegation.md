@@ -3,9 +3,13 @@
 > 참고: `claude-plan.md` "Phase 6: onclick → data-action 마이그레이션"
 > 테스트: `claude-plan-tdd.md` "Phase 6: onclick → data-action 마이그레이션"
 
+## 상태
+
+**완료**. 브라우저 수동 회귀 테스트 대기.
+
 ## 목표
 
-**HTML 인라인 `onclick="..."` 속성 95개 전부 제거** 후 `data-action` 패턴으로 전환. 이벤트 위임 로직 `99_bindings.js` 에 구현.
+**HTML 인라인 `onclick="..."` 속성 전부 제거** (실제 41개 — Section 05/06 에서 이미 많이 제거됨) 후 `data-action` 패턴으로 전환. 이벤트 위임 로직 `99_bindings.js` 에 구현.
 
 ## 범위 확정 (Opus 리뷰 반영)
 
@@ -167,9 +171,29 @@ grep -c 'onclick=' index.html
 - 콘솔 에러 0
 - Phase 6 테스트 스텁 전부 PASS (20개 체크리스트 포함)
 
+## 실제 구현 결과
+
+| 파일 | 줄 수 | 설명 |
+| --- | --- | --- |
+| `js/99_bindings.js` | 112 | IIFE 이벤트 위임 — data-action/input/enter + data-dismiss |
+| `js/99_bootstrap.js` (수정) | 73 | Enter 키 바인딩 제거 (10줄 감소) |
+| `index.html` (수정) | 390 | onclick=0, oninput=0 달성 |
+| `docs/_migrate_events.py` | 125 | 치환 스크립트 (일회용) |
+
+### 실제 치환 수
+
+- Phase 0 계획의 "95개" → Section 05/06 에서 이미 인라인 `<script>` 블록 제거로 대폭 감소
+- 실제 남은 onclick: **41개** + oninput: **1개** = 42개 처리
+- data-action: 39개 / data-dismiss: 2개 / data-action-input: 1개 / data-action-enter: 2개
+
+### 코드 리뷰에서 확인한 것
+
+- `data-dismiss` vs `UI.closeModal()`: `UI.closeModal()`은 단순 classList.remove('active') 뿐 → 동등함 확인
+- `disabled` 버튼 + data-action: 브라우저 스펙상 disabled 버튼은 click 이벤트 미발화 → 별도 guard 불필요
+
 ## 리스크
 
-**높음**. 95개 수동 치환 중 오타/누락 가능. 특히 camelCase 변환 주의 (`TurnBattle.startCombat` → `turnBattle.startCombat`).
+**낮음** (구현 완료). `_migrate_events.py` 자동화로 수동 오타 리스크 제거. 브라우저 수동 테스트로 최종 확인 필요.
 
 ## 최종 검증 후
 

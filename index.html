@@ -37,14 +37,15 @@
 <script defer src="js/60_turnbattle.js"></script>
 <script defer src="js/70_formation.js"></script>
 <script defer src="js/80_fx.js"></script>
+<script defer src="js/99_bindings.js"></script>
 <script defer src="js/99_bootstrap.js"></script>
 </head>
 <body>
 
 <!-- SOUND TOGGLE -->
 <div class="sound-panel" id="sound-panel">
-  <span class="sp-btn" id="sound-toggle" onclick="SFX.toggle()">🔊</span>
-  <input type="range" id="vol-slider" min="0" max="100" value="40" oninput="SFX.setVolume(this.value)">
+  <span class="sp-btn" id="sound-toggle" data-action="sfx.toggle">🔊</span>
+  <input type="range" id="vol-slider" min="0" max="100" value="40" data-action-input="sfx.setVolume">
   <span class="sp-vol" id="vol-display">40</span>
 </div>
 
@@ -56,8 +57,8 @@
     <h1>신들의 리그</h1>
     <p class="subtitle" style="font-size:1.1rem;letter-spacing:4px;color:#aaa;text-shadow:0 2px 10px rgba(0,0,0,.8);">운명의 왕좌를 차지하라</p>
     <div class="title-buttons" style="margin-top:25px;">
-      <button class="btn" onclick="UI.show('login-screen')" style="font-size:1.1rem;padding:14px 30px;">⚔️ 왕좌로 돌아가기</button>
-      <button class="btn btn-green" onclick="UI.show('signup-screen')" style="font-size:1.1rem;padding:14px 30px;">✨ 새로운 운명</button>
+      <button class="btn" data-action="ui.show" data-arg="login-screen" style="font-size:1.1rem;padding:14px 30px;">⚔️ 왕좌로 돌아가기</button>
+      <button class="btn btn-green" data-action="ui.show" data-arg="signup-screen" style="font-size:1.1rem;padding:14px 30px;">✨ 새로운 운명</button>
     </div>
   </div>
 </div>
@@ -67,10 +68,10 @@
   <div class="auth-box">
     <h2>⚔️ 모험 이어하기</h2>
     <input type="text" id="login-id" placeholder="영웅의 이름" autocomplete="off">
-    <input type="password" id="login-pw" placeholder="암호">
+    <input type="password" id="login-pw" placeholder="암호" data-action-enter="auth.login">
     <div class="auth-msg" id="login-msg"></div>
-    <button class="btn" onclick="Auth.login()" style="width:100%">입장</button>
-    <div class="auth-back" onclick="UI.show('title-screen')">← 돌아가기</div>
+    <button class="btn" data-action="auth.login" style="width:100%">입장</button>
+    <div class="auth-back" data-action="ui.show" data-arg="title-screen">← 돌아가기</div>
   </div>
 </div>
 
@@ -80,10 +81,10 @@
     <h2>✨ 새로운 영웅의 탄생</h2>
     <input type="text" id="signup-id" placeholder="영웅의 이름 (2~12자)" maxlength="12" autocomplete="off">
     <input type="password" id="signup-pw" placeholder="암호 (4자 이상)">
-    <input type="password" id="signup-pw2" placeholder="암호 확인">
+    <input type="password" id="signup-pw2" placeholder="암호 확인" data-action-enter="auth.signup">
     <div class="auth-msg" id="signup-msg"></div>
-    <button class="btn btn-green" onclick="Auth.signup()" style="width:100%">운명의 문을 열다</button>
-    <div class="auth-back" onclick="UI.show('title-screen')">← 돌아가기</div>
+    <button class="btn btn-green" data-action="auth.signup" style="width:100%">운명의 문을 열다</button>
+    <div class="auth-back" data-action="ui.show" data-arg="title-screen">← 돌아가기</div>
   </div>
 </div>
 
@@ -91,8 +92,8 @@
 <div id="prologue-screen" class="screen">
   <div class="prologue-text" id="prologue-text"></div>
   <div id="prologue-btns" style="display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;text-align:center;">
-    <button class="btn" onclick="Auth.endPrologue()">운명을 받아들인다</button>
-    <div style="margin-top:10px;"><span class="auth-back" onclick="Auth.skipPrologue()">건너뛰기</span></div>
+    <button class="btn" data-action="auth.endPrologue">운명을 받아들인다</button>
+    <div style="margin-top:10px;"><span class="auth-back" data-action="auth.skipPrologue">건너뛰기</span></div>
   </div>
 </div>
 
@@ -103,8 +104,8 @@
   <div class="char-id-preview" id="char-id-preview"></div>
   <div class="char-select-grid" id="char-select-grid"></div>
   <div style="padding:12px;display:flex;gap:10px;justify-content:center;">
-    <button class="btn btn-s" id="btn-char-back" onclick="Auth.charBack()" style="display:none;">← 돌아가기</button>
-    <button class="btn" onclick="Auth.confirmChar()" id="btn-confirm-char" disabled>선택 완료</button>
+    <button class="btn btn-s" id="btn-char-back" data-action="auth.charBack" style="display:none;">← 돌아가기</button>
+    <button class="btn" data-action="auth.confirmChar" id="btn-confirm-char" disabled>선택 완료</button>
   </div>
 </div>
 
@@ -126,7 +127,7 @@
   <div class="town-container" id="town-container"></div>
   <div class="menu-deck" id="menu-deck"></div>
   <div class="town-footer">
-    <button class="btn btn-s btn-red" onclick="Game.logout()">🛏️ 휴식</button>
+    <button class="btn btn-s btn-red" data-action="game.logout">🛏️ 휴식</button>
   </div>
 </div>
 
@@ -138,15 +139,15 @@
   </div>
   <div style="text-align:center;padding:8px;">
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:6px;">
-      <button class="btn btn-s" id="tav-tab-unit" onclick="Game.showTavernUnit()" style="border-color:#ffd700;color:#ffd700;">🗡️ 용병 모병</button>
-      <button class="btn btn-s" id="tav-tab-hero" onclick="Game.showTavernHero()">✨ 영웅 모집</button>
+      <button class="btn btn-s" id="tav-tab-unit" data-action="game.showTavernUnit" style="border-color:#ffd700;color:#ffd700;">🗡️ 용병 모병</button>
+      <button class="btn btn-s" id="tav-tab-hero" data-action="game.showTavernHero">✨ 영웅 모집</button>
     </div>
     <div style="font-size:.8rem;color:#aaa;" id="tav-info">골드를 지불하고 동료를 영입하세요</div>
   </div>
   <div id="tav-grid" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:10px;flex:1;align-items:flex-start;align-content:flex-start;"></div>
   <div style="padding:10px;display:flex;gap:8px;justify-content:center;">
-    <button class="btn btn-s btn-blue" onclick="Game.refreshTavern()">🔄 다른 동료 보기 (2💰)</button>
-    <button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button>
+    <button class="btn btn-s btn-blue" data-action="game.refreshTavern">🔄 다른 동료 보기 (2💰)</button>
+    <button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button>
   </div>
 </div>
 
@@ -159,7 +160,7 @@
   <div class="upgrade-title">🔧 동료 단련</div>
   <div class="upgrade-info" id="upg-info">단련할 동료를 선택하세요 (비용: 동료 수련도 × 3 💰)</div>
   <div class="upgrade-grid" id="upg-grid"></div>
-  <div style="padding:10px;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+  <div style="padding:10px;"><button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button></div>
 </div>
 
 <!-- DECK VIEW / CODEX -->
@@ -170,8 +171,8 @@
   </div>
   <div style="text-align:center;padding:6px;">
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:6px;">
-      <button class="btn btn-s" id="tab-deck" onclick="Game.showDeckTab()" style="border-color:#ffd700;color:#ffd700;">📋 전력 열람</button>
-      <button class="btn btn-s" id="tab-codex" onclick="Game.showCodexTab()">📖 생명의 서</button>
+      <button class="btn btn-s" id="tab-deck" data-action="game.showDeckTab" style="border-color:#ffd700;color:#ffd700;">📋 전력 열람</button>
+      <button class="btn btn-s" id="tab-codex" data-action="game.showCodexTab">📖 생명의 서</button>
     </div>
   </div>
   <!-- DECK TAB -->
@@ -191,7 +192,7 @@
     </div>
     <div id="codex-grid" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:8px;align-content:flex-start;"></div>
   </div>
-  <div style="padding:8px;text-align:center;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+  <div style="padding:8px;text-align:center;"><button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button></div>
 </div>
 
 <!-- CASTLE SCREEN -->
@@ -202,8 +203,8 @@
   </div>
   <div style="text-align:center;padding:6px;">
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:6px;">
-      <button class="btn btn-s" id="castle-tab-upgrade" onclick="Game.showCastleUpgradeTab()" style="border-color:#ffd700;color:#ffd700;">🔧 동료 단련</button>
-      <button class="btn btn-s" id="castle-tab-quest" onclick="Game.showCastleQuestTab()">📜 퀘스트</button>
+      <button class="btn btn-s" id="castle-tab-upgrade" data-action="game.showCastleUpgradeTab" style="border-color:#ffd700;color:#ffd700;">🔧 동료 단련</button>
+      <button class="btn btn-s" id="castle-tab-quest" data-action="game.showCastleQuestTab">📜 퀘스트</button>
     </div>
   </div>
   <div id="castle-upgrade-area">
@@ -211,7 +212,7 @@
     <div id="castle-upgrade-grid" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:10px;flex:1;align-items:flex-start;align-content:flex-start;"></div>
   </div>
   <div id="castle-quest-area" style="display:none;"></div>
-  <div style="padding:8px;text-align:center;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+  <div style="padding:8px;text-align:center;"><button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button></div>
 </div>
 
 <!-- CHURCH SCREEN -->
@@ -225,7 +226,7 @@
     <div style="font-size:.8rem;color:#aaa;" id="church-info">부상당한 동료를 치유하거나, 영면에 들게 하세요</div>
   </div>
   <div id="church-grid" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:10px;flex:1;align-items:flex-start;align-content:flex-start;"></div>
-  <div style="padding:8px;text-align:center;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+  <div style="padding:8px;text-align:center;"><button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button></div>
 </div>
 
 <!-- MATCHMAKING SCREEN -->
@@ -237,7 +238,7 @@
 <div class="modal-overlay" id="detail-modal">
   <div class="modal-box" style="max-width:400px;width:90%;max-height:85vh;overflow-y:auto;text-align:left;">
     <div id="detail-content"></div>
-    <div style="text-align:center;margin-top:12px;"><button class="btn btn-s btn-red" onclick="document.getElementById('detail-modal').classList.remove('active')">닫기</button></div>
+    <div style="text-align:center;margin-top:12px;"><button class="btn btn-s btn-red" data-dismiss="detail-modal">닫기</button></div>
   </div>
 </div>
 
@@ -255,10 +256,10 @@
   <div style="font-size:.85rem;color:#ffd700;text-align:center;margin:4px 0;">▼ 출전 동료 ▼</div>
   <div id="cs-selected" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:10px 15px;min-height:80px;background:rgba(255,215,0,.08);border:2px solid #ffd700;border-radius:8px;margin:0 10px 10px;"></div>
   <div style="padding:8px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-    <button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button>
-    <button class="btn btn-s btn-blue" onclick="Game.saveFormation()">📜 편성 기억</button>
-    <button class="btn btn-s btn-purple" onclick="Game.loadFormation()">📜 편성 소환</button>
-    <button class="btn btn-green" id="cs-go-btn" onclick="Game.confirmCardSelect()" disabled style="font-size:1.1rem;padding:12px 36px;">⚔️ 도전자 찾기 →</button>
+    <button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button>
+    <button class="btn btn-s btn-blue" data-action="game.saveFormation">📜 편성 기억</button>
+    <button class="btn btn-s btn-purple" data-action="game.loadFormation">📜 편성 소환</button>
+    <button class="btn btn-green" id="cs-go-btn" data-action="game.confirmCardSelect" disabled style="font-size:1.1rem;padding:12px 36px;">⚔️ 도전자 찾기 →</button>
   </div>
   <!-- 유물 출전 -->
   <div style="font-size:.85rem;color:#aa66ff;text-align:center;margin:6px 0;">▼ 휴대 유물 ▼</div>
@@ -279,8 +280,8 @@
   <div class="form-bench-label">대기석 (클릭하여 선택 후 슬롯 클릭)</div>
   <div class="form-bench" id="form-bench"></div>
   <div style="padding:10px;display:flex;gap:10px;justify-content:center;">
-    <button class="btn btn-s" onclick="Formation.auto()">자동 배치</button>
-    <button class="btn btn-s btn-green" onclick="Formation.confirm()">배치 완료 → 전투!</button>
+    <button class="btn btn-s" data-action="formation.auto">자동 배치</button>
+    <button class="btn btn-s btn-green" data-action="formation.confirm">배치 완료 → 전투!</button>
   </div>
 </div>
 
@@ -302,8 +303,8 @@
   <div class="battle-log" id="battle-log" style="max-height:35px;"></div>
   <!-- Bottom bar -->
   <div class="tb-bottom" id="tb-bottom">
-    <button class="btn btn-s" id="btn-back" onclick="TurnBattle.goBack()" style="display:none;">← 돌아가기</button>
-    <button class="btn btn-green" id="btn-fight" onclick="TurnBattle.startCombat()">⚔️ 전투 개시!</button>
+    <button class="btn btn-s" id="btn-back" data-action="turnBattle.goBack" style="display:none;">← 돌아가기</button>
+    <button class="btn btn-green" id="btn-fight" data-action="turnBattle.startCombat">⚔️ 전투 개시!</button>
   </div>
   <div class="tb-timer-bar"><div class="tb-timer-fill" id="tb-timer-fill"></div></div>
 </div>
@@ -333,9 +334,9 @@
     <div class="pick-sub" id="pick-sub"></div>
     <div class="pick-grid" id="pick-grid"></div>
     <div style="text-align:center;margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-s btn-green" id="pick-confirm-btn" onclick="Game.finishPick()" disabled>✅ 완료</button>
-      <button class="btn btn-s" onclick="Game.finishPick()">⏭️ 건너뛰기</button>
-      <button class="btn btn-s btn-blue" onclick="Game.rerollPick()">🔄 다시 뽑기 (2💰)</button>
+      <button class="btn btn-s btn-green" id="pick-confirm-btn" data-action="game.finishPick" disabled>✅ 완료</button>
+      <button class="btn btn-s" data-action="game.finishPick">⏭️ 건너뛰기</button>
+      <button class="btn btn-s btn-blue" data-action="game.rerollPick">🔄 다시 뽑기 (2💰)</button>
     </div>
   </div>
 </div>
@@ -346,7 +347,7 @@
     <h3 id="equip-title">비전/장비 장착 대상 선택</h3>
     <div id="equip-skill-info" style="color:#aaa;font-size:.8rem;margin-bottom:8px;"></div>
     <div class="equip-targets" id="equip-targets"></div>
-    <button class="btn btn-s btn-red" onclick="document.getElementById('equip-modal').classList.remove('active')">취소</button>
+    <button class="btn btn-s btn-red" data-dismiss="equip-modal">취소</button>
   </div>
 </div>
 
@@ -363,7 +364,7 @@
     </div>
     <div id="reward-cards" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:15px;"></div>
     <div style="padding:15px;">
-      <button class="btn btn-green" onclick="Game.afterBattle()" style="font-size:1.2rem;padding:14px 50px;">확인</button>
+      <button class="btn btn-green" data-action="game.afterBattle" style="font-size:1.2rem;padding:14px 50px;">확인</button>
     </div>
   </div>
 </div>
@@ -373,15 +374,15 @@
   <h1>💀 영웅의 몰락</h1>
   <div class="final-stats" id="final-stats"></div>
   <div style="display:flex;gap:10px;">
-    <button class="btn" onclick="Game.newRun()">⚔️ 다시 일어서다</button>
-    <button class="btn btn-red" onclick="Game.logout()">🛏️ 휴식</button>
+    <button class="btn" data-action="game.newRun">⚔️ 다시 일어서다</button>
+    <button class="btn btn-red" data-action="game.logout">🛏️ 휴식</button>
   </div>
 </div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-box"><h3 id="modal-title"></h3><p id="modal-msg"></p>
-    <div class="modal-buttons"><button class="btn btn-s" id="modal-confirm">확인</button><button class="btn btn-s btn-red" onclick="UI.closeModal()">취소</button></div>
+    <div class="modal-buttons"><button class="btn btn-s" id="modal-confirm">확인</button><button class="btn btn-s btn-red" data-action="ui.closeModal">취소</button></div>
   </div>
 </div>
 

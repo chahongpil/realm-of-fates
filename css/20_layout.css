@@ -1,0 +1,3 @@
+/* Screen layout primitives (.screen, .screen.active). */
+.screen{display:none;width:100%;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;align-items:center;}

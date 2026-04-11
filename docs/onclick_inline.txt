@@ -1,0 +1,95 @@
+590:  <span class="sp-btn" id="sound-toggle" onclick="SFX.toggle()">🔊</span>
+603:      <button class="btn" onclick="UI.show('login-screen')" style="font-size:1.1rem;padding:14px 30px;">⚔️ 왕좌로 돌아가기</button>
+604:      <button class="btn btn-green" onclick="UI.show('signup-screen')" style="font-size:1.1rem;padding:14px 30px;">✨ 새로운 운명</button>
+616:    <button class="btn" onclick="Auth.login()" style="width:100%">입장</button>
+617:    <div class="auth-back" onclick="UI.show('title-screen')">← 돌아가기</div>
+629:    <button class="btn btn-green" onclick="Auth.signup()" style="width:100%">운명의 문을 열다</button>
+630:    <div class="auth-back" onclick="UI.show('title-screen')">← 돌아가기</div>
+638:    <button class="btn" onclick="Auth.endPrologue()">운명을 받아들인다</button>
+639:    <div style="margin-top:10px;"><span class="auth-back" onclick="Auth.skipPrologue()">건너뛰기</span></div>
+650:    <button class="btn btn-s" id="btn-char-back" onclick="Auth.charBack()" style="display:none;">← 돌아가기</button>
+651:    <button class="btn" onclick="Auth.confirmChar()" id="btn-confirm-char" disabled>선택 완료</button>
+673:    <button class="btn btn-s btn-red" onclick="Game.logout()">🛏️ 휴식</button>
+685:      <button class="btn btn-s" id="tav-tab-unit" onclick="Game.showTavernUnit()" style="border-color:#ffd700;color:#ffd700;">🗡️ 용병 모병</button>
+686:      <button class="btn btn-s" id="tav-tab-hero" onclick="Game.showTavernHero()">✨ 영웅 모집</button>
+692:    <button class="btn btn-s btn-blue" onclick="Game.refreshTavern()">🔄 다른 동료 보기 (2💰)</button>
+693:    <button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button>
+706:  <div style="padding:10px;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+717:      <button class="btn btn-s" id="tab-deck" onclick="Game.showDeckTab()" style="border-color:#ffd700;color:#ffd700;">📋 전력 열람</button>
+718:      <button class="btn btn-s" id="tab-codex" onclick="Game.showCodexTab()">📖 생명의 서</button>
+738:  <div style="padding:8px;text-align:center;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+749:      <button class="btn btn-s" id="castle-tab-upgrade" onclick="Game.showCastleUpgradeTab()" style="border-color:#ffd700;color:#ffd700;">🔧 동료 단련</button>
+750:      <button class="btn btn-s" id="castle-tab-quest" onclick="Game.showCastleQuestTab()">📜 퀘스트</button>
+758:  <div style="padding:8px;text-align:center;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+772:  <div style="padding:8px;text-align:center;"><button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button></div>
+784:    <div style="text-align:center;margin-top:12px;"><button class="btn btn-s btn-red" onclick="document.getElementById('detail-modal').classList.remove('active')">닫기</button></div>
+802:    <button class="btn btn-s" onclick="Game.showMenu()">← 돌아가기</button>
+803:    <button class="btn btn-s btn-blue" onclick="Game.saveFormation()">📜 편성 기억</button>
+804:    <button class="btn btn-s btn-purple" onclick="Game.loadFormation()">📜 편성 소환</button>
+805:    <button class="btn btn-green" id="cs-go-btn" onclick="Game.confirmCardSelect()" disabled style="font-size:1.1rem;padding:12px 36px;">⚔️ 도전자 찾기 →</button>
+826:    <button class="btn btn-s" onclick="Formation.auto()">자동 배치</button>
+827:    <button class="btn btn-s btn-green" onclick="Formation.confirm()">배치 완료 → 전투!</button>
+849:    <button class="btn btn-s" id="btn-back" onclick="TurnBattle.goBack()" style="display:none;">← 돌아가기</button>
+850:    <button class="btn btn-green" id="btn-fight" onclick="TurnBattle.startCombat()">⚔️ 전투 개시!</button>
+880:      <button class="btn btn-s btn-green" id="pick-confirm-btn" onclick="Game.finishPick()" disabled>✅ 완료</button>
+881:      <button class="btn btn-s" onclick="Game.finishPick()">⏭️ 건너뛰기</button>
+882:      <button class="btn btn-s btn-blue" onclick="Game.rerollPick()">🔄 다시 뽑기 (2💰)</button>
+893:    <button class="btn btn-s btn-red" onclick="document.getElementById('equip-modal').classList.remove('active')">취소</button>
+910:      <button class="btn btn-green" onclick="Game.afterBattle()" style="font-size:1.2rem;padding:14px 50px;">확인</button>
+920:    <button class="btn" onclick="Game.newRun()">⚔️ 다시 일어서다</button>
+921:    <button class="btn btn-red" onclick="Game.logout()">🛏️ 휴식</button>
+928:    <div class="modal-buttons"><button class="btn btn-s" id="modal-confirm">확인</button><button class="btn btn-s btn-red" onclick="UI.closeModal()">취소</button></div>
+1662:    mb.innerHTML='<button class="btn btn-s" id="modal-confirm">확인</button><button class="btn btn-s btn-red" onclick="UI.closeModal()">취소</button>';
+1663:    document.getElementById('modal-confirm').onclick=()=>{UI.closeModal();if(fn)fn();};
+1667:      document.getElementById('modal-confirm').onclick=()=>{UI.closeModal();};
+1765:      d.onclick=()=>{g.querySelectorAll('.char-option').forEach(c=>c.classList.remove('selected'));d.classList.add('selected');this._selElement=el;document.getElementById('btn-confirm-char').disabled=false;SFX.play('click');};
+1788:      d.onclick=()=>{g.querySelectorAll('.char-option').forEach(c=>c.classList.remove('selected'));d.classList.add('selected');this._selRole=r.id;document.getElementById('btn-confirm-char').disabled=false;SFX.play('click');};
+2087:        div.querySelector('.tb-icon').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
+2088:        div.querySelector('.tb-label').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
+2091:          upgEl.onclick=(e)=>{e.stopPropagation();this.upgradeBuilding(b);};
+2095:        div.onclick=()=>this.buildBuilding(b);
+2199:      btn.querySelector('button').onclick=(e)=>{e.stopPropagation();
+2263:      revBtn.onclick=()=>{
+2275:      funBtn.onclick=()=>{
+2334:        <button class="btn btn-s" onclick="Game.tutNext()">확인</button>
+2335:        <button class="btn btn-s btn-red" onclick="Game.tutSkip()" style="font-size:.7rem;">튜토리얼 끄기</button>
+2418:      btn.textContent=ft.label;btn.onclick=()=>this.renderCodex(ft.id);fd.appendChild(btn);
+2431:      el.onclick=()=>this.showCodexDetail(u,have);
+2483:      el.onclick=()=>this.showCardDetail(c);
+2505:        el.onclick=()=>{
+2527:        el.onclick=()=>this.showRelicDetail(r);
+2541:      d.onclick=()=>{
+2606:        btn.onclick=()=>{
+2640:        btn.onclick=()=>{
+2716:      btn.querySelector('button').onclick=(e)=>{e.stopPropagation();
+2768:      btn.querySelector('button').onclick=(e)=>{e.stopPropagation();
+2885:          <button class="btn" onclick="Game.startBattleFromMatch()" style="font-size:1.2rem;padding:14px 40px;">⚔️ 출전!</button>
+2886:          <button class="btn btn-s btn-red" onclick="Game.showMenu()">철수</button>
+2960:        el.onclick=()=>{
+2994:      el.onclick=()=>{
+3512:        d.onclick=()=>{SFX.play('click');this._stopRoundTimer();bs._apRemaining=0;this._revealAndFinish();};
+3515:        d.onclick=()=>{SFX.play('click');this.doRoundChoice(o.action);};
+3596:        el.onclick=()=>{
+3637:        el.onclick=()=>{
+3663:        el.onclick=()=>{
+3730:      dblBtn.querySelector('button').onclick=()=>{
+3759:      box.onclick=()=>{
+3795:        dblBtn.querySelector('button').onclick=()=>{
+3855:      d.onclick=()=>{
+3872:      d.onclick=()=>{
+4044:        btn.onclick=()=>{
+4079:        el.onclick=()=>{
+4081:          document.querySelectorAll('.target-select').forEach(e=>{e.classList.remove('target-select');e.onclick=null;});
+4195:        el.onclick=()=>{this.setPlayerTarget(c.uid);SFX.play('click');};
+4256:      b1.onclick=()=>{ov.classList.remove('active');Formation.showForBattle(this.battleState.pCards);};
+4258:      b2.onclick=()=>{ov.classList.remove('active');this.launchBattle();};
+4286:      d.onclick=()=>{
+4481:      slot.onclick=()=>{
+4525:        card.onclick=()=>{
+4550:      <button class="btn btn-s btn-green" style="margin-top:8px;" onclick="TurnBattle._useActiveCard()">사용하기 (Enter)</button>
+4627:      <button class="btn btn-s" onclick="TurnBattle.goBack()" style="margin-top:12px;">← 취소</button>`;
+4666:        slot.onclick=()=>{this._selectTarget(c);};
+4734:    if(!forTarget)html+='<div class="tvo-close"><button class="btn btn-s" onclick="TurnBattle._closeOverlay()">← 돌아가기</button></div>';
+4741:        if(el)el.onclick=()=>this._selectTarget(c);
+5109:      slot.onclick=()=>this.clickSlot(i);
+5124:      d.onclick=()=>this.clickBench(c);

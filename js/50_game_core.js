@@ -30,7 +30,7 @@ Object.assign(RoF.Game, {
   },
   persist(){
     if(!Auth.user)return;const db=Auth.db();if(!db[Auth.user])return;
-    db[Auth.user].save={round:this.round,hp:this.hp,maxHp:this.maxHp,gold:this.gold,
+    db[Auth.user].save={round:this.round,hp:this.hp,maxHp:this.maxHp,gold:this.gold,gems:this.gems||0,blessings:this.blessings||0,divineGrace:this.divineGrace||0,
       deck:this.deck,relics:this.relics,ownedRelics:this.ownedRelics||[],ownedSkills:this.ownedSkills||[],heroBaseId:this.heroBaseId,bestRound:this.bestRound,totalWins:this.totalWins,totalGames:this.totalGames,leaguePoints:this.leaguePoints||0,buildings:this.buildings||{},tutStep:this.tutStep||0,companionName:this.companionName||'동료',blessings:this.blessings||0,winStreak:this.winStreak||0,tavernSlots:this.tavernSlots||null,tavernDate:this.tavernDate||null,savedFormations:this.savedFormations||[]};
     Auth.save(db);
   },

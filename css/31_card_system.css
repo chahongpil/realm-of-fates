@@ -1,0 +1,266 @@
+/* ============================================================
+   카드 시스템 CSS — 고딕 판타지 프레임
+   원칙: 컬렉션=풀사이즈, 전장=미니타일, 손패=중간
+   저작권 안전: 하스스톤과 다른 고딕 석재 디자인
+   ============================================================ */
+
+/* ── 1. 풀사이즈 카드 (컬렉션/덱뷰/선술집/뽑기) ── */
+.card {
+  width: 280px;
+  height: 490px;
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  transition: all .3s;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.8));
+  overflow: hidden;
+}
+.card:hover {
+  transform: translateY(-5px) scale(1.03);
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,.9));
+}
+.card-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 프레임 PNG 오버레이 */
+.card-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('../img/card_frame.png') center/100% 100% no-repeat;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* 일러스트 — 카드 전체를 꽉 채움 */
+.card-portrait {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+.card-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  color: #555;
+}
+.card-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 이름 — 프레임 상단 배너 위치 */
+.card-name {
+  position: absolute;
+  top: 6px;
+  left: 20%;
+  right: 20%;
+  z-index: 6;
+  text-align: center;
+  font-size: .85rem;
+  font-weight: 700;
+  color: #e8d5a3;
+  text-shadow: 0 1px 4px rgba(0,0,0,.9);
+  font-family: 'Cinzel','Georgia',serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 좌측 스탯 박스 (ATK/DEF/SPD) — 프레임 빨/파/초 위치 */
+.card-stats {
+  position: absolute;
+  left: 4px;
+  top: 36%;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.card-stats .st {
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: .65rem;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0,0,0,.8);
+  background: rgba(0,0,0,.3);
+}
+.st-atk { color: #ff4422; }
+.st-hp { color: #22cc44; }
+.st-def { color: #4488ff; }
+.st-spd { color: #22aaff; }
+
+/* HP — 프레임 우상단 하트 */
+.card-hp-badge {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  z-index: 6;
+  color: #ff4444;
+  font-size: .8rem;
+  font-weight: bold;
+  text-shadow: 0 0 6px rgba(255,68,68,.5), 0 1px 3px rgba(0,0,0,.9);
+}
+
+/* NRG — 프레임 우하단 다이아몬드 */
+.card-nrg-badge {
+  position: absolute;
+  bottom: 12px;
+  right: 10px;
+  z-index: 6;
+  color: #4488ff;
+  font-size: .7rem;
+  font-weight: bold;
+  text-shadow: 0 0 6px rgba(68,136,255,.5), 0 1px 3px rgba(0,0,0,.9);
+}
+
+/* 능력 텍스트 — 프레임 하단 박스 */
+.card-ability {
+  position: absolute;
+  bottom: 35px;
+  left: 12%;
+  right: 12%;
+  z-index: 6;
+  text-align: center;
+  font-size: .5rem;
+  color: #bbb;
+  line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0,0,0,.8);
+}
+
+/* 타입/원소 태그 */
+.card-type {
+  position: absolute;
+  top: 26px;
+  left: 20%;
+  right: 20%;
+  z-index: 6;
+  text-align: center;
+  font-size: .45rem;
+  color: #8899aa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 레벨 코스트 (좌상단) */
+.card-cost {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #4488ff, #1a3366);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: .85rem;
+  border: 2px solid #6699dd;
+  z-index: 6;
+  box-shadow: 0 0 6px rgba(68,136,255,.4);
+}
+
+/* 등급 태그 */
+.card-rarity-tag {
+  position: absolute;
+  top: 30px;
+  right: 6px;
+  font-size: .5rem;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: bold;
+  z-index: 6;
+}
+
+/* 스킬 아이콘 */
+.card-skill-icons {
+  position: absolute;
+  top: 6px;
+  left: 32px;
+  display: flex;
+  gap: 1px;
+  z-index: 6;
+}
+
+/* 등급별 카드 테두리 (프레임과 별개) */
+.card.bronze .card-inner { border: 2px solid #5a4a2a; }
+.card.silver .card-inner { border: 2px solid #6a7a8a; }
+.card.gold .card-inner { border: 3px solid #c8a820; box-shadow: 0 0 8px rgba(255,215,0,.15); }
+.card.legendary .card-inner { border: 3px solid #8a2be2; box-shadow: 0 0 10px rgba(138,43,226,.2); }
+.card.divine .card-inner { border: 3px solid #cc3333; box-shadow: 0 0 12px rgba(255,50,50,.15); animation: divineGlow 2s infinite alternate; }
+
+/* 등급 태그 색상 */
+.card.bronze .card-rarity-tag { background: linear-gradient(180deg,#8b6914,#5a4010); color: #ddb85a; border: 1px solid #aa8830; }
+.card.silver .card-rarity-tag { background: linear-gradient(180deg,#666,#444); color: #ddd; border: 1px solid #888; }
+.card.gold .card-rarity-tag { background: linear-gradient(180deg,#daa520,#8b6914); color: #fff; border: 1px solid #ffd700; }
+.card.legendary .card-rarity-tag { background: linear-gradient(180deg,#a335ee,#6a1faa); color: #e6b8ff; border: 1px solid #bb55ff; }
+.card.divine .card-rarity-tag { background: linear-gradient(180deg,#e6cc80,#aa8833); color: #fff; border: 1px solid #ffe066; }
+
+/* XP 바 */
+.card-xp { position: absolute; bottom: 4px; left: 10%; right: 10%; z-index: 6; }
+
+/* ── 2. 미니 카드 (전장/편성 슬롯) ── */
+/* 전장 카드는 .td-slot .td-card 로 렌더링됨 — 40_battle.css에서 관리 */
+/* 편성 슬롯은 .form-slot 으로 — 41_formation.css에서 관리 */
+/* 미니 덱 카드는 .deck-mini 로 — 아래에서 관리 */
+
+.deck-mini {
+  width: 56px;
+  height: 72px;
+  border-radius: 5px;
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: .5rem;
+  position: relative;
+  cursor: pointer;
+  transition: all .2s;
+}
+.deck-mini:hover { transform: scale(1.1); }
+.deck-mini.bronze { border: 1px solid #8b6914; background: linear-gradient(180deg,#1a1508,#0d0a04); }
+.deck-mini.silver { border: 1px solid #7a8a9a; background: linear-gradient(180deg,#1e2333,#0a0d14); }
+.deck-mini.gold { border: 1px solid #daa520; background: linear-gradient(180deg,#2a1e00,#1a1200); box-shadow: 0 0 4px rgba(218,165,32,.2); }
+.deck-mini.legendary { border: 1px solid #a335ee; background: linear-gradient(180deg,#1e0a2e,#0f0518); box-shadow: 0 0 4px rgba(163,53,238,.2); }
+.deck-mini.divine { border: 2px solid #e6cc80; background: linear-gradient(180deg,#2a2000,#1a1a3e); box-shadow: 0 0 6px rgba(230,204,128,.3); }
+.deck-mini .dm-icon { font-size: 1.3rem; }
+.deck-mini .dm-icon img { width: 40px; height: 40px; border-radius: 3px; object-fit: cover; }
+.deck-mini .dm-name { font-size: .35rem; color: #ccc; max-width: 42px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deck-mini .dm-equips { position: absolute; top: 0; left: 1px; display: flex; gap: 1px; }
+.deck-mini .dm-equips span { font-size: .4rem; }
+.deck-mini .dm-lvl { position: absolute; top: 0; right: 2px; font-size: .4rem; color: #ffd700; }
+
+/* ── 3. 반응형 (모바일) ── */
+@media(max-width: 700px) {
+  .card { width: 42vw; height: 73.5vw; } /* 4:7 비율 유지 */
+  .card-name { font-size: .7rem; }
+  .card-stats .st { font-size: .55rem; padding: 2px 4px; }
+  .card-ability { font-size: .45rem; }
+}
+
+/* ── 4. PC 대형 화면 ── */
+@media(min-width: 1024px) {
+  .card { width: 300px; height: 525px; }
+  .card-name { font-size: 1rem; }
+  .card-stats .st { font-size: .75rem; }
+}

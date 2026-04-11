@@ -1,5 +1,21 @@
-/* CSS variables (:root). Reserved for future design tokens. */
+/* CSS variables (:root). 카드 크기 전역 통일 */
 :root {
-  /* --gold: #ffd700;   reserved */
-  /* --primary-bg: #080810;  reserved */
+  /* 카드 크기 (4:7 비율) */
+  --card-width: 280px;
+  --card-height: 490px;
+  --card-img-height: 250px;
+  --card-font-name: 1rem;
+  --card-font-stat: .7rem;
+
+  /* 미니 카드 (전투/편성용) */
+  --mini-card-width: 120px;
+  --mini-card-height: 160px;
+  --mini-img-size: 90px;
+
+  /* 매칭 초상화 */
+  --match-portrait: 320px;
+
+  /* 색상 */
+  --gold: #ffd700;
+  --primary-bg: #080810;
 }

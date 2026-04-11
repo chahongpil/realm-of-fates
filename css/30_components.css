@@ -19,19 +19,38 @@
 .hud-left,.hud-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .hud-stat{font-size:.8rem;color:#ccc;}.hud-stat span{color:#ffd700;font-weight:bold;}
 .hud-name{font-size:.8rem;color:#ffd700;font-weight:bold;}
-.card{width:200px;min-height:290px;border-radius:8px;position:relative;cursor:pointer;transition:all .3s;flex-shrink:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));}
-.card:hover{transform:translateY(-5px) scale(1.02);filter:drop-shadow(0 8px 16px rgba(0,0,0,.7));}
-.card-inner{width:100%;height:100%;border-radius:8px;padding:6px;display:flex;flex-direction:column;position:relative;overflow:hidden;}
-.card-inner::before{content:'';position:absolute;inset:3px;border-radius:5px;border:1px solid rgba(255,255,255,.1);pointer-events:none;z-index:1;}
-.card-inner::after{content:'';position:absolute;inset:0;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.08) 0%,transparent 30%,transparent 70%,rgba(0,0,0,.3) 100%);pointer-events:none;}
-.card.bronze .card-inner{border:3px solid #8b6914;background:linear-gradient(180deg,#2a1e0a 0%,#1a1208 40%,#0d0a04 100%);box-shadow:inset 0 0 15px rgba(139,105,20,.2);}
-.card.silver .card-inner{border:3px solid #7a8a9a;background:linear-gradient(180deg,#1e2333 0%,#151a28 40%,#0a0d14 100%);box-shadow:inset 0 0 15px rgba(122,138,154,.2);}
-.card.gold .card-inner{border:3px solid #daa520;background:linear-gradient(180deg,#3a2800 0%,#2a1e00 40%,#1a1200 100%);box-shadow:inset 0 0 20px rgba(218,165,32,.15),0 0 10px rgba(255,215,0,.2);}
-.card.legendary .card-inner{border:3px solid #a335ee;background:linear-gradient(180deg,#2a0e3e 0%,#1e0a2e 40%,#0f0518 100%);box-shadow:inset 0 0 20px rgba(163,53,238,.15),0 0 12px rgba(163,53,238,.3);}
-.card.divine .card-inner{border:3px solid #e6cc80;background:linear-gradient(180deg,#3a2a00 0%,#1a1a3e 50%,#3a002a 100%);box-shadow:inset 0 0 25px rgba(230,204,128,.2),0 0 20px rgba(255,255,255,.3);animation:divineGlow 2s infinite alternate;}
-.card-portrait{position:relative;border-radius:4px;margin:2px 3px;padding:4px 0;border:1px solid rgba(255,255,255,.08);overflow:hidden;min-height:100px;}
-.card-portrait::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.08),transparent 60%);pointer-events:none;}
-.card-portrait::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 20px rgba(0,0,0,.6);pointer-events:none;border-radius:4px;}
+/* ============ 카드 — 고딕 판타지 프레임 통일 ============ */
+/* 카드 고정 크기 4:7 비율 */
+.card{width:280px;height:490px;border-radius:14px;position:relative;cursor:pointer;transition:all .3s;flex-shrink:0;filter:drop-shadow(0 4px 12px rgba(0,0,0,.8));background:transparent;overflow:hidden;}
+.card:hover{transform:translateY(-5px) scale(1.02);filter:drop-shadow(0 8px 24px rgba(0,0,0,.9));}
+.card-inner{width:100%;height:100%;border-radius:14px;padding:0;position:relative;overflow:hidden;border:none!important;background:#0a0a0a!important;box-shadow:none!important;}
+/* 프레임 PNG 오버레이 — 카드 전체에 씌움 */
+.card-inner::before{content:'';position:absolute;inset:0;background:url('../img/card_frame.png') center/100% 100% no-repeat;z-index:10;pointer-events:none;}
+.card-inner::after{display:none;}
+/* 일러스트 — 카드 전체를 꽉 채움 */
+.card-portrait{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;border:none;margin:0;padding:0;border-radius:14px;}
+.card-portrait::before,.card-portrait::after{display:none;}
+.card-icon{width:100%;height:100%;margin:0;padding:0;font-size:4rem;display:flex;align-items:center;justify-content:center;}
+.card-icon img{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block;}
+/* 이름 바 (상단) — 프레임 이름 배너 위치 */
+.card-name-bar{position:absolute;top:0;left:0;right:0;z-index:11;background:transparent;padding:10px 35px 2px 35px;}
+/* 종족/원소 태그 */
+.card-tags{position:absolute;top:32px;left:35px;z-index:11;padding:0;background:transparent;font-size:.45rem;}
+/* HP — 프레임 우상단 하트 위치 */
+.card-hp{position:absolute;top:8px;right:18px;z-index:11;text-shadow:0 0 6px rgba(255,68,68,.5);font-size:.8rem;font-weight:bold;}
+/* 좌측 스탯 — 프레임 빨/파/초 박스 위치 */
+.card-stats-left{position:absolute;left:5px;top:38%;z-index:11;display:flex;flex-direction:column;gap:8px;}
+.card-stats-left span{background:transparent;padding:2px 4px;border:none;font-weight:bold;font-size:.6rem;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+/* 능력 텍스트 — 프레임 하단 텍스트 박스 */
+.card-ability{position:absolute;bottom:50px;left:15%;right:15%;z-index:11;font-size:.5rem;text-align:center;color:#bbb;}
+/* 하단 바 (장비+NRG) */
+.card-bottom{position:absolute;bottom:10px;left:10px;right:10px;z-index:11;display:flex;justify-content:space-between;align-items:center;background:transparent;}
+/* NRG — 프레임 우하단 다이아몬드 */
+.card-nrg{text-shadow:0 0 6px rgba(68,136,255,.5);font-size:.65rem;font-weight:bold;}
+/* 보호막 */
+.card-shield{position:absolute;top:8px;left:12px;z-index:11;text-shadow:0 0 4px rgba(68,170,255,.5);}
+/* 등급별 — 프레임 PNG가 대체하므로 border만 */
+.card.bronze .card-inner,.card.silver .card-inner,.card.gold .card-inner,.card.legendary .card-inner,.card.divine .card-inner{border:none!important;background:#0a0a0a!important;box-shadow:none!important;}
 .card[data-type="전사"] .card-portrait{background:linear-gradient(180deg,#2a1508 0%,#1a0e04 50%,#0d0602 100%);}
 .card[data-type="사수"] .card-portrait{background:linear-gradient(180deg,#0a1a0a 0%,#081408 50%,#040a04 100%);}
 .card[data-type="마법사"] .card-portrait{background:linear-gradient(180deg,#0a0a2a 0%,#08081a 50%,#04040d 100%);}
@@ -44,9 +63,9 @@
 .card.legendary .card-rarity-tag{background:linear-gradient(180deg,#a335ee,#6a1faa);color:#e6b8ff;border:1px solid #bb55ff;box-shadow:0 0 4px rgba(163,53,238,.4);}
 .card.divine .card-rarity-tag{background:linear-gradient(180deg,#e6cc80,#aa8833);color:#fff;border:1px solid #ffe066;box-shadow:0 0 8px rgba(230,204,128,.5);}
 .card-kind-tag{position:absolute;top:22px;right:4px;font-size:.5rem;padding:1px 4px;border-radius:2px;background:rgba(0,0,0,.6);color:#999;z-index:2;}
-.card-icon{text-align:center;font-size:3.5rem;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7));margin:2px 0;}
-.card-icon img{width:100%;height:auto;max-height:140px;object-fit:cover;border-radius:3px;filter:drop-shadow(0 0 8px rgba(255,200,100,.3));}
-.card-name{text-align:center;font-size:.8rem;font-weight:700;color:#e8d5a3;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.7);font-family:'Cinzel','Georgia',serif;}
+.card-icon{text-align:center;font-size:4.5rem;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7));margin:0;}
+.card-icon img{width:100%;height:100%;object-fit:cover;border-radius:0;filter:none;display:block;position:absolute;top:0;left:0;}
+.card-name{text-align:center;font-size:1rem;font-weight:700;color:#e8d5a3;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.7);font-family:'Cinzel','Georgia',serif;}
 .card-type{text-align:center;font-size:.6rem;color:#8899aa;margin-bottom:3px;text-transform:uppercase;letter-spacing:1px;}
 .card-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;font-size:.6rem;margin-top:auto;padding:3px;background:rgba(0,0,0,.3);border-radius:4px;border:1px solid rgba(255,255,255,.05);}
 .card-stats .st{padding:2px 4px;border-radius:2px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.05);}

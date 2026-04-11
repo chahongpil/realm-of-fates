@@ -152,6 +152,11 @@ Object.assign(RoF.Game, {
     document.getElementById('town-league').innerHTML=`<span style="color:${lg.color};">${lg.icon} ${lg.name} (${lp}점)</span>`;
     document.getElementById('town-gold').textContent=this.gold;
     document.getElementById('town-bless').textContent=this.blessings||0;
+    // 추가 화폐 표시
+    const gemsEl=document.getElementById('town-gems');
+    if(gemsEl)gemsEl.textContent=this.gems||0;
+    const graceEl=document.getElementById('town-grace');
+    if(graceEl)graceEl.textContent=this.divineGrace||0;
     document.getElementById('town-ap').innerHTML=`행동력 ${'🟡'.repeat(this.getActionPoints())}`;
     document.getElementById('town-deck-count').textContent=this.deck.length;
     const injuredCount=this.deck.filter(c=>c.injured&&!c.isHero).length;

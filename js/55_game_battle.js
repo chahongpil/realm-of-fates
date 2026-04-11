@@ -62,7 +62,7 @@ Object.assign(RoF.Game, {
       <div style="display:flex;align-items:center;justify-content:center;gap:30px;width:100%;margin-top:20px;">
         <!-- 상대 (왼쪽, 미확인) -->
         <div style="text-align:center;flex:1;">
-          <div style="width:35vw;max-width:250px;aspect-ratio:1;border-radius:15px;border:3px dashed #444;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+          <div style="width:45vw;max-width:320px;aspect-ratio:4/5;border-radius:15px;border:3px dashed #444;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin:0 auto;">
             <div style="font-size:4rem;opacity:.3;animation:dotPulse 1s infinite;">❓</div>
           </div>
           <div style="color:#555;font-size:1.1rem;font-weight:bold;margin-top:8px;">검색중...</div>
@@ -71,7 +71,7 @@ Object.assign(RoF.Game, {
         <div class="match-vs" style="opacity:.3;font-size:2rem;">⚔<br>VS<br>⚔</div>
         <!-- 나 (오른쪽) -->
         <div style="text-align:center;flex:1;">
-          ${heroImg?`<img src="${heroImg}" style="width:35vw;max-width:250px;aspect-ratio:1;border-radius:15px;border:4px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[heroElem]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${hero?hero.icon:'⚔️'}</div>`}
+          ${heroImg?`<img src="${heroImg}" style="width:45vw;max-width:320px;aspect-ratio:4/5;border-radius:15px;border:4px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[heroElem]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${hero?hero.icon:'⚔️'}</div>`}
           <div style="color:#fff;font-size:1.3rem;font-weight:bold;margin-top:8px;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>
           <div style="color:${lg.color};font-size:.9rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>
         </div>
@@ -88,7 +88,7 @@ Object.assign(RoF.Game, {
         <div style="display:flex;align-items:center;justify-content:center;gap:30px;width:100%;" class="match-found">
           <!-- 상대 (왼쪽) -->
           <div style="text-align:center;flex:1;">
-            ${botImg?`<img src="${botImg}" style="width:35vw;max-width:250px;aspect-ratio:1;border-radius:15px;border:4px solid ${ELEM_COLOR[bot.element]||'#888'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[bot.element]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${ELEM_ICON[bot.element]}</div>`}
+            ${botImg?`<img src="${botImg}" style="width:45vw;max-width:320px;aspect-ratio:4/5;border-radius:15px;border:4px solid ${ELEM_COLOR[bot.element]||'#888'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[bot.element]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${ELEM_ICON[bot.element]}</div>`}
             <div style="color:#fff;font-size:1.3rem;font-weight:bold;margin-top:8px;font-family:'Cinzel','Georgia',serif;">${bot.name}</div>
             <div style="color:${bot.league.color};font-size:.9rem;">${bot.league.icon} ${bot.league.name} Lv.${bot.level}</div>
             <div style="color:#aaa;font-size:.8rem;">${bot.roleName||bot.role} · ${ELEM_ICON[bot.element]} ${ELEM_L[bot.element]}</div>
@@ -97,7 +97,7 @@ Object.assign(RoF.Game, {
           <div class="match-vs" style="font-size:2rem;">⚔<br>VS<br>⚔</div>
           <!-- 나 (오른쪽) -->
           <div style="text-align:center;flex:1;">
-            ${heroImg?`<img src="${heroImg}" style="width:35vw;max-width:250px;aspect-ratio:1;border-radius:15px;border:4px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[heroElem]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${hero?hero.icon:'⚔️'}</div>`}
+            ${heroImg?`<img src="${heroImg}" style="width:45vw;max-width:320px;aspect-ratio:4/5;border-radius:15px;border:4px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[heroElem]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${hero?hero.icon:'⚔️'}</div>`}
             <div style="color:#fff;font-size:1.3rem;font-weight:bold;margin-top:8px;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>
             <div style="color:${lg.color};font-size:.9rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>
             <div style="color:#aaa;font-size:.8rem;">${heroClass} · ${heroElem?ELEM_ICON[heroElem]+' '+ELEM_L[heroElem]:''}</div>
@@ -568,6 +568,7 @@ Object.assign(RoF.Game, {
   enemyMirrorDeploy(bs){
     const myHero=this.deck.find(c=>c.isHero);
     const myLv=myHero?(myHero.level||1):1;
+    const diff=this.totalWins+this.getHeroLevel(); // 난이도 변수 (스킬/유물 등급용)
     const scale=1+(myLv-1)*.1;
     const playerUnits=bs.pCards.filter(c=>!c.isHero);
     const playerRelics=bs.battleRelics.length;
@@ -719,11 +720,11 @@ Object.assign(RoF.Game, {
       <div class="timer-bar"><div class="timer-bar-fill" id="round-timer-bar" style="width:100%;"></div></div>
       <div class="timer-text">⏱️ <span id="round-timer-text">${this._roundTimerLeft}</span>초 | ${botName}도 선택 중...</div>`;
     const opts=document.getElementById('ch-options');opts.innerHTML='';
-    [{icon:'🃏',title:'동료 소환',desc:'새 동료 소환 (중복 시 합성)',action:'add_card'},
-     {icon:'⚡',title:'전투 비전',desc:'비전 습득 & 장착 (중복 시 합성)',action:'pick_skill'},
-     {icon:'🏺',title:'유물 발견',desc:'유물 획득 (중복 시 합성)',action:'pick_relic'},
-     {icon:'🧪',title:'치유 물약',desc:'영웅 HP 50% 회복 (쿨다운 1R)',action:'potion'},
-     {icon:'⏭️',title:'출전 준비',desc:'남은 행동력을 포기하고 전투 시작',action:'end_turn'}].forEach(o=>{
+    [{icon:'🗡️',title:'유닛 소환/강화',desc:bs.pCards.length>=5?'유닛 강화 (스탯 업)':'새 유닛 소환',action:'add_card'},
+     {icon:'⚡',title:'스펠 습득/강화',desc:'스펠 습득 & 장착 (강화 +50%)',action:'pick_skill'},
+     {icon:'🏺',title:'유물 획득/강화',desc:((this.ownedRelics||[]).length>=5)?'유물 강화':'새 유물 획득',action:'pick_relic'},
+     {icon:'💤',title:'휴식',desc:'전체 유닛 HP 50% 회복',action:'potion'},
+     {icon:'⏭️',title:'턴 종료',desc:'다음 라운드로 진행',action:'end_turn'}].forEach(o=>{
       const d=document.createElement('div');d.className='choice-box';
       const potionCd=bs._potionCooldown||0;
       if(o.action==='potion'&&potionCd>0){
@@ -781,13 +782,13 @@ Object.assign(RoF.Game, {
 
     // === POTION: instant use, no pick screen ===
     if(action==='potion'){
-      const hero=bs.pCards.find(c=>c.isHero);
-      if(hero){
-        const heal=Math.floor(hero.maxBHp*.5);
-        hero.currentHp=Math.min(hero.currentHp+heal,hero.maxBHp);
-        bs._potionCooldown=2;
-        SFX.play('heal');
-      }
+      // 휴식: 전체 유닛 HP 50% 회복
+      bs.pCards.filter(c=>c.currentHp>0).forEach(c=>{
+        const heal=Math.floor(c.maxBHp*.5);
+        c.currentHp=Math.min(c.currentHp+heal,c.maxBHp);
+      });
+      bs._potionCooldown=2;
+      SFX.play('heal');
       bs._apRemaining=Math.max(0,(bs._apRemaining||1)-1);
       if(bs._apRemaining>0){this.showRoundChoice();return;}
       this._stopRoundTimer();this._revealAndFinish();

@@ -574,18 +574,51 @@ RoF.TurnBattle ={
         if(!target)target=taunters[0]||foes.find(c=>c.currentHp>0);
         if(!target)continue;
         await this._showCombatAction(u,'⚔️ 공격!',target);
-        // Damage calc
-        let dmg=Math.max(1,u.atk-Math.floor((target.def||0)*.5));
+        // Damage calc (새 기획 적용: ATK-DEF, 크리×2, EVA캡80%, RAGE, 보호막)
+        let rawAtk=u.atk;
+        // RAGE 보너스 (10/20/30 단계)
+        const rage=u.rage||0;
+        if(rage>=30)rawAtk=Math.floor(rawAtk*1.3);
+        else if(rage>=20)rawAtk=Math.floor(rawAtk*1.2);
+        else if(rage>=10)rawAtk=Math.floor(rawAtk*1.1);
+        // 보호막 먼저 흡수 (DEF 무관)
+        let shieldAbsorb=0;
+        if(target.shield>0){shieldAbsorb=Math.min(target.shield,rawAtk);target.shield-=shieldAbsorb;}
+        const remaining=rawAtk-shieldAbsorb;
+        let dmg=Math.max(0,remaining-(target.def||0));
         if(target._defending){dmg=Math.floor(dmg*.5);target._defending=false;}
-        const isCrit=Math.random()<(u.luck||0)*.02;
+        // 회피 (EVA×10%, 캡 80%, 물리만)
+        const evaChance=Math.min((target.eva||0)*10,80);
+        const isEvade=Math.random()*100<evaChance;
+        if(isEvade){dmg=0;}
+        // 크리티컬 (LUCK×10%, ×2배)
+        const isCrit=!isEvade&&Math.random()*100<(u.luck||0)*10;
         if(isCrit)dmg=Math.floor(dmg*2);
+        // 원소 상성
+        const elemAdv={fire:'earth',water:'fire',lightning:'water',earth:'lightning',dark:'holy',holy:'dark'};
+        if(elemAdv[u.element]===target.element)dmg=Math.floor(dmg*1.5);
+        else if(elemAdv[target.element]===u.element)dmg=Math.floor(dmg*0.75);
+        // 적용
         target.currentHp-=dmg;
-        Game.showDmg(target,dmg,isCrit);SFX.play(isCrit?'crit':'hit');
+        // RAGE 축적 (피격자에게 데미지만큼)
+        target.rage=(target.rage||0)+dmg;
+        // RAGE 100 궁극기 체크
+        if(target.rage>=100){target.rage=0;Game.log(`💢 ${target.icon}${target.name} 분노 폭발!`,'ability-log');}
+        // 흡혈 체크 (실제 HP 데미지만)
+        if(u.skill==='life_steal'&&dmg>0&&Math.random()<(u.skillChance||0.5)){
+          const heal=dmg;u.currentHp=Math.min(u.maxBHp||u.currentHp,u.currentHp+heal);
+          Game.log(`💜 ${u.icon} 흡혈+${heal}`,'heal-log');
+        }
+        if(isEvade){Game.showDmg(target,0,false,'MISS');SFX.play('hit');Game.log(`💨 ${target.icon}${target.name} 회피!`,'atk-log');}
+        else{Game.showDmg(target,dmg,isCrit);SFX.play(isCrit?'crit':'hit');
         if(isCrit)Game.triggerSlowMo(800,'crit');
-        Game.log(`${u.icon}${u.name}→${target.icon}${target.name} ${dmg}${isCrit?' 치명타!':''}`,'atk-log');
-        if(target.currentHp<=0){target.currentHp=0;SFX.play('death');Game.log(`${target.icon} 쓰러짐!`,'atk-log');}
-        // Regen energy
-        u.curNrg=(u.curNrg||0)+(u.nrgReg||0);
+        let logMsg=`${u.icon}${u.name}→${target.icon}${target.name} ${dmg}`;
+        if(isCrit)logMsg+=' 💥크리!';if(shieldAbsorb>0)logMsg+=` (🛡${shieldAbsorb}흡수)`;
+        Game.log(logMsg,'atk-log');}
+        if(target.currentHp<=0){target.currentHp=0;SFX.play('death');Game.log(`💀 ${target.icon}${target.name} 전사!`,'atk-log');}
+        // 턴 종료 시 NRG 회복 + HP 회복 (기획: 매턴 종료 후 자동회복)
+        u.curNrg=Math.min(200,(u.curNrg||0)+(u.nrgReg||0));
+        u.currentHp=Math.min(u.maxBHp||u.currentHp,u.currentHp+(u.hpReg||0));
       } else if(order.action==='skill'){
         // Active skill execution (simplified)
         const sk=u.skill,skNrg=u.skillNrg||0;

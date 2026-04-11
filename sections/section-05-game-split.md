@@ -3,9 +3,13 @@
 > 참고: `claude-plan.md` "Phase 4: Game 객체 7개 파일 분할"
 > 테스트: `claude-plan-tdd.md` "Phase 4: Game 7개 파일 분할"
 
+## 상태
+
+**완료**. 브라우저 수동 회귀 테스트 대기 중 (리뷰 체크리스트 12개 항목 참조 — `implementation/code_review/section-05-review.md`).
+
 ## 목표
 
-2492줄 `Game` 객체를 `Object.assign` 패턴으로 7개 파일에 분산. 리팩토링의 핵심 단계이자 가장 위험한 단계.
+2421줄 `Game` 객체(129 top-level 키)를 `Object.assign(RoF.Game, {...})` 패턴으로 7개 파일에 분산. 리팩토링의 핵심 단계이자 가장 위험한 단계.
 
 ## 사전 감사 (Opus 리뷰 반영) — 작업 시작 전 필수
 
@@ -65,7 +69,8 @@ window.Game = RoF.Game;
 
 ### 5.4 `js/53_game_deck.js` (덱 보기/도감)
 
-- `showDeckView`, `showDeckTab`, `showCodexTab`, `showCardDetail`, `equipSkill`
+- `_dvTab`, `showDeckTab`, `showCodexTab`, `_codexFilter`, `renderCodex`, `showCodexDetail`, `showDeckView`, `showCardDetail`, `showRelicDetail`, `equipSkill`, `equipOwnedSkill`
+- 코드 리뷰 반영: `equipOwnedSkill` 은 덱뷰 스킬 장착 클릭 핸들러에서 호출되므로 tavern 이 아닌 deck 에 배치
 
 ### 5.5 `js/54_game_castle.js` (성/교회/대장간)
 
@@ -127,11 +132,48 @@ console.log('누락:', missing);
 
 ## 완료 조건
 
-- 7개 `5x_game_*.js` 파일 생성
-- `Object.keys(RoF.Game).length` 가 Phase 0 덤프와 일치
-- 중복 키 감지 메시지 0개
-- 모든 마을/전투 기능 작동
-- Phase 4 테스트 스텁 전부 PASS (20개 체크리스트 포함)
+- 7개 `5x_game_*.js` 파일 생성 ✓
+- `Object.keys(RoF.Game).length` 가 Phase 0 덤프와 일치 ✓ (Node 어셈블리 검증기 PASS, 129/129)
+- 중복 키 감지 메시지 0개 ✓
+- 모든 마을/전투 기능 작동 — **브라우저 수동 회귀 테스트 필요** (체크리스트 12개)
+- 코드 리뷰 반영 완료: Must-fix 0건, Auto-fix 5건 적용, 계획 준수 1건 (`showGameOver` → 56_effects)
+
+## 실제 구현 결과
+
+| 파일 | 키 수 | 설명 |
+| --- | --- | --- |
+| `js/50_game_core.js` | 25 | 기본 속성 15 + core 메서드 10 |
+| `js/51_game_town.js` | 15 | 마을/건물/NPC/튜토리얼 |
+| `js/52_game_tavern.js` | 9 | 술집 |
+| `js/53_game_deck.js` | 11 | 덱/도감/카드·유물 상세 |
+| `js/54_game_castle.js` | 10 | 성/리그/대장간/교회/훈련 |
+| `js/55_game_battle.js` | 54 | 전투 흐름 + 스킬 시스템 + 타겟팅 |
+| `js/56_game_effects.js` | 5 | 이펙트 (showAtk/Dmg/Heal/AbilEff/GameOver) |
+| **합계** | **129** | 매니페스트 일치 |
+
+### 보조 스크립트 (`docs/_*.py`, `docs/_*.js`)
+
+- `_split_game.py` — Game 블록 파싱 + KEY_MAP 기반 7파일 자동 생성. parse_keys 끝에 `depth==0` sanity assert 추가.
+- `_remove_game_block.py` — index.html 에서 Game 블록 + 배너 주석 제거.
+- `_brace_check.py` — 생성된 js 파일의 brace/paren/bracket 균형 검사.
+- `_verify_game_assembly.js` — Node vm sandbox 에서 7개 파일을 순차 로드하고 `Object.keys(RoF.Game)` 를 매니페스트와 비교.
+- `_extract_inline_scripts.py` — index.html 의 `<script>` 본문을 추출해 `node --check` 로 문법 검증.
+- `index.html.pre_phase5_backup` — 원본 백업. 브라우저 회귀 테스트 통과 후 제거 권장.
+
+### 리뷰에서 반영한 개선
+
+1. `equipOwnedSkill` 분류 수정: tavern → deck (실제 호출자 위치 기준)
+2. `showGameOver` 계획 준수: battle → effects
+3. 중복 키 감지 강화: `RoF.__gameKeyError = true` 플래그 추가
+4. `window.Game = RoF.Game` 에 설명 주석 추가
+5. `_split_game.py` parse_keys 에 `depth==0` assert 추가 (템플릿 리터럴 파서 버그 회귀 방지)
+6. `55_game_battle.js` 말미의 stranded 주석 `// ---- EQUIP SKILL TO UNIT ----` 제거
+
+### 리뷰에서 let go 한 항목
+
+- 템플릿 리터럴 `${...}` 중첩 backtick 파서 완전 재작성 → 현재 무해 (node assembly 검증 통과). sanity assert 로 향후 회귀 감지.
+- `'use strict'` 추가 → 원본 보존 원칙.
+- trailing comma / bootstrap 블록 중복 → 생성기 템플릿 특성.
 
 ## 리스크
 

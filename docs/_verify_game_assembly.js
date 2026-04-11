@@ -93,22 +93,21 @@ sandbox.RELICS = [];
 sandbox.RELICS_DB = [];
 sandbox.TRAITS = {};
 sandbox.R_LABEL = {};
-sandbox.uid = () => 'uid_stub';
 sandbox.getCardImg = () => '';
 sandbox.getTraits = () => [];
-sandbox.applyRelic = noop;
-sandbox.applySkillToUnit = noop;
-sandbox.wait = () => Promise.resolve();
-sandbox.TurnBattle = { start: noop };
-sandbox.Formation = { load: noop, save: noop };
-sandbox.FX = { initTitle: noop, destroy: noop };
-sandbox.DefeatFX = { play: noop, stop: noop };
+// These are now provided by the split files themselves — no stub needed.
+// sandbox.TurnBattle / Formation / FX will be set by 60/70/80 scripts.
+sandbox.DefeatFX = { play: noop, stop: noop };  // not in current branch; kept as safety stub
+sandbox.requestAnimationFrame = () => 0;
+sandbox.cancelAnimationFrame = () => {};
 
 vm.createContext(sandbox);
 
-// Load 00_namespace.js first (creates RoF)
+// Load 00_namespace.js first (creates RoF), then Game split files, then modules.
+// Bootstrap is NOT loaded here — it runs under DOMContentLoaded which we stub.
 const files = [
   'js/00_namespace.js',
+  'js/20_helpers.js',
   'js/50_game_core.js',
   'js/51_game_town.js',
   'js/52_game_tavern.js',
@@ -116,6 +115,9 @@ const files = [
   'js/54_game_castle.js',
   'js/55_game_battle.js',
   'js/56_game_effects.js',
+  'js/60_turnbattle.js',
+  'js/70_formation.js',
+  'js/80_fx.js',
 ];
 
 for (const f of files) {
@@ -142,6 +144,15 @@ const expected = new Set(manifestKeys);
 const actual = new Set(actualKeys);
 const missing = manifestKeys.filter(k => !actual.has(k));
 const extra = actualKeys.filter(k => !expected.has(k));
+
+// Also verify modules are loaded
+const moduleChecks = ['TurnBattle', 'Formation', 'FX'];
+const missingModules = moduleChecks.filter(m => !sandbox.RoF[m] || !sandbox[m]);
+if (missingModules.length > 0) {
+  console.error(`\n❌ MODULES MISSING: ${missingModules.join(', ')}`);
+  process.exit(1);
+}
+console.log(`Modules OK: ${moduleChecks.join(', ')}`);
 
 if (missing.length === 0 && extra.length === 0) {
   console.log('\n✅ PASS: RoF.Game keys exactly match manifest (129 keys)');

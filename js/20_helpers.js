@@ -15,6 +15,7 @@ RoF.helpers.fuseCard = function(card){
 // ── 적/ID ──
 RoF.helpers.enemyName = function(){return ENEMY_NAMES[Math.floor(Math.random()*ENEMY_NAMES.length)];};
 RoF.helpers.uid = function(){return Math.random().toString(36).substr(2,9);};
+RoF.helpers.getHeroId = function(element,roleId){return `h_${roleId==='melee'?'m':roleId==='ranged'?'r':'s'}_${element}`;};
 // ── 비동기/픽 ──
 RoF.helpers.wait = function(ms){return new Promise(r=>setTimeout(r,ms));};
 // Rarity pick: mode='tavern'|'battle'|'reward', bonus=scaling factor
@@ -57,6 +58,7 @@ window.upgradeRarity = RoF.helpers.upgradeRarity;
 window.fuseCard = RoF.helpers.fuseCard;
 window.enemyName = RoF.helpers.enemyName;
 window.uid = RoF.helpers.uid;
+window.getHeroId = RoF.helpers.getHeroId;
 window.wait = RoF.helpers.wait;
 window.pickRar = RoF.helpers.pickRar;
 window.applySkillToUnit = RoF.helpers.applySkillToUnit;

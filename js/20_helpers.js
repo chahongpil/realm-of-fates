@@ -43,6 +43,7 @@ RoF.helpers.applySkillToUnit = function(sk,unit){
   if(ef==='grant_rebirth'){unit.skill='rebirth';unit.skillDesc='부활 부여';return;}
   if(ef==='rarity_up'){const ri=['bronze','silver','gold','legendary'].indexOf(unit.rarity);if(ri<3)unit.rarity=['bronze','silver','gold','legendary'][ri+1];return;}
   if(ef==='invincible3'){unit._invincible=3;return;}
+  if(ef==='handoff'){unit._handoff=.4;return;}
   ef.split(',').forEach(part=>{const m=part.match(/(\w+)\+(\d+)/);if(m){const stat=m[1],val=parseInt(m[2]);unit[stat]=(unit[stat]||0)+val;if(stat==='hp')unit.maxHp=(unit.maxHp||unit.hp)+val;}});
 };
 

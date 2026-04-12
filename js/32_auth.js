@@ -105,20 +105,32 @@ RoF.Auth={
     const g=document.getElementById('char-select-grid');g.innerHTML='';
     document.getElementById('btn-confirm-char').textContent='영웅 확정!';
     document.getElementById('btn-confirm-char').disabled=true;
+    // 2026-04-12: CardComponent 이주 — char-option inline HTML 제거, .card-v2 통합 렌더
+    const instances = [];
     HERO_ROLES.forEach(r=>{
       const heroId=getHeroId(this._selElement,r.id);
       const u=UNITS.find(x=>x.id===heroId);
       if(!u)return;
-      const d=document.createElement('div');d.className='char-option';d.style.width='200px';
-      d.innerHTML=`<div class="co-icon" style="font-size:2.5rem;">${r.icon}</div>
-        <div class="co-name">${u.name}</div>
-        <div class="co-desc">${r.desc}</div>
-        <div class="co-stats" style="margin-top:6px;">
-          <span class="st-atk">⚔${u.atk}</span><span class="st-hp">♥${u.hp}</span><span class="st-def">🛡${u.def}</span><span class="st-spd">💨${u.spd}</span><span style="color:${ELEM_COLOR[this._selElement]};">⚡${u.nrg}</span>
-        </div>
-        <div style="font-size:.6rem;color:#aaa;margin-top:4px;">${u.skillDesc}</div>`;
-      d.onclick=()=>{g.querySelectorAll('.char-option').forEach(c=>c.classList.remove('selected'));d.classList.add('selected');this._selRole=r.id;document.getElementById('btn-confirm-char').disabled=false;SFX.play('click');};
-      g.appendChild(d);
+      const wrap=document.createElement('div');
+      wrap.className='char-option-v2';
+      wrap.setAttribute('data-role',r.id);
+      const inst=CardComponent.create(u,{mode:'select'});
+      instances.push(inst);
+      wrap.appendChild(inst.el);
+      const path=document.createElement('div');
+      path.className='char-role-path';
+      path.innerHTML=`<span class="char-role-icon">${r.icon}</span>${r.desc}`;
+      wrap.appendChild(path);
+      wrap.onclick=()=>{
+        instances.forEach(x=>x.setSelected(false));
+        g.querySelectorAll('.char-option-v2').forEach(c=>c.classList.remove('selected'));
+        wrap.classList.add('selected');
+        inst.setSelected(true);
+        this._selRole=r.id;
+        document.getElementById('btn-confirm-char').disabled=false;
+        SFX.play('click');
+      };
+      g.appendChild(wrap);
     });
   },
   confirmChar(){

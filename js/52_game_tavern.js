@@ -80,11 +80,16 @@ Object.assign(RoF.Game, {
     const tavLv=this.getBuildingLv('tavern')||1;
     const count=tavLv>=2?5:4;
     const slots=[];
+    const usedIds=new Set();  // P0-1: 같은 선술집 갱신 안에서 동일 유닛 id 중복 금지 (아트 중복 → 저예산 시그널)
     for(let i=0;i<count;i++){
       const r=pickRar(this.getHeroLevel()+tavLv*2,'tavern');
-      let pool=UNITS.filter(u=>u.rarity===r&&!u.id.startsWith('h_'));
+      let pool=UNITS.filter(u=>u.rarity===r&&!u.id.startsWith('h_')&&!usedIds.has(u.id));
+      // pool 소진 시: 등급 제한 풀고 dedup 유지
+      if(!pool.length)pool=UNITS.filter(u=>!u.id.startsWith('h_')&&!usedIds.has(u.id));
+      // 그래도 없으면(소규모 DB) 중복 허용 폴백
       if(!pool.length)pool=UNITS.filter(u=>!u.id.startsWith('h_'));
       const b=pool[Math.floor(Math.random()*pool.length)];
+      usedIds.add(b.id);
       const cost=({bronze:5,silver:8,gold:12,legendary:18,divine:25})[b.rarity]||5;
       slots.push({...b,uid:uid(),level:1,equips:[],maxHp:b.hp,cost});
     }

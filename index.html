@@ -35,7 +35,11 @@
 <script defer src="js/54_game_castle.js"></script>
 <script defer src="js/55_game_battle.js"></script>
 <script defer src="js/56_game_effects.js"></script>
+<script defer src="js/57_game_battle_ui.js"></script>
+<script defer src="js/58_game_battle_end.js"></script>
+<script defer src="js/59_game_battle_round.js"></script>
 <script defer src="js/60_turnbattle.js"></script>
+<script defer src="js/61_turnbattle_input.js"></script>
 <script defer src="js/70_formation.js"></script>
 <script defer src="js/80_fx.js"></script>
 <script defer src="js/99_bindings.js"></script>
@@ -117,14 +121,13 @@
     <div class="town-hud-left">
       <div class="th-stat" style="color:#ffd700;font-weight:bold;" id="menu-welcome"></div>
       <div class="th-stat" id="town-league"></div>
+      <div class="th-stat" title="보유 전력"><span style="opacity:.75;">⚔</span><span id="town-deck-count">0</span></div>
     </div>
     <div class="town-hud-right">
       <div class="th-stat">💰<span id="town-gold">0</span></div>
       <div class="th-stat">💎<span id="town-gems">0</span></div>
       <div class="th-stat">✨<span id="town-bless">0</span></div>
-      <div class="th-stat">👑<span id="town-grace">0</span></div>
       <div class="th-stat" id="town-ap"></div>
-      <div class="th-stat">전력 <span id="town-deck-count">0</span></div>
     </div>
   </div>
   <div class="town-container" id="town-container"></div>

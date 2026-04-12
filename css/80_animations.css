@@ -21,7 +21,7 @@
 @keyframes upgFlash{0%{background:rgba(255,215,0,.4);}100%{background:transparent;}}
 @keyframes upgPart{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0);}}
 @keyframes rarBurst{0%{background:radial-gradient(circle at 50% 50%,rgba(255,215,0,.6),transparent 60%);}50%{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.3),transparent 70%);}100%{background:transparent;}}
-@keyframes upgGlow{0%{filter:brightness(2) drop-shadow(0 0 20px #ffd700);}100%{filter:brightness(1) drop-shadow(0 4px 8px rgba(0,0,0,.5));}}
+@keyframes upgGlow{0%{filter:brightness(2) drop-shadow(0 0 20px var(--curr-gold));}100%{filter:brightness(1) drop-shadow(0 4px 8px rgba(0,0,0,.5));}}
 @keyframes cardFlip{0%{transform:rotateY(180deg) scale(.8);}50%{transform:rotateY(90deg) scale(1.1);}100%{transform:rotateY(0deg) scale(1);}}
 @keyframes legendReveal{0%{background:radial-gradient(circle,rgba(163,53,238,.5),transparent 50%);}100%{background:transparent;}}
 @keyframes goldReveal{0%{background:radial-gradient(circle,rgba(218,165,32,.4),transparent 50%);}100%{background:transparent;}}

@@ -1,6 +1,191 @@
-/* CSS variables (:root). 카드 크기 전역 통일 */
+@import url('11_frame_coords.css');
+@import url('35_banners.css');
+
+/* ===================================================================
+   Realm of Fates — Design Tokens (Single Source of Truth)
+   ===================================================================
+   모든 색/간격/모션/반경/폰트의 원시값은 이 파일에만 존재한다.
+   다른 CSS 파일은 절대 하드코딩 금지. 필요하면 토큰을 먼저 추가하라.
+   업데이트: 2026-04-12 — Design System Layer 1
+   =================================================================== */
+
+/* 베이스 해상도 — 가로 1280×720 (HD 16:9). PC/모바일 가로 공통, 뷰포트에 맞춰 균등 스케일.
+   2026-04-12: 세로 390×844 폐기 → 가로로 전환. */
+:root{
+  --viewport-w: 1280px;
+  --viewport-h: 720px;
+}
+
+/* BEGIN_LAYOUT_VARS — 화면 편집기(tools/screen_editor_*.html)가 관리하는 레이아웃 변수
+   이 블록 안의 값만 편집기 서버가 regex 로 수정. 수동 편집 가능하지만 편집기가 덮어씀. */
+:root{
+  /* battle */
+  --battle-slot-gap: 16px;
+  --battle-slot-maxw: 16%;
+  --battle-field-pad-y: 40px;
+  --battle-field-pad-x: 40px;
+  --battle-row-pad-y: 0px;
+  --battle-vs-pad-y: 0px;
+  /* formation */
+  --form-slot-w: 180px;
+  --form-slot-h: 220px;
+  --form-row-gap: 23px;
+  --form-grid-gap: 0px;
+  --form-bench-gap: 6px;
+  /* char-select step 2 */
+  --charselect-gap: 50px;
+  --charselect-padding: 0px;
+  --charselect-item-pad: 30px;
+  /* tavern */
+  --tavern-card-w: 280px;
+  --tavern-grid-gap: 15px;
+  --tavern-grid-pad: 20px;
+  /* deckview */
+  --deckview-card-w: 260px;
+  --deckview-grid-gap: 12px;
+  --deckview-grid-pad: 16px;
+  /* title */
+  --title-logo-size: 4rem;
+  --title-logo-spacing: 8px;
+  --title-subtitle-size: 1.3rem;
+  --title-buttons-gap: 15px;
+  --title-subtitle-mb: 2rem;
+  /* title — 버튼 그룹 분리 (2026-04-13 심야). 래퍼는 full-container 투명. */
+  --title-buttons-x: 0px;   --title-buttons-y: 0px;  --title-buttons-w: 1280px; --title-buttons-h: 720px;
+  --title-btn-back-x: 420px; --title-btn-back-y: 480px; --title-btn-back-w: 200px; --title-btn-back-h: 56px;
+  --title-btn-new-x:  660px; --title-btn-new-y:  480px; --title-btn-new-w:  200px; --title-btn-new-h:  56px;
+  /* cardselect zones (출정 편성 화면) — 절대위치 레이아웃 */
+  /* cardselect 레이아웃 재정비 (2026-04-13) — 1280×720 무겹침, 유물 클릭 가능 */
+  --cs-title-x: 10px;
+  --cs-title-y: 13px;
+  --cs-title-w: 1256px;
+  --cs-title-h: 98px;
+  --cs-selected-x: 20px;
+  --cs-selected-y: 126px;
+  --cs-selected-w: 406px;
+  --cs-selected-h: 106px;
+  /* cs-buttons 래퍼는 투명 full-container — 변수는 더이상 wrapper 위치에 쓰이지 않음 */
+  --cs-buttons-x: 0px;
+  --cs-buttons-y: 0px;
+  --cs-buttons-w: 1280px;
+  --cs-buttons-h: 720px;
+  /* 4개 버튼 개별 위치 */
+  --cs-btn-back-x: 300px;
+  --cs-btn-back-y: 250px;
+  --cs-btn-back-w: 128px;
+  --cs-btn-back-h: 42px;
+  --cs-btn-save-x: 159px;
+  --cs-btn-save-y: 250px;
+  --cs-btn-save-w: 130px;
+  --cs-btn-save-h: 42px;
+  --cs-btn-load-x: 20px;
+  --cs-btn-load-y: 250px;
+  --cs-btn-load-w: 130px;
+  --cs-btn-load-h: 42px;
+  --cs-btn-confirm-x: 20px;
+  --cs-btn-confirm-y: 304px;
+  --cs-btn-confirm-w: 408px;
+  --cs-btn-confirm-h: 57px;
+  /* 유물 영역 (선택/보유) — 클릭 가능한 높이 확보 */
+  --cs-relics-selected-x: 20px;
+  --cs-relics-selected-y: 372px;
+  --cs-relics-selected-w: 408px;
+  --cs-relics-selected-h: 64px;
+  --cs-relics-grid-x: 20px;
+  --cs-relics-grid-y: 460px;
+  --cs-relics-grid-w: 409px;
+  --cs-relics-grid-h: 216px;
+  /* 보유 동료 큰 카드 그리드 (우측 전체) */
+  --cs-grid-x: 446px;
+  --cs-grid-y: 165px;
+  --cs-grid-w: 811px;
+  --cs-grid-h: 504px;
+
+  /* tavern zones */
+  --tav-tabs-x: 20px; --tav-tabs-y: 60px; --tav-tabs-w: 1240px; --tav-tabs-h: 60px;
+  --tav-info-x: 20px; --tav-info-y: 125px; --tav-info-w: 1240px; --tav-info-h: 30px;
+  --tav-grid-x: 20px; --tav-grid-y: 160px; --tav-grid-w: 1240px; --tav-grid-h: 480px;
+  --tav-buttons-x: 0px; --tav-buttons-y: 0px; --tav-buttons-w: 1280px; --tav-buttons-h: 720px;
+  --tav-btn-refresh-x: 430px; --tav-btn-refresh-y: 650px; --tav-btn-refresh-w: 260px; --tav-btn-refresh-h: 44px;
+  --tav-btn-back-x:    700px; --tav-btn-back-y:    650px; --tav-btn-back-w:    160px; --tav-btn-back-h:    44px;
+
+  /* deckview zones */
+  --dv-tabs-x: 20px; --dv-tabs-y: 60px; --dv-tabs-w: 1240px; --dv-tabs-h: 60px;
+  --dv-grid-x: 20px; --dv-grid-y: 130px; --dv-grid-w: 1240px; --dv-grid-h: 580px;
+  --dv-skills-x: 20px; --dv-skills-y: 440px; --dv-skills-w: 820px; --dv-skills-h: 130px;
+  --dv-relics-x: 20px; --dv-relics-y: 580px; --dv-relics-w: 820px; --dv-relics-h: 130px;
+  --dv-codex-x: 0px; --dv-codex-y: 0px; --dv-codex-w: 0px; --dv-codex-h: 0px;
+  --dv-back-x: 1180px; --dv-back-y: 62px; --dv-back-w: 80px; --dv-back-h: 40px;
+
+  /* castle zones */
+  --castle-tabs-x: 20px; --castle-tabs-y: 60px; --castle-tabs-w: 1240px; --castle-tabs-h: 60px;
+  --castle-info-x: 20px; --castle-info-y: 125px; --castle-info-w: 1240px; --castle-info-h: 30px;
+  --castle-grid-x: 20px; --castle-grid-y: 160px; --castle-grid-w: 1240px; --castle-grid-h: 500px;
+  --castle-back-x: 20px; --castle-back-y: 670px; --castle-back-w: 200px; --castle-back-h: 40px;
+
+  /* church zones */
+  --church-title-x: 20px; --church-title-y: 60px; --church-title-w: 1240px; --church-title-h: 70px;
+  --church-grid-x: 20px; --church-grid-y: 140px; --church-grid-w: 1240px; --church-grid-h: 520px;
+  --church-back-x: 20px; --church-back-y: 670px; --church-back-w: 200px; --church-back-h: 40px;
+
+  /* reward zones */
+  --rew-title-x: 340px; --rew-title-y: 60px; --rew-title-w: 600px; --rew-title-h: 60px;
+  --rew-box-x: 340px; --rew-box-y: 130px; --rew-box-w: 600px; --rew-box-h: 180px;
+  --rew-cards-x: 20px; --rew-cards-y: 320px; --rew-cards-w: 1240px; --rew-cards-h: 320px;
+  --rew-btn-x: 540px; --rew-btn-y: 650px; --rew-btn-w: 200px; --rew-btn-h: 60px;
+
+  /* pick zones (라운드 간 뽑기: 동료/비전/유물) */
+  --pick-title-x: 0px;    --pick-title-y: 40px;  --pick-title-w: 1280px; --pick-title-h: 60px;
+  --pick-sub-x: 0px;      --pick-sub-y: 110px;   --pick-sub-w: 1280px;   --pick-sub-h: 36px;
+  --pick-grid-x: 20px;    --pick-grid-y: 160px;  --pick-grid-w: 1240px;  --pick-grid-h: 460px;
+  --pick-btns-x: 360px;   --pick-btns-y: 640px;  --pick-btns-w: 560px;   --pick-btns-h: 60px;
+
+  /* choice zones (라운드 선택지) */
+  --ch-title-x: 0px;      --ch-title-y: 60px;    --ch-title-w: 1280px;   --ch-title-h: 60px;
+  --ch-sub-x: 0px;        --ch-sub-y: 130px;     --ch-sub-w: 1280px;     --ch-sub-h: 40px;
+  --ch-options-x: 20px;   --ch-options-y: 190px; --ch-options-w: 1240px; --ch-options-h: 510px;
+
+  /* formation zones (진형 배치) */
+  --form-title-x: 0px;    --form-title-y: 40px;  --form-title-w: 1280px; --form-title-h: 60px;
+  --form-sub-x: 0px;      --form-sub-y: 105px;   --form-sub-w: 1280px;   --form-sub-h: 36px;
+  --form-diamond-x: 140px;--form-diamond-y: 160px;--form-diamond-w: 1000px;--form-diamond-h: 200px;
+  --form-bench-label-x: 0px;--form-bench-label-y: 380px;--form-bench-label-w: 1280px;--form-bench-label-h: 30px;
+  --form-bench-x: 140px;  --form-bench-y: 420px; --form-bench-w: 1000px; --form-bench-h: 200px;
+  --form-buttons-x: 0px; --form-buttons-y: 0px; --form-buttons-w: 1280px; --form-buttons-h: 720px;
+  --form-btn-auto-x:    440px; --form-btn-auto-y:    640px; --form-btn-auto-w:    160px; --form-btn-auto-h:    44px;
+  --form-btn-confirm-x: 610px; --form-btn-confirm-y: 640px; --form-btn-confirm-w: 230px; --form-btn-confirm-h: 44px;
+
+  /* upgrade zones (동료 단련) */
+  --upg-title-x: 0px;     --upg-title-y: 60px;   --upg-title-w: 1280px;  --upg-title-h: 50px;
+  --upg-info-x: 0px;      --upg-info-y: 115px;   --upg-info-w: 1280px;   --upg-info-h: 36px;
+  --upg-grid-x: 20px;     --upg-grid-y: 160px;   --upg-grid-w: 1240px;   --upg-grid-h: 500px;
+  --upg-back-x: 20px;     --upg-back-y: 670px;   --upg-back-w: 200px;    --upg-back-h: 40px;
+
+  /* gameover zones */
+  --go-title-x: 0px;      --go-title-y: 140px;   --go-title-w: 1280px;   --go-title-h: 100px;
+  --go-stats-x: 340px;    --go-stats-y: 260px;   --go-stats-w: 600px;    --go-stats-h: 240px;
+  --go-btns-x: 0px;       --go-btns-y: 0px;      --go-btns-w: 1280px;    --go-btns-h: 720px;
+  --go-btn-restart-x: 420px; --go-btn-restart-y: 530px; --go-btn-restart-w: 220px; --go-btn-restart-h: 56px;
+  --go-btn-rest-x:    650px; --go-btn-rest-y:    530px; --go-btn-rest-w:    200px; --go-btn-rest-h:    56px;
+
+  /* match zones */
+  --match-box-x: 240px;   --match-box-y: 80px;   --match-box-w: 800px;   --match-box-h: 560px;
+
+  /* battle zones */
+  --b-hud-x: 0px;         --b-hud-y: 0px;        --b-hud-w: 1280px;      --b-hud-h: 44px;
+  --b-field-x: 20px;      --b-field-y: 50px;     --b-field-w: 1240px;    --b-field-h: 540px;
+  --b-log-x: 20px;        --b-log-y: 595px;      --b-log-w: 1240px;      --b-log-h: 40px;
+  --b-bottom-x: 0px;      --b-bottom-y: 0px;     --b-bottom-w: 1280px;   --b-bottom-h: 720px;
+  --b-btn-back-x:  440px; --b-btn-back-y:  640px; --b-btn-back-w:  160px; --b-btn-back-h:  44px;
+  --b-btn-fight-x: 610px; --b-btn-fight-y: 640px; --b-btn-fight-w: 230px; --b-btn-fight-h: 44px;
+  --b-timer-x: 0px;       --b-timer-y: 705px;    --b-timer-w: 1280px;    --b-timer-h: 4px;
+}
+/* END_LAYOUT_VARS */
+
 :root {
-  /* 카드 크기 (4:7 비율) */
+  /* ─────────────────────────────────────────────
+     1. 카드 크기 (4:7 비율) — 기존 유지
+     ───────────────────────────────────────────── */
   --card-width: 280px;
   --card-height: 490px;
   --card-img-height: 250px;
@@ -12,10 +197,284 @@
   --mini-card-height: 160px;
   --mini-img-size: 90px;
 
+  /* 전장 타일 (80×100 정사각 근사) */
+  --field-tile-w: 80px;
+  --field-tile-h: 100px;
+
+  /* 손패 중간 카드 */
+  --hand-card-w: 140px;
+  --hand-card-h: 200px;
+
   /* 매칭 초상화 */
   --match-portrait: 320px;
 
-  /* 색상 */
-  --gold: #ffd700;
-  --primary-bg: #080810;
+  /* ─────────────────────────────────────────────
+     2. 화면 베이스라인 (모바일 우선)
+     ───────────────────────────────────────────── */
+  --viewport-base-w: 390px;    /* iPhone 14 Pro 기준 */
+  --viewport-base-h: 844px;
+  --viewport-max-w:  480px;    /* 신규 화면: 이 이상 레터박스 */
+  --viewport-legacy-w: 1200px; /* 레거시 화면: PC 단독 상정의 유물, 점진 이주 */
+  --screen-pad: 16px;
+
+  /* safe-area (iOS notch, Android nav) */
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+
+  /* 브레이크포인트 (미디어쿼리 값 통일) */
+  --bp-mobile:  480px;
+  --bp-tablet:  768px;
+  --bp-desktop: 1024px;
+
+  /* ─────────────────────────────────────────────
+     3. 컬러 — 브랜드 / 중립 배경
+     ───────────────────────────────────────────── */
+  --primary-bg:   #080810;
+  --bg-0:         #0a0a1a;   /* 최하층 배경 */
+  --bg-1:         #0f0f1f;
+  --bg-2:         #1a1a2e;   /* 카드·패널 */
+  --bg-3:         #1e2333;   /* 상단 요소 */
+  --bg-4:         #2a3044;
+
+  /* 텍스트 (중립 스케일) */
+  --text-0:  #ffffff;        /* 강조·제목·버튼 hover (최대 대비) — 본문에는 text-1 사용 */
+  --text-1:  #e6e6ee;        /* 본문·입력 텍스트 */
+  --text-2:  #aaaab6;        /* 보조 */
+  --text-3:  #888894;        /* 비활성 */
+  --text-4:  #555566;
+
+  /* 순수 회색 스케일 — border/배경/장식용. 텍스트 color 에는 --text-* 사용 권장. */
+  --gray-0:  #ffffff;
+  --gray-1:  #cccccc;
+  --gray-2:  #aaaaaa;
+  --gray-3:  #888888;
+  --gray-4:  #666666;
+  --gray-5:  #555555;
+  --gray-6:  #444444;
+  --gray-7:  #333333;
+  --gray-8:  #222222;
+  --gray-9:  #000000;
+
+  /* placeholder / muted */
+  --text-placeholder: #a8a098;
+
+  /* 보더 / 구분선 */
+  --border-1: #333344;
+  --border-2: #444455;
+  --border-3: #666677;
+
+  /* ─────────────────────────────────────────────
+     4. 컬러 — 등급 (프레임/글로우/테두리 공용)
+     ─────────────────────────────────────────────
+     주의: `--rar-divine`은 유닛 등급 '신'을 가리킨다.
+           `--el-holy`(신성 원소)와 무관하며 색/용도가 다르다.
+           03-terminology.md: 등급 = 브론즈/실버/골드/전설/신 */
+  --rar-bronze:    #d4a574;
+  --rar-silver:    #d0d8e6;
+  --rar-gold:      #ffcc44;
+  --rar-legendary: #c66bff;
+  --rar-divine:    #ff5566;   /* = '신' 등급 */
+  --rar-god:       var(--rar-divine);  /* 한국어 네이밍 별칭 */
+
+  /* 등급 glow (밝은 변형) */
+  --rar-bronze-glow:    #ffcc99;
+  --rar-silver-glow:    #e8eef8;
+  --rar-gold-glow:      #ffdd66;
+  --rar-legendary-glow: #e9a5ff;
+  --rar-divine-glow:    #ff8899;
+
+  /* 등급 배경 딥(카드 그라디언트 하단 정지점) */
+  --rar-bronze-deep:    #0d0a04;
+  --rar-silver-mid:     #7a8a9a;
+  --rar-silver-deep:    #0a0d14;
+  --rar-gold-deep:      #1a1200;
+  --rar-legendary-deep: #0f0518;
+
+  /* 앰버/석재 팔레트 — HUD 플레이트, 오라, 양피지 느낌 텍스트 (2026-04-12 P0-3) */
+  --amber-bright:   #e8d5a3;   /* 양피지 밝음 (텍스트/라벨 악센트) */
+  --amber-pale:     #d4c5a0;   /* 양피지 연함 (부제목) */
+  --amber-mid:      #ddb85a;   /* 중간 금 톤 */
+  --amber-plate:    #5a4a2a;   /* 석재 플레이트 보더/진한 배경 */
+  --amber-stop-1:   #2a1e0a;   /* 그라디언트 정지점 (카드 상단) */
+  --amber-stop-2:   #3a2a00;   /* 그라디언트 정지점 (카드 하단) */
+  --amber-stop-3:   #5a4010;   /* 그라디언트 정지점 (버튼) */
+
+  /* 시맨틱 경고 (기존 --success/--danger과 세트) */
+  --warn:           #ffaa44;   /* 주의/알람 (녹슨 주황) */
+
+  /* ─────────────────────────────────────────────
+     5. 컬러 — 6원소 팔레트
+     ───────────────────────────────────────────── */
+  --el-fire:      #ff5533;   --el-fire-glow:      #ffaa55;
+  --el-water:     #4488ff;   --el-water-glow:     #88ccff;
+  --el-lightning: #ffdd44;   --el-lightning-glow: #ffee88;
+  --el-earth:     #8b6914;   --el-earth-glow:     #c4a054;
+  --el-dark:      #a335ee;   --el-dark-glow:      #d084ff;
+  --el-holy:      #fff4cc;   --el-holy-glow:      #ffffff;
+
+  /* ─────────────────────────────────────────────
+     6. 컬러 — 스탯 (좌측 세로 3칸 + 상세 팝업 11스탯)
+     ─────────────────────────────────────────────
+     04-balance.md 기준 영웅 11스탯 전부 토큰화.
+     상세 팝업(350×600, 길게 누르면)에서 전체 노출. */
+  --stat-atk:   #e74c3c;   /* 공격 — 빨강 (카드 좌측 3칸) */
+  --stat-def:   #3498db;   /* 방어 — 파랑 */
+  --stat-spd:   #2ecc71;   /* 속도 — 초록 */
+  --stat-hp:    #ff4466;   /* HP 하트 */
+  --stat-nrg:   #66ccff;   /* NRG 마름모 */
+  --stat-rage:  #ff8844;   /* 분노 (전사 특화) */
+  --stat-hpreg: #66ff99;   /* HP 재생 (물 원소) */
+  --stat-luck:  #ffcc66;   /* 행운 (치명타/드롭) */
+  --stat-eva:   #aaffee;   /* 회피 (물리) */
+  --stat-meva:  #ccaaff;   /* 마법 회피 (신성) */
+
+  /* ─────────────────────────────────────────────
+     7. 컬러 — 시맨틱 (성공/위험/경고/정보)
+     ───────────────────────────────────────────── */
+  --success:    #44ff88;
+  --success-bg: #0a2a14;
+  --danger:     #ff4444;
+  --danger-bg:  #2a0a0a;
+  --warn:       #ffcc44;
+  --warn-bg:    #2a2000;
+  --info:       #4488ff;
+  --info-bg:    #0a1a2a;
+
+  /* 화폐 */
+  --curr-gold:    #ffd700;   /* 💰 골드 */
+  --curr-gold-mid:#daa520;   /* 중간 광택 */
+  --curr-gold-pale:#e6cc80;  /* 연한 골드 (신등급 장식) */
+  --curr-gold-dark:#8b6914;  /* 어두운 앤틱 골드 (고딕 보더) */
+  --curr-gem:     #66ccff;   /* 💎 보석 */
+  --curr-blessing:#fff4cc;   /* ✨ 축복 */
+
+  /* 딥 퍼플 배경 (마법 화면) */
+  --bg-magic: #1a1a3e;
+
+  /* ─────────────────────────────────────────────
+     8. 간격 스케일 (4/8/12/16/24/32/48/64)
+     ───────────────────────────────────────────── */
+  --sp-0:  0;
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  24px;
+  --sp-6:  32px;
+  --sp-7:  48px;
+  --sp-8:  64px;
+
+  /* ─────────────────────────────────────────────
+     9. 반경 / 그림자 / 터치 타겟
+     ───────────────────────────────────────────── */
+  --r-sm:   4px;
+  --r-md:   8px;
+  --r-lg:   12px;
+  --r-xl:   16px;
+  --r-card: 12px;
+  --r-pill: 9999px;
+
+  --sh-sm:   0 1px 2px rgba(0,0,0,.3);
+  --sh-md:   0 2px 6px rgba(0,0,0,.4);
+  --sh-card: 0 4px 12px rgba(0,0,0,.4);
+  --sh-lg:   0 8px 24px rgba(0,0,0,.5);
+  --sh-glow: 0 0 16px 2px;   /* 색은 사용처에서 지정 */
+
+  --tap-min: 44px;   /* 모바일 최소 터치 타겟 */
+
+  /* ─────────────────────────────────────────────
+     10. 모션 (이징 + 지속시간)
+     ───────────────────────────────────────────── */
+  --ease-out:    cubic-bezier(.2,.8,.2,1);
+  --ease-in-out: cubic-bezier(.65,.0,.35,1);
+  --ease-bounce: cubic-bezier(.68,-.55,.27,1.55);
+
+  --dur-instant: 80ms;
+  --dur-fast:    180ms;
+  --dur-med:     360ms;
+  --dur-slow:    900ms;
+  --dur-epic:    1600ms;
+
+  /* ─────────────────────────────────────────────
+     11. z-index 스케일
+     ───────────────────────────────────────────── */
+  --z-base:    1;
+  --z-field:   10;
+  --z-hud:     20;
+  --z-overlay: 100;
+  --z-modal:   200;
+  --z-toast:   300;
+  --z-debug:   9999;
+
+  /* ─────────────────────────────────────────────
+     12. 폰트 3계층 (기존 유지)
+     ───────────────────────────────────────────── */
+  --font-title: 'Cinzel','Noto Serif KR',Georgia,serif;        /* 타이틀, 카드 이름 */
+  --font-body:  'Noto Sans KR','Inter',system-ui,sans-serif;   /* 설명, 본문 */
+  --font-ui:    'Noto Sans KR',system-ui,sans-serif;           /* HUD 숫자, 버튼 */
+
+  /* 폰트 크기 스케일 */
+  --fs-xs: .7rem;
+  --fs-sm: .85rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.2rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 2rem;
+  --fs-3xl: 2.8rem;
+
+  /* ─────────────────────────────────────────────
+     13. 레거시 호환 (점진 이주 중)
+     ───────────────────────────────────────────── */
+  --gold: var(--curr-gold);   /* 기존 코드 호환 */
+}
+
+/* ─────────────────────────────────────────────
+   공통 화면 컨테이너 베이스라인 (두 모드 공존)
+   ─────────────────────────────────────────────
+   - .screen-base  : 신규 기본 (480px, 모바일 우선, 레터박스)
+   - .screen-legacy: 레거시 (1200px, 2026-04 이전 PC 상정 화면)
+     → 점진 이주 대상. 감사 도구는 warn 레벨로 다운그레이드. */
+.screen-base {
+  max-width: var(--viewport-max-w);
+  margin-inline: auto;
+  padding-top:    calc(var(--safe-top)    + var(--screen-pad));
+  padding-bottom: calc(var(--safe-bottom) + var(--screen-pad));
+  padding-left:   calc(var(--safe-left)   + var(--screen-pad));
+  padding-right:  calc(var(--safe-right)  + var(--screen-pad));
+  box-sizing: border-box;
+  min-height: 100dvh;
+}
+
+.screen-legacy {
+  max-width: var(--viewport-legacy-w);
+  margin-inline: auto;
+  padding-top:    calc(var(--safe-top)    + var(--screen-pad));
+  padding-bottom: calc(var(--safe-bottom) + var(--screen-pad));
+  padding-left:   calc(var(--safe-left)   + var(--screen-pad));
+  padding-right:  calc(var(--safe-right)  + var(--screen-pad));
+  box-sizing: border-box;
+  min-height: 100dvh;
+}
+
+/* index.html 수정 금지 규칙으로 인해 기존 화면에 클래스를 직접 못 붙임.
+   대신 ID 기반 선택자로 레거시 규칙을 상속시킨다.
+   신규 화면을 추가할 땐 <div class="screen screen-base"> 권장. */
+
+/* 레거시 뷰포트 (1200px) — 이주 TODO, Phase별로 한 화면씩 전환 */
+/* (비어있음 — 2026-04-12 전부 이주 완료) */
+
+/* 화면 폭 정책 (2026-04-12 Phase 2 전환)
+   - 모든 화면: 390×844 세로 베이스 (.game-root 가 이미 고정)
+   - 개별 화면 max-width 지정 불필요 — .screen 이 .game-root 100% 채움
+   - 이전 "480 스플래시 / 1200 게임플레이" 이원 정책 폐기 */
+
+/* 접근성 — 애니메이션 축소 선호 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }

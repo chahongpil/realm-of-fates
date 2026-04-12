@@ -14,29 +14,41 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
 })(["BUILDINGS", "NPCS", "getNpc", "renderNpcBar", "getBuildingLv", "initBuildings", "showMenu", "buildBuilding", "upgradeBuilding", "TUT_STEPS", "showTutorial", "tutNext", "tutSkip", "showUpgrade", "getRelicSlots"]);
 
 Object.assign(RoF.Game, {
+  // 2026-04-12 밤: 사용자가 design/prototypes/town_editor.html 로 드래그한 좌표 (1376×768 base 기준)
+  // 원본: C:/Users/USER/Downloads/slot_coords_edited(2).json → design/refs/town/slot_coords.json
+  // x/y = 중심점 % / w/h = 크기 % (container 기준)
+  // 디자인 키 매핑: cathedral → church / arena → training
   BUILDINGS:[
-    {id:'castle',name:'성',icon:'🏰',desc:'퀘스트 & 동료 단련',cost:[0,30,80,180,400],x:50,y:5,action:'showCastle',
+    {id:'castle',name:'성',icon:'🏰',desc:'퀘스트 & 동료 단련',cost:[0,30,80,180,400],
+      x:52.3,y:25.6,w:22.1,h:51.4,action:'showCastle',
       lvNames:['오두막','목조관저','석조성채','왕의성','왕궁'],
       lvDesc:['Lv1: 기본 단련','Lv2: 단련비용 -10%','Lv3: 단련비용 -20%','Lv4: 등급업 4단계마다','Lv5: 단련 시 보너스+1']},
-    {id:'gate',name:'성문',icon:'🚪',desc:'리그 전투 참여',cost:[0,20,55,130,300],x:50,y:28,action:'startBattle',
+    {id:'gate',name:'차원의 문',icon:'🚪',desc:'리그 전투 참여',cost:[0,20,55,130,300],
+      x:50.7,y:79.7,w:20.3,h:28.6,action:'startBattle',
       lvNames:['나무문','철문','성문','요새문','천공문'],
       lvDesc:['Lv1: 리그 참여 가능','Lv2: 승리 보상+20%','Lv3: 승리 보상+40%','Lv4: 리그점수+20%','Lv5: 전설 보상 확률↑']},
-    {id:'forge',name:'대장간',icon:'⚒️',desc:'장비 제작 & 분해',cost:[10,30,75,170,380],x:15,y:48,action:'showForge',
+    {id:'forge',name:'대장간',icon:'⚒️',desc:'장비 제작 & 분해',cost:[10,30,75,170,380],
+      x:24.1,y:35.2,w:16,h:28.6,action:'showForge',
       lvNames:['모루터','대장간','용광로','마법대장간','신의대장간'],
       lvDesc:['Lv1: 장비 제작 가능','Lv2: 제작비용 -10%','Lv3: 분해 수율 +20%','Lv4: 레어 제작 해금','Lv5: 전설 제작 해금']},
-    {id:'shop',name:'상점',icon:'🏪',desc:'비전/유물 구매',cost:[15,40,90,200,450],x:85,y:35,action:'showShop',
+    {id:'shop',name:'상점',icon:'🏪',desc:'비전/유물 구매',cost:[15,40,90,200,450],
+      x:74,y:24.6,w:16,h:27.3,action:'showShop',
       lvNames:['노점','잡화점','상점','교역소','대상회'],
       lvDesc:['Lv1: 기본 상점 개점','Lv2: 상품 4→5개','Lv3: 할인 -10%','Lv4: 희귀 상품 등장','Lv5: 전설 상품 등장']},
-    {id:'tavern',name:'선술집',icon:'🍺',desc:'용병 고용',cost:[10,30,75,170,380],x:18,y:70,action:'showTavern',
+    {id:'tavern',name:'선술집',icon:'🍺',desc:'용병 고용',cost:[10,30,75,170,380],
+      x:37.9,y:51.8,w:16,h:28.6,action:'showTavern',
       lvNames:['주막','선술집','주점','대주점','영웅의전당'],
       lvDesc:['Lv1: 용병 고용 가능','Lv2: 용병 4→5명','Lv3: 고용비 -10%','Lv4: 실버 용병 등장↑','Lv5: 골드 용병 등장↑']},
-    {id:'training',name:'훈련장',icon:'🏟️',desc:'동료 수련 & 경험',cost:[10,25,65,150,350],x:50,y:55,action:'showTraining',
+    {id:'training',name:'콜로세움',icon:'🏟️',desc:'동료 수련 & 경험',cost:[10,25,65,150,350],
+      x:83.46,y:133.23,w:18,h:28,action:'showTraining',
       lvNames:['빈터','훈련장','검투장','투기장','콜로세움'],
       lvDesc:['Lv1: 기본 수련 가능','Lv2: 수련 경험+20%','Lv3: 수련 경험+40%','Lv4: 합동 수련 해금','Lv5: 명예 수련 해금']},
-    {id:'library',name:'서고',icon:'📋',desc:'전력 편성 & 생명의 서',cost:[5,18,50,120,280],x:82,y:58,action:'showDeckView',
+    {id:'library',name:'서고',icon:'📋',desc:'전력 편성 & 생명의 서',cost:[5,18,50,120,280],
+      x:37.2,y:18.5,w:14.5,h:27.3,action:'showDeckView',
       lvNames:['책장','서재','서고','도서관','대도서관'],
       lvDesc:['Lv1: 전력 편성 & 생명의 서','Lv2: 적 정보 해금','Lv3: 비전 설명 상세화','Lv4: 모의 전투 해금','Lv5: 숨겨진 기록 해금']},
-    {id:'church',name:'교회',icon:'⛪',desc:'치료 & 장례',cost:[8,22,55,130,300],x:75,y:75,action:'showChurch',
+    {id:'church',name:'대성당',icon:'⛪',desc:'치료 & 장례',cost:[8,22,55,130,300],
+      x:69.3,y:48.2,w:19,h:37.5,action:'showChurch',
       lvNames:['기도처','예배당','교회','성당','대성당'],
       lvDesc:['Lv1: 치료 & 장례 가능','Lv2: 치료비용 -10%','Lv3: 장례 명예+20%','Lv4: 치료비용 -20%','Lv5: 무료 치료 1회/전투']},
   ],
@@ -157,7 +169,7 @@ Object.assign(RoF.Game, {
     if(gemsEl)gemsEl.textContent=this.gems||0;
     const graceEl=document.getElementById('town-grace');
     if(graceEl)graceEl.textContent=this.divineGrace||0;
-    document.getElementById('town-ap').innerHTML=`행동력 ${'🟡'.repeat(this.getActionPoints())}`;
+    document.getElementById('town-ap').innerHTML=`⚡<span>${this.getActionPoints()}</span>`;
     document.getElementById('town-deck-count').textContent=this.deck.length;
     const injuredCount=this.deck.filter(c=>c.injured&&!c.isHero).length;
     const existingInj=document.getElementById('town-injured');
@@ -180,17 +192,24 @@ Object.assign(RoF.Game, {
       const maxLv=b.cost.length;
       const div=document.createElement('div');
       div.className=`town-building ${built?'built':'ruins'}`;
-      div.style.left=b.x+'%';div.style.top=b.y+'%';div.style.transform='translateX(-50%)';
+      div.setAttribute('data-id', b.id);
+      // 편집기로 설정한 크기(%) 기준 중심점 배치
+      div.style.left=b.x+'%';
+      div.style.top=b.y+'%';
+      div.style.width=(b.w||14)+'%';
+      div.style.height=(b.h||28)+'%';
+      div.style.transform='translate(-50%,-50%)';
       const lvName=(b.lvNames&&lv>0)?b.lvNames[lv-1]:b.name;
       const castleLv=this.getBuildingLv('castle');
-      // Level-specific building image (lv1~5), fallback to generic
-      const bImg=`img/building_${b.id}_lv${lv}.png`;
+      // 2026-04-12 밤: 새 마을 맵 — img/town/*.png (성벽 내부 cutout) 우선 사용
+      const bImg=`img/town/${b.id}.png`;
       const bImgFallback=`img/building_${b.id}.png`;
       if(built){
         const canUpgrade=lv<b.cost.length;
         const upgBlocked=b.id!=='castle'&&lv>=castleLv;
-        const imgSize=70+lv*5;// 레벨 올라갈수록 약간 커짐
-        div.innerHTML=`<div class="tb-icon"><img src="${bImg}" onerror="this.src='${bImgFallback}'" style="width:${imgSize}px;height:${imgSize}px;border-radius:10px;object-fit:cover;"></div><div class="tb-label">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:'<div class="tb-upgrade" style="color:#44ff88;">✅ 최고 경지</div>'}`;
+        // 2026-04-12 밤: div 가 편집기 설정 w/h(%) 로 크기 잡음. img 는 div 100% 채움 + contain.
+        const imgStyle=`width:100%;height:100%;object-fit:contain;border-radius:0;`;
+        div.innerHTML=`<div class="tb-icon" style="width:100%;height:100%;"><img src="${bImg}" onerror="this.src='${bImgFallback}'" style="${imgStyle}"></div><div class="tb-label" style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}" style="position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);white-space:nowrap;">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:'<div class="tb-upgrade" style="position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);color:#44ff88;white-space:nowrap;">✅ 최고 경지</div>'}`;
         div.querySelector('.tb-icon').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
         div.querySelector('.tb-label').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
         const upgEl=div.querySelector('.tb-upgrade');

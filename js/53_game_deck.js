@@ -101,18 +101,42 @@ Object.assign(RoF.Game, {
     const npc=this.getNpc('library');
     const existing=document.getElementById('lib-npc');if(existing)existing.remove();
     document.getElementById('tab-deck').parentElement.insertAdjacentHTML('afterend',`<div id="lib-npc">${this.renderNpcBar('library')}</div>`);
+    // Section title counts (N/M)
+    const totalUnits=UNITS.filter(u=>!u.id.startsWith('h_')).length;
+    const ownedUnits=this.deck.filter(c=>!c.isHero).length;
+    const ownedSk=(this.ownedSkills||[]).length, totalSk=SKILLS_DB.length;
+    const ownedRl=(this.ownedRelics||[]).length, totalRl=RELICS_DB.length;
+    document.querySelectorAll('#deck-tab .dv-title').forEach(e=>e.remove());
+    // Onboarding (empty starter)
+    const onb=document.getElementById('dv-onboarding');if(onb)onb.remove();
+    if(ownedUnits===0&&ownedSk===0&&ownedRl===0){
+      const ob=document.createElement('div');ob.id='dv-onboarding';ob.className='dv-onboarding';
+      ob.innerHTML=`💡 첫 동료를 영입하세요<br><span>선술집에서 5골드로 브론즈 동료 영입 가능</span><br><button class="btn btn-s" data-action="game.showTavern" style="margin-top:6px;">🍺 선술집으로</button>`;
+      document.getElementById('deck-tab').prepend(ob);
+    }
     // Units
     const g=document.getElementById('dv-grid');g.innerHTML='';
+    g.insertAdjacentHTML('beforebegin',`<div class="dv-title">👥 동료 (${ownedUnits}/${totalUnits})</div>`);
     this.deck.forEach(c=>{
       const el=mkCardEl(c);
       el.onclick=()=>this.showCardDetail(c);
       g.appendChild(el);
     });
+    const emptyU=Math.max(0,Math.min(6,totalUnits-ownedUnits));
+    const hintN=ownedUnits===0?3:0;  // P0-2: 동료 0명일 때만 첫 3칸을 힌트로 승격
+    for(let i=0;i<emptyU;i++){
+      if(i<hintN){
+        g.insertAdjacentHTML('beforeend','<div class="empty-slot hint" title="선술집에서 영입"><span class="es-icon">⚔</span><span class="es-label">선술집에서<br>영입</span></div>');
+      } else {
+        g.insertAdjacentHTML('beforeend','<div class="empty-slot" title="동료를 영입하면 여기에 표시됩니다">?</div>');
+      }
+    }
     // Skills
     const sg=document.getElementById('dv-skills');sg.innerHTML='';
+    sg.insertAdjacentHTML('beforebegin',`<div class="dv-title">💎 비전 (${ownedSk}/${totalSk})</div>`);
     const skills=this.ownedSkills||[];
     if(!skills.length){
-      sg.innerHTML='<div style="color:#555;font-size:.8rem;">습득한 비전 없음</div>';
+      for(let i=0;i<6;i++)sg.insertAdjacentHTML('beforeend','<div class="empty-slot" title="전투 보상으로 비전을 획득하세요">?</div>');
     } else {
       skills.forEach(sk=>{
         const el=mkRelicEl(sk);el.querySelector('.card-type').textContent='비전';
@@ -144,8 +168,9 @@ Object.assign(RoF.Game, {
     }
     // Relics
     const rg=document.getElementById('dv-relics');rg.innerHTML='';
+    rg.insertAdjacentHTML('beforebegin',`<div class="dv-title">🏺 유물 (${ownedRl}/${totalRl})</div>`);
     if(!this.ownedRelics||!this.ownedRelics.length){
-      rg.innerHTML='<div style="color:#555;font-size:.8rem;">소지한 유물 없음</div>';
+      for(let i=0;i<6;i++)rg.insertAdjacentHTML('beforeend','<div class="empty-slot" title="차원의 균열에서 유물을 획득하세요">?</div>');
     } else {
       this.ownedRelics.forEach(r=>{
         const el=mkRelicEl(r);

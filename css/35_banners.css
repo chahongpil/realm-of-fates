@@ -1,0 +1,230 @@
+/* ==========================================================
+   35_banners.css — 회색 벽돌 배너 스킨 (2026-04-12)
+   출처: 배너3.png / 배너긴버전.png / 배너짧은버전.png 에서
+         회색 돌 버전만 추출. img/ui/banner_*.png
+   적용 원칙:
+     - 긴 타이틀/HUD 바 → banner_wide_shield.png
+     - 사각 제목/모달 → banner_box_shield.png
+     - 가로 스크롤 설명 패널 → banner_scroll_horizontal.png
+   border-image 로 9-slice 확장 (양끝 장식 유지 + 중앙 반복 가능)
+   ========================================================== */
+
+/* ── 공통 믹스인: 벽돌 배너 긴 버전 ── */
+.banner-wide{
+  position:relative;
+  background:url('../img/ui/banner_wide_shield.png') center/100% 100% no-repeat;
+  padding:18px 40px 22px;
+  color:#f4ecd8;
+  text-align:center;
+  font-family:var(--font-title);
+  min-height:60px;
+  display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.7));
+}
+.banner-wide-alt{
+  background:url('../img/ui/banner_wide_shield_alt.png') center/100% 100% no-repeat;
+}
+
+/* ── 공통 믹스인: 가로 스크롤 ── */
+.banner-scroll{
+  position:relative;
+  background:url('../img/ui/banner_scroll_horizontal.png') center/100% 100% no-repeat;
+  padding:28px 60px 30px;
+  color:#e8e0c8;
+  text-align:center;
+  font-family:var(--font-title);
+  min-height:70px;
+  display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));
+}
+
+/* ── 공통 믹스인: 사각 박스 ── */
+.banner-box{
+  position:relative;
+  background:url('../img/ui/banner_box_shield.png') center/100% 100% no-repeat;
+  padding:50px 36px 30px;
+  color:#f4ecd8;
+  font-family:var(--font-title);
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.7));
+}
+
+/* ═══ 자동 적용 ═══ */
+
+/* 1) 모든 화면 상단 HUD → banner-wide 배경 */
+body.game-mode .hud,
+body.game-mode .town-hud{
+  background:url('../img/ui/banner_wide_shield.png') center/100% 100% no-repeat !important;
+  border:none !important;
+  border-bottom:none !important;
+  padding:16px 40px 20px !important;
+  min-height:72px;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.7));
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+body.game-mode .hud-name,
+body.game-mode .town-hud-left .hud-name{
+  color:#f4ecd8;
+  text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 6px rgba(0,0,0,.7);
+  font-weight:700;
+}
+body.game-mode .hud-stat,
+body.game-mode .th-stat{
+  color:#e8d89a !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.9);
+}
+
+/* 2) 화면별 타이틀 → banner-scroll 스크롤 */
+body.game-mode .char-select-title,
+body.game-mode .form-title,
+body.game-mode .upgrade-title,
+body.game-mode .choice-title,
+body.game-mode .reward-title,
+body.game-mode .pick-title{
+  background:url('../img/ui/banner_scroll_horizontal.png') center/100% 100% no-repeat;
+  padding:22px 80px 28px !important;
+  min-width:340px;
+  max-width:680px;
+  margin:12px auto !important;
+  display:inline-block;
+  color:#f4ecd8;
+  text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 8px rgba(0,0,0,.6);
+  font-family:var(--font-title);
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));
+  border:none !important;
+  background-color:transparent !important;
+}
+
+/* 3) 모달 박스 → banner-box */
+body.game-mode .modal-box,
+body.game-mode .equip-modal-box{
+  background:url('../img/ui/banner_box_shield.png') center/100% 100% no-repeat !important;
+  background-color:transparent !important;
+  border:none !important;
+  padding:60px 48px 40px !important;
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,.8));
+  min-width:360px;
+  color:#f4ecd8;
+}
+body.game-mode .modal-box h3{
+  color:#f4ecd8 !important;
+  text-shadow:0 1px 3px rgba(0,0,0,.9);
+}
+
+/* 4) auth-box (로그인/가입) → banner-box */
+body.game-mode .auth-box{
+  background:url('../img/ui/banner_box_shield.png') center/100% 100% no-repeat !important;
+  background-color:transparent !important;
+  border:none !important;
+  padding:70px 50px 50px !important;
+  min-width:420px;
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,.8));
+}
+body.game-mode .auth-box h2{
+  color:#f4ecd8 !important;
+  text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 8px rgba(255,215,0,.3);
+}
+
+/* 5) cs-selected / cs-relics-selected (출정 편성 선택 패널) → banner-scroll */
+body.game-mode #cs-selected{
+  background:url('../img/ui/banner_scroll_horizontal.png') center/100% 100% no-repeat !important;
+  background-color:transparent !important;
+  border:none !important;
+  border-radius:0 !important;
+  padding:28px 60px !important;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));
+}
+body.game-mode #cs-relics-selected{
+  background:url('../img/ui/banner_scroll_horizontal.png') center/100% 100% no-repeat !important;
+  background-color:transparent !important;
+  border:none !important;
+  border-radius:0 !important;
+  padding:22px 50px !important;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));
+}
+
+/* 6) 튜토리얼 / NPC 대화 바 → banner-scroll */
+body.game-mode .tut-box,
+body.game-mode .npc-bar{
+  background:url('../img/ui/banner_scroll_horizontal.png') center/100% 100% no-repeat !important;
+  background-color:transparent !important;
+  border:none !important;
+  padding:30px 70px !important;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.7));
+}
+
+/* ══════════════════════════════════════════════════════
+   배너4/5 추가 변형 (2026-04-12 심야)
+   배너5 = 배너4 의 정돈된 버전. 5 를 기본으로, 없는 것만 4 에서.
+   ══════════════════════════════════════════════════════ */
+
+/* 7) auth-box 업그레이드 → 독수리 메달 사각 액자 (box_medal) */
+body.game-mode .auth-box{
+  background:url('../img/ui/banner_box_medal.png') center/100% 100% no-repeat !important;
+  padding:80px 60px 60px !important;
+  min-width:480px;
+  min-height:400px;
+}
+
+/* 8) 모달 대형 → box_medal, 중소 → box_shield, 작은 → box_small */
+body.game-mode .modal-box.modal-small,
+body.game-mode .equip-modal-box{
+  background:url('../img/ui/banner_box_small.png') center/100% 100% no-repeat !important;
+  background-color:transparent !important;
+  border:none !important;
+  padding:60px 40px 40px !important;
+}
+
+/* 9) 가로 탭바 / 섹션 구분 → banner_wide_slot (빈 원형 중앙)
+   ⚠️ cardselect 의 버튼 래퍼는 제외 — 버튼 4개 개별 zone 으로 분리됨 (2026-04-13) */
+body.game-mode #tavern-screen > div[style*="text-align:center;padding:8px"] > div[style*="display:flex"],
+body.game-mode #deckview-screen > div[style*="text-align:center;padding:6px"] > div[style*="display:flex"],
+body.game-mode #castle-screen > div[style*="text-align:center;padding:6px"] > div[style*="display:flex"]{
+  background:url('../img/ui/banner_wide_slot.png') center/100% 100% no-repeat !important;
+  padding:24px 50px !important;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));
+  min-height:72px !important;
+}
+
+/* 10) 하단 버튼 바 / 타이틀 버튼 → banner_wide_rose (장미 덩굴 장식) */
+body.game-mode .title-buttons,
+body.game-mode #pick-screen > div > div[style*="text-align:center;margin-top:12px"]{
+  background:url('../img/ui/banner_wide_rose.png') center/100% 100% no-repeat !important;
+  padding:34px 60px !important;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.7));
+  min-height:96px !important;
+}
+
+/* 11) 작은 라벨/정보 → banner_small_plate */
+body.game-mode #cs-info,
+body.game-mode #tav-info,
+body.game-mode #church-info,
+body.game-mode #castle-upgrade-info,
+body.game-mode #upg-info,
+body.game-mode .char-select-sub,
+body.game-mode .form-sub{
+  background:url('../img/ui/banner_small_plate.png') center/100% 100% no-repeat !important;
+  padding:20px 32px !important;
+  display:inline-block;
+  min-width:220px;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));
+  color:#d8d0b8 !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.9);
+}
+
+/* 12) 원형 메달 프레임 (수동 class) */
+body.game-mode .medal-frame{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:80px;height:80px;
+  background:url('../img/ui/banner_medal_round.png') center/contain no-repeat;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.7));
+}
+
+/* 13) 세로 사이드패널 (수동 class) */
+body.game-mode .sidepanel-tall{
+  background:url('../img/ui/banner_vertical_tall.png') center/100% 100% no-repeat;
+  min-width:180px;min-height:480px;
+  padding:48px 28px;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.7));
+  color:#e8e0c8;
+}

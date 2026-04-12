@@ -12,6 +12,17 @@ RoF.Data.ELEM_L = Object.freeze({fire:'불',water:'물',lightning:'전기',earth
 RoF.Data.ELEM_ICON = Object.freeze({fire:'🔥',water:'💧',lightning:'⚡',earth:'🌿',dark:'🌑',holy:'✨'});
 RoF.Data.ELEM_COLOR = Object.freeze({fire:'#ff4422',water:'#4488ff',lightning:'#ffdd00',earth:'#88aa44',dark:'#aa44ff',holy:'#ffd700'});
 
+RoF.Data.RACE_L = Object.freeze({
+  human:'인간', beast:'야수', spirit:'정령', titan:'거인',
+  sylvan:'숲의계약자', wraith:'망자군단', drake:'원룡', abyssal:'심연', luminary:'광명사도', clockwork:'태엽장치',
+  undead:'망자군단', dragon:'원룡', celestial:'광명사도', demon:'심연', elf:'숲의계약자', machine:'태엽장치',
+});
+RoF.Data.RACE_ICON = Object.freeze({
+  human:'👤', beast:'🐾', spirit:'👻', titan:'🗿',
+  sylvan:'🌿', wraith:'💀', drake:'🐲', abyssal:'😈', luminary:'👼', clockwork:'⚙️',
+  undead:'💀', dragon:'🐲', celestial:'👼', demon:'😈', elf:'🌿', machine:'⚙️',
+});
+
 RoF.Data.ENEMY_NAMES = Object.freeze([
   'Aldric','Baldric','Cedric','Dunstan','Edmund','Fendrel','Godric','Hadrian','Isolde','Jareth',
   'Kendric','Leofric','Morwen','Norgard','Osric','Percival','Quillan','Roland','Sigmund','Theron',
@@ -40,5 +51,7 @@ window.ELEMENTS = RoF.Data.ELEMENTS;
 window.ELEM_L = RoF.Data.ELEM_L;
 window.ELEM_ICON = RoF.Data.ELEM_ICON;
 window.ELEM_COLOR = RoF.Data.ELEM_COLOR;
+window.RACE_L = RoF.Data.RACE_L;
+window.RACE_ICON = RoF.Data.RACE_ICON;
 window.ENEMY_NAMES = RoF.Data.ENEMY_NAMES;
 window.HERO_ROLES = RoF.Data.HERO_ROLES;

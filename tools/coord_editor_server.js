@@ -216,6 +216,84 @@ function handleTextOverridesSave(req, res){
   });
 }
 
+// ── Hidden elements — css/hidden_elements.json 읽기/쓰기 (셀렉터 배열) ──
+function handleHiddenLoad(req, res){
+  try {
+    const p = path.join(ROOT, 'css/hidden_elements.json');
+    const data = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : [];
+    res.writeHead(200, {'Content-Type':'application/json'});
+    res.end(JSON.stringify({ok:true, hidden: Array.isArray(data) ? data : []}));
+  } catch(e){
+    res.writeHead(500, {'Content-Type':'application/json'});
+    res.end(JSON.stringify({ok:false, error:e.message}));
+  }
+}
+function handleHiddenSave(req, res){
+  let body = '';
+  req.on('data', chunk => body += chunk);
+  req.on('end', () => {
+    try {
+      const data = JSON.parse(body);
+      if(!Array.isArray(data)) throw new Error('body must be an array of selectors');
+      for(const s of data){
+        if(typeof s !== 'string') throw new Error('every entry must be a string');
+        if(s.length > 400) throw new Error('selector too long');
+      }
+      const unique = [...new Set(data)];
+      const p = path.join(ROOT, 'css/hidden_elements.json');
+      fs.writeFileSync(p, JSON.stringify(unique, null, 2) + '\n', 'utf8');
+      res.writeHead(200, {'Content-Type':'application/json'});
+      res.end(JSON.stringify({ok:true, count: unique.length}));
+      console.log(`[hidden] saved ${unique.length} entries`);
+    } catch(e){
+      console.error('[hidden] error:', e.message);
+      res.writeHead(400, {'Content-Type':'application/json'});
+      res.end(JSON.stringify({ok:false, error:e.message}));
+    }
+  });
+}
+
+// ── Annotations — css/annotations.json (디자인 지시 박스) ──
+function handleAnnotationsLoad(req, res){
+  try {
+    const p = path.join(ROOT, 'css/annotations.json');
+    const data = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : [];
+    res.writeHead(200, {'Content-Type':'application/json'});
+    res.end(JSON.stringify({ok:true, annotations: Array.isArray(data) ? data : []}));
+  } catch(e){
+    res.writeHead(500, {'Content-Type':'application/json'});
+    res.end(JSON.stringify({ok:false, error:e.message}));
+  }
+}
+function handleAnnotationsSave(req, res){
+  let body = '';
+  req.on('data', chunk => body += chunk);
+  req.on('end', () => {
+    try {
+      const data = JSON.parse(body);
+      if(!Array.isArray(data)) throw new Error('body must be an array');
+      // 안전성 검증
+      for(const a of data){
+        if(!a || typeof a !== 'object') throw new Error('entry must be object');
+        if(typeof a.screen !== 'string' || a.screen.length > 40) throw new Error('bad screen');
+        if(typeof a.text !== 'string' || a.text.length > 2000) throw new Error('bad text');
+        ['x','y','w','h'].forEach(k => {
+          if(typeof a[k] !== 'number' || a[k] < -500 || a[k] > 3000) throw new Error('bad ' + k);
+        });
+      }
+      const p = path.join(ROOT, 'css/annotations.json');
+      fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\n', 'utf8');
+      res.writeHead(200, {'Content-Type':'application/json'});
+      res.end(JSON.stringify({ok:true, count: data.length}));
+      console.log(`[annotations] saved ${data.length} entries`);
+    } catch(e){
+      console.error('[annotations] error:', e.message);
+      res.writeHead(400, {'Content-Type':'application/json'});
+      res.end(JSON.stringify({ok:false, error:e.message}));
+    }
+  });
+}
+
 const server = http.createServer((req, res) => {
   if(req.method === 'POST' && req.url === '/save-coords') return handleSave(req, res);
   if(req.method === 'POST' && req.url === '/save-town-layout') return handleTownSave(req, res);
@@ -224,6 +302,10 @@ const server = http.createServer((req, res) => {
   if(req.method === 'GET'  && req.url === '/load-layout-vars') return handleLayoutVarsLoad(req, res);
   if(req.method === 'POST' && req.url === '/save-text-overrides') return handleTextOverridesSave(req, res);
   if(req.method === 'GET'  && req.url === '/load-text-overrides') return handleTextOverridesLoad(req, res);
+  if(req.method === 'POST' && req.url === '/save-hidden') return handleHiddenSave(req, res);
+  if(req.method === 'GET'  && req.url === '/load-hidden') return handleHiddenLoad(req, res);
+  if(req.method === 'POST' && req.url === '/save-annotations') return handleAnnotationsSave(req, res);
+  if(req.method === 'GET'  && req.url === '/load-annotations') return handleAnnotationsLoad(req, res);
   if(req.method === 'GET') return serveStatic(req, res);
   res.writeHead(405); res.end();
 });

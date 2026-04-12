@@ -393,3 +393,57 @@ document.addEventListener('DOMContentLoaded', () => {
     if (++hookAttempts < 50) setTimeout(tryHook, 100);
   })();
 })();
+
+// ═══════════════════════════════════════════════════════════════
+// Runtime DOM tagging — index.html 을 수정하지 않고 요소에 class 를 부여
+// 편집기가 안정적 셀렉터로 잡을 수 있게 하기 위함.
+// ═══════════════════════════════════════════════════════════════
+(function runtimeTagBoot(){
+  function apply(){
+    // title 화면의 "LEAGUE OF THE GODS" 장식 div 에 .title-league 부여
+    const title = document.getElementById('title-screen');
+    if (title) {
+      title.querySelectorAll('div').forEach(d => {
+        if (d.classList.contains('title-league')) return;
+        const t = (d.textContent || '').trim();
+        if (t === 'LEAGUE OF THE GODS') d.classList.add('title-league');
+      });
+    }
+  }
+  apply();
+  document.addEventListener('DOMContentLoaded', apply);
+  setTimeout(apply, 300);
+  window.applyRuntimeTags = apply;
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// Hidden elements — zone 편집기 🗑️ 숨김 토글이 저장한 셀렉터를 display:none 처리
+// 저장 파일: css/hidden_elements.json  (배열 of selector)
+// ═══════════════════════════════════════════════════════════════
+(function hiddenElementsBoot(){
+  let hiddenList = [];
+  const STYLE_ID = 'rof-hidden-elements-style';
+  function apply(){
+    let styleEl = document.getElementById(STYLE_ID);
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = STYLE_ID;
+      document.head.appendChild(styleEl);
+    }
+    const rules = hiddenList
+      .filter(sel => typeof sel === 'string' && sel.trim())
+      .map(sel => `${sel}{display:none !important;}`)
+      .join('\n');
+    styleEl.textContent = rules;
+  }
+  window.applyHiddenElements = apply;
+
+  function load(){
+    fetch('css/hidden_elements.json?_=' + Date.now(), { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : [])
+      .then(arr => { hiddenList = Array.isArray(arr) ? arr : []; apply(); })
+      .catch(() => {});
+  }
+  window.reloadHiddenElements = load;
+  load();
+})();

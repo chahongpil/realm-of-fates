@@ -770,15 +770,23 @@ body.game-mode .modal-box p{font-size:1rem;}
  *   cardselect 의 cs-btn-* 패턴 그대로 따름.
  * ═════════════════════════════════════════════ */
 
-/* TITLE — .title-buttons */
+/* TITLE — .title-buttons
+ * ⚠️ title 은 DOM 구조가 다름: #title-screen > <div z-index:2> > .title-buttons > button
+ *    다른 화면(cs/tav/form/go/battle)은 래퍼가 screen 직계 자식이라
+ *    "wrapper 를 full-container 로 만들기" 트릭이 먹히지만,
+ *    title 은 중간 래퍼의 position:relative 인라인 스타일 때문에
+ *    버튼 positioning context 가 content-sized 박스로 잡혀 화면 밖으로 사라졌었음.
+ *
+ * 해결: 중간 래퍼 position:static 플랫 → positioning context 가 #title-screen(1280×720)
+ *       .title-buttons 는 display:contents 로 박스 트리에서 제거 */
+body.game-mode #title-screen > div[style*="z-index:2"]{
+  position: static !important;
+}
 body.game-mode #title-screen .title-buttons{
-  position:absolute; left:0; top:0; width:100%; height:100%;
-  padding:0; margin:0; display:block !important;
-  background:none !important; filter:none !important;
-  pointer-events:none;
+  display: contents !important;
 }
 body.game-mode #title-screen .title-buttons > button{
-  pointer-events:auto; position:absolute; margin:0 !important;
+  position:absolute; margin:0 !important;
 }
 body.game-mode #title-screen .title-buttons > button[data-arg="login-screen"]{
   left:var(--title-btn-back-x); top:var(--title-btn-back-y);
@@ -863,4 +871,169 @@ body.game-mode #battle-screen .tb-bottom > button#btn-back{
 body.game-mode #battle-screen .tb-bottom > button#btn-fight{
   left:var(--b-btn-fight-x); top:var(--b-btn-fight-y);
   width:var(--b-btn-fight-w); height:var(--b-btn-fight-h);
+}
+
+/* ═════════════════════════════════════════════
+ * login/signup/prologue + tab wrappers 개별 분해
+ * (2026-04-13 심야 2차)
+ * ═════════════════════════════════════════════ */
+
+/* ── LOGIN ── */
+body.game-mode #login-screen { display:block; }
+body.game-mode #login-screen .auth-box{
+  position:absolute;
+  left:var(--login-box-x); top:var(--login-box-y);
+  width:var(--login-box-w); height:var(--login-box-h);
+  padding:0; min-width:0;
+  margin:0;
+}
+body.game-mode #login-screen .auth-box > h2,
+body.game-mode #login-screen .auth-box > input,
+body.game-mode #login-screen .auth-box > .auth-msg,
+body.game-mode #login-screen .auth-box > button,
+body.game-mode #login-screen .auth-box > .auth-back{
+  position:absolute; margin:0 !important;
+}
+body.game-mode #login-screen .auth-box > h2{
+  left:var(--li-title-x); top:var(--li-title-y);
+  width:var(--li-title-w); height:var(--li-title-h);
+}
+body.game-mode #login-screen #login-id{
+  left:var(--li-id-x); top:var(--li-id-y);
+  width:var(--li-id-w); height:var(--li-id-h);
+}
+body.game-mode #login-screen #login-pw{
+  left:var(--li-pw-x); top:var(--li-pw-y);
+  width:var(--li-pw-w); height:var(--li-pw-h);
+}
+body.game-mode #login-screen #login-msg{
+  left:var(--li-msg-x); top:var(--li-msg-y);
+  width:var(--li-msg-w); height:var(--li-msg-h);
+}
+body.game-mode #login-screen .auth-box > button{
+  left:var(--li-btn-x); top:var(--li-btn-y);
+  width:var(--li-btn-w); height:var(--li-btn-h);
+}
+body.game-mode #login-screen .auth-box > .auth-back{
+  left:var(--li-back-x); top:var(--li-back-y);
+  width:var(--li-back-w); height:var(--li-back-h);
+}
+
+/* ── SIGNUP ── */
+body.game-mode #signup-screen { display:block; }
+body.game-mode #signup-screen .auth-box{
+  position:absolute;
+  left:var(--signup-box-x); top:var(--signup-box-y);
+  width:var(--signup-box-w); height:var(--signup-box-h);
+  padding:0; min-width:0; margin:0;
+}
+body.game-mode #signup-screen .auth-box > h2,
+body.game-mode #signup-screen .auth-box > input,
+body.game-mode #signup-screen .auth-box > .auth-msg,
+body.game-mode #signup-screen .auth-box > button,
+body.game-mode #signup-screen .auth-box > .auth-back{
+  position:absolute; margin:0 !important;
+}
+body.game-mode #signup-screen .auth-box > h2{
+  left:var(--su-title-x); top:var(--su-title-y);
+  width:var(--su-title-w); height:var(--su-title-h);
+}
+body.game-mode #signup-screen #signup-id{
+  left:var(--su-id-x); top:var(--su-id-y);
+  width:var(--su-id-w); height:var(--su-id-h);
+}
+body.game-mode #signup-screen #signup-pw{
+  left:var(--su-pw-x); top:var(--su-pw-y);
+  width:var(--su-pw-w); height:var(--su-pw-h);
+}
+body.game-mode #signup-screen #signup-pw2{
+  left:var(--su-pw2-x); top:var(--su-pw2-y);
+  width:var(--su-pw2-w); height:var(--su-pw2-h);
+}
+body.game-mode #signup-screen #signup-msg{
+  left:var(--su-msg-x); top:var(--su-msg-y);
+  width:var(--su-msg-w); height:var(--su-msg-h);
+}
+body.game-mode #signup-screen .auth-box > button{
+  left:var(--su-btn-x); top:var(--su-btn-y);
+  width:var(--su-btn-w); height:var(--su-btn-h);
+}
+body.game-mode #signup-screen .auth-box > .auth-back{
+  left:var(--su-back-x); top:var(--su-back-y);
+  width:var(--su-back-w); height:var(--su-back-h);
+}
+
+/* ── PROLOGUE buttons ── */
+body.game-mode #prologue-btns{
+  position:absolute !important;
+  left:0 !important; top:0 !important;
+  transform:none !important;
+  width:100% !important; height:100% !important;
+  pointer-events:none;
+}
+body.game-mode #prologue-btns > button,
+body.game-mode #prologue-btns .auth-back{
+  position:absolute; pointer-events:auto; margin:0 !important;
+}
+body.game-mode #prologue-btns > button[data-action="auth.endPrologue"]{
+  left:var(--prologue-btn-ok-x); top:var(--prologue-btn-ok-y);
+  width:var(--prologue-btn-ok-w); height:var(--prologue-btn-ok-h);
+}
+body.game-mode #prologue-btns .auth-back{
+  left:var(--prologue-btn-skip-x); top:var(--prologue-btn-skip-y);
+  width:var(--prologue-btn-skip-w); height:var(--prologue-btn-skip-h);
+}
+
+/* ── TAVERN tabs (wrapper was single zone, now individual) ── */
+body.game-mode #tav-tab-unit{
+  position:absolute !important;
+  left:var(--tav-tab-unit-x); top:var(--tav-tab-unit-y);
+  width:var(--tav-tab-unit-w); height:var(--tav-tab-unit-h);
+  margin:0 !important;
+}
+body.game-mode #tav-tab-hero{
+  position:absolute !important;
+  left:var(--tav-tab-hero-x); top:var(--tav-tab-hero-y);
+  width:var(--tav-tab-hero-w); height:var(--tav-tab-hero-h);
+  margin:0 !important;
+}
+body.game-mode #tav-info{
+  position:absolute !important;
+  left:var(--tav-info-x); top:var(--tav-info-y);
+  width:var(--tav-info-w); height:var(--tav-info-h);
+}
+
+/* ── DECKVIEW tabs ── */
+body.game-mode #tab-deck{
+  position:absolute !important;
+  left:var(--dv-tab-deck-x); top:var(--dv-tab-deck-y);
+  width:var(--dv-tab-deck-w); height:var(--dv-tab-deck-h);
+  margin:0 !important;
+}
+body.game-mode #tab-codex{
+  position:absolute !important;
+  left:var(--dv-tab-codex-x); top:var(--dv-tab-codex-y);
+  width:var(--dv-tab-codex-w); height:var(--dv-tab-codex-h);
+  margin:0 !important;
+}
+
+/* ── CASTLE tabs ── */
+body.game-mode #castle-tab-upgrade{
+  position:absolute !important;
+  left:var(--castle-tab-upgrade-x); top:var(--castle-tab-upgrade-y);
+  width:var(--castle-tab-upgrade-w); height:var(--castle-tab-upgrade-h);
+  margin:0 !important;
+}
+body.game-mode #castle-tab-quest{
+  position:absolute !important;
+  left:var(--castle-tab-quest-x); top:var(--castle-tab-quest-y);
+  width:var(--castle-tab-quest-w); height:var(--castle-tab-quest-h);
+  margin:0 !important;
+}
+
+/* ── CHURCH info ── */
+body.game-mode #church-info{
+  position:absolute !important;
+  left:var(--church-info-x); top:var(--church-info-y);
+  width:var(--church-info-w); height:var(--church-info-h);
 }

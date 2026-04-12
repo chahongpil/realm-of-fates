@@ -1,5 +1,99 @@
 # Realm of Fates — 핸드오프 문서
-> 마지막 업데이트: 2026-04-13 새벽 — 배너 10종 프롬프트화 + 편집기 19화면 완성
+> 마지막 업데이트: 2026-04-13 심야 — Zone 편집기 확장 (텍스트/숨김/지시박스) + 버튼 분해 + 타이틀 배경 + GitHub 푸시
+
+## 🔵 2026-04-13 심야 — 편집기 스위트 확장 + 버튼 그룹 분해 + 지시 박스 도입
+
+### 핵심 성과 한 줄
+**"Figma → Dev 핸드오프 워크플로우 완성"** — 사용자가 zone 편집기에서 네모 그리고 한국어로 지시만 적으면, 다음 세션에 제가 `css/annotations.json` 읽고 일괄 구현. Phase 1 (지시 박스) 완료, Phase 2 (에셋 드롭) 예정.
+
+### 🚨 다음 세션 시작 시 필수 확인
+1. **`c:/work/game/css/annotations.json` 읽기** — 사용자가 남긴 디자인 지시 박스 목록. 비어있지 않으면 각 항목을 해당 화면의 해당 영역에 반영.
+2. **`c:/work/game/css/hidden_elements.json` 읽기** — 사용자가 편집기에서 🗑️ 숨김 처리한 요소 셀렉터 배열. 확신이 섰다는 뜻이므로 해당 요소를 `index.html` 에서 물리 제거 (CLAUDE.md 예외 케이스, 사용자 이미 승인).
+3. **`c:/work/game/css/text_overrides.json` 읽기** — 편집기에서 바꾼 텍스트. 런타임 덮어쓰기로 이미 적용 중이지만, 정식 반영하려면 index.html 수정.
+
+### 1. 화면 플로우 에디터 신규 ([tools/screen_flow_editor.html](tools/screen_flow_editor.html))
+- index.html 을 런타임에 파싱 → 19개 화면 + `data-action` 버튼 전환을 그래프로 렌더
+- 좌측 **📁 트리 패널** (BFS 스패닝 트리, 순환은 ↩︎ 리프 참조)
+- 우측 사이드패널 — 선택 화면 제목/설명 편집, nav in/out 리스트, "🎨 Zone 편집" + "🎮 게임에서 열기"
+- 드래그 이동 · 휠 줌 · 로컬 저장 + JSON 내보내기 + 재파싱 (위치·설명 보존)
+- 허브([tools/screen_editor.html](tools/screen_editor.html))에서 맨 위 타일로 진입
+
+### 2. Zone 편집기 확장 ([tools/screen_editor_zones.html](tools/screen_editor_zones.html))
+세 가지 신기능 추가 — 모두 `index.html` 미수정 원칙 준수, 런타임 오버라이드 방식:
+
+**2-1. 📝 텍스트 편집 패널**
+- stage 아래 각 zone 의 `textContent` 를 textarea 로 편집
+- `css/text_overrides.json` 에 저장 → 게임 부팅 시 [js/99_bootstrap.js](js/99_bootstrap.js) 하단의 `textOverridesBoot` 가 자동 적용
+- UI.show 몽키패치로 화면 전환 후에도 재적용
+
+**2-2. 🗑️ 숨김 토글 (행마다 버튼)**
+- 해당 셀렉터를 `css/hidden_elements.json` 에 추가
+- 런타임에 동적 `<style>` 주입으로 `display:none !important`
+- 상단에 "N개 요소 숨김 중" 요약 (나중에 다음 세션에 제가 물리 삭제 대상)
+- 복구 가능 (토글)
+
+**2-3. ➕ 지시 추가 모드 (Phase 1 어노테이션)**
+- 툴바 "➕ 지시 추가" 클릭 → stage 크로스헤어 → 드래그로 네모 그리기
+- 릴리즈 시 모달 팝업 → 한국어로 "여기에 X 넣어줘" 입력
+- `css/annotations.json` 에 `{id, screen, x, y, w, h, text, createdAt}` 저장
+- 파란 점선 박스로 렌더, 더블클릭 편집, ×  버튼 삭제, 드래그 이동, 우하단 핸들 리사이즈
+- ESC 로 모드 해제
+- **다음 세션 시 annotations.json 의 모든 항목을 확인하고 반영**
+
+### 3. Runtime DOM Tagging ([js/99_bootstrap.js](js/99_bootstrap.js))
+- `index.html` 수정 없이 클래스 부여하기 위한 런타임 태거
+- 현재 케이스: `#title-screen` 하위 div 중 `textContent === "LEAGUE OF THE GODS"` 인 요소에 `class="title-league"` 자동 부여
+- 이 패턴으로 다른 장식 요소도 셀렉터 안정화 가능
+
+### 4. 버튼 그룹 5개 분해 (10개 개별 zone)
+| 화면 | 기존 래퍼 | 분해 후 |
+|---|---|---|
+| title | `.title-buttons` | `title-btn-back` / `title-btn-new` |
+| tavern | `gap:8px wrapper` | `tav-btn-refresh` / `tav-btn-back` |
+| formation | `gap:10px wrapper` | `form-btn-auto` / `form-btn-confirm` |
+| gameover | `gap:10px wrapper` | `go-btn-restart` / `go-btn-rest` |
+| battle | `.tb-bottom` | `b-btn-back` / `b-btn-fight` |
+
+- [css/10_tokens.css](css/10_tokens.css) LAYOUT_VARS 블록에 40개 변수 추가
+- [css/42_screens.css](css/42_screens.css) 하단에 개별 버튼 절대 위치 규칙
+- **⚠️ title 만 특수**: `#title-screen > <div z-index:2> > .title-buttons > button` 3단 중첩 구조. 중간 래퍼의 `position:relative` 를 `static !important` 로 플랫 → 버튼의 positioning context 가 `#title-screen`(1280×720) 으로 올라가도록 처리. 다른 4개는 래퍼가 screen 직계 자식이라 표준 패턴.
+- **회귀 발생 & 수정 기록**: 처음에 DOM 구조 확인 없이 cardselect 패턴 복붙 → 타이틀 버튼 두 개가 사라지는 버그. 사용자 지적 후 fix + feedback 메모리 저장 ([feedback_css_wrapper_split.md](~/.claude/projects/c--work/memory/feedback_css_wrapper_split.md)).
+
+### 5. 타이틀 배경 교체
+- `c:/Users/USER/Downloads/배경화면왕좌.png` → `img/bg_title.png` 로 덮어쓰기
+- CSS 는 기존 그대로(`bg_title2.png` 레이어는 파일 없음 → 자동으로 `bg_title.png` 사용)
+
+### 6. GitHub 푸시 완료 (5 커밋)
+`75ad26c..ddc314f` — https://github.com/chahongpil/realm-of-fates
+- chore: gitignore 확장 + package.json
+- docs: Phase 기획서 41개 + 프롬프트
+- feat(tools): 편집기 스위트 + 텍스트 오버라이드 런타임
+- feat: Phase 2 콘텐츠 확장 + 버튼 그룹 분해 + 타이틀 배경
+
+### 📋 Phase 2 에디터 계획 — 에셋 드롭 (예정)
+**목표**: Zone 편집기에 에셋 라이브러리 패널 + 드래그 드롭으로 배너/아이콘 배치.
+
+**구현 순서**:
+1. **에셋 라이브러리 패널** (좌측 또는 툴바 드롭다운)
+   - `img/` 폴더 스캔 → 카테고리별 썸네일 그리드 (bg / banner / frame / sk / h / 기타)
+   - 서버 엔드포인트: `GET /list-assets?category=banner` → 파일 리스트 + 크기
+2. **드래그 드롭**
+   - 썸네일 드래그 → 캔버스 드롭 → 미리보기 박스 생성 (실제 `<img>` 로 렌더)
+   - 생성 즉시 `annotations.json` 스키마에 `assetPath` 필드 추가해서 저장
+3. **Annotation 스키마 확장**
+   - `{ id, screen, x, y, w, h, text, assetPath?, assetType?, createdAt }`
+4. **시각 검증**
+   - 배치 후 "게임에서 열기" 누르면 iframe 에 임시 `<img>` 오버레이 (실제 CSS 는 아직 안 만듦)
+5. **인계 시점**: 사용자가 "에셋 지시 반영해줘" 하면 제가 annotation 의 `assetPath` 와 위치를 읽고 해당 화면의 CSS + HTML 에 정식 반영
+
+**왜 Phase 1 → Phase 2 분리**:
+- 코드 양 Phase 1 ~200줄, Phase 2 ~400줄 + 에셋 스캔 API
+- 배너 10종 생성이 아직 미완료 → Phase 2 는 에셋 완성 후 진행이 효율적
+- Phase 1 으로도 즉시 "여기 배너 hud_bar 넣어줘" 같은 지시는 가능 (텍스트로만)
+
+---
+
+## 🟢 2026-04-13 새벽 — 배너 파이프라인 + 편집기 전체화면 + 전투 5슬롯
 
 ## 🟢 2026-04-13 새벽 — 배너 파이프라인 + 편집기 전체화면 + 전투 5슬롯
 

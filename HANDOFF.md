@@ -1,5 +1,80 @@
 # Realm of Fates — 핸드오프 문서
-> 마지막 업데이트: 2026-04-13 심야 — Zone 편집기 확장 (텍스트/숨김/지시박스) + 버튼 분해 + 타이틀 배경 + GitHub 푸시
+> 마지막 업데이트: 2026-04-13 심야 2차 — 래퍼 7화면 일괄 분해 + 하네스 업그레이드 (훅/스킬 3종/메모리 3종)
+
+## 🟣 2026-04-13 심야 2차 — 래퍼 일괄 분해 + 하네스 업그레이드
+
+### 핵심 성과 한 줄
+**"반복 작업의 스킬화"** — 이번 세션에 수동으로 한 작업(래퍼 분해, 편집기 열기, 지시 반영)을 모두 스킬로 결정화. 다음 세션부터 "/래퍼분해" 한마디면 제가 자동 수행.
+
+### 1. 래퍼 7개 일괄 분해 (자식 23개 신규 zone)
+| 화면 | 래퍼 | 타입 | 자식 수 | 자식 zone |
+|---|---|---|---|---|
+| login | `.auth-box` | B (프레임 유지) | 6 | li-title/id/pw/msg/btn/back |
+| signup | `.auth-box` | B | 7 | su-title/id/pw/pw2/msg/btn/back |
+| prologue | `#prologue-btns` | A | 2 | prologue-btn-ok/skip |
+| tavern | `tav-tabs` 래퍼 | A | 3 | tav-tab-unit/hero + tav-info |
+| deckview | `dv-tabs` 래퍼 | A | 2 | dv-tab-deck/codex |
+| castle | `castle-tabs` 래퍼 | A | 2 | castle-tab-upgrade/quest |
+| church | `church-title` | A | 2 | church-title/church-info |
+
+- **Type A** (투명 버튼 그룹): 래퍼 full-container, 자식 stage-absolute
+- **Type B** (시각 프레임): 래퍼 position:absolute 로 스테이지 배치, 자식 parentSelector 로 상대좌표
+- **Type C** (중첩 래퍼): title 케이스, 이번엔 없음 (이전 세션에서 처리)
+
+CSS 변수 40+ 개 추가 ([css/10_tokens.css:183-222](css/10_tokens.css#L183))
+CSS 규칙 블록 추가 ([css/42_screens.css](css/42_screens.css) 하단)
+편집기 config 7 화면 갱신 ([tools/screen_editor_zones.html](tools/screen_editor_zones.html))
+
+### 2. parentSelector 지원 (편집기 핵심 기능)
+[tools/screen_editor_zones.html](tools/screen_editor_zones.html) 에 부모-자식 오프셋 로직 추가:
+- `getParentStageRect(parentSelector)` — iframe live rect 측정해서 스테이지 좌표로 변환
+- `render()` — 자식 zone 은 부모 rect 오프셋 더해서 시각 위치 계산 (6회 재시도)
+- `saveVars()` — 자식 저장 시 부모 offset 빼고 상대좌표로 저장
+- Type B(auth-box) 의 자식 편집이 이 로직으로 동작
+
+### 3. ❓ 사용법 접이식 패널
+[tools/screen_editor_zones.html](tools/screen_editor_zones.html) 상단에 편집기 전체 기능 요약 접이식. 첫 방문 자동 펼침, localStorage 저장.
+
+### 4. Phase 1 Annotation (지시 박스) — 이미 구현됨
+- ➕ 지시 추가 → 드래그 네모 → 모달 → `css/annotations.json`
+- 다음 세션에 **`/지시반영` 스킬** 로 일괄 반영
+
+### 5. 🗑️ 숨김 토글 — 이미 구현됨
+- 각 zone 행 우측 버튼 → `css/hidden_elements.json`
+- [js/99_bootstrap.js](js/99_bootstrap.js) `hiddenElementsBoot` 가 런타임에 `display:none !important` 주입
+- 확신 시 `/지시반영` 스킬이 물리 삭제
+
+### 6. 📝 텍스트 오버라이드 — 이미 구현됨
+- 텍스트 패널 textarea → `css/text_overrides.json`
+- [js/99_bootstrap.js](js/99_bootstrap.js) `textOverridesBoot` 가 런타임 `textContent` 덮어쓰기
+
+### 7. 🔧 하네스 업그레이드
+**session_start 훅 확장** ([.claude/hooks/session_start.py](../../.claude/hooks/session_start.py))
+- annotations.json / hidden_elements.json / text_overrides.json 자동 파싱
+- 세션 시작 시 "🚨 편집기 → AI 핸드오프 대기 항목" 섹션 출력
+- 대기 건수 + 샘플 3-5건 미리보기
+- 관련 스킬 힌트 포함
+
+**신규 스킬 3개**
+- `/편집기열기` ([.claude/skills/편집기열기/SKILL.md](../../.claude/skills/편집기열기/SKILL.md)) — 포트 8765 서버 헬스체크 → 기동 → 브라우저 자동 열기
+- `/래퍼분해` ([.claude/skills/래퍼분해/SKILL.md](../../.claude/skills/래퍼분해/SKILL.md)) — 전체 화면 스캔 + Type A/B/C 분류 + CSS/편집기 일괄 수정 + 시각 검증
+- `/지시반영` ([.claude/skills/지시반영/SKILL.md](../../.claude/skills/지시반영/SKILL.md)) — annotations/hidden/text_overrides 3종 일괄 반영
+
+**신규 feedback 메모리 3개** (`C:/Users/USER/.claude/projects/c--work/memory/`)
+- `feedback_css_wrapper_split.md` — DOM parent chain 확인, 중첩 래퍼면 position:static 플랫, 시각 검증 필수
+- `feedback_verify_before_claim.md` — 부정 단정 전 Grep/Read, 추측 말고 "확인 중"
+- `feedback_wrapper_split_sweep.md` — 한 화면 지적 시 19화면 전체 스캔
+
+**노하우 INDEX** ([design/KNOWHOW_INDEX.md](../../design/KNOWHOW_INDEX.md)) — 반복 작업 스킬/메모리/아키텍처 한곳 모음. AI 가 세션 초반에 참고.
+
+### 🚨 다음 세션 시작 시 필수 확인
+1. **훅이 자동으로 알려줌** — annotations/hidden/text_overrides 대기 항목 있으면 `🚨 편집기 → AI 핸드오프 대기 항목` 섹션 출력
+2. 대기 항목 있으면 → `/지시반영` 스킬 호출 권장
+3. 없으면 현재 포커스 계속 진행
+
+---
+
+## 🔵 2026-04-13 심야 1차 — 편집기 스위트 확장 + 버튼 그룹 분해 + 지시 박스 도입
 
 ## 🔵 2026-04-13 심야 — 편집기 스위트 확장 + 버튼 그룹 분해 + 지시 박스 도입
 

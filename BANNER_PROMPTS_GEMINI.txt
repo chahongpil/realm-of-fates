@@ -1,0 +1,156 @@
+═══════════════════════════════════════════════════════════════
+  Realm of Fates — 배너 10종 제작 프롬프트 (Gemini 2.5 전용)
+  사용법: 각 섹션의 프롬프트를 1장씩 Gemini 에 붙여넣기
+  저장: C:\Users\USER\Downloads\ 폴더 → 파일명 [대괄호] 그대로
+═══════════════════════════════════════════════════════════════
+
+📌 공통 원칙 (모든 배너)
+─────────────────────────────────────────────────
+- 회색 돌(granite) 재질, 어두운 철근·청동 포인트
+- 가운데 장식 절대 금지 — 텍스트/아이콘 공간 확보
+- 투명 배경 (흰 배경 OK, 후처리로 제거)
+- 장식은 양끝 또는 상단에만
+- 드롭 섀도우 여백 최소 10px
+- 게임 UI 에셋 스타일 (평면 정면 뷰)
+- 9-slice 확장 가능 (중앙 반복 가능한 벽돌 무늬)
+
+
+═══════════════════════════════════════════════════════════════
+  🔴 P0 — 가장 급한 3종
+═══════════════════════════════════════════════════════════════
+
+
+[banner_title_clean.png] — 타이틀 배너 (가로 긴, 가운데 비어있음)
+용도: 모든 화면 제목 텍스트 뒤 배경
+크기: 1600×200 (8:1 비율)
+
+Gemini 프롬프트:
+
+Create a dark fantasy game UI banner asset. Long horizontal stone plaque with 8:1 aspect ratio (very wide and short). Medieval gray granite brick texture in the center — completely empty and flat, designed to hold text overlay. Short dark iron pillars at both left and right ends only, with small bronze rivets. Optional small aged bronze crown or mountain symbol on top center edge. Weathered stone with subtle cracks. Orthographic front view, no perspective. Plain white background for easy removal. No text, no letters, no logos, no characters. Transparent-ready PNG. Game UI element, 9-slice compatible, dark fantasy aesthetic, no colored gems, no cluttered center decoration.
+
+
+[banner_hud_bar.png] — HUD 상단 바 (얇고 풀폭)
+용도: 골드/HP/리그/명예 표시 상단 바
+크기: 2560×80 (32:1 비율)
+
+Gemini 프롬프트:
+
+Create a dark fantasy game UI banner asset. Very thin long horizontal stone bar with 32:1 aspect ratio (extremely wide, very short). Dark gray granite texture, minimal iron caps at both ends only (tiny stone pillars). One thin aged bronze line running across the top edge as accent. Completely flat empty gray stone middle with subtle brick pattern, no ornaments, no medallions, no shields in center — this is a HUD bar that will hold UI stats overlay. Orthographic front view. Plain white background. No text, no letters, no logos, no characters. Transparent-ready PNG, game UI element, weathered aged look, dark fantasy.
+
+
+[banner_info_plate.png] — 정보 텍스트 돌판 (작은 사각)
+용도: 서브 텍스트, 힌트, 설명문
+크기: 800×160 (5:1 비율)
+
+Gemini 프롬프트:
+
+Create a dark fantasy game UI banner asset. Small rectangular stone tablet with 5:1 aspect ratio. Medium gray granite texture. Four small iron rivets at the corners only. Slightly recessed inset center with soft inner shadow, completely flat and empty — room for text. No ornaments in middle. Subtle weathered stone pattern. Orthographic front view. Plain white background. No text, no letters, no characters, no logos. Transparent-ready PNG, game UI element, dark fantasy style.
+
+
+═══════════════════════════════════════════════════════════════
+  🟡 P1 — 중요 (모달/버튼/탭 품질 업)
+═══════════════════════════════════════════════════════════════
+
+
+[banner_modal_large.png] — 모달 액자 (중형 사각)
+용도: 확인 다이얼로그, 로그인 폼, 튜토리얼 박스
+크기: 1200×800 (1.5:1 비율)
+
+Gemini 프롬프트:
+
+Create a dark fantasy game UI banner asset. Square stone frame with 1.5:1 aspect ratio (wider than tall). Dark gray granite texture. Small aged bronze shield ornament on the TOP CENTER EDGE only (not inside the frame). Four large dark iron corner rivets with bolts. Completely empty flat gray stone middle — this is a modal dialog frame that will hold multiple lines of text and buttons. No medallions, no eagles, no decorations inside the frame. Heavy weathered stone border. Orthographic front view. Plain white background. No text, no letters, no characters. Transparent-ready PNG, game UI modal element, dark fantasy.
+
+
+[banner_button_row.png] — 버튼 바 (여러 버튼 수용)
+용도: 타이틀 메인 버튼, pick 하단 버튼
+크기: 1400×200 (7:1 비율)
+
+Gemini 프롬프트:
+
+Create a dark fantasy game UI banner asset. Long horizontal stone bar with 7:1 aspect ratio. Medium gray granite texture. Small stone pillars at both ends only. One thin aged bronze rail running along the bottom edge (buttons will rest on top of this). Completely flat empty center — designed to hold 3-4 buttons overlaid. No decoration in middle, no medallion, no ornament. Weathered stone. Orthographic front view. Plain white background. No text, no letters, no characters. Transparent-ready PNG, game UI element, dark fantasy.
+
+
+[banner_tab_bar.png] — 탭 버튼 바
+용도: 선술집/덱뷰/성채의 탭 버튼 그룹
+크기: 1800×200 (9:1 비율)
+
+Gemini 프롬프트:
+
+Create a dark fantasy game UI banner asset. Thin long horizontal stone strip with 9:1 aspect ratio. Dark gray granite texture. Tiny iron caps at both ends only. Subtle engraved groove or channel along the top edge (tab buttons will plug into this). Completely empty gray center with minimal utilitarian look. No medallions, no ornaments. Aged weathered stone. Orthographic front view. Plain white background. No text, no letters, no characters. Transparent-ready PNG, game UI element, dark fantasy.
+
+
+═══════════════════════════════════════════════════════════════
+  🟢 P2 — 폴리시 (있으면 좋음)
+═══════════════════════════════════════════════════════════════
+
+
+[banner_scroll_clean.png] — 스크롤 패널 (긴 가로, 양끝 롤)
+용도: NPC 대화, 튜토리얼, 상세 설명
+크기: 1200×300 (4:1 비율)
+
+Gemini 프롬프트:
+
+Create a dark fantasy game UI banner asset. Stone scroll panel with 4:1 aspect ratio. Small gray stone scroll rolls at both left and right ends (not too big, 15% width each). Long flat gray granite slab in the middle (smooth, not brick). Subtle celtic knot pattern along the top and bottom edges (thin border). Completely empty flat center for text overlay. No decoration in middle. Weathered aged stone look. Orthographic front view. Plain white background. No text, no letters, no characters. Transparent-ready PNG, game UI scroll element, dark fantasy.
+
+
+[banner_sidepanel_tall.png] — 세로 사이드패널
+용도: 우측 상세 정보 패널, 인벤토리 리스트
+크기: 400×1200 (1:3 비율, 세로)
+
+Gemini 프롬프트:
+
+Create a dark fantasy game UI banner asset. Tall vertical stone panel with 1:3 aspect ratio (3 times taller than wide). Dark gray granite brick texture. Iron reinforcement borders on top and bottom edges. Small aged bronze ornament on top center only (optional: owl or small shield). Completely empty flat middle stone area — will hold vertical list of items. Weathered heavy stone. Orthographic front view. Plain white background. No text, no letters, no characters. Transparent-ready PNG, game UI sidepanel element, dark fantasy.
+
+
+[banner_medal_blank.png] — 원형 메달 (아이콘 배경)
+용도: 골드/HP/명예 아이콘 배경, 원형 장식
+크기: 512×512 (1:1 비율)
+
+Gemini 프롬пт:
+
+Create a dark fantasy game UI banner asset. Circular medal frame, 1:1 square aspect ratio. Outer ring of dark aged bronze with subtle engraved pattern. Inner dark gray granite stone disc. Four small iron rivets at north/south/east/west positions on the ring. Completely empty flat center disc — game icon will be placed inside. No patterns or decorations in the center. Weathered aged look. Orthographic front view. Plain white background. No text, no letters, no characters, no symbols in center. Transparent-ready PNG, circular medal UI element, dark fantasy.
+
+
+[banner_card_slot.png] — 카드 슬롯 플레이스홀더
+용도: 편성 빈 슬롯, 덱 빈 칸
+크기: 640×960 (2:3 비율, 카드와 동일)
+
+Gemini 프롬프트:
+
+Create a dark fantasy game UI banner asset. Empty card-shaped frame with 2:3 aspect ratio (card ratio). Dark gray stone border with four heavy iron corner rivets. Dashed inner outline or very dark empty interior suggesting an empty card slot. Small "+" or plus symbol faintly in the top center. No characters, no illustrations inside. Weathered stone frame. Orthographic front view. Plain white background. No text, no letters. Transparent-ready PNG, empty card placeholder UI element, dark fantasy.
+
+
+═══════════════════════════════════════════════════════════════
+  📝 제작 후 저장 절차
+═══════════════════════════════════════════════════════════════
+
+1. Gemini 로 1장씩 생성 (품질 마음에 들 때까지 재생성)
+2. 다운로드 → `C:\Users\USER\Downloads\` 에 저장
+3. 파일명은 위의 [대괄호] 안 이름 그대로 (예: banner_title_clean.png)
+4. 전체 제작 완료 후 "배너 다 만들었어" 라고 알려주면
+   자동으로 background 제거 + c:/work/game/img/ui/ 이동 + CSS 연결
+
+💡 팁:
+- 1장당 2~5분, 총 10장이면 20~50분 예상
+- 품질 기준: "가운데가 텍스트 읽기에 충분히 비어있는가?"
+- 배경은 흰색이어도 OK (후처리 스크립트가 투명화)
+- 한 번에 10장 요청하지 말고 1장씩 — 품질 유지
+
+═══════════════════════════════════════════════════════════════
+  🎯 우선순위 추천
+═══════════════════════════════════════════════════════════════
+
+시간 없으면 P0 3장만:
+  1. banner_title_clean
+  2. banner_hud_bar
+  3. banner_info_plate
+
+그다음 P1 3장:
+  4. banner_modal_large
+  5. banner_button_row
+  6. banner_tab_bar
+
+그다음 P2 4장 (여유 있을 때):
+  7~10.
+
+═══════════════════════════════════════════════════════════════

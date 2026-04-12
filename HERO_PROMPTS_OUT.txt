@@ -1,0 +1,54 @@
+### [h_m_fire]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, heavy armored warrior, massive sword or battle axe, heroic strong stance, facial expression determined, chestplate with element motif, metallic details, flaming red and orange palette, volcanic battlefield background, embers and sparks floating, heat waves, character aura: fire
+
+### [h_m_water]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, heavy armored warrior, massive sword or battle axe, heroic strong stance, facial expression determined, chestplate with element motif, metallic details, deep ocean blue and cyan palette, misty coastal cliff background, water droplets and ice crystals, flowing robes, character aura: water
+
+### [h_m_lightning]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, heavy armored warrior, massive sword or battle axe, heroic strong stance, facial expression determined, chestplate with element motif, metallic details, electric purple and gold palette, storm cloud sky background, crackling lightning bolts, glowing eyes, character aura: lightning
+
+### [h_m_earth]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, heavy armored warrior, massive sword or battle axe, heroic strong stance, facial expression determined, chestplate with element motif, metallic details, earthy brown and moss green palette, rocky canyon background, rising dust, stone fragments floating, character aura: earth
+
+### [h_m_dark]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, heavy armored warrior, massive sword or battle axe, heroic strong stance, facial expression determined, chestplate with element motif, metallic details, shadowy black and violet palette, cursed forest background at night, dark mist tendrils, eerie purple glow, character aura: shadow
+
+### [h_m_holy]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, heavy armored warrior, massive sword or battle axe, heroic strong stance, facial expression determined, chestplate with element motif, metallic details, ivory and golden palette, cathedral rays of light background, floating golden feathers, divine halo, character aura: holy light
+
+### [h_r_fire]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, agile ranger archer, elegant longbow or crossbow drawn, aiming pose with focused eyes, leather and cloth armor, element-infused arrow, quiver visible, flaming red and orange palette, volcanic battlefield background, embers and sparks floating, heat waves, character aura: fire
+
+### [h_r_water]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, agile ranger archer, elegant longbow or crossbow drawn, aiming pose with focused eyes, leather and cloth armor, element-infused arrow, quiver visible, deep ocean blue and cyan palette, misty coastal cliff background, water droplets and ice crystals, flowing robes, character aura: water
+
+### [h_r_lightning]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, agile ranger archer, elegant longbow or crossbow drawn, aiming pose with focused eyes, leather and cloth armor, element-infused arrow, quiver visible, electric purple and gold palette, storm cloud sky background, crackling lightning bolts, glowing eyes, character aura: lightning
+
+### [h_r_earth]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, agile ranger archer, elegant longbow or crossbow drawn, aiming pose with focused eyes, leather and cloth armor, element-infused arrow, quiver visible, earthy brown and moss green palette, rocky canyon background, rising dust, stone fragments floating, character aura: earth
+
+### [h_r_dark]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, agile ranger archer, elegant longbow or crossbow drawn, aiming pose with focused eyes, leather and cloth armor, element-infused arrow, quiver visible, shadowy black and violet palette, cursed forest background at night, dark mist tendrils, eerie purple glow, character aura: shadow
+
+### [h_r_holy]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, agile ranger archer, elegant longbow or crossbow drawn, aiming pose with focused eyes, leather and cloth armor, element-infused arrow, quiver visible, ivory and golden palette, cathedral rays of light background, floating golden feathers, divine halo, character aura: holy light
+
+### [h_s_fire]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, mystic mage sorcerer, ornate robe with element symbols, casting spell with glowing hands, floating orb or staff, wise but powerful, arcane runes in the air, flaming red and orange palette, volcanic battlefield background, embers and sparks floating, heat waves, character aura: fire
+
+### [h_s_water]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, mystic mage sorcerer, ornate robe with element symbols, casting spell with glowing hands, floating orb or staff, wise but powerful, arcane runes in the air, deep ocean blue and cyan palette, misty coastal cliff background, water droplets and ice crystals, flowing robes, character aura: water
+
+### [h_s_lightning]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, mystic mage sorcerer, ornate robe with element symbols, casting spell with glowing hands, floating orb or staff, wise but powerful, arcane runes in the air, electric purple and gold palette, storm cloud sky background, crackling lightning bolts, glowing eyes, character aura: lightning
+
+### [h_s_earth]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, mystic mage sorcerer, ornate robe with element symbols, casting spell with glowing hands, floating orb or staff, wise but powerful, arcane runes in the air, earthy brown and moss green palette, rocky canyon background, rising dust, stone fragments floating, character aura: earth
+
+### [h_s_dark]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, mystic mage sorcerer, ornate robe with element symbols, casting spell with glowing hands, floating orb or staff, wise but powerful, arcane runes in the air, shadowy black and violet palette, cursed forest background at night, dark mist tendrils, eerie purple glow, character aura: shadow
+
+### [h_s_holy]
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio, rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI, mystic mage sorcerer, ornate robe with element symbols, casting spell with glowing hands, floating orb or staff, wise but powerful, arcane runes in the air, ivory and golden palette, cathedral rays of light background, floating golden feathers, divine halo, character aura: holy light
+

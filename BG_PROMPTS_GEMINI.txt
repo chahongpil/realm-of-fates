@@ -1,0 +1,92 @@
+═══════════════════════════════════════════════════════════
+  Realm of Fates — 배경 4종 프롬프트
+═══════════════════════════════════════════════════════════
+
+📐 공통 출력 규격
+─────────────────────────────────────────────────
+- 크기: 1920 x 1080 (16:9 가로, Full HD)
+- 게임 실제 뷰포트: 1280x720, CSS 는 center/cover 로 배치
+- 파일: PNG, c:\work\game\img\ 에 저장 (기존 파일 덮어쓰기)
+- 가장자리 어둡게 (비네트) — UI 가 올라가는 영역 가독성 확보
+- 중앙 1280x720 범위는 "UI 가 들어올 구역" → 과한 디테일/얼굴 금지
+- 텍스트·로고·워터마크 금지
+
+💡 사용법
+─────────────────────────────────────────────────
+1. 아래 4개 블록 중 하나를 ═══ 줄 사이 전체 복사
+2. Gemini / ChatGPT Image 에 붙여넣기 → Generate
+3. 파일명은 반드시 [대괄호 id].png (예: bg_title.png)
+4. c:\work\game\img\ 에 덮어쓰기
+5. 브라우저 Ctrl+F5
+
+
+═══════════════════════════════════════════════════════════
+  1. [bg_title]  타이틀 화면 — 신들의 왕좌
+═══════════════════════════════════════════════════════════
+
+Dark fantasy game title screen background, 1920x1080 landscape 16:9, cinematic wide establishing shot, stylized digital painting, dramatic god rays, atmospheric fog, NO text, NO logo, NO UI, NO watermark, NO characters in foreground,
+
+ancient throne hall of forgotten gods at twilight, colossal stone pillars flanking the sides, cracked marble floor, floating ethereal runes in the air, distant silhouette of massive divine throne in deep background, shafts of divine light piercing from above, purple and gold ambient glow, drifting embers and motes, mysterious mist, central area slightly calmer so game UI can sit cleanly, vignette darkened edges, epic mythic mood, rich detail at sides only
+
+Negative prompt: text, logo, watermark, ui, user interface, hearthstone, blizzard, warcraft, characters, faces, people, anime, cartoon, 3d render, photo, blurry, low quality, crowded center
+
+Output: 1920x1080 landscape, PNG, filename bg_title.png
+
+
+═══════════════════════════════════════════════════════════
+  2. [bg_town]  마을 / 메인 허브 — 운명의 성채 도시
+═══════════════════════════════════════════════════════════
+
+Dark fantasy game menu background, 1920x1080 landscape 16:9, top-down isometric quarter view of a fortified fantasy city, stylized digital painting, atmospheric lighting, NO text, NO logo, NO UI, NO watermark,
+
+mountain-top citadel at dusk, layered stone walls and bridges, cobblestone plaza, small lit windows in buildings glowing warm, faint purple and gold magical runes on the walls, distant mountain peaks with mist, twilight sky with two moons, drifting banners on towers, empty central plaza (buildings clustered along edges so game map icons can overlay), vignette darkened edges, inviting yet mysterious mood, medieval fantasy architecture with subtle arcane elements
+
+Negative prompt: text, logo, watermark, ui, hearthstone, blizzard, warcraft, characters, faces, people, anime, cartoon, 3d render, photo, modern buildings, cars, blurry, low quality
+
+Output: 1920x1080 landscape, PNG, filename bg_town.png
+
+
+═══════════════════════════════════════════════════════════
+  3. [bg_battle]  전투 화면 — 운명의 투기장
+═══════════════════════════════════════════════════════════
+
+Dark fantasy battle arena background, 1920x1080 landscape 16:9, wide stadium view from slightly above, stylized digital painting, cinematic lighting, NO text, NO logo, NO UI, NO watermark, NO characters,
+
+ancient circular colosseum of the gods, sandstone pillars around the perimeter, glowing summoning circle on the ground center, cracked flagstone arena floor, torches burning with purple and blue flames on the walls, distant crowds blurred into shadow, overhead stormy sky with lightning in the far background, central arena floor clean and uncluttered so battle cards can overlay, vignette darkened edges, tense battle-ready atmosphere, epic mythic scale
+
+Negative prompt: text, logo, watermark, ui, hearthstone, blizzard, warcraft, characters, creatures, people, anime, cartoon, 3d render, photo, blurry, low quality, cluttered center, foreground objects
+
+Output: 1920x1080 landscape, PNG, filename bg_battle.png
+
+
+═══════════════════════════════════════════════════════════
+  4. [bg_prologue]  프롤로그 — 운명의 서막
+═══════════════════════════════════════════════════════════
+
+Dark fantasy prologue background, 1920x1080 landscape 16:9, solemn narrative storybook mood, stylized digital painting, soft cinematic lighting, NO text, NO logo, NO UI, NO watermark, NO characters,
+
+vast ancient library of fate, floating parchments and glowing runes drifting in mid-air, towering bookshelves receding into darkness at both sides, a single beam of warm light falling from above onto an empty pedestal in the center, swirling dust motes, deep indigo and amber color palette, mystical calm atmosphere, vignette heavy on edges, center softly lit so prologue text can sit cleanly, sense of destiny and beginning
+
+Negative prompt: text, logo, watermark, ui, hearthstone, blizzard, warcraft, characters, faces, people, anime, cartoon, 3d render, photo, blurry, low quality, busy center, crowded composition
+
+Output: 1920x1080 landscape, PNG, filename bg_prologue.png
+
+
+═══════════════════════════════════════════════════════════
+  설치 가이드
+═══════════════════════════════════════════════════════════
+
+1. Gemini 로 한 장씩 생성 (동시에 여러 장 요청 금지 — 품질 저하)
+2. Downloads 폴더에 저장된 파일을 c:\work\game\img\ 로 이동
+3. 파일명 확인 — bg_title.png / bg_town.png / bg_battle.png / bg_prologue.png
+4. 게임 Ctrl+F5 (하드 새로고침)
+5. CSS 는 이미 해당 파일명을 참조하고 있어서 코드 수정 불필요
+
+💡 팁:
+- bg_title 은 기존 bg_title.png 위에 bg_title2.png 레이어가 겹쳐 있음.
+  bg_title2.png 는 나중에 "광원/파티클 오버레이" 용도로 별도 생성 권장
+- bg_town_v3.png 는 현재 #menu-screen 의 배경 — 교체하려면 bg_town.png 로
+  저장 후 CSS 파일 한 줄 변경 필요 (알려주세요)
+- 모든 배경은 "중앙은 비우고 가장자리에 디테일" 원칙 — UI 가독성을 위해
+
+═══════════════════════════════════════════════════════════

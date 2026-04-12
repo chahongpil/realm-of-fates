@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>영웅 선택 편집기</title>
+<link rel="stylesheet" href="../css/00_reset.css">
+<link rel="stylesheet" href="../css/10_tokens.css">
+<link rel="stylesheet" href="../css/20_layout.css">
+<link rel="stylesheet" href="../css/30_components.css">
+<link rel="stylesheet" href="../css/31_card_system.css">
+<link rel="stylesheet" href="../css/42_screens.css">
+<style>
+  body{margin:0;padding:18px;background:#0d0a14;color:#e6dfc8;font-family:system-ui,sans-serif;}
+  .back{color:#7aa8ff;text-decoration:none;font-size:.8rem;}
+  h1{color:#e6b85a;margin:6px 0 4px;font-size:1.15rem;}
+  .hint{color:#888;font-size:.78rem;margin-bottom:14px;line-height:1.5;}
+  .toolbar{position:sticky;top:0;z-index:100;background:#1a1420;border:1px solid #5a4820;border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;gap:12px;align-items:center;}
+  .toolbar button{background:#2a1f0f;border:1px solid #5a4820;color:#e6b85a;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:.85rem;font-weight:bold;font-family:inherit;}
+  .toolbar button:hover{background:#3a2f1f;}
+  .toolbar button.save{color:#7aff7a;border-color:#307a30;}
+  .toolbar button.reset{color:#ffaa44;border-color:#7a5520;}
+  #se-status{font-size:.75rem;color:#888;margin-left:auto;}
+  #se-status.ok{color:#7aff7a;} #se-status.err{color:#ff7a7a;}
+  .layout{display:grid;grid-template-columns:360px 1fr;gap:18px;}
+  .controls-panel{background:#15101c;border:1px solid #3a2e1a;border-radius:8px;padding:14px;max-height:calc(100vh - 140px);overflow-y:auto;}
+  .controls-panel h2{margin:0 0 12px;color:#c8a860;font-size:.95rem;}
+  #se-controls{display:flex;flex-direction:column;gap:14px;}
+  .se-row{display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:4px;background:#0d0812;}
+  .se-row .se-label{display:flex;justify-content:space-between;gap:6px;}
+  .se-row .se-name{color:#e6dfc8;font-size:.8rem;font-weight:600;}
+  .se-row .se-code{color:#555;font-size:.62rem;font-family:monospace;}
+  .se-row input[type=range]{width:100%;accent-color:#e6b85a;}
+  .se-row .se-val{color:#ffcc44;font-size:.75rem;font-family:monospace;align-self:flex-end;}
+  .preview-panel{background:radial-gradient(ellipse at center,var(--bg-magic) 0%,var(--bg-0) 70%);border:2px solid #3a2e1a;border-radius:8px;padding:20px;overflow:auto;}
+  .preview-label{color:#888;font-size:.7rem;margin-bottom:10px;text-align:center;letter-spacing:2px;}
+  /* 카드 미리보기 — CardComponent 없이 정적 목업 */
+  .mock-card{
+    width:220px;aspect-ratio:1024/1536;
+    background:linear-gradient(180deg,#2a1f0f,#0a0810);
+    border:3px solid #8a6820;border-radius:8px;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    padding:12px;color:#fff4c8;
+    position:relative;box-shadow:0 0 0 1px #000 inset;
+  }
+  .mock-card::before{content:'';position:absolute;inset:12px;background:radial-gradient(circle,#4a3520 0%,#1a0f08 70%);border-radius:4px;}
+  .mock-card .mc-name{position:relative;font-weight:700;font-size:.85rem;font-family:var(--font-title);}
+  .mock-card .mc-desc{position:relative;font-size:.62rem;color:#aaa;margin-top:4px;text-align:center;}
+</style>
+</head>
+<body>
+
+<a class="back" href="screen_editor.html">← 허브로</a>
+<h1 id="se-title">영웅 선택 편집기</h1>
+<div class="hint">카드 간 간격 / 패딩 조절. 저장 시 <code>css/10_tokens.css</code> 의 <code>--charselect-*</code> 변수 갱신.</div>
+
+<div class="toolbar">
+  <button class="save" id="se-save-btn">💾 저장</button>
+  <button class="reset" id="se-reset-btn">↩ 초기값</button>
+  <span id="se-status">준비</span>
+</div>
+
+<div class="layout">
+  <div class="controls-panel">
+    <h2>🎛 슬라이더</h2>
+    <div id="se-controls"></div>
+  </div>
+  <div class="preview-panel">
+    <div class="preview-label">🎭 MOCK PREVIEW</div>
+    <div id="se-preview"></div>
+  </div>
+</div>
+
+<script src="screen_editor_common.js"></script>
+<script>
+function mockCard(n, d){
+  return `<div class="char-option-v2">
+    <div class="mock-card">
+      <div class="mc-name">${n}</div>
+      <div class="mc-desc">${d}</div>
+    </div>
+    <div class="char-role-path"><span class="char-role-icon">⚔️</span>${d}</div>
+  </div>`;
+}
+const mockCharSel = `
+  <div class="char-select-title" style="font-family:var(--font-title);color:var(--curr-gold);font-size:1.6rem;text-align:center;margin-bottom:10px;">왕좌를 향한 길을 선택하세요</div>
+  <div class="char-select-grid">
+    ${mockCard('근접 전사','근접전으로 신의 왕좌에')}
+    ${mockCard('원거리 궁수','원거리에서 신의 왕좌에')}
+    ${mockCard('신성 사제','치유와 축복의 길')}
+  </div>`;
+
+ScreenEditor.build({
+  title: '영웅 선택 편집기',
+  previewHtml: mockCharSel,
+  vars: [
+    { name:'--charselect-gap',      label:'카드 사이 간격',  min:0, max:50, step:1, unit:'px' },
+    { name:'--charselect-padding',  label:'그리드 패딩',     min:0, max:40, step:1, unit:'px' },
+    { name:'--charselect-item-pad', label:'카드 래퍼 패딩',  min:0, max:30, step:1, unit:'px' },
+  ]
+});
+</script>
+</body>
+</html>

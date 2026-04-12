@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>전투 화면 편집기</title>
+
+<!-- 실제 게임 CSS — 미리보기가 게임과 동일하게 렌더되도록 -->
+<link rel="stylesheet" href="../css/00_reset.css">
+<link rel="stylesheet" href="../css/10_tokens.css">
+<link rel="stylesheet" href="../css/20_layout.css">
+<link rel="stylesheet" href="../css/30_components.css">
+<link rel="stylesheet" href="../css/31_card_system.css">
+<link rel="stylesheet" href="../css/40_battle.css">
+
+<style>
+  body{margin:0;padding:18px;background:#0d0a14;color:#e6dfc8;font-family:system-ui,sans-serif;}
+  .back{color:#7aa8ff;text-decoration:none;font-size:.8rem;}
+  h1{color:#e6b85a;margin:6px 0 4px;font-size:1.15rem;}
+  .hint{color:#888;font-size:.78rem;margin-bottom:14px;line-height:1.5;}
+
+  .toolbar{
+    position:sticky;top:0;z-index:100;
+    background:#1a1420;border:1px solid #5a4820;border-radius:8px;
+    padding:10px 14px;margin-bottom:14px;
+    display:flex;gap:12px;align-items:center;
+  }
+  .toolbar button{background:#2a1f0f;border:1px solid #5a4820;color:#e6b85a;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:.85rem;font-weight:bold;font-family:inherit;}
+  .toolbar button:hover{background:#3a2f1f;}
+  .toolbar button.save{color:#7aff7a;border-color:#307a30;}
+  .toolbar button.save:hover{background:#1f3a1f;}
+  .toolbar button.reset{color:#ffaa44;border-color:#7a5520;}
+  #se-status{font-size:.75rem;color:#888;margin-left:auto;}
+  #se-status.ok{color:#7aff7a;} #se-status.err{color:#ff7a7a;}
+
+  .layout{display:grid;grid-template-columns:360px 1fr;gap:18px;}
+  .controls-panel{
+    background:#15101c;border:1px solid #3a2e1a;border-radius:8px;
+    padding:14px;max-height:calc(100vh - 140px);overflow-y:auto;
+  }
+  .controls-panel h2{margin:0 0 12px;color:#c8a860;font-size:.95rem;}
+  #se-controls{display:flex;flex-direction:column;gap:14px;}
+  .se-row{display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:4px;background:#0d0812;}
+  .se-row .se-label{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
+  .se-row .se-name{color:#e6dfc8;font-size:.8rem;font-weight:600;}
+  .se-row .se-code{color:#555;font-size:.62rem;font-family:monospace;}
+  .se-row input[type=range]{width:100%;accent-color:#e6b85a;}
+  .se-row .se-val{color:#ffcc44;font-size:.75rem;font-family:monospace;align-self:flex-end;}
+
+  .preview-panel{
+    background:#000;border:2px solid #3a2e1a;border-radius:8px;
+    padding:10px;overflow:hidden;
+    background:url('../img/bg_battle.png') center/cover no-repeat,#0a0810;
+  }
+  .preview-panel .preview-label{color:#888;font-size:.7rem;margin-bottom:6px;text-align:center;letter-spacing:2px;}
+
+  /* ── 전투 미리보기 목업 ──
+     실제 td-slot 구조와 동일하게 렌더. CardComponent 는 필요 없이 더미 카드. */
+  #se-preview{
+    min-height:480px;
+    display:flex;flex-direction:column;
+  }
+  #se-preview .tb-field{
+    height:480px;
+  }
+  #se-preview .td-slot .td-card{
+    background:linear-gradient(180deg,#2a1f0f,#1a140c);
+    border:2px solid var(--amber-plate);
+    min-height:120px;
+    padding:6px;
+  }
+  #se-preview .td-slot .td-name{color:#fff4c8;}
+  #se-preview .td-slot .td-hp{color:#ff4422;}
+</style>
+</head>
+<body>
+
+<a class="back" href="screen_editor.html">← 허브로</a>
+<h1 id="se-title">전투 화면 편집기</h1>
+<div class="hint">
+  슬라이더를 움직이면 미리보기가 실시간 반응합니다. <b>저장</b> 누르면 <code>css/10_tokens.css</code> 의 <code>--battle-*</code> 변수가 갱신되고, 게임 새로고침 시 즉시 반영됩니다.
+</div>
+
+<div class="toolbar">
+  <button class="save" id="se-save-btn">💾 저장</button>
+  <button class="reset" id="se-reset-btn">↩ 초기값</button>
+  <span id="se-status">준비</span>
+</div>
+
+<div class="layout">
+  <div class="controls-panel">
+    <h2>🎛 슬라이더</h2>
+    <div id="se-controls"></div>
+  </div>
+  <div class="preview-panel">
+    <div class="preview-label">⚔️ MOCK PREVIEW (실제 게임 CSS)</div>
+    <div id="se-preview"></div>
+  </div>
+</div>
+
+<script src="screen_editor_common.js"></script>
+<script>
+// 더미 카드 HTML (td-slot 구조)
+function dummyCard(name, hp, isEnemy){
+  return `
+    <div class="td-slot">
+      <div class="td-card">
+        <div style="width:100%;height:80px;background:linear-gradient(135deg,#3a2a1a,#1a0f08);"></div>
+        <div class="td-name">${name}</div>
+        <div class="td-hp">♥ ${hp}</div>
+        <div class="td-hp-bar"><div class="td-hp-fill" style="width:70%;background:${isEnemy?'#ff4422':'#44cc44'};"></div></div>
+      </div>
+    </div>`;
+}
+
+const battleMock = `
+  <div class="tb-field">
+    <div class="tb-side tb-enemy">
+      ${dummyCard('고블린',18,true)}
+      ${dummyCard('오크',24,true)}
+      ${dummyCard('늑대인간',32,true)}
+      ${dummyCard('대장',45,true)}
+    </div>
+    <div class="tb-vs">◆ VS ◆</div>
+    <div class="tb-diamond tb-player">
+      ${dummyCard('영웅',50,false)}
+      ${dummyCard('궁수',30,false)}
+      ${dummyCard('치유사',25,false)}
+      ${dummyCard('전사',40,false)}
+    </div>
+  </div>`;
+
+ScreenEditor.build({
+  title: '전투 화면 편집기',
+  previewHtml: battleMock,
+  vars: [
+    { name:'--battle-slot-gap',    label:'슬롯 사이 간격',   min:0,  max:30, step:1, unit:'px' },
+    { name:'--battle-slot-maxw',   label:'슬롯 최대 너비',   min:10, max:40, step:1, unit:'%'  },
+    { name:'--battle-field-pad-y', label:'필드 상하 패딩',   min:0,  max:40, step:1, unit:'px' },
+    { name:'--battle-field-pad-x', label:'필드 좌우 패딩',   min:0,  max:40, step:1, unit:'px' },
+    { name:'--battle-row-pad-y',   label:'행 상하 패딩',     min:0,  max:20, step:1, unit:'px' },
+    { name:'--battle-vs-pad-y',    label:'VS 라인 여백',     min:0,  max:40, step:1, unit:'px' },
+  ]
+});
+</script>
+</body>
+</html>

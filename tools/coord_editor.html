@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>프레임 좌표 에디터 — 드래그 편집기</title>
+<style>
+  :root{
+    --atk:#ff4422; --def:#4488ff; --spd:#22cc44;
+    --hp:#ff6688;  --nrg:#44aaff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;padding:20px;
+    background:#0d0a14;color:#e6dfc8;
+    font-family:system-ui,sans-serif;
+  }
+  h1{color:#e6b85a;font-size:1.1rem;margin:0 0 6px;}
+  .hint{color:#888;font-size:.8rem;margin-bottom:18px;line-height:1.6;}
+  .hint code{background:#1a1420;padding:1px 5px;border-radius:3px;color:#e6b85a;}
+  .toolbar{
+    position:sticky;top:10px;z-index:100;
+    background:#1a1420;border:1px solid #5a4820;border-radius:8px;
+    padding:10px 14px;margin-bottom:18px;
+    display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+    box-shadow:0 4px 12px rgba(0,0,0,.6);
+  }
+  .toolbar label{font-size:.8rem;color:#aaa;}
+  .toolbar button{
+    background:#2a1f0f;border:1px solid #5a4820;color:#e6b85a;
+    padding:8px 16px;border-radius:4px;cursor:pointer;font-size:.85rem;
+    font-family:inherit;font-weight:bold;
+  }
+  .toolbar button:hover{background:#3a2f1f;}
+  .toolbar button.save{color:#7aff7a;border-color:#307a30;}
+  .toolbar button.save:hover{background:#1f3a1f;}
+  .toolbar button.reload{color:#7aa8ff;border-color:#305a7a;}
+  #status{font-size:.75rem;color:#888;margin-left:auto;}
+  #status.ok{color:#7aff7a;}
+  #status.err{color:#ff7a7a;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:24px;
+  }
+  .frame-card{
+    background:#15101c;border:1px solid #3a2e1a;border-radius:6px;
+    padding:12px;
+  }
+  .frame-card h3{
+    margin:0 0 10px;color:#e6b85a;font-size:.95rem;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .frame-card h3 .rarity-tag{font-size:.65rem;color:#888;font-weight:normal;}
+
+  /* 프레임 스테이지 — aspect 1024:1536 유지 */
+  .stage{
+    position:relative;
+    width:100%;
+    aspect-ratio:1024/1536;
+    background:#000;
+    border:1px solid #2a2015;
+    user-select:none;
+    touch-action:none;
+  }
+  /* 스냅 가이드라인 (드래그 중만 표시) */
+  .snap-guide{position:absolute;pointer-events:none;z-index:20;display:none;}
+  .snap-guide-x{top:0;bottom:0;width:0;border-left:1px dashed #ffee44;box-shadow:0 0 4px rgba(255,238,68,.6);}
+  .snap-guide-y{left:0;right:0;height:0;border-top:1px dashed #ffee44;box-shadow:0 0 4px rgba(255,238,68,.6);}
+  .snap-guide.visible{display:block;}
+  .stage img.frame{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:contain;
+    pointer-events:none;
+  }
+
+  /* ─ 드래그 마커 — 얇은 링 + 중앙 점, 텍스트 없음 (보석 시야 확보) ─ */
+  .marker{
+    position:absolute;
+    width:18px;height:18px;
+    margin-left:-9px;margin-top:-9px;
+    border-radius:50%;
+    border:2px solid currentColor;
+    background:transparent;
+    cursor:grab;
+    z-index:10;
+    transition:transform .1s, box-shadow .1s;
+    box-shadow:0 0 0 1px rgba(0,0,0,.9);
+  }
+  /* 중앙 십자 */
+  .marker::before,
+  .marker::after{
+    content:'';position:absolute;left:50%;top:50%;
+    background:currentColor;
+    box-shadow:0 0 2px #000;
+  }
+  .marker::before{width:10px;height:1.5px;margin-left:-5px;margin-top:-.75px;}
+  .marker::after {width:1.5px;height:10px;margin-left:-.75px;margin-top:-5px;}
+  .marker:hover{transform:scale(1.35);box-shadow:0 0 0 1px rgba(0,0,0,.9), 0 0 10px currentColor;}
+  .marker:active{cursor:grabbing;transform:scale(1.45);}
+  .marker.atk{color:var(--atk);}
+  .marker.def{color:var(--def);}
+  .marker.spd{color:var(--spd);}
+  .marker.hp { color:var(--hp);}
+  .marker.nrg{color:var(--nrg);}
+  /* 마커 호버 시 라벨 툴팁 */
+  .marker::marker{display:none;}
+  .marker[data-label]:hover::after{content:attr(data-label) " " attr(data-coords);
+    position:absolute;left:14px;top:-18px;
+    background:rgba(0,0,0,.9);color:#fff;padding:2px 6px;
+    border-radius:3px;font-size:.65rem;font-weight:700;
+    white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.6);
+    width:auto;height:auto;margin:0;
+    z-index:100;
+  }
+
+  /* ─ 상단 범례 패널 ─ */
+  .legend{
+    background:#1a1420;border:1px solid #3a2e1a;border-radius:6px;
+    padding:10px 14px;margin-bottom:14px;
+    display:flex;gap:18px;align-items:center;flex-wrap:wrap;
+    font-size:.8rem;
+  }
+  .legend-title{color:#aaa;font-weight:700;letter-spacing:1px;}
+  .legend-item{display:flex;align-items:center;gap:6px;color:#ccc;}
+  .legend-dot{
+    width:14px;height:14px;border-radius:50%;
+    border:2px solid currentColor;background:transparent;
+    position:relative;
+  }
+  .legend-dot::before,.legend-dot::after{
+    content:'';position:absolute;left:50%;top:50%;background:currentColor;
+  }
+  .legend-dot::before{width:7px;height:1.5px;margin-left:-3.5px;margin-top:-.75px;}
+  .legend-dot::after {width:1.5px;height:7px;margin-left:-.75px;margin-top:-3.5px;}
+  .legend-item.atk .legend-dot{color:var(--atk);}
+  .legend-item.def .legend-dot{color:var(--def);}
+  .legend-item.spd .legend-dot{color:var(--spd);}
+  .legend-item.hp  .legend-dot{color:var(--hp);}
+  .legend-item.nrg .legend-dot{color:var(--nrg);}
+  .legend-box{width:16px;height:10px;border:1.5px dashed;box-sizing:border-box;}
+  .legend-item.name .legend-box{border-color:#ffcc44;background:rgba(255,204,68,.15);}
+  .legend-item.tags .legend-box{border-color:#44ffcc;background:rgba(68,255,204,.12);}
+  .legend-item.desc .legend-box{border-color:#cc88ff;background:rgba(204,136,255,.15);}
+
+  /* ── 박스 마커 (name / tags / desc) — 드래그+리사이즈 ── */
+  .box-marker{
+    position:absolute;
+    border:2px dashed;
+    cursor:grab;
+    z-index:5;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.6rem;font-weight:900;
+    text-shadow:0 0 3px #000,0 0 2px #000;
+    color:#fff;
+    box-sizing:border-box;
+    user-select:none;
+  }
+  .box-marker:active{cursor:grabbing;}
+  .box-marker.name{border-color:#ffcc44;background:rgba(255,204,68,.12);}
+  .box-marker.tags{border-color:#44ffcc;background:rgba(68,255,204,.10);}
+  .box-marker.desc{border-color:#cc88ff;background:rgba(204,136,255,.12);}
+  .box-marker .box-label{
+    position:absolute;top:-14px;left:0;
+    font-size:.55rem;color:#fff;
+    background:rgba(0,0,0,.8);padding:1px 4px;border-radius:2px;
+    letter-spacing:.5px;
+    pointer-events:none;
+  }
+  .box-marker .resize-handle{
+    position:absolute;right:-5px;bottom:-5px;
+    width:14px;height:14px;
+    background:#fff;border:1px solid #000;
+    cursor:nwse-resize;
+    border-radius:2px;
+    box-shadow:0 0 4px rgba(0,0,0,.9);
+  }
+
+  /* 좌표 텍스트 — 스테이지 바깥 아래로 (프레임 가리지 않게) */
+  .coord-readout{
+    margin-top:8px;
+    font-family:monospace;font-size:.62rem;color:#aaa;
+    background:#0a0810;border:1px solid #2a2015;
+    padding:6px 8px;border-radius:3px;
+    line-height:1.55;
+  }
+  .coord-readout b{color:#e6b85a;}
+</style>
+</head>
+<body>
+
+<h1>🎯 프레임 좌표 에디터</h1>
+<div class="hint">
+각 프레임 위의 <b>5개 컬러 점 + 3개 박스</b>를 실제 위치로 맞추세요.<br>
+  🔴 ATK · 🔵 DEF · 🟢 SPD · 💖 HP · 💎 NRG — 보석 중심으로 <b>드래그</b><br>
+  🟨 NAME · 🟦 TAGS · 🟪 DESC — 박스 본체로 <b>이동</b>, 우하단 흰 핸들로 <b>리사이즈</b><br>
+  <code>저장</code> 버튼 누르면 <code>11_frame_coords.json</code> + CSS 모두 갱신됩니다.
+</div>
+
+<div class="toolbar">
+  <button class="reload" onclick="loadJSON()">↻ 다시 불러오기</button>
+  <button class="save" onclick="saveJSON()">💾 저장 (JSON + CSS 재생성)</button>
+  <label style="font-size:.8rem;color:#ccc;display:flex;align-items:center;gap:6px;cursor:pointer;">
+    <input type="checkbox" id="snap-toggle" checked>
+    정렬 스냅 (Shift = 해제)
+  </label>
+  <span id="status">준비</span>
+</div>
+
+<div class="legend">
+  <span class="legend-title">범례</span>
+  <span class="legend-item atk"><span class="legend-dot"></span>ATK</span>
+  <span class="legend-item def"><span class="legend-dot"></span>DEF</span>
+  <span class="legend-item spd"><span class="legend-dot"></span>SPD</span>
+  <span class="legend-item hp"><span class="legend-dot"></span>HP</span>
+  <span class="legend-item nrg"><span class="legend-dot"></span>NRG</span>
+  <span style="color:#555;">|</span>
+  <span class="legend-item name"><span class="legend-box"></span>NAME</span>
+  <span class="legend-item tags"><span class="legend-box"></span>TAGS</span>
+  <span class="legend-item desc"><span class="legend-box"></span>DESC</span>
+  <span style="margin-left:auto;color:#888;font-size:.72rem;">💡 마커에 호버하면 이름/좌표 확인</span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const RARITIES = ['bronze','silver','gold','legendary','divine'];
+const SLOTS = ['atk','def','spd','hp','nrg'];
+const BOXES = ['name','tags','desc'];
+const BOX_LABELS = { name:'NAME', tags:'TAGS', desc:'DESC' };
+let coordData = null;  // 전체 JSON
+
+// ─ 스냅/정렬 ─
+const SNAP_THRESHOLD = 1.0;      // %, 이 이내면 스냅
+const CENTER_LINES_X = [50];     // 중앙 수직선
+const CENTER_LINES_Y = [50];     // 중앙 수평선
+
+function isSnapOn(shiftKey){
+  if(shiftKey) return false;
+  const cb = document.getElementById('snap-toggle');
+  return cb ? cb.checked : true;
+}
+
+// 같은 스테이지 안의 다른 마커/박스의 기준 좌표 모음
+function collectSnapTargets(stage, selfEl){
+  const xs = [...CENTER_LINES_X];
+  const ys = [...CENTER_LINES_Y];
+  stage.querySelectorAll('.marker').forEach(m => {
+    if(m === selfEl) return;
+    xs.push(parseFloat(m.style.left));
+    ys.push(parseFloat(m.style.top));
+  });
+  stage.querySelectorAll('.box-marker').forEach(b => {
+    if(b === selfEl) return;
+    const l = parseFloat(b.style.left), t = parseFloat(b.style.top);
+    const w = parseFloat(b.style.width), h = parseFloat(b.style.height);
+    xs.push(l, l + w/2, l + w);
+    ys.push(t, t + h/2, t + h);
+  });
+  return { xs, ys };
+}
+
+function ensureGuides(stage){
+  let gx = stage.querySelector('.snap-guide-x');
+  let gy = stage.querySelector('.snap-guide-y');
+  if(!gx){
+    gx = document.createElement('div'); gx.className = 'snap-guide snap-guide-x';
+    stage.appendChild(gx);
+  }
+  if(!gy){
+    gy = document.createElement('div'); gy.className = 'snap-guide snap-guide-y';
+    stage.appendChild(gy);
+  }
+  return { gx, gy };
+}
+
+function showGuide(stage, axis, pct){
+  const { gx, gy } = ensureGuides(stage);
+  if(axis === 'x'){ gx.style.left = pct + '%'; gx.classList.add('visible'); }
+  if(axis === 'y'){ gy.style.top = pct + '%'; gy.classList.add('visible'); }
+}
+function hideGuides(stage){
+  stage.querySelectorAll('.snap-guide').forEach(g => g.classList.remove('visible'));
+}
+
+// 입력된 (x,y) 에 스냅 적용 → 최종 (x,y) 반환 + 가이드라인 표시
+function applySnap(stage, selfEl, x, y, shiftKey){
+  hideGuides(stage);
+  if(!isSnapOn(shiftKey)) return { x, y };
+  const { xs, ys } = collectSnapTargets(stage, selfEl);
+  let bestX = x, dx = SNAP_THRESHOLD;
+  xs.forEach(tx => { const d = Math.abs(tx - x); if(d < dx){ dx = d; bestX = tx; } });
+  let bestY = y, dy = SNAP_THRESHOLD;
+  ys.forEach(ty => { const d = Math.abs(ty - y); if(d < dy){ dy = d; bestY = ty; } });
+  if(dx < SNAP_THRESHOLD) showGuide(stage, 'x', bestX);
+  if(dy < SNAP_THRESHOLD) showGuide(stage, 'y', bestY);
+  return { x: bestX, y: bestY };
+}
+
+function $(sel, root){ return (root||document).querySelector(sel); }
+
+function setStatus(text, type){
+  const el = $('#status');
+  el.textContent = text;
+  el.className = type || '';
+}
+
+async function loadJSON(){
+  setStatus('불러오는 중...');
+  try {
+    const r = await fetch('../css/11_frame_coords.json?_=' + Date.now());
+    coordData = await r.json();
+    renderAll();
+    setStatus('불러옴 ✓', 'ok');
+  } catch(e){
+    setStatus('로드 실패: ' + e.message, 'err');
+  }
+}
+
+function renderAll(){
+  const grid = $('#grid');
+  grid.innerHTML = '';
+  RARITIES.forEach(rarity => {
+    const card = document.createElement('div');
+    card.className = 'frame-card';
+    card.innerHTML = `
+      <h3>${rarity} <span class="rarity-tag">frame_${rarity}.png</span></h3>
+      <div class="stage" data-rarity="${rarity}">
+        <img class="frame" src="../img/frame_${rarity}.png" alt="${rarity}">
+      </div>
+      <div class="coord-readout"></div>
+    `;
+    grid.appendChild(card);
+
+    const stage = $('.stage', card);
+    const readout = $('.coord-readout', card);
+
+    SLOTS.forEach(slot => {
+      const coord = coordData[rarity].slots[slot];
+      const m = document.createElement('div');
+      m.className = 'marker ' + slot;
+      m.setAttribute('data-label', slot.toUpperCase());
+      m.setAttribute('data-coords', coord.xPct + ',' + coord.yPct);
+      m.style.left = coord.xPct + '%';
+      m.style.top = coord.yPct + '%';
+      stage.appendChild(m);
+      attachDrag(m, stage, rarity, slot, readout);
+    });
+
+    // 박스 마커 (name / tags / desc)
+    if(!coordData[rarity].boxes) coordData[rarity].boxes = {};
+    BOXES.forEach(boxName => {
+      const b = coordData[rarity].boxes[boxName];
+      if(!b) return;
+      const bm = document.createElement('div');
+      bm.className = 'box-marker ' + boxName;
+      bm.style.left = b.xPct + '%';
+      bm.style.top = b.yPct + '%';
+      bm.style.width = b.wPct + '%';
+      bm.style.height = b.hPct + '%';
+      const lbl = document.createElement('div');
+      lbl.className = 'box-label';
+      lbl.textContent = BOX_LABELS[boxName];
+      bm.appendChild(lbl);
+      const handle = document.createElement('div');
+      handle.className = 'resize-handle';
+      bm.appendChild(handle);
+      stage.appendChild(bm);
+      attachBoxDrag(bm, handle, stage, rarity, boxName, readout);
+    });
+
+    updateReadout(readout, rarity);
+  });
+}
+
+function attachDrag(marker, stage, rarity, slot, readout){
+  let dragging = false;
+
+  function moveTo(clientX, clientY, shiftKey){
+    const rect = stage.getBoundingClientRect();
+    const rawX = ((clientX - rect.left) / rect.width) * 100;
+    const rawY = ((clientY - rect.top) / rect.height) * 100;
+    const clampedX = Math.max(0, Math.min(100, rawX));
+    const clampedY = Math.max(0, Math.min(100, rawY));
+    const { x: xC, y: yC } = applySnap(stage, marker, clampedX, clampedY, shiftKey);
+    marker.style.left = xC + '%';
+    marker.style.top = yC + '%';
+    coordData[rarity].slots[slot].xPct = +xC.toFixed(2);
+    coordData[rarity].slots[slot].yPct = +yC.toFixed(2);
+    marker.setAttribute('data-coords', xC.toFixed(2) + ',' + yC.toFixed(2));
+    updateReadout(readout, rarity);
+  }
+
+  marker.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    marker.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  marker.addEventListener('pointermove', (e) => {
+    if(!dragging) return;
+    moveTo(e.clientX, e.clientY, e.shiftKey);
+  });
+  marker.addEventListener('pointerup', (e) => {
+    dragging = false;
+    hideGuides(stage);
+    try { marker.releasePointerCapture(e.pointerId); } catch(_){}
+  });
+}
+
+function attachBoxDrag(box, handle, stage, rarity, boxName, readout){
+  // 리사이즈 (우하단 핸들)
+  let resizing = false;
+  handle.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    resizing = true;
+    handle.setPointerCapture(e.pointerId);
+  });
+  handle.addEventListener('pointermove', (e) => {
+    if(!resizing) return;
+    const rect = stage.getBoundingClientRect();
+    const b = coordData[rarity].boxes[boxName];
+    const rightX = ((e.clientX - rect.left) / rect.width) * 100;
+    const bottomY = ((e.clientY - rect.top) / rect.height) * 100;
+    const newW = Math.max(3, Math.min(100 - b.xPct, rightX - b.xPct));
+    const newH = Math.max(2, Math.min(100 - b.yPct, bottomY - b.yPct));
+    b.wPct = +newW.toFixed(2);
+    b.hPct = +newH.toFixed(2);
+    box.style.width = b.wPct + '%';
+    box.style.height = b.hPct + '%';
+    updateReadout(readout, rarity);
+  });
+  handle.addEventListener('pointerup', (e) => {
+    resizing = false;
+    try { handle.releasePointerCapture(e.pointerId); } catch(_){}
+  });
+
+  // 드래그 (박스 본체)
+  let dragging = false;
+  let startClientX=0, startClientY=0, startX=0, startY=0;
+  box.addEventListener('pointerdown', (e) => {
+    if(e.target === handle) return;
+    dragging = true;
+    box.setPointerCapture(e.pointerId);
+    const b = coordData[rarity].boxes[boxName];
+    startClientX = e.clientX;
+    startClientY = e.clientY;
+    startX = b.xPct;
+    startY = b.yPct;
+    e.preventDefault();
+  });
+  box.addEventListener('pointermove', (e) => {
+    if(!dragging) return;
+    const rect = stage.getBoundingClientRect();
+    const dx = ((e.clientX - startClientX) / rect.width) * 100;
+    const dy = ((e.clientY - startClientY) / rect.height) * 100;
+    const b = coordData[rarity].boxes[boxName];
+    let nx = Math.max(0, Math.min(100 - b.wPct, startX + dx));
+    let ny = Math.max(0, Math.min(100 - b.hPct, startY + dy));
+    // 박스 좌상단/우하단/중심 기준 스냅
+    const snapped = applySnap(stage, box, nx, ny, e.shiftKey);
+    nx = snapped.x; ny = snapped.y;
+    b.xPct = +nx.toFixed(2);
+    b.yPct = +ny.toFixed(2);
+    box.style.left = b.xPct + '%';
+    box.style.top = b.yPct + '%';
+    updateReadout(readout, rarity);
+  });
+  box.addEventListener('pointerup', (e) => {
+    dragging = false;
+    hideGuides(stage);
+    try { box.releasePointerCapture(e.pointerId); } catch(_){}
+  });
+}
+
+function updateReadout(readout, rarity){
+  const s = coordData[rarity].slots;
+  const b = coordData[rarity].boxes || {};
+  let html =
+    `<b>ATK</b> ${s.atk.xPct},${s.atk.yPct}  ` +
+    `<b>DEF</b> ${s.def.xPct},${s.def.yPct}  ` +
+    `<b>SPD</b> ${s.spd.xPct},${s.spd.yPct}  ` +
+    `<b>HP</b> ${s.hp.xPct},${s.hp.yPct}  ` +
+    `<b>NRG</b> ${s.nrg.xPct},${s.nrg.yPct}`;
+  if(b.name) html += `<br><b>NAME</b> ${b.name.xPct},${b.name.yPct} ${b.name.wPct}×${b.name.hPct}`;
+  if(b.tags) html += `  <b>TAGS</b> ${b.tags.xPct},${b.tags.yPct} ${b.tags.wPct}×${b.tags.hPct}`;
+  if(b.desc) html += `  <b>DESC</b> ${b.desc.xPct},${b.desc.yPct} ${b.desc.wPct}×${b.desc.hPct}`;
+  readout.innerHTML = html;
+}
+
+async function saveJSON(){
+  if(!coordData){ setStatus('로드된 데이터 없음', 'err'); return; }
+  setStatus('저장 중...');
+  try {
+    // _source / _note 업데이트
+    coordData._source = 'visual editor ' + new Date().toISOString().slice(0,16).replace('T',' ');
+    coordData._note = '드래그 편집기로 보석 중심 직접 찍음. tools/coord_editor.html';
+    const r = await fetch('/save-coords', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(coordData)
+    });
+    const result = await r.json();
+    if(result.ok){
+      setStatus('저장 ✓ (JSON + CSS 재생성됨) — 프리뷰 새로고침해서 확인', 'ok');
+    } else {
+      setStatus('저장 실패: ' + result.error, 'err');
+    }
+  } catch(e){
+    setStatus('저장 실패: ' + e.message, 'err');
+  }
+}
+
+loadJSON();
+</script>
+</body>
+</html>

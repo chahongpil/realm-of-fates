@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Zone 편집기 (범용)</title>
+<link rel="stylesheet" href="../css/00_reset.css">
+<link rel="stylesheet" href="../css/10_tokens.css">
+<style>
+  body{margin:0;padding:16px;background:#0d0a14;color:#e6dfc8;font-family:system-ui,sans-serif;}
+  .back{color:#7aa8ff;text-decoration:none;font-size:.8rem;}
+  h1{color:#e6b85a;margin:6px 0 4px;font-size:1.1rem;}
+  .hint{color:#888;font-size:.78rem;margin-bottom:12px;line-height:1.55;}
+  .hint b{color:#e6b85a;} .hint code{background:#1a1420;padding:1px 5px;border-radius:3px;color:#e6b85a;}
+
+  .toolbar{position:sticky;top:0;z-index:100;background:#1a1420;border:1px solid #5a4820;border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 4px 12px rgba(0,0,0,.6);}
+  .toolbar button{background:#2a1f0f;border:1px solid #5a4820;color:#e6b85a;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:.85rem;font-weight:bold;font-family:inherit;}
+  .toolbar button:hover{background:#3a2f1f;}
+  .toolbar button.save{color:#7aff7a;border-color:#307a30;}
+  .toolbar button.reset{color:#ffaa44;border-color:#7a5520;}
+  .toolbar select{background:#2a1f0f;color:#e6b85a;border:1px solid #5a4820;padding:8px;border-radius:4px;font-size:.85rem;font-family:inherit;}
+  #status{font-size:.75rem;color:#888;margin-left:auto;}
+  #status.ok{color:#7aff7a;} #status.err{color:#ff7a7a;}
+
+  .stage-wrap{max-width:1280px;margin:0 auto;background:#000;border:2px solid #3a2e1a;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.8);overflow:hidden;}
+  .stage{position:relative;width:1280px;height:720px;background:#000;user-select:none;touch-action:none;transform-origin:top left;}
+  /* 실제 게임 iframe — stage 전체를 채움, zone 아래 레이어 */
+  .stage iframe.live-preview{
+    position:absolute;left:0;top:0;
+    width:1280px;height:720px;
+    border:0;
+    pointer-events:none !important;  /* zone 드래그를 가로막지 않음 */
+    z-index:1;
+  }
+  .stage .overlay-dim{
+    position:absolute;left:0;top:0;
+    width:1280px;height:720px;
+    background:rgba(0,0,0,.35);
+    pointer-events:none !important;
+    z-index:2;
+    transition:opacity .2s;
+  }
+  .stage.preview-off .overlay-dim{background:radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);}
+  .stage.dim-off .overlay-dim{opacity:0;}
+
+  .zone{
+    position:absolute;
+    border:2px dashed;
+    background:rgba(0,0,0,.15);
+    cursor:grab;
+    display:flex;align-items:center;justify-content:center;
+    padding:8px;box-sizing:border-box;
+    user-select:none;
+    transition:box-shadow .1s;
+    z-index:100;                  /* iframe(1), dim(2) 위로 확실히 */
+    pointer-events:auto !important; /* iframe 의 pointer-events:none 이 상속될 일은 없지만 안전장치 */
+    touch-action:none;              /* 포인터 캡처 중 터치 스크롤 방지 */
+  }
+  .zone:hover{box-shadow:0 0 16px currentColor;}
+  .zone:active{cursor:grabbing;}
+  .zone .zone-label{position:absolute;top:-18px;left:0;font-size:.7rem;color:#fff;background:rgba(0,0,0,.85);padding:2px 8px;border-radius:3px;font-weight:700;white-space:nowrap;pointer-events:none;}
+  .zone .zone-preview{color:#ccc;font-size:.75rem;text-align:center;opacity:.9;pointer-events:none;max-width:100%;overflow:hidden;}
+  .zone .resize-handle{position:absolute;right:-5px;bottom:-5px;width:14px;height:14px;background:#fff;border:1px solid #000;cursor:nwse-resize;border-radius:2px;}
+  /* 모든 zone 을 밝은 노랑 테두리로 통일 — 사용자 요구 (실제 요소 위치 명확 구분) */
+  .zone{border-color:#ffee00 !important;background:transparent !important;box-shadow:0 0 0 1px rgba(0,0,0,.8) inset;}
+  .zone:hover{background:rgba(255,238,0,.08) !important;box-shadow:0 0 18px rgba(255,238,0,.7), 0 0 0 1px rgba(0,0,0,.8) inset !important;}
+  .zone .zone-label{background:rgba(255,238,0,.95);color:#000;font-weight:900;}
+  .zone .zone-preview{color:#ffee00;font-weight:700;text-shadow:0 1px 3px #000;}
+
+  .snap-guide{position:absolute;pointer-events:none;z-index:20;display:none;}
+  .snap-guide-x{top:0;bottom:0;width:0;border-left:1px dashed #ffee44;box-shadow:0 0 4px rgba(255,238,68,.6);}
+  .snap-guide-y{left:0;right:0;height:0;border-top:1px dashed #ffee44;box-shadow:0 0 4px rgba(255,238,68,.6);}
+  .snap-guide.visible{display:block;}
+
+  .coord-list{margin-top:14px;padding:12px;border-radius:6px;background:#0a0810;border:1px solid #2a2015;font-family:monospace;font-size:.72rem;color:#aaa;line-height:1.7;max-width:1280px;margin-left:auto;margin-right:auto;}
+  .coord-list b{color:#e6b85a;}
+  /* 텍스트 편집 패널 */
+  .text-panel{margin-top:14px;padding:14px;border-radius:8px;background:#0f0b18;border:1px solid #3a2e1a;max-width:1280px;margin-left:auto;margin-right:auto;}
+  .text-panel h2{color:#e6b85a;font-size:.95rem;margin:0 0 4px;font-family:serif;}
+  .text-panel .hint{color:#888;font-size:.72rem;margin-bottom:10px;line-height:1.5;}
+  .text-panel .row{display:grid;grid-template-columns:180px 1fr 60px;gap:8px;align-items:start;margin-bottom:8px;padding:6px;border-radius:4px;background:#1a1420;border:1px solid #2a2015;}
+  .text-panel .row:hover{border-color:#5a4820;}
+  .text-panel .zone-key{color:#ffee00;font-family:monospace;font-size:.72rem;font-weight:700;word-break:break-all;line-height:1.4;}
+  .text-panel .zone-key .sel{display:block;color:#7aa8ff;font-size:.65rem;margin-top:2px;font-weight:400;}
+  .text-panel textarea{width:100%;min-height:38px;background:#0a0810;color:#e6dfc8;border:1px solid #3a2e1a;border-radius:3px;padding:6px 8px;font-family:system-ui,sans-serif;font-size:.82rem;resize:vertical;}
+  .text-panel textarea:focus{outline:none;border-color:#e6b85a;background:#0d0b14;}
+  .text-panel .origin{color:#555;font-size:.65rem;text-align:center;padding-top:10px;}
+  .text-panel .origin.changed{color:#7aff7a;font-weight:700;}
+  .text-panel .toolbar-row{display:flex;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #2a2015;}
+  .text-panel .toolbar-row button{background:#2a1f0f;border:1px solid #5a4820;color:#e6b85a;padding:8px 18px;border-radius:4px;cursor:pointer;font-size:.85rem;font-weight:700;font-family:inherit;}
+  .text-panel .toolbar-row button.save{color:#7aff7a;border-color:#307a30;}
+  .text-panel .toolbar-row button:hover{background:#3a2f1f;}
+  .text-panel .toolbar-row .status{margin-left:auto;font-size:.75rem;color:#888;}
+  .text-panel .toolbar-row .status.ok{color:#7aff7a;} .text-panel .toolbar-row .status.err{color:#ff7a7a;}
+  .text-panel .empty{color:#666;font-style:italic;font-size:.78rem;padding:12px;text-align:center;}
+</style>
+</head>
+<body>
+
+<a class="back" href="screen_editor.html">← 허브로</a>
+<h1 id="se-title">Zone 편집기</h1>
+<div class="hint">
+  드래그로 이동, <b>우하단 흰 핸들</b>로 리사이즈. <code>Shift</code> = 스냅 해제.<br>
+  저장하면 <code>css/10_tokens.css</code> 의 해당 변수들이 갱신되고 게임 새로고침 시 반영됩니다.
+</div>
+
+<div class="toolbar">
+  <label style="font-size:.8rem;color:#aaa;">화면:</label>
+  <select id="screen-select" onchange="switchScreen(this.value)">
+    <option value="title">🏰 타이틀 (title)</option>
+    <option value="login">🔑 로그인 (login)</option>
+    <option value="signup">🆕 회원가입 (signup)</option>
+    <option value="prologue">📜 프롤로그 (prologue)</option>
+    <option value="charselect">🎭 영웅 선택 (char-select)</option>
+    <option value="menu">🗺️ 마을 맵 (menu)</option>
+    <option value="cardselect">⚔️ 출정 편성 (cardselect)</option>
+    <option value="tavern">🍺 선술집 (tavern)</option>
+    <option value="deckview">📋 덱뷰 (deckview)</option>
+    <option value="castle">🏰 성채 (castle)</option>
+    <option value="church">⛪ 교회 (church)</option>
+    <option value="reward">🏆 보상 (reward)</option>
+    <option value="pick">🎴 뽑기 (pick - 동료/비전/유물)</option>
+    <option value="choice">🔀 라운드 선택지 (choice)</option>
+    <option value="formation">🛡️ 진형 배치 (formation)</option>
+    <option value="upgrade">🔧 동료 단련 (upgrade)</option>
+    <option value="gameover">💀 게임오버 (gameover)</option>
+    <option value="match">📡 매치메이킹 (match)</option>
+    <option value="battle">⚔️ 전투 (battle)</option>
+  </select>
+  <button class="reload" onclick="loadVars()">↻ 다시</button>
+  <button class="save" onclick="saveVars()">💾 저장</button>
+  <button class="reset" onclick="resetVars()">↩ 초기값</button>
+  <label style="font-size:.8rem;color:#ccc;display:flex;align-items:center;gap:6px;cursor:pointer;">
+    <input type="checkbox" id="snap-toggle" checked> 스냅
+  </label>
+  <label style="font-size:.8rem;color:#7aff7a;display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:700;">
+    <input type="checkbox" id="preview-toggle" checked> 🎮 실제 미리보기
+  </label>
+  <label style="font-size:.8rem;color:#ccc;display:flex;align-items:center;gap:6px;cursor:pointer;">
+    <input type="checkbox" id="dim-toggle" checked> 어둡게
+  </label>
+  <button onclick="reloadIframe()">🔄 iframe 재로드</button>
+  <button onclick="syncZonesFromIframe()" style="color:#ffee00;border-color:#8a6820;">🎯 실제 DOM 에 맞춤</button>
+  <span id="status">준비</span>
+</div>
+
+<div class="stage-wrap" id="stage-wrap">
+  <div class="stage" id="stage">
+    <iframe class="live-preview" id="preview-frame" src="about:blank"></iframe>
+    <div class="overlay-dim"></div>
+  </div>
+</div>
+
+<div class="coord-list" id="coord-list"></div>
+
+<div class="text-panel" id="text-panel">
+  <h2>📝 텍스트 편집</h2>
+  <div class="hint">
+    이 화면의 각 zone 안 텍스트를 편집합니다. 저장 시 <code style="background:#1a1420;padding:1px 5px;border-radius:3px;color:#e6b85a;">css/text_overrides.json</code> 에 기록되고, 게임 실행 시 런타임에 <code style="background:#1a1420;padding:1px 5px;border-radius:3px;color:#e6b85a;">textContent</code> 로 덮어씁니다. <b>index.html 은 수정하지 않습니다.</b><br>
+    빈 칸으로 두면 원본 index.html 텍스트가 그대로 표시됩니다.
+  </div>
+  <div id="text-rows"></div>
+  <div class="toolbar-row">
+    <button class="save" onclick="saveTextOverrides()">💾 텍스트 저장</button>
+    <button onclick="reloadTextPanel()">↻ 다시 불러오기</button>
+    <span class="status" id="text-status">대기</span>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+// 화면별 zone config
+// ════════════════════════════════════════════════
+// SCREENS: screenRoot + zones (key, label, preview, selector)
+// selector 는 iframe 의 game-root 내부 DOM 탐색에 사용 — auto-sync 의 핵심
+const SCREENS = {
+  cardselect: {
+    title: '⚔️ 출정 편성 (cardselect-screen)',
+    screenRoot: '#cardselect-screen',
+    zones: [
+      {key:'cs-title',          label:'타이틀', preview:'⚔️ 출정 편성',
+       selector:'#cardselect-screen > div[style*="text-align:center;padding:8px"]'},
+      {key:'cs-selected',       label:'선택된 동료', preview:'선택 슬롯',
+       selector:'#cs-selected'},
+      {key:'cs-btn-back',       label:'← 돌아가기', preview:'← 돌아가기',
+       selector:'#cardselect-screen > div[style*="display:flex"][style*="gap:8px"] > button[data-action="game.showMenu"]'},
+      {key:'cs-btn-save',       label:'📜 편성 기억', preview:'📜 편성 기억',
+       selector:'#cardselect-screen > div[style*="display:flex"][style*="gap:8px"] > button[data-action="game.saveFormation"]'},
+      {key:'cs-btn-load',       label:'📜 편성 소환', preview:'📜 편성 소환',
+       selector:'#cardselect-screen > div[style*="display:flex"][style*="gap:8px"] > button[data-action="game.loadFormation"]'},
+      {key:'cs-btn-confirm',    label:'⚔️ 도전자 찾기', preview:'⚔️ 도전자 찾기',
+       selector:'#cs-go-btn'},
+      {key:'cs-relics-selected',label:'선택된 유물', preview:'유물 슬롯',
+       selector:'#cs-relics-selected'},
+      {key:'cs-grid',           label:'보유 동료 (큰카드)', preview:'카드 그리드 (스크롤)',
+       selector:'#cs-grid'},
+      {key:'cs-relics-grid',    label:'보유 유물 (클릭 선택)', preview:'유물 그리드',
+       selector:'#cs-relics-grid'},
+    ],
+    defaults:{
+      'cs-title':          {x:0,   y:60,  w:1280, h:50},
+      'cs-selected':       {x:20,  y:120, w:400,  h:120},
+      'cs-btn-back':       {x:20,  y:250, w:120,  h:42},
+      'cs-btn-save':       {x:150, y:250, w:130,  h:42},
+      'cs-btn-load':       {x:290, y:250, w:130,  h:42},
+      'cs-btn-confirm':    {x:20,  y:302, w:400,  h:56},
+      'cs-relics-selected':{x:20,  y:370, w:400,  h:80},
+      'cs-grid':           {x:440, y:120, w:820,  h:590},
+      'cs-relics-grid':    {x:20,  y:460, w:400,  h:250},
+    }
+  },
+  tavern: {
+    title: '🍺 선술집 (tavern-screen)',
+    screenRoot: '#tavern-screen',
+    zones: [
+      {key:'tav-tabs',    label:'탭 버튼 + 인포', preview:'[용병] [영웅]',
+       selector:'#tavern-screen > div[style*="text-align:center;padding:8px"]'},
+      {key:'tav-grid',    label:'카드 그리드', preview:'뽑힌 카드',
+       selector:'#tav-grid'},
+      {key:'tav-btn-refresh', label:'🔄 다른 동료', preview:'(refreshTavern)',
+       selector:'#tavern-screen > div[style*="padding:10px"][style*="gap:8px"] > button[data-action="game.refreshTavern"]'},
+      {key:'tav-btn-back', label:'← 돌아가기', preview:'(showMenu)',
+       selector:'#tavern-screen > div[style*="padding:10px"][style*="gap:8px"] > button[data-action="game.showMenu"]'},
+    ],
+    defaults:{
+      'tav-tabs':{x:20,y:60,w:1240,h:90},
+      'tav-grid':{x:20,y:160,w:1240,h:480},
+      'tav-btn-refresh':{x:430,y:650,w:260,h:44},
+      'tav-btn-back':{x:700,y:650,w:160,h:44},
+    }
+  },
+  deckview: {
+    title: '📋 덱뷰 / 생명의 서 (deckview-screen)',
+    screenRoot: '#deckview-screen',
+    zones: [
+      {key:'dv-tabs', label:'탭 버튼', preview:'[전력] [생명의서]',
+       selector:'#deckview-screen > div[style*="text-align:center;padding:6px"]'},
+      {key:'dv-grid', label:'전력 (유닛+스킬+유물)', preview:'전력 탭 콘텐츠',
+       selector:'#deck-tab'},
+      {key:'dv-codex',label:'코덱스 탭', preview:'생명의 서',
+       selector:'#codex-tab'},
+      {key:'dv-back', label:'돌아가기', preview:'← 돌아가기',
+       selector:'#deckview-screen > div[style*="padding:8px;text-align:center"]'},
+    ],
+    defaults:{
+      'dv-tabs':{x:20,y:60,w:1240,h:60},
+      'dv-grid':{x:20,y:130,w:820,h:580},
+      'dv-codex':{x:860,y:130,w:400,h:580},
+      'dv-back':{x:1180,y:62,w:80,h:40},
+    }
+  },
+  castle: {
+    title: '🏰 성채 (castle-screen)',
+    screenRoot: '#castle-screen',
+    zones: [
+      {key:'castle-tabs',label:'탭 버튼', preview:'[단련] [퀘스트]',
+       selector:'#castle-screen > div[style*="text-align:center;padding:6px"]'},
+      {key:'castle-grid',label:'단련/퀘스트 영역', preview:'콘텐츠',
+       selector:'#castle-upgrade-area'},
+      {key:'castle-back',label:'돌아가기', preview:'← 돌아가기',
+       selector:'#castle-screen > div[style*="padding:8px;text-align:center"]'},
+    ],
+    defaults:{
+      'castle-tabs':{x:20,y:60,w:1240,h:60},
+      'castle-grid':{x:20,y:160,w:1240,h:500},
+      'castle-back':{x:20,y:670,w:200,h:40},
+    }
+  },
+  church: {
+    title: '⛪ 교회 (church-screen)',
+    screenRoot: '#church-screen',
+    zones: [
+      {key:'church-title',label:'타이틀 + 인포', preview:'⛪ 신의 은총',
+       selector:'#church-screen > div[style*="text-align:center;padding:8px"]'},
+      {key:'church-grid', label:'부상 그리드', preview:'치유/장례',
+       selector:'#church-grid'},
+      {key:'church-back', label:'돌아가기', preview:'← 돌아가기',
+       selector:'#church-screen > div[style*="padding:8px;text-align:center"]'},
+    ],
+    defaults:{
+      'church-title':{x:20,y:60,w:1240,h:70},
+      'church-grid':{x:20,y:140,w:1240,h:520},
+      'church-back':{x:20,y:670,w:200,h:40},
+    }
+  },
+  reward: {
+    title: '🏆 보상 (reward-screen)',
+    screenRoot: '#reward-screen',
+    zones: [
+      {key:'rew-title',label:'타이틀', preview:'승리!',
+       selector:'#rew-title'},
+      {key:'rew-cards',label:'보상 카드', preview:'카드 선택',
+       selector:'#reward-cards'},
+    ],
+    defaults:{
+      'rew-title':{x:340,y:60,w:600,h:60},
+      'rew-cards':{x:20,y:320,w:1240,h:320},
+    }
+  },
+  title: {
+    title: '🏰 타이틀 (title-screen)',
+    screenRoot: '#title-screen',
+    zones: [
+      {key:'title-logo',     label:'로고 H1',     preview:'REALM OF FATES',
+       selector:'#title-screen h1'},
+      {key:'title-subtitle', label:'서브타이틀',   preview:'THE DECKBUILDER',
+       selector:'#title-screen .subtitle'},
+      {key:'title-btn-back', label:'← 왕좌로 돌아가기', preview:'(로그인 이동)',
+       selector:'#title-screen .title-buttons > button[data-arg="login-screen"]'},
+      {key:'title-btn-new',  label:'✨ 새로운 운명', preview:'(회원가입 이동)',
+       selector:'#title-screen .title-buttons > button[data-arg="signup-screen"]'},
+    ],
+    defaults:{
+      'title-logo':    {x:240, y:120, w:800, h:140},
+      'title-subtitle':{x:340, y:270, w:600, h:40},
+      'title-btn-back':{x:420, y:480, w:200, h:56},
+      'title-btn-new': {x:660, y:480, w:200, h:56},
+    }
+  },
+  login: {
+    title: '🔑 로그인 (login-screen)',
+    screenRoot: '#login-screen',
+    zones: [
+      {key:'login-box', label:'로그인 박스', preview:'auth-box',
+       selector:'#login-screen .auth-box'},
+    ],
+    defaults:{
+      'login-box':{x:440, y:160, w:400, h:400},
+    }
+  },
+  signup: {
+    title: '🆕 회원가입 (signup-screen)',
+    screenRoot: '#signup-screen',
+    zones: [
+      {key:'signup-box', label:'회원가입 박스', preview:'auth-box',
+       selector:'#signup-screen .auth-box'},
+    ],
+    defaults:{
+      'signup-box':{x:440, y:140, w:400, h:440},
+    }
+  },
+  prologue: {
+    title: '📜 프롤로그 (prologue-screen)',
+    screenRoot: '#prologue-screen',
+    zones: [
+      {key:'prologue-text', label:'프롤로그 텍스트', preview:'라인 텍스트',
+       selector:'#prologue-screen .prologue-text'},
+    ],
+    defaults:{
+      'prologue-text':{x:140, y:200, w:1000, h:320},
+    }
+  },
+  charselect: {
+    title: '🎭 영웅 선택 Step 2 (char-select-screen)',
+    screenRoot: '#char-select-screen',
+    zones: [
+      {key:'charsel-title',label:'타이틀 (왕좌를 향한 길)', preview:'제목',
+       selector:'#char-select-title'},
+      {key:'charsel-msg',  label:'단계 메시지 (당신을 선택했다)', preview:'메시지',
+       selector:'#char-step-msg'},
+      {key:'charsel-grid', label:'3카드 그리드', preview:'역할 카드 3장',
+       selector:'#char-select-grid'},
+      {key:'charsel-confirm',label:'확정 버튼', preview:'[영웅 확정]',
+       selector:'#btn-confirm-char'},
+    ],
+    defaults:{
+      'charsel-title':  {x:20,  y:30,  w:1240, h:50},
+      'charsel-msg':    {x:20,  y:80,  w:1240, h:50},
+      'charsel-grid':   {x:20,  y:140, w:1240, h:520},
+      'charsel-confirm':{x:540, y:670, w:200,  h:40},
+    }
+  },
+  menu: {
+    title: '🗺️ 마을 맵 (menu-screen)',
+    screenRoot: '#menu-screen',
+    zones: [
+      {key:'menu-container', label:'마을 맵 컨테이너', preview:'1376×768 base',
+       selector:'.town-container'},
+      {key:'menu-hud',       label:'HUD 상단 바', preview:'골드/HP/리그',
+       selector:'#menu-screen > .town-hud'},
+      {key:'menu-footer',    label:'하단 푸터', preview:'[돌아가기] [로그아웃]',
+       selector:'#menu-screen > .town-footer'},
+    ],
+    defaults:{
+      'menu-container':{x:0,   y:60,  w:1280, h:660},
+      'menu-hud':      {x:0,   y:0,   w:1280, h:60},
+      'menu-footer':   {x:0,   y:680, w:1280, h:40},
+    }
+  },
+
+  pick: {
+    title: '🎴 뽑기 (pick-screen)',
+    screenRoot: '#pick-screen',
+    zones: [
+      {key:'pick-title', label:'타이틀', preview:'🃏 동료 선택', selector:'#pick-title'},
+      {key:'pick-sub',   label:'서브 텍스트', preview:'중복 시 합성', selector:'#pick-sub'},
+      {key:'pick-grid',  label:'카드 그리드 (3장)', preview:'선택지 3장', selector:'#pick-grid'},
+      {key:'pick-btns',  label:'버튼 행', preview:'[완료] [건너뛰기] [다시 뽑기]', selector:'#pick-screen .pick-area > div[style*="margin-top:12px"]'},
+    ],
+    defaults:{
+      'pick-title':{x:0,y:40,w:1280,h:60},
+      'pick-sub':  {x:0,y:110,w:1280,h:36},
+      'pick-grid': {x:20,y:160,w:1240,h:460},
+      'pick-btns': {x:360,y:640,w:560,h:60},
+    }
+  },
+
+  choice: {
+    title: '🔀 라운드 선택지 (choice-screen)',
+    screenRoot: '#choice-screen',
+    zones: [
+      {key:'ch-title',  label:'타이틀', preview:'선택', selector:'#ch-title'},
+      {key:'ch-sub',    label:'서브 텍스트', preview:'다음을 선택', selector:'#ch-sub'},
+      {key:'ch-options',label:'옵션 컨테이너', preview:'선택지 박스들', selector:'#ch-options'},
+    ],
+    defaults:{
+      'ch-title':  {x:0,y:60,w:1280,h:60},
+      'ch-sub':    {x:0,y:130,w:1280,h:40},
+      'ch-options':{x:20,y:190,w:1240,h:510},
+    }
+  },
+
+  formation: {
+    title: '🛡️ 진형 배치 (formation-screen)',
+    screenRoot: '#formation-screen',
+    zones: [
+      {key:'form-title',      label:'타이틀', preview:'⚔️ 진형 배치', selector:'#formation-screen > .form-title'},
+      {key:'form-sub',        label:'서브 텍스트', preview:'슬롯 클릭', selector:'#formation-screen > .form-sub'},
+      {key:'form-diamond',    label:'5 슬롯 행', preview:'진형 5 슬롯', selector:'#form-diamond'},
+      {key:'form-bench-label',label:'대기석 라벨', preview:'대기석', selector:'#formation-screen > .form-bench-label'},
+      {key:'form-bench',      label:'대기석', preview:'대기 동료들', selector:'#form-bench'},
+      {key:'form-btn-auto',    label:'자동 배치', preview:'(formation.auto)',
+       selector:'#formation-screen > div[style*="padding:10px"][style*="gap:10px"] > button[data-action="formation.auto"]'},
+      {key:'form-btn-confirm', label:'배치 완료', preview:'(formation.confirm)',
+       selector:'#formation-screen > div[style*="padding:10px"][style*="gap:10px"] > button[data-action="formation.confirm"]'},
+    ],
+    defaults:{
+      'form-title':      {x:0,y:40,w:1280,h:60},
+      'form-sub':        {x:0,y:105,w:1280,h:36},
+      'form-diamond':    {x:140,y:160,w:1000,h:200},
+      'form-bench-label':{x:0,y:380,w:1280,h:30},
+      'form-bench':      {x:140,y:420,w:1000,h:200},
+      'form-btn-auto':   {x:440,y:640,w:160,h:44},
+      'form-btn-confirm':{x:610,y:640,w:230,h:44},
+    }
+  },
+
+  upgrade: {
+    title: '🔧 동료 단련 (upgrade-screen)',
+    screenRoot: '#upgrade-screen',
+    zones: [
+      {key:'upg-title',label:'타이틀', preview:'🔧 동료 단련', selector:'#upgrade-screen > .upgrade-title'},
+      {key:'upg-info', label:'인포 텍스트', preview:'비용 설명', selector:'#upgrade-screen > .upgrade-info'},
+      {key:'upg-grid', label:'동료 그리드', preview:'단련 대상 동료', selector:'#upg-grid'},
+      {key:'upg-back', label:'돌아가기', preview:'← 돌아가기', selector:'#upgrade-screen > div[style*="padding:10px"]:last-child'},
+    ],
+    defaults:{
+      'upg-title':{x:0,y:60,w:1280,h:50},
+      'upg-info': {x:0,y:115,w:1280,h:36},
+      'upg-grid': {x:20,y:160,w:1240,h:500},
+      'upg-back': {x:20,y:670,w:200,h:40},
+    }
+  },
+
+  gameover: {
+    title: '💀 게임오버 (gameover-screen)',
+    screenRoot: '#gameover-screen',
+    zones: [
+      {key:'go-title',label:'타이틀 H1', preview:'💀 영웅의 몰락', selector:'#gameover-screen > h1'},
+      {key:'go-stats',label:'최종 스탯', preview:'최종 성과', selector:'#final-stats'},
+      {key:'go-btn-restart', label:'⚔️ 다시 일어서다', preview:'(game.newRun)',
+       selector:'#gameover-screen > div[style*="display:flex"][style*="gap:10px"] > button[data-action="game.newRun"]'},
+      {key:'go-btn-rest',    label:'🛏️ 휴식', preview:'(game.logout)',
+       selector:'#gameover-screen > div[style*="display:flex"][style*="gap:10px"] > button[data-action="game.logout"]'},
+    ],
+    defaults:{
+      'go-title':{x:0,y:140,w:1280,h:100},
+      'go-stats':{x:340,y:260,w:600,h:240},
+      'go-btn-restart':{x:420,y:530,w:220,h:56},
+      'go-btn-rest':   {x:650,y:530,w:200,h:56},
+    }
+  },
+
+  match: {
+    title: '📡 매치메이킹 (match-screen)',
+    screenRoot: '#match-screen',
+    zones: [
+      {key:'match-box',label:'매치 박스 (전체 콘텐츠)', preview:'상대 초상화 + 매치 정보', selector:'#match-screen > .match-box'},
+    ],
+    defaults:{
+      'match-box':{x:240,y:80,w:800,h:560},
+    }
+  },
+
+  battle: {
+    title: '⚔️ 전투 (battle-screen)',
+    screenRoot: '#battle-screen',
+    zones: [
+      {key:'b-hud',   label:'HUD 상단 바', preview:'라운드 · 타이머', selector:'#battle-screen > .hud'},
+      {key:'b-field', label:'전투 필드', preview:'적 / VS / 아군 5슬롯', selector:'#tb-field'},
+      {key:'b-log',   label:'전투 로그', preview:'로그 텍스트', selector:'#battle-log'},
+      {key:'b-btn-back',  label:'← 돌아가기', preview:'(turnBattle.goBack)', selector:'#btn-back'},
+      {key:'b-btn-fight', label:'⚔️ 전투 개시', preview:'(turnBattle.startCombat)', selector:'#btn-fight'},
+      {key:'b-timer', label:'타이머 바', preview:'시간 바', selector:'#battle-screen > .tb-timer-bar'},
+    ],
+    defaults:{
+      'b-hud':   {x:0,y:0,w:1280,h:44},
+      'b-field': {x:20,y:50,w:1240,h:540},
+      'b-log':   {x:20,y:595,w:1240,h:40},
+      'b-btn-back': {x:440,y:640,w:160,h:44},
+      'b-btn-fight':{x:610,y:640,w:230,h:44},
+      'b-timer': {x:0,y:705,w:1280,h:4},
+    }
+  },
+};
+
+// ════════════════════════════════════════════════
+// 런타임 상태
+// ════════════════════════════════════════════════
+let loadedVars = {};
+let currentScreen = 'cardselect';
+
+function getQueryScreen(){
+  const m = location.search.match(/screen=(\w+)/);
+  return (m && SCREENS[m[1]]) ? m[1] : 'cardselect';
+}
+
+function setStatus(t,cls){const el=document.getElementById('status');el.textContent=t;el.className=cls||'';}
+
+async function loadVars(){
+  setStatus('불러오는 중...');
+  try{
+    const r = await fetch('/load-layout-vars');
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error);
+    loadedVars = j.vars;
+    render();
+    setStatus('불러옴 ✓','ok');
+  }catch(e){setStatus('로드 실패: '+e.message,'err');}
+}
+
+function getPx(name,fallback){
+  const v = loadedVars[name];
+  if(!v) return fallback;
+  return parseInt(v,10);
+}
+
+function loadPreview(){
+  const previewOn = document.getElementById('preview-toggle').checked;
+  const iframe = document.getElementById('preview-frame');
+  const stage = document.getElementById('stage');
+  if(previewOn){
+    iframe.src = '../index.html?autonav=' + currentScreen;
+    iframe.style.display = 'block';
+    stage.classList.remove('preview-off');
+    // 로드 완료 후 auto-sync
+    iframe.onload = () => {
+      // autonav + 화면 전환 + DOM 렌더 대기 — 여러 번 재시도 (일부 화면은 async)
+      let attempts = 0;
+      const tryLoop = () => {
+        attempts++;
+        const ok = syncZonesFromIframe({ silent: attempts < 5 });
+        if(!ok && attempts < 8){
+          setTimeout(tryLoop, 400);
+        }
+      };
+      setTimeout(tryLoop, 600);
+    };
+  } else {
+    iframe.src = 'about:blank';
+    iframe.style.display = 'none';
+    stage.classList.add('preview-off');
+  }
+}
+
+function reloadIframe(){
+  const iframe = document.getElementById('preview-frame');
+  iframe.src = '../index.html?autonav=' + currentScreen + '&_=' + Date.now();
+}
+
+/**
+ * iframe 내부 DOM 을 측정해서 zone 들을 실제 요소 rect 에 맞춤.
+ * 이게 user 가 원한 것: "실제 카드 영역을 노란 박스로 감싸서 드래그"
+ */
+function syncZonesFromIframe(opts){
+  opts = opts || {};
+  const iframe = document.getElementById('preview-frame');
+  const cfg = SCREENS[currentScreen];
+  try {
+    const doc = iframe.contentDocument;
+    if(!doc) { if(!opts.silent) console.warn('[sync] no contentDocument'); return false; }
+    const gameRoot = doc.querySelector('.game-root');
+    if(!gameRoot) { if(!opts.silent) console.warn('[sync] no .game-root'); return false; }
+    // 화면이 실제로 active 상태인지 확인
+    const activeScreen = doc.querySelector('.screen.active');
+    if(!activeScreen || activeScreen.id.indexOf(cfg.screenRoot.replace('#','').replace('-screen','')) === -1){
+      if(!opts.silent) console.warn('[sync] target screen not active yet:', activeScreen && activeScreen.id);
+      // 그래도 측정 시도 — 대상 screen 이 display:none 이면 실패
+    }
+    const rootRect = gameRoot.getBoundingClientRect();
+    const scale = rootRect.width / 1280;
+    if(scale < 0.01) { if(!opts.silent) console.warn('[sync] root scale too small', scale); return false; }
+
+    let synced = 0;
+    let missed = 0;
+    cfg.zones.forEach(z => {
+      if(!z.selector) return;
+      const el = doc.querySelector(z.selector);
+      if(!el) { missed++; if(!opts.silent) console.warn('[sync] miss:', z.key, z.selector); return; }
+      const r = el.getBoundingClientRect();
+      // 요소가 display:none 이면 rect = 0 — skip
+      if(r.width < 1 && r.height < 1) { missed++; return; }
+      const x = Math.round((r.left - rootRect.left) / scale);
+      const y = Math.round((r.top  - rootRect.top)  / scale);
+      const w = Math.round(r.width / scale);
+      const h = Math.round(r.height / scale);
+      const zoneEl = document.querySelector('.zone[data-key="'+z.key+'"]');
+      if(zoneEl){
+        zoneEl.style.left = x + 'px';
+        zoneEl.style.top = y + 'px';
+        zoneEl.style.width = w + 'px';
+        zoneEl.style.height = h + 'px';
+        synced++;
+      }
+    });
+    renderCoordList();
+    // 절반 이상 성공하면 OK 로 취급
+    const ok = synced >= Math.ceil(cfg.zones.length / 2);
+    if(ok){
+      setStatus('실제 DOM 에 맞춰 sync ✓ ('+synced+'/'+cfg.zones.length+')', 'ok');
+    } else if(!opts.silent){
+      setStatus('sync 부분 실패 ('+synced+'/'+cfg.zones.length+')', 'err');
+    }
+    return ok;
+  } catch(e) {
+    if(!opts.silent) console.error('[sync] error:', e);
+    setStatus('sync 실패: '+e.message, 'err');
+    return false;
+  }
+}
+
+function render(){
+  const cfg = SCREENS[currentScreen];
+  document.getElementById('se-title').textContent = cfg.title;
+  const stage = document.getElementById('stage');
+  stage.querySelectorAll('.zone').forEach(z => z.remove());
+  loadPreview();
+  cfg.zones.forEach((z,i) => {
+    const d = cfg.defaults[z.key];
+    const el = document.createElement('div');
+    el.className = 'zone zc-'+((i%8)+1);
+    el.setAttribute('data-key', z.key);
+    el.style.left   = getPx('--'+z.key+'-x', d.x)+'px';
+    el.style.top    = getPx('--'+z.key+'-y', d.y)+'px';
+    el.style.width  = getPx('--'+z.key+'-w', d.w)+'px';
+    el.style.height = getPx('--'+z.key+'-h', d.h)+'px';
+    el.innerHTML = `<div class="zone-label">${i+1}. ${z.label}</div><div class="zone-preview">${z.preview}</div><div class="resize-handle"></div>`;
+    stage.appendChild(el);
+    attachDrag(el, stage, z.key);
+  });
+  renderCoordList();
+}
+
+const SNAP_THRESHOLD = 8;
+function isSnapOn(sk){if(sk) return false; return document.getElementById('snap-toggle').checked;}
+function ensureGuides(stage){
+  let gx=stage.querySelector('.snap-guide-x'), gy=stage.querySelector('.snap-guide-y');
+  if(!gx){gx=document.createElement('div');gx.className='snap-guide snap-guide-x';stage.appendChild(gx);}
+  if(!gy){gy=document.createElement('div');gy.className='snap-guide snap-guide-y';stage.appendChild(gy);}
+  return{gx,gy};
+}
+function showGuide(stage,a,p){const{gx,gy}=ensureGuides(stage); if(a==='x'){gx.style.left=p+'px';gx.classList.add('visible');} if(a==='y'){gy.style.top=p+'px';gy.classList.add('visible');}}
+function hideGuides(s){s.querySelectorAll('.snap-guide').forEach(g=>g.classList.remove('visible'));}
+function snapTargets(stage,self){
+  const xs=[0,640,1280], ys=[0,360,720];
+  stage.querySelectorAll('.zone').forEach(z=>{
+    if(z===self) return;
+    const l=parseFloat(z.style.left), t=parseFloat(z.style.top);
+    const w=parseFloat(z.style.width), h=parseFloat(z.style.height);
+    xs.push(l, l+w/2, l+w);
+    ys.push(t, t+h/2, t+h);
+  });
+  return{xs,ys};
+}
+function applySnap(stage,self,x,y,sk){
+  hideGuides(stage);
+  if(!isSnapOn(sk)) return{x,y};
+  const{xs,ys}=snapTargets(stage,self);
+  let bX=x,dx=SNAP_THRESHOLD; xs.forEach(t=>{const d=Math.abs(t-x);if(d<dx){dx=d;bX=t;}});
+  let bY=y,dy=SNAP_THRESHOLD; ys.forEach(t=>{const d=Math.abs(t-y);if(d<dy){dy=d;bY=t;}});
+  if(dx<SNAP_THRESHOLD)showGuide(stage,'x',bX);
+  if(dy<SNAP_THRESHOLD)showGuide(stage,'y',bY);
+  return{x:bX,y:bY};
+}
+
+function attachDrag(el,stage,key){
+  const handle = el.querySelector('.resize-handle');
+  let resizing=false;
+  handle.addEventListener('pointerdown',e=>{e.stopPropagation();resizing=true;handle.setPointerCapture(e.pointerId);});
+  handle.addEventListener('pointermove',e=>{
+    if(!resizing) return;
+    const rect = stage.getBoundingClientRect();
+    const sx = rect.width/1280, sy = rect.height/720;
+    const mx = (e.clientX-rect.left)/sx, my = (e.clientY-rect.top)/sy;
+    const l = parseFloat(el.style.left), t = parseFloat(el.style.top);
+    el.style.width  = Math.max(40, Math.min(1280-l, mx-l))+'px';
+    el.style.height = Math.max(30, Math.min(720-t, my-t))+'px';
+    renderCoordList();
+  });
+  handle.addEventListener('pointerup',e=>{resizing=false;try{handle.releasePointerCapture(e.pointerId);}catch(_){}});
+
+  let dragging=false,scX=0,scY=0,sL=0,sT=0;
+  el.addEventListener('pointerdown',e=>{
+    if(e.target===handle) return;
+    dragging=true;el.setPointerCapture(e.pointerId);
+    scX=e.clientX;scY=e.clientY;
+    sL=parseFloat(el.style.left);sT=parseFloat(el.style.top);
+    e.preventDefault();
+  });
+  el.addEventListener('pointermove',e=>{
+    if(!dragging) return;
+    const rect = stage.getBoundingClientRect();
+    const sx = rect.width/1280, sy = rect.height/720;
+    const dx = (e.clientX-scX)/sx, dy = (e.clientY-scY)/sy;
+    const w = parseFloat(el.style.width), h = parseFloat(el.style.height);
+    let nx = Math.max(0, Math.min(1280-w, sL+dx));
+    let ny = Math.max(0, Math.min(720-h, sT+dy));
+    const sn = applySnap(stage, el, nx, ny, e.shiftKey);
+    el.style.left = sn.x+'px'; el.style.top = sn.y+'px';
+    renderCoordList();
+  });
+  el.addEventListener('pointerup',e=>{
+    dragging=false;hideGuides(stage);
+    try{el.releasePointerCapture(e.pointerId);}catch(_){}
+  });
+}
+
+function renderCoordList(){
+  const cfg = SCREENS[currentScreen];
+  const list = document.getElementById('coord-list');
+  let html = '';
+  cfg.zones.forEach((z,i)=>{
+    const el = document.querySelector('.zone[data-key="'+z.key+'"]');
+    if(!el) return;
+    const l = Math.round(parseFloat(el.style.left));
+    const t = Math.round(parseFloat(el.style.top));
+    const w = Math.round(parseFloat(el.style.width));
+    const h = Math.round(parseFloat(el.style.height));
+    html += `<b>${i+1}. ${z.label}</b> x:${l} y:${t} w:${w} h:${h}<br>`;
+  });
+  list.innerHTML = html;
+}
+
+async function saveVars(){
+  setStatus('저장 중...');
+  const cfg = SCREENS[currentScreen];
+  const body = {};
+  cfg.zones.forEach(z=>{
+    const el = document.querySelector('.zone[data-key="'+z.key+'"]');
+    if(!el) return;
+    body['--'+z.key+'-x'] = Math.round(parseFloat(el.style.left))+'px';
+    body['--'+z.key+'-y'] = Math.round(parseFloat(el.style.top))+'px';
+    body['--'+z.key+'-w'] = Math.round(parseFloat(el.style.width))+'px';
+    body['--'+z.key+'-h'] = Math.round(parseFloat(el.style.height))+'px';
+  });
+  try{
+    const r = await fetch('/save-layout-vars',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const j = await r.json();
+    if(j.ok) setStatus(`저장 ✓ (${j.replaced} 변수)`, 'ok');
+    else setStatus('저장 실패: '+j.error, 'err');
+  }catch(e){setStatus('저장 실패: '+e.message,'err');}
+}
+
+function resetVars(){
+  const cfg = SCREENS[currentScreen];
+  cfg.zones.forEach(z=>{
+    const d = cfg.defaults[z.key];
+    const el = document.querySelector('.zone[data-key="'+z.key+'"]');
+    if(!el || !d) return;
+    el.style.left = d.x+'px'; el.style.top = d.y+'px';
+    el.style.width = d.w+'px'; el.style.height = d.h+'px';
+  });
+  renderCoordList();
+  setStatus('초기값 복원', 'ok');
+}
+
+function switchScreen(s){
+  currentScreen = s;
+  const u = new URL(location.href);
+  u.searchParams.set('screen', s);
+  history.replaceState(null, '', u);
+  render();
+}
+
+function fitEditorStage(){
+  const stage = document.getElementById('stage');
+  const wrap = document.getElementById('stage-wrap');
+  const parent = wrap.parentElement;
+  const availW = parent.clientWidth - 4;
+  if(availW < 1280){
+    const s = availW / 1280;
+    stage.style.transform = `scale(${s})`;
+    wrap.style.width = availW + 'px';
+    wrap.style.height = (720*s) + 'px';
+  } else {
+    stage.style.transform = 'none';
+    wrap.style.width = '1280px';
+    wrap.style.height = '720px';
+  }
+}
+window.addEventListener('resize', fitEditorStage);
+
+currentScreen = getQueryScreen();
+document.getElementById('screen-select').value = currentScreen;
+
+// 토글 핸들러
+document.getElementById('preview-toggle').addEventListener('change', loadPreview);
+document.getElementById('dim-toggle').addEventListener('change', e => {
+  document.getElementById('stage').classList.toggle('dim-off', !e.target.checked);
+});
+
+loadVars().then(fitEditorStage);
+
+// ════════════════════════════════════════════════
+// 📝 텍스트 편집 — css/text_overrides.json 읽기/쓰기
+// ════════════════════════════════════════════════
+let textOverrides = {};            // 서버에서 로드된 전체 맵 (모든 화면 공통)
+const originalText = {};           // key -> 원본 DOM 텍스트 (iframe 에서 측정)
+
+function setTextStatus(t, cls){
+  const el = document.getElementById('text-status');
+  if(!el) return;
+  el.textContent = t;
+  el.className = 'status' + (cls ? ' ' + cls : '');
+}
+
+async function loadTextOverrides(){
+  try {
+    const r = await fetch('/load-text-overrides');
+    const j = await r.json();
+    textOverrides = (j && j.ok) ? (j.overrides || {}) : {};
+  } catch(e){
+    textOverrides = {};
+  }
+}
+
+function readIframeText(selector){
+  try {
+    const iframe = document.getElementById('preview-frame');
+    const doc = iframe && iframe.contentDocument;
+    if(!doc) return null;
+    const el = doc.querySelector(selector);
+    if(!el) return null;
+    // 자식 태그가 있는 요소는 편집 대상 아님 (순수 텍스트 노드만)
+    if(el.children.length > 0) return { text: null, reason: '자식 요소가 있어 편집 불가' };
+    return { text: (el.textContent || '').trim(), reason: null };
+  } catch(e){
+    return null;
+  }
+}
+
+function renderTextPanel(){
+  const cfg = SCREENS[currentScreen];
+  const container = document.getElementById('text-rows');
+  if(!container) return;
+  container.innerHTML = '';
+
+  const editable = cfg.zones.filter(z => z.selector);
+  if(editable.length === 0){
+    container.innerHTML = '<div class="empty">이 화면에는 셀렉터를 가진 zone 이 없습니다.</div>';
+    return;
+  }
+
+  editable.forEach(z => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const keySpan = document.createElement('div');
+    keySpan.className = 'zone-key';
+    keySpan.innerHTML = `${z.label}<span class="sel">${z.selector}</span>`;
+    row.appendChild(keySpan);
+
+    const ta = document.createElement('textarea');
+    ta.dataset.selector = z.selector;
+    ta.rows = 2;
+
+    // 우선순위: override 값 > iframe DOM 텍스트
+    const iframeRead = readIframeText(z.selector);
+    const origText = (iframeRead && iframeRead.text != null) ? iframeRead.text : '';
+    originalText[z.selector] = origText;
+    const overrideVal = textOverrides[z.selector];
+    ta.value = overrideVal != null ? overrideVal : origText;
+
+    if(iframeRead && iframeRead.reason){
+      ta.disabled = true;
+      ta.placeholder = iframeRead.reason;
+      ta.value = '';
+    }
+
+    row.appendChild(ta);
+
+    const mark = document.createElement('div');
+    mark.className = 'origin' + (overrideVal != null && overrideVal !== origText ? ' changed' : '');
+    mark.textContent = (overrideVal != null && overrideVal !== origText) ? '★덮어씀' : '원본';
+    ta.addEventListener('input', () => {
+      const changed = ta.value !== origText;
+      mark.className = 'origin' + (changed ? ' changed' : '');
+      mark.textContent = changed ? '★수정됨' : '원본';
+    });
+    row.appendChild(mark);
+
+    container.appendChild(row);
+  });
+}
+
+async function reloadTextPanel(){
+  setTextStatus('불러오는 중...');
+  await loadTextOverrides();
+  renderTextPanel();
+  setTextStatus('불러옴 ✓','ok');
+}
+
+async function saveTextOverrides(){
+  setTextStatus('저장 중...');
+  // 서버 전체 맵을 유지한 상태에서, 이 화면의 편집값만 병합
+  const container = document.getElementById('text-rows');
+  const tas = container.querySelectorAll('textarea[data-selector]');
+  tas.forEach(ta => {
+    if(ta.disabled) return;
+    const sel = ta.dataset.selector;
+    const val = ta.value;
+    const orig = originalText[sel] || '';
+    if(val === '' || val === orig){
+      // 원본과 같으면 override 에서 제거
+      delete textOverrides[sel];
+    } else {
+      textOverrides[sel] = val;
+    }
+  });
+  try {
+    const r = await fetch('/save-text-overrides', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(textOverrides)
+    });
+    const j = await r.json();
+    if(j.ok){
+      setTextStatus(`저장 ✓ (${j.count} 항목)`,'ok');
+      // iframe 재로드해서 반영 확인
+      setTimeout(() => {
+        const iframe = document.getElementById('preview-frame');
+        if(iframe && iframe.src && iframe.src.indexOf('about:blank') === -1){
+          reloadIframe();
+        }
+      }, 200);
+    } else {
+      setTextStatus('저장 실패: ' + j.error, 'err');
+    }
+  } catch(e){
+    setTextStatus('저장 실패: ' + e.message, 'err');
+  }
+}
+
+// 화면 전환 / iframe 로드 시 텍스트 패널 재구축
+const _origSwitchScreen = switchScreen;
+switchScreen = function(s){
+  _origSwitchScreen(s);
+  setTimeout(renderTextPanel, 800);
+};
+const _origLoadPreview = loadPreview;
+loadPreview = function(){
+  _origLoadPreview();
+  setTimeout(renderTextPanel, 1200);
+};
+
+// 초기 로드
+loadTextOverrides().then(() => setTimeout(renderTextPanel, 1500));
+</script>
+</body>
+</html>

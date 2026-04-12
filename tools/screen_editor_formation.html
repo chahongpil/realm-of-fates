@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>편성 화면 편집기</title>
+<link rel="stylesheet" href="../css/00_reset.css">
+<link rel="stylesheet" href="../css/10_tokens.css">
+<link rel="stylesheet" href="../css/20_layout.css">
+<link rel="stylesheet" href="../css/30_components.css">
+<link rel="stylesheet" href="../css/41_formation.css">
+<style>
+  body{margin:0;padding:18px;background:#0d0a14;color:#e6dfc8;font-family:system-ui,sans-serif;}
+  .back{color:#7aa8ff;text-decoration:none;font-size:.8rem;}
+  h1{color:#e6b85a;margin:6px 0 4px;font-size:1.15rem;}
+  .hint{color:#888;font-size:.78rem;margin-bottom:14px;line-height:1.5;}
+  .toolbar{position:sticky;top:0;z-index:100;background:#1a1420;border:1px solid #5a4820;border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;gap:12px;align-items:center;}
+  .toolbar button{background:#2a1f0f;border:1px solid #5a4820;color:#e6b85a;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:.85rem;font-weight:bold;font-family:inherit;}
+  .toolbar button:hover{background:#3a2f1f;}
+  .toolbar button.save{color:#7aff7a;border-color:#307a30;}
+  .toolbar button.reset{color:#ffaa44;border-color:#7a5520;}
+  #se-status{font-size:.75rem;color:#888;margin-left:auto;}
+  #se-status.ok{color:#7aff7a;} #se-status.err{color:#ff7a7a;}
+  .layout{display:grid;grid-template-columns:360px 1fr;gap:18px;}
+  .controls-panel{background:#15101c;border:1px solid #3a2e1a;border-radius:8px;padding:14px;max-height:calc(100vh - 140px);overflow-y:auto;}
+  .controls-panel h2{margin:0 0 12px;color:#c8a860;font-size:.95rem;}
+  #se-controls{display:flex;flex-direction:column;gap:14px;}
+  .se-row{display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:4px;background:#0d0812;}
+  .se-row .se-label{display:flex;justify-content:space-between;gap:6px;}
+  .se-row .se-name{color:#e6dfc8;font-size:.8rem;font-weight:600;}
+  .se-row .se-code{color:#555;font-size:.62rem;font-family:monospace;}
+  .se-row input[type=range]{width:100%;accent-color:#e6b85a;}
+  .se-row .se-val{color:#ffcc44;font-size:.75rem;font-family:monospace;align-self:flex-end;}
+  .preview-panel{background:#0a0810;border:2px solid #3a2e1a;border-radius:8px;padding:20px;overflow:auto;}
+  .preview-label{color:#888;font-size:.7rem;margin-bottom:10px;text-align:center;letter-spacing:2px;}
+  #se-preview .form-slot .fs-icon{font-size:2rem;}
+  #se-preview .form-slot .fs-name{color:#fff4c8;}
+</style>
+</head>
+<body>
+
+<a class="back" href="screen_editor.html">← 허브로</a>
+<h1 id="se-title">편성 화면 편집기</h1>
+<div class="hint">슬롯 크기 / 간격을 조절하세요. 저장 시 <code>css/10_tokens.css</code> 의 <code>--form-*</code> 변수 갱신.</div>
+
+<div class="toolbar">
+  <button class="save" id="se-save-btn">💾 저장</button>
+  <button class="reset" id="se-reset-btn">↩ 초기값</button>
+  <span id="se-status">준비</span>
+</div>
+
+<div class="layout">
+  <div class="controls-panel">
+    <h2>🎛 슬라이더</h2>
+    <div id="se-controls"></div>
+  </div>
+  <div class="preview-panel">
+    <div class="preview-label">📜 MOCK PREVIEW</div>
+    <div id="se-preview"></div>
+  </div>
+</div>
+
+<script src="screen_editor_common.js"></script>
+<script>
+function slot(name, occupied){
+  return `<div class="form-slot ${occupied?'occupied':''}">
+    ${occupied ? `<div class="fs-icon">${occupied}</div><div class="fs-name">${name}</div>` : `<div class="fs-empty">+ 빈 슬롯</div>`}
+  </div>`;
+}
+const mockFormation = `
+  <div class="form-title">전력 편성</div>
+  <div class="form-sub">출전할 동료를 배치하세요</div>
+  <div class="form-grid">
+    <div class="form-row-label">전열</div>
+    <div class="form-row">${slot('전사','⚔️')}${slot('탱커','🛡️')}${slot('','')}</div>
+    <div class="form-row-label">후열</div>
+    <div class="form-row">${slot('궁수','🏹')}${slot('마법사','🔮')}${slot('치유사','💚')}</div>
+  </div>
+  <div class="form-bench-label">벤치 (예비)</div>
+  <div class="form-bench">
+    ${slot('사제','✨')}${slot('암살자','🗡️')}${slot('드루이드','🌿')}${slot('','')}${slot('','')}
+  </div>`;
+
+ScreenEditor.build({
+  title: '편성 화면 편집기',
+  previewHtml: mockFormation,
+  vars: [
+    { name:'--form-slot-w',    label:'슬롯 너비',      min:80,  max:180, step:5,  unit:'px' },
+    { name:'--form-slot-h',    label:'슬롯 높이',      min:100, max:220, step:5,  unit:'px' },
+    { name:'--form-row-gap',   label:'슬롯 간 간격',   min:0,   max:30,  step:1,  unit:'px' },
+    { name:'--form-grid-gap',  label:'전/후열 간격',   min:0,   max:40,  step:1,  unit:'px' },
+    { name:'--form-bench-gap', label:'벤치 간격',      min:0,   max:30,  step:1,  unit:'px' },
+  ]
+});
+</script>
+</body>
+</html>

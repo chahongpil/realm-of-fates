@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>화면 편집기 허브</title>
+<style>
+  body{margin:0;padding:40px;background:#0d0a14;color:#e6dfc8;font-family:system-ui,sans-serif;}
+  h1{color:#e6b85a;font-family:serif;}
+  .hint{color:#888;font-size:.85rem;margin-bottom:30px;line-height:1.6;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;}
+  a.tile{
+    display:block;padding:22px;border-radius:8px;
+    background:#15101c;border:1px solid #3a2e1a;
+    text-decoration:none;color:#e6dfc8;
+    transition:all .2s;
+  }
+  a.tile:hover{border-color:#e6b85a;transform:translateY(-3px);box-shadow:0 6px 16px rgba(230,184,90,.2);}
+  .tile h2{margin:0 0 6px;color:#e6b85a;font-size:1.1rem;}
+  .tile p{margin:0;color:#999;font-size:.8rem;line-height:1.4;}
+  .tile.disabled{opacity:.4;pointer-events:none;}
+</style>
+</head>
+<body>
+<h1>🎯 화면 편집기</h1>
+<div class="hint">
+  각 화면을 드래그로 편집하세요. 저장하면 대응되는 소스 파일(JS/CSS/JSON)이 자동 갱신됩니다.<br>
+  추가 편집기가 필요하면 알려주세요 — 화면별로 하나씩 만들고 있습니다.
+</div>
+<div class="grid">
+  <a class="tile" href="screen_flow_editor.html" style="border-color:#e6b85a;background:#1f1a10;">
+    <h2>🗺️ 화면 플로우 (전체 맵)</h2>
+    <p><b>NEW</b> — 19개 화면 + 버튼 전환을 그래프로. index.html 자동 파싱. 노드 더블클릭 → zone 편집기로 점프.</p>
+  </a>
+  <a class="tile" href="coord_editor.html">
+    <h2>🎴 카드 프레임</h2>
+    <p>보석 좌표 + 이름/태그/설명 박스 (5등급). 드래그 + 스냅. css/11_frame_coords.json.</p>
+  </a>
+  <a class="tile" href="screen_editor_town.html">
+    <h2>🗺️ 맵 — 건물 배치 (전용)</h2>
+    <p>8건물 드래그 + <b>리사이즈</b>. 새 가로 성벽 1376×768. x/y/w/h.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=menu">
+    <h2>🗺️ 마을 화면 zone (zones)</h2>
+    <p>HUD/map/footer zone 배치. iframe live preview.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=charselect">
+    <h2>🎭 영웅 선택 (zones)</h2>
+    <p>타이틀/메시지/3카드/확정 버튼. iframe live preview.</p>
+  </a>
+  <a class="tile" href="screen_editor_battle.html">
+    <h2>⚔️ 전투 화면</h2>
+    <p>슬롯 간격/너비/패딩 슬라이더. css/10_tokens.css --battle-*.</p>
+  </a>
+  <a class="tile" href="screen_editor_formation.html">
+    <h2>📜 편성</h2>
+    <p>슬롯 크기/간격/행 간격 슬라이더. css/10_tokens.css --form-*.</p>
+  </a>
+  <a class="tile" href="screen_editor_charselect.html">
+    <h2>🎭 영웅 선택</h2>
+    <p>카드 간격/패딩 슬라이더. css/10_tokens.css --charselect-*.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=cardselect">
+    <h2>⚔️ 출정 편성</h2>
+    <p>6 zone 드래그. cardselect-screen.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=tavern">
+    <h2>🍺 선술집</h2>
+    <p>4 zone. 용병/영웅 모병 화면.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=deckview">
+    <h2>📋 덱뷰 / 생명의 서</h2>
+    <p>4 zone. 전력 열람 + 코덱스.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=castle">
+    <h2>🏰 성채</h2>
+    <p>4 zone. 단련 + 퀘스트.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=church">
+    <h2>⛪ 교회</h2>
+    <p>3 zone. 부상 치유/장례.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=reward">
+    <h2>🏆 보상</h2>
+    <p>4 zone. 승리 후 보상 선택.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=title">
+    <h2>🏰 타이틀</h2>
+    <p>3 zone. 로고 · 서브 · 버튼 그룹.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=login">
+    <h2>🔑 로그인</h2>
+    <p>1 zone. auth-box 박스 위치.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=signup">
+    <h2>🆕 회원가입</h2>
+    <p>1 zone. auth-box 박스 위치.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=prologue">
+    <h2>📜 프롤로그</h2>
+    <p>1 zone. 프롤로그 텍스트 영역.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=pick">
+    <h2>🎴 뽑기 (pick)</h2>
+    <p>4 zone. 라운드 간 동료/비전/유물 뽑기.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=choice">
+    <h2>🔀 라운드 선택</h2>
+    <p>3 zone. 라운드 후 다음 행동 선택.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=formation">
+    <h2>🛡️ 진형 배치</h2>
+    <p>6 zone. 5슬롯 + 대기석 + 버튼.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=upgrade">
+    <h2>⬆️ 동료 단련 (upgrade)</h2>
+    <p>4 zone. 동료 성장 그리드.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=gameover">
+    <h2>💀 게임오버</h2>
+    <p>3 zone. 최종 스탯 + 재시작.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=match">
+    <h2>📡 매치메이킹</h2>
+    <p>1 zone. 상대 초상화 박스.</p>
+  </a>
+  <a class="tile" href="screen_editor_zones.html?screen=battle">
+    <h2>⚔️ 전투</h2>
+    <p>5 zone. HUD/필드/로그/버튼/타이머.</p>
+  </a>
+  <div class="tile disabled"><h2>⚒️ 대장간/상점/훈련장</h2><p>모달 팝업 — 별도 편집 불필요</p></div>
+</div>
+</body>
+</html>

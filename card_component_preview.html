@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CardComponent 프리뷰 — Step 1</title>
+
+<!-- 게임 기본 CSS (index.html과 동일 순서) -->
+<link rel="stylesheet" href="css/00_reset.css">
+<link rel="stylesheet" href="css/10_tokens.css">
+<link rel="stylesheet" href="css/20_layout.css">
+<link rel="stylesheet" href="css/30_components.css">
+<link rel="stylesheet" href="css/31_card_system.css">
+<link rel="stylesheet" href="css/80_animations.css">
+
+<style>
+  body{
+    background:#0d0a14;
+    color:#e6dfc8;
+    font-family:system-ui,sans-serif;
+    padding:24px;
+    min-height:100vh;
+  }
+  h1{font-family:var(--font-title,serif);color:var(--amber-bright,#e6b85a);margin:0 0 8px;}
+  .subtitle{color:#888;font-size:.85rem;margin-bottom:24px;}
+  .section{margin:32px 0;}
+  .section h2{color:#c8a860;font-size:1.1rem;border-bottom:1px solid #3a2e1a;padding-bottom:6px;margin-bottom:16px;}
+  .row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px;}
+  .row-label{color:#aaa;font-size:.75rem;width:80px;padding-top:140px;text-align:right;}
+
+  /* 프리뷰 스케일 모드 */
+  .cv-mode-preview-small{transform:scale(.55);transform-origin:top left;margin-right:-140px;margin-bottom:-210px;}
+
+  /* 가변 오버레이 슬롯 — Step 1 임시 스타일 (Step 3에서 정식 배치) */
+  .card-v2 .cv-atk-mod,
+  .card-v2 .cv-def-mod,
+  .card-v2 .cv-spd-mod{
+    position:absolute;
+    width:auto;min-width:18px;height:16px;
+    font-size:.7rem;font-weight:900;
+    padding:0 4px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    z-index:4;
+    transform:translate(30%,-50%);
+    box-shadow:0 1px 3px rgba(0,0,0,.7);
+  }
+  .card-v2 .cv-atk-mod{left:calc(var(--gem-atk-x) + 5%);top:var(--gem-atk-y);}
+  .card-v2 .cv-def-mod{left:calc(var(--gem-def-x) + 5%);top:var(--gem-def-y);}
+  .card-v2 .cv-spd-mod{left:calc(var(--gem-spd-x) + 5%);top:var(--gem-spd-y);}
+  .card-v2 .cv-slot.is-buff{background:#2d6a2d;color:#a6ff9f;border:1px solid #5fcf4e;}
+  .card-v2 .cv-slot.is-debuff{background:#6a2020;color:#ffb3b3;border:1px solid #e04040;}
+
+  /* 보호막 뱃지 */
+  .card-v2 .cv-shield{
+    position:absolute;left:8%;top:10%;
+    width:18px;height:18px;font-size:.7rem;
+    background:radial-gradient(circle,#4fa8ff,#1a4a88);
+    color:#fff;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid #88c0ff;
+    z-index:4;transform:none;
+    box-shadow:0 0 6px rgba(80,160,255,.5);
+  }
+
+  /* ─ 상태효과 — 문장(heraldry) 메달 ─
+     다크 아이언 원판 + 청동 림 + 각인 그림자.
+     글리프는 currentColor 상속, 숫자는 세리프 중량체. */
+  .card-v2 .cv-status{
+    position:absolute;right:4%;bottom:18%;
+    display:flex;flex-direction:column;gap:5px;
+    z-index:4;
+  }
+  .cv-status-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:50%;
+    background:
+      radial-gradient(circle at 35% 30%,#3a3024 0%,#1a140c 55%,#0a0806 100%);
+    border:1.5px solid #6a5020;
+    box-shadow:
+      inset 0 1px 1px rgba(255,220,150,.35),
+      inset 0 -1px 2px rgba(0,0,0,.7),
+      0 2px 4px rgba(0,0,0,.85),
+      0 0 0 1px rgba(0,0,0,.6);
+    position:relative;
+  }
+  .cv-status-badge svg{
+    filter:drop-shadow(0 1px 0 rgba(0,0,0,.7));
+  }
+  .cv-status-turns{
+    position:absolute;right:-4px;bottom:-4px;
+    min-width:14px;height:14px;padding:0 3px;
+    background:radial-gradient(circle at 40% 30%,#1a1208,#000);
+    border:1px solid #8a6820;
+    border-radius:8px;
+    font-family:'Cinzel','Times New Roman',serif;
+    font-size:.65rem;font-weight:900;
+    color:#f5d98a;
+    text-shadow:0 1px 1px rgba(0,0,0,.9);
+    display:flex;align-items:center;justify-content:center;
+    line-height:1;
+    box-shadow:0 1px 2px rgba(0,0,0,.8);
+  }
+  /* 상태별 색조 — SVG currentColor + 메달 림 글로우 */
+  .cv-status-burn      { color:#ff8838; border-color:#c44a10; box-shadow:inset 0 1px 1px rgba(255,220,150,.35),inset 0 -1px 2px rgba(0,0,0,.7),0 2px 4px rgba(0,0,0,.85),0 0 6px rgba(255,100,30,.35); }
+  .cv-status-frozen    { color:#9ad8ff; border-color:#2a6a9a; box-shadow:inset 0 1px 1px rgba(200,230,255,.4),inset 0 -1px 2px rgba(0,0,0,.7),0 2px 4px rgba(0,0,0,.85),0 0 6px rgba(100,180,255,.35); }
+  .cv-status-poison    { color:#b8f070; border-color:#3a7020; box-shadow:inset 0 1px 1px rgba(200,255,180,.35),inset 0 -1px 2px rgba(0,0,0,.7),0 2px 4px rgba(0,0,0,.85),0 0 6px rgba(120,220,60,.35); }
+  .cv-status-invincible{ color:#ffe080; border-color:#aa8020; box-shadow:inset 0 1px 1px rgba(255,240,180,.5),inset 0 -1px 2px rgba(0,0,0,.7),0 2px 4px rgba(0,0,0,.85),0 0 8px rgba(255,210,80,.45); }
+
+  /* 컨트롤 패널 */
+  .controls{
+    background:#1a1420;border:1px solid #3a2e1a;border-radius:8px;
+    padding:16px;margin-bottom:24px;
+  }
+  .controls h3{margin:0 0 10px;color:#c8a860;font-size:.9rem;}
+  .ctrl-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center;}
+  .ctrl-row label{font-size:.8rem;color:#aaa;min-width:80px;}
+  button{
+    background:#2a1f0f;border:1px solid #5a4820;color:#e6b85a;
+    padding:6px 12px;border-radius:4px;cursor:pointer;font-size:.8rem;
+    font-family:inherit;
+  }
+  button:hover{background:#3a2f1f;}
+  button.danger{color:#ff7a7a;border-color:#7a3030;}
+  button.good{color:#7aff7a;border-color:#307a30;}
+  .status-log{
+    font-family:monospace;font-size:.75rem;color:#888;
+    background:#0a0810;padding:8px;border-radius:4px;margin-top:8px;
+    min-height:40px;max-height:120px;overflow-y:auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>CardComponent 프리뷰 — Step 1 스켈레톤</h1>
+<div class="subtitle">
+  <code>js/card_component.js</code> 동작 확인용. 기존 <code>mkCardEl()</code> 과 1:1 동등 + 6개 setter 라이브 토글.
+</div>
+
+<!-- ═══ 1. 5등급 × 기본 렌더 비교 ═══ -->
+<div class="section">
+  <h2>1. 5등급 기본 렌더 (생성 시 확정 — 불변)</h2>
+  <div class="subtitle">각 등급 1장씩. 능력 텍스트는 <code>stripSystemTokens()</code> 경유 — "[액티브 90%]", "(에너지2)" 같은 raw 토큰이 안 보여야 정상.</div>
+  <div class="row" id="rarity-row"></div>
+</div>
+
+<!-- ═══ 2. 라이브 setter 토글 ═══ -->
+<div class="section">
+  <h2>2. 라이브 setter 테스트 — 숫자만 변경되는지 확인</h2>
+  <div class="subtitle">이 카드는 <b>한 번만 생성</b>됩니다. 아래 버튼들은 setter로 숫자/상태만 바꿉니다. 프레임/일러/이름/능력텍스트는 절대 안 움직여야 정상.</div>
+
+  <div class="controls">
+    <h3>🎛 setHP / setNRG</h3>
+    <div class="ctrl-row">
+      <label>HP:</label>
+      <button onclick="testCard.setHP(50);log('setHP(50)')">50 (만피)</button>
+      <button onclick="testCard.setHP(35);log('setHP(35)')">35</button>
+      <button onclick="testCard.setHP(10);log('setHP(10)')">10 (빈사)</button>
+      <button onclick="testCard.setHP(0);log('setHP(0) 사망')">0</button>
+    </div>
+    <div class="ctrl-row">
+      <label>NRG:</label>
+      <button onclick="testCard.setNRG(8);log('setNRG(8)')">8</button>
+      <button onclick="testCard.setNRG(3);log('setNRG(3)')">3</button>
+      <button onclick="testCard.setNRG(0);log('setNRG(0)')">0</button>
+    </div>
+
+    <h3 style="margin-top:16px;">🛡️ setShield</h3>
+    <div class="ctrl-row">
+      <button onclick="testCard.setShield(0);log('setShield(0) 숨김')">0 (숨김)</button>
+      <button onclick="testCard.setShield(5);log('setShield(5)')">5</button>
+      <button onclick="testCard.setShield(99);log('setShield(99)')">99</button>
+    </div>
+
+    <h3 style="margin-top:16px;">⚔️ setStatModifier — B안 오버레이 (원본 숫자 불변)</h3>
+    <div class="ctrl-row">
+      <label>ATK:</label>
+      <button class="good" onclick="testCard.setStatModifier('atk',3);log('ATK +3 버프')">+3 버프</button>
+      <button class="danger" onclick="testCard.setStatModifier('atk',-2);log('ATK -2 디버프')">-2 디버프</button>
+      <button onclick="testCard.setStatModifier('atk',0);log('ATK 오버레이 제거')">제거</button>
+    </div>
+    <div class="ctrl-row">
+      <label>DEF:</label>
+      <button class="good" onclick="testCard.setStatModifier('def',2);log('DEF +2 버프')">+2</button>
+      <button class="danger" onclick="testCard.setStatModifier('def',-1);log('DEF -1')">-1</button>
+      <button onclick="testCard.setStatModifier('def',0);log('DEF 제거')">제거</button>
+    </div>
+    <div class="ctrl-row">
+      <label>SPD:</label>
+      <button class="good" onclick="testCard.setStatModifier('spd',5);log('SPD +5')">+5</button>
+      <button class="danger" onclick="testCard.setStatModifier('spd',-3);log('SPD -3')">-3</button>
+      <button onclick="testCard.setStatModifier('spd',0);log('SPD 제거')">제거</button>
+    </div>
+
+    <h3 style="margin-top:16px;">🔥 setStatus — 상태효과</h3>
+    <div class="ctrl-row">
+      <button onclick="testCard.setStatus('burn',3);log('화상 3턴')">🔥 화상 3</button>
+      <button onclick="testCard.setStatus('frozen',2);log('빙결 2턴')">❄️ 빙결 2</button>
+      <button onclick="testCard.setStatus('poison',4);log('독 4턴')">☠️ 독 4</button>
+      <button onclick="testCard.setStatus('invincible',1);log('무적 1턴')">🛡️ 무적 1</button>
+      <button onclick="['burn','frozen','poison','invincible'].forEach(k=>testCard.setStatus(k,0));log('상태 전부 제거')">전부 제거</button>
+    </div>
+
+    <h3 style="margin-top:16px;">✨ setSelected — 선택 오라</h3>
+    <div class="ctrl-row">
+      <button onclick="testCard.setSelected(true);log('선택됨')">선택</button>
+      <button onclick="testCard.setSelected(false);log('선택 해제')">해제</button>
+    </div>
+
+    <h3 style="margin-top:16px;">♻️ rebuild — 레벨업 시뮬 (HP 최대치 50→70, 새 인스턴스 반환)</h3>
+    <div class="ctrl-row">
+      <button onclick="simulateLevelUp()">레벨업 시뮬</button>
+      <span style="font-size:.75rem;color:#666;">기존 HP/상태가 복원되는지 확인</span>
+    </div>
+
+    <div class="status-log" id="log"></div>
+  </div>
+
+  <div id="test-card-mount" style="margin-top:16px;"></div>
+</div>
+
+<!-- 게임 데이터 로드 (의존성 순서 주의) -->
+<script src="js/00_namespace.js"></script>
+<script src="js/10_constants.js"></script>
+<script src="js/11_data_units.js"></script>
+<script src="js/14_data_images.js"></script>
+<script src="js/40_cards.js"></script>
+
+<script>
+  // ── 1. 5등급 샘플 렌더 ──
+  // 유닛 데이터에서 각 rarity 1장씩 뽑기
+  const byRarity = {};
+  (RoF.Data.UNITS || []).forEach(u => {
+    if(!byRarity[u.rarity]) byRarity[u.rarity] = u;
+  });
+  const rarityOrder = ['bronze','silver','gold','legendary','divine'];
+  const row = document.getElementById('rarity-row');
+  rarityOrder.forEach(r => {
+    const u = byRarity[r];
+    if(!u){
+      const ph = document.createElement('div');
+      ph.style.cssText = 'width:176px;height:264px;border:1px dashed #444;color:#666;display:flex;align-items:center;justify-content:center;font-size:.7rem;';
+      ph.textContent = r + ' (데이터 없음)';
+      row.appendChild(ph);
+      return;
+    }
+    const inst = CardComponent.create(u, {mode:'preview-small'});
+    row.appendChild(inst.el);
+  });
+
+  // ── 2. 라이브 테스트 카드 ──
+  // 홀리 전사 (사용자가 본 그 카드) — raw 토큰 스트립 확인 목적
+  const holy = (RoF.Data.UNITS || []).find(u => u.id === 'h_m_holy');
+  window.testCard = CardComponent.create(holy, {mode:'deck'});
+  document.getElementById('test-card-mount').appendChild(testCard.el);
+
+  function log(msg){
+    const el = document.getElementById('log');
+    const line = document.createElement('div');
+    line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    el.insertBefore(line, el.firstChild);
+  }
+  log('초기 렌더 완료 — 능력 텍스트: "' + testCard._refs.desc.textContent + '"');
+
+  // ── rebuild 시뮬 ──
+  function simulateLevelUp(){
+    const beforeHP = testCard._state.currentHP;
+    const beforeStatus = JSON.stringify(testCard._state.statuses);
+    const beforeMods = JSON.stringify(testCard._state.statMods);
+
+    // 레벨업 = unit 데이터의 hp 최대치 증가 (복사본 만들어서 테스트)
+    const leveledUnit = Object.assign({}, holy, { hp: 70, atk: holy.atk + 1 });
+
+    window.testCard = CardComponent.rebuild(testCard, leveledUnit);
+    log(`rebuild: HP ${beforeHP} 유지, 상태 ${beforeStatus} 복원, 버프 ${beforeMods} 복원, 최대 HP 50→70`);
+  }
+</script>
+</body>
+</html>

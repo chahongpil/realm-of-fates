@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ke">
+<head>
+<meta charset="UTF-8">
+<title>맵(마을) 편집기 — 건물 배치 + 크기</title>
+<style>
+  body{margin:0;padding:20px;background:#0d0a14;color:#e6dfc8;font-family:system-ui,sans-serif;}
+  h1{color:#e6b85a;margin:0 0 6px;font-size:1.1rem;}
+  .hint{color:#888;font-size:.8rem;margin-bottom:14px;line-height:1.55;}
+  .hint code{background:#1a1420;padding:1px 5px;border-radius:3px;color:#e6b85a;}
+  .back{color:#7aa8ff;text-decoration:none;font-size:.8rem;}
+
+  .toolbar{position:sticky;top:0;z-index:100;background:#1a1420;border:1px solid #5a4820;border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 4px 12px rgba(0,0,0,.6);}
+  .toolbar button{background:#2a1f0f;border:1px solid #5a4820;color:#e6b85a;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:.85rem;font-weight:bold;font-family:inherit;}
+  .toolbar button:hover{background:#3a2f1f;}
+  .toolbar button.save{color:#7aff7a;border-color:#307a30;}
+  .toolbar button.reset{color:#ffaa44;border-color:#7a5520;}
+  #status{font-size:.75rem;color:#888;margin-left:auto;}
+  #status.ok{color:#7aff7a;} #status.err{color:#ff7a7a;}
+
+  .stage-wrap{max-width:1280px;margin:0 auto;background:#000;border:2px solid #3a2e1a;border-radius:8px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.8);}
+  /* 게임과 동일한 1376/768 aspect — .town-container 와 일치해야 검수 통과 */
+  .stage{position:relative;width:100%;aspect-ratio:1376/768;user-select:none;touch-action:none;background:#000;}
+  .stage img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;}
+
+  .snap-guide{position:absolute;pointer-events:none;z-index:20;display:none;}
+  .snap-guide-x{top:0;bottom:0;width:0;border-left:1px dashed #ffee44;box-shadow:0 0 4px rgba(255,238,68,.6);}
+  .snap-guide-y{left:0;right:0;height:0;border-top:1px dashed #ffee44;box-shadow:0 0 4px rgba(255,238,68,.6);}
+  .snap-guide.visible{display:block;}
+
+  /* 건물 박스 — 실제 cutout img 를 표시 + 드래그/리사이즈 */
+  .bld{
+    position:absolute;
+    transform:translate(-50%,-50%);  /* 중심점 기준 */
+    cursor:grab;
+    z-index:10;
+    border:2px dashed #ffee00;
+    background:rgba(255,238,0,.06);
+    box-sizing:border-box;
+    transition:box-shadow .15s;
+  }
+  .bld:hover{box-shadow:0 0 20px rgba(255,238,0,.8), inset 0 0 30px rgba(255,238,0,.1);}
+  .bld:active{cursor:grabbing;}
+  .bld img{width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 3px 6px rgba(0,0,0,.8));}
+  .bld .lbl{
+    position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+    font-size:.65rem;color:#000;background:rgba(255,238,0,.95);
+    padding:2px 6px;border-radius:3px;white-space:nowrap;font-weight:900;pointer-events:none;
+  }
+  .bld .xy{
+    position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
+    font-size:.55rem;color:#ffee00;font-family:monospace;
+    text-shadow:0 1px 2px #000;white-space:nowrap;pointer-events:none;
+  }
+  .bld .resize-handle{
+    position:absolute;right:-6px;bottom:-6px;
+    width:14px;height:14px;background:#fff;border:1px solid #000;
+    cursor:nwse-resize;border-radius:2px;z-index:11;
+  }
+  /* gate 는 cutout 이미지 없음 — 투명 hotspot */
+  .bld[data-id="gate"]{background:rgba(255,100,100,.1);border-color:#ff8844;}
+  .bld[data-id="gate"] .lbl{background:rgba(255,136,68,.95);color:#000;}
+  .bld[data-id="gate"] img{display:none;}
+
+  .coord-list{margin-top:14px;padding:12px;border-radius:6px;background:#0a0810;border:1px solid #2a2015;font-family:monospace;font-size:.72rem;color:#aaa;line-height:1.7;max-width:1280px;margin-left:auto;margin-right:auto;}
+  .coord-list b{color:#e6b85a;}
+</style>
+</head>
+<body>
+
+<a class="back" href="screen_editor.html">← 허브로</a>
+<h1>🗺️ 맵(마을) 편집기 — 새 가로 성벽 맵 (1376×768)</h1>
+<div class="hint">
+  건물을 드래그해서 원형 성벽 내부에 배치. <b>우하단 핸들</b>로 크기 리사이즈.<br>
+  저장 시 <code>js/51_game_town.js</code> 의 <code>BUILDINGS</code> 배열에서 <code>x/y/w/h</code> 를 surgical 갱신.<br>
+  성문(gate) 은 base 에 그려져 있어 cutout 이미지 없음 — 투명 클릭존만.
+</div>
+
+<div class="toolbar">
+  <button class="reload" onclick="loadLayout()">↻ 다시 불러오기</button>
+  <button class="save" onclick="saveLayout()">💾 저장 (51_game_town.js 갱신)</button>
+  <button class="reset" onclick="syncFromIframe()">🎯 게임 iframe 에서 측정</button>
+  <label style="font-size:.8rem;color:#ccc;display:flex;align-items:center;gap:6px;cursor:pointer;">
+    <input type="checkbox" id="snap-toggle" checked> 스냅 (Shift 해제)
+  </label>
+  <span id="status">준비</span>
+</div>
+
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <img class="bg" src="../img/bg_town_v3.png" alt="town base">
+  </div>
+</div>
+
+<div class="coord-list" id="coord-list"></div>
+
+<script>
+let buildings = [];  // {id, name, icon, x, y, w, h} — all percentages of 1376×768 base
+
+// ── 스냅 ──
+const SNAP_THRESHOLD = 1.5;  // %
+const CENTER_LINES_X = [50];
+const CENTER_LINES_Y = [50];
+function isSnapOn(sk){if(sk) return false; return document.getElementById('snap-toggle').checked;}
+function ensureGuides(stage){
+  let gx=stage.querySelector('.snap-guide-x'), gy=stage.querySelector('.snap-guide-y');
+  if(!gx){gx=document.createElement('div');gx.className='snap-guide snap-guide-x';stage.appendChild(gx);}
+  if(!gy){gy=document.createElement('div');gy.className='snap-guide snap-guide-y';stage.appendChild(gy);}
+  return{gx,gy};
+}
+function showGuide(stage,a,p){const{gx,gy}=ensureGuides(stage); if(a==='x'){gx.style.left=p+'%';gx.classList.add('visible');} if(a==='y'){gy.style.top=p+'%';gy.classList.add('visible');}}
+function hideGuides(s){s.querySelectorAll('.snap-guide').forEach(g=>g.classList.remove('visible'));}
+function applySnap(stage,self,x,y,sk){
+  hideGuides(stage);
+  if(!isSnapOn(sk)) return{x,y};
+  const xs=[...CENTER_LINES_X], ys=[...CENTER_LINES_Y];
+  stage.querySelectorAll('.bld').forEach(b=>{
+    if(b===self) return;
+    xs.push(parseFloat(b.style.left));
+    ys.push(parseFloat(b.style.top));
+  });
+  let bX=x,dx=SNAP_THRESHOLD; xs.forEach(t=>{const d=Math.abs(t-x);if(d<dx){dx=d;bX=t;}});
+  let bY=y,dy=SNAP_THRESHOLD; ys.forEach(t=>{const d=Math.abs(t-y);if(d<dy){dy=d;bY=t;}});
+  if(dx<SNAP_THRESHOLD)showGuide(stage,'x',bX);
+  if(dy<SNAP_THRESHOLD)showGuide(stage,'y',bY);
+  return{x:bX,y:bY};
+}
+
+function setStatus(t,cls){const el=document.getElementById('status');el.textContent=t;el.className=cls||'';}
+
+async function loadLayout(){
+  setStatus('불러오는 중...');
+  try{
+    const r = await fetch('/load-town-layout');
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error);
+    buildings = j.buildings;
+    // w/h 없는 경우 기본값
+    buildings.forEach(b => {
+      if(b.w == null) b.w = 14;
+      if(b.h == null) b.h = 28;
+    });
+    render();
+    setStatus('불러옴 ✓ ('+buildings.length+' 건물)','ok');
+  }catch(e){setStatus('로드 실패: '+e.message,'err');}
+}
+
+function render(){
+  const stage=document.getElementById('stage');
+  stage.querySelectorAll('.bld').forEach(n=>n.remove());
+  buildings.forEach(b=>{
+    const d=document.createElement('div');
+    d.className='bld';
+    d.setAttribute('data-id', b.id);
+    d.style.left=b.x+'%';
+    d.style.top=b.y+'%';
+    d.style.width=b.w+'%';
+    d.style.height=b.h+'%';
+    d.innerHTML=`
+      <div class="lbl">${b.icon} ${b.name}</div>
+      <img src="../img/town/${b.id}.png" onerror="this.style.display='none'">
+      <div class="xy">${b.x.toFixed(1)},${b.y.toFixed(1)} ${b.w.toFixed(1)}×${b.h.toFixed(1)}</div>
+      <div class="resize-handle"></div>
+    `;
+    stage.appendChild(d);
+    attachDragResize(d, b);
+  });
+  renderCoordList();
+}
+
+function attachDragResize(el, b){
+  const stage = document.getElementById('stage');
+  const handle = el.querySelector('.resize-handle');
+
+  // 리사이즈
+  let resizing = false;
+  handle.addEventListener('pointerdown', e => {
+    e.stopPropagation(); resizing = true;
+    handle.setPointerCapture(e.pointerId);
+  });
+  handle.addEventListener('pointermove', e => {
+    if(!resizing) return;
+    const rect = stage.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * 100;
+    const py = ((e.clientY - rect.top) / rect.height) * 100;
+    // center 기준 → 우하단까지 거리 × 2 = width
+    const newW = Math.max(3, (px - b.x) * 2);
+    const newH = Math.max(3, (py - b.y) * 2);
+    b.w = Math.min(100, newW);
+    b.h = Math.min(100, newH);
+    el.style.width = b.w + '%';
+    el.style.height = b.h + '%';
+    el.querySelector('.xy').textContent = b.x.toFixed(1)+','+b.y.toFixed(1)+' '+b.w.toFixed(1)+'×'+b.h.toFixed(1);
+    renderCoordList();
+  });
+  handle.addEventListener('pointerup', e => {
+    resizing = false;
+    try { handle.releasePointerCapture(e.pointerId); } catch(_){}
+  });
+
+  // 드래그
+  let dragging = false;
+  let scX=0, scY=0, sX=0, sY=0;
+  el.addEventListener('pointerdown', e => {
+    if(e.target === handle) return;
+    dragging = true;
+    el.setPointerCapture(e.pointerId);
+    scX = e.clientX; scY = e.clientY;
+    sX = b.x; sY = b.y;
+    e.preventDefault();
+  });
+  el.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    const rect = stage.getBoundingClientRect();
+    const dx = ((e.clientX - scX) / rect.width) * 100;
+    const dy = ((e.clientY - scY) / rect.height) * 100;
+    let nx = sX + dx, ny = sY + dy;
+    const sn = applySnap(stage, el, nx, ny, e.shiftKey);
+    b.x = +sn.x.toFixed(2);
+    b.y = +sn.y.toFixed(2);
+    el.style.left = b.x + '%';
+    el.style.top = b.y + '%';
+    el.querySelector('.xy').textContent = b.x.toFixed(1)+','+b.y.toFixed(1)+' '+b.w.toFixed(1)+'×'+b.h.toFixed(1);
+    renderCoordList();
+  });
+  el.addEventListener('pointerup', e => {
+    dragging = false;
+    hideGuides(stage);
+    try { el.releasePointerCapture(e.pointerId); } catch(_){}
+  });
+}
+
+function renderCoordList(){
+  const list = document.getElementById('coord-list');
+  list.innerHTML = buildings.map(b =>
+    `<b>${b.icon} ${b.name.padEnd(6)}</b> <span style="color:#888">${b.id.padEnd(10)}</span> x:${b.x.toFixed(2)} y:${b.y.toFixed(2)} w:${b.w.toFixed(2)} h:${b.h.toFixed(2)}`
+  ).join('<br>');
+}
+
+async function saveLayout(){
+  if(!buildings.length){setStatus('데이터 없음','err');return;}
+  setStatus('저장 중...');
+  try{
+    const body={};
+    buildings.forEach(b=>{
+      body[b.id] = { x:b.x, y:b.y, w:b.w, h:b.h };
+    });
+    const r = await fetch('/save-town-layout', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const j = await r.json();
+    if(j.ok) setStatus(`저장 ✓ (${j.replaced}/${j.total}) — 게임 새로고침`, 'ok');
+    else setStatus('저장 실패: ' + j.error, 'err');
+  }catch(e){setStatus('저장 실패: '+e.message,'err');}
+}
+
+// 🎯 iframe 에서 게임 DOM 측정 (편집기 vs 실제 게임 검수용)
+async function syncFromIframe(){
+  setStatus('iframe 생성 중...');
+  let iframe = document.getElementById('qa-iframe');
+  if(!iframe){
+    iframe = document.createElement('iframe');
+    iframe.id = 'qa-iframe';
+    iframe.src = '../index.html?autonav=menu';
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:1280px;height:720px;border:0;';
+    document.body.appendChild(iframe);
+  } else {
+    iframe.src = '../index.html?autonav=menu&_=' + Date.now();
+  }
+  iframe.onload = () => {
+    setTimeout(() => {
+      try {
+        const doc = iframe.contentDocument;
+        const root = doc.querySelector('.game-root');
+        const tc = doc.querySelector('.town-container');
+        if(!root || !tc){setStatus('iframe 에서 town-container 못 찾음','err');return;}
+        const tcRect = tc.getBoundingClientRect();
+        const rootScale = root.getBoundingClientRect().width / 1280;
+        let matched = 0;
+        buildings.forEach(b => {
+          const el = doc.querySelector('.town-building[data-id="'+b.id+'"]');
+          if(!el) return;
+          const r = el.getBoundingClientRect();
+          // tc 기준 center 퍼센트로 환산
+          const cx = (r.left + r.width/2 - tcRect.left) / tcRect.width * 100;
+          const cy = (r.top + r.height/2 - tcRect.top) / tcRect.height * 100;
+          const w = r.width / tcRect.width * 100;
+          const h = r.height / tcRect.height * 100;
+          b.x = +cx.toFixed(2); b.y = +cy.toFixed(2);
+          b.w = +w.toFixed(2);  b.h = +h.toFixed(2);
+          matched++;
+        });
+        render();
+        setStatus(`iframe 측정 ✓ (${matched} 일치). 편집기 = 게임 검수 완료`, 'ok');
+      } catch(e){
+        setStatus('iframe 측정 실패: '+e.message,'err');
+      }
+    }, 1000);
+  };
+}
+
+loadLayout();
+</script>
+</body>
+</html>

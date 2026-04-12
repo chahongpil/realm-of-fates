@@ -1,3 +1,21 @@
 # deep-plan / deep-implement 세션 파일 (로컬 전용)
 deep_plan_config.json
 implementation/
+
+# Node
+node_modules/
+package-lock.json.bak
+
+# 스크린샷 (로컬 검수용, 리포에 포함 X)
+shots/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 임시 파일
+*.log
+*.tmp
+*~

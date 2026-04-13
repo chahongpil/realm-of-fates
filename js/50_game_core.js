@@ -26,6 +26,13 @@ Object.assign(RoF.Game, {
     this.deck.forEach(c=>{if(!c.equips)c.equips=[];if(!c.maxHp)c.maxHp=c.hp;if(!c.xp)c.xp=0;if(!c.honor)c.honor=0;if(!c.level)c.level=1;if(c.shield==null)c.shield=0;if(c.meva==null)c.meva=0;if(c.hpReg==null)c.hpReg=0;if(c.nrgReg==null)c.nrgReg=0;if(!c.range)c.range=(c.type==='사수'||c.type==='마법사')?'ranged':'melee';
       if(!c.growthPts)c.growthPts={atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0};if(c.freePoints==null)c.freePoints=0;
     });
+    // 일회성 마이그레이션: 번개 타이탄 미보유 기존 세이브에 지급
+    if(!this.deck.some(c=>c.id==='titan')){
+      const tb=UNITS.find(x=>x.id==='titan');
+      if(tb){
+        this.deck.push({...tb,uid:uid(),isCompanion:true,isTitan:true,level:1,equips:[],maxHp:tb.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}});
+      }
+    }
     this.showMenu();
   },
   persist(){

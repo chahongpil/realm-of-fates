@@ -209,7 +209,12 @@ Object.assign(RoF.Game, {
         const upgBlocked=b.id!=='castle'&&lv>=castleLv;
         // 2026-04-12 밤: div 가 편집기 설정 w/h(%) 로 크기 잡음. img 는 div 100% 채움 + contain.
         const imgStyle=`width:100%;height:100%;object-fit:contain;border-radius:0;`;
-        div.innerHTML=`<div class="tb-icon" style="width:100%;height:100%;"><img src="${bImg}" onerror="this.src='${bImgFallback}'" style="${imgStyle}"></div><div class="tb-label" style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}" style="position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);white-space:nowrap;">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:'<div class="tb-upgrade" style="position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);color:#44ff88;white-space:nowrap;">✅ 최고 경지</div>'}`;
+        // 2026-04-13 지시반영: shop/library/gate 는 라벨을 건물 윗쪽으로 이동 (아래 공간 겹침 문제)
+        const labelAbove = (b.id==='shop'||b.id==='library'||b.id==='gate');
+        const labelPos = labelAbove
+          ? 'position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;'
+          : 'position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;';
+        div.innerHTML=`<div class="tb-icon" style="width:100%;height:100%;"><img src="${bImg}" onerror="this.src='${bImgFallback}'" style="${imgStyle}"></div><div class="tb-label" style="${labelPos}">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}" style="position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);white-space:nowrap;">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:'<div class="tb-upgrade" style="position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);color:#44ff88;white-space:nowrap;">✅ 최고 경지</div>'}`;
         div.querySelector('.tb-icon').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
         div.querySelector('.tb-label').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
         const upgEl=div.querySelector('.tb-upgrade');

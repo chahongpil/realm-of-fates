@@ -142,9 +142,35 @@ document.addEventListener('DOMContentLoaded', () => {
           title:       () => RoF.UI.show('title-screen'),
           login:       () => RoF.UI.show('login-screen'),
           signup:      () => RoF.UI.show('signup-screen'),
-          prologue:    () => { RoF.UI.show('prologue-screen'); if(RoF.Auth.startPrologue) RoF.Auth.startPrologue(); },
-          charselect:  () => { RoF.UI.show('char-select-screen'); if(RoF.Auth._showStep1) RoF.Auth._showStep1(); },
-          'char-select':()=> { RoF.UI.show('char-select-screen'); if(RoF.Auth._showStep1) RoF.Auth._showStep1(); },
+          prologue:    () => {
+            // 에디터 미리보기: 시네마틱 스킵, 버튼만 즉시 표시
+            RoF.UI.show('prologue-screen');
+            const txt = document.getElementById('prologue-text');
+            if(txt) txt.innerHTML = '<div class="pl-line pl-gold pl-show">에디터 미리보기 — 프롤로그 텍스트</div>';
+            const btns = document.getElementById('prologue-btns');
+            if(btns){ btns.style.display = ''; btns.style.opacity = '1'; }
+          },
+          // 2026-04-13: char-select 분리 → element + hero
+          'char-element':() => {
+            RoF.Auth._prologueUid = RoF.Auth._prologueUid || RoF.Auth.user || '_preview';
+            RoF.Auth._selElement = null; RoF.Auth._selRole = null;
+            if(RoF.Auth._showElementScreen) RoF.Auth._showElementScreen();
+          },
+          'char-hero': () => {
+            RoF.Auth._prologueUid = RoF.Auth._prologueUid || RoF.Auth.user || '_preview';
+            // preview 용 기본 원소
+            if(!RoF.Auth._selElement) RoF.Auth._selElement = 'fire';
+            if(RoF.Auth._showHeroScreen) RoF.Auth._showHeroScreen();
+          },
+          // Legacy aliases
+          charselect:  () => {
+            RoF.Auth._prologueUid = RoF.Auth._prologueUid || RoF.Auth.user || '_preview';
+            if(RoF.Auth._showElementScreen) RoF.Auth._showElementScreen();
+          },
+          'char-select':()=> {
+            RoF.Auth._prologueUid = RoF.Auth._prologueUid || RoF.Auth.user || '_preview';
+            if(RoF.Auth._showElementScreen) RoF.Auth._showElementScreen();
+          },
           menu:        () => RoF.Game.showMenu && RoF.Game.showMenu(),
           tavern:      () => RoF.Game.showTavern && RoF.Game.showTavern(),
           deckview:    () => RoF.Game.showDeckView && RoF.Game.showDeckView(),
@@ -161,7 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const st=document.getElementById('rew-stats'); if(st)st.innerHTML='💰 +50 골드<br>⭐ +3 경험치';
           },
           formation:   () => RoF.UI.show('formation-screen'),
-          battle:      () => RoF.UI.show('battle-screen'),
+          battle:      () => {
+            RoF.UI.show('battle-screen');
+            // 에디터 미리보기용 fake battleState — b-btn-back 같은 숨은 zone 을 드러내기 위함
+            if(RoF.Game && !RoF.Game.battleState){
+              RoF.Game.battleState = { currentRound:1, pCards:[], eCards:[], _apRemaining:1 };
+            }
+            const backBtn = document.getElementById('b-btn-back');
+            if(backBtn) backBtn.style.display = '';
+          },
           pick:        () => {
             RoF.UI.show('pick-screen');
             const title=document.getElementById('pick-title'); if(title)title.textContent='🃏 동료 선택 (이번 전투)';
@@ -225,7 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const hero = {...u, uid: Date.now(), name: TEST_USER, heroClass: u.name, isHero: true, rarity: 'bronze', level: 1, equips: [], maxHp: u.hp, xp: 0, honor: 0, freePoints: 0, growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
           const comp = RoF.Data.UNITS.find(x => x.id === 'herbalist') || RoF.Data.UNITS[1];
           const companion = {...comp, uid: Date.now()+1, name: '릴리아', isCompanion: true, level: 1, equips: [], maxHp: comp.hp, xp: 0, honor: 0, freePoints: 0, growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
-          const sv = {round: 0, hp: 3, maxHp: 3, gold: 100, xp: 0, level: 1, honor: 0, deck: [hero, companion], relics: [], heroBaseId: u.id, bestRound: 0, totalWins: 0, totalGames: 0, leaguePoints: 0, buildings: {castle: 2, gate: 1, forge: 1, shop: 1, tavern: 1, training: 1, library: 1, church: 1}, tutStep: 99, companionName: '릴리아'};
+          const titanBase = RoF.Data.UNITS.find(x => x.id === 'titan');
+          const titan = {...titanBase, uid: Date.now()+2, isCompanion: true, isTitan: true, level: 1, equips: [], maxHp: titanBase.hp, xp: 0, honor: 0, freePoints: 0, growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
+          const sv = {round: 0, hp: 3, maxHp: 3, gold: 100, xp: 0, level: 1, honor: 0, deck: [hero, companion, titan], relics: [], heroBaseId: u.id, bestRound: 0, totalWins: 0, totalGames: 0, leaguePoints: 0, buildings: {castle: 2, gate: 1, forge: 1, shop: 1, tavern: 1, training: 1, library: 1, church: 1}, tutStep: 99, companionName: '릴리아'};
           db[TEST_USER] = {pw: TEST_PW, save: sv};
           RoF.Auth.save(db);
         }
@@ -283,11 +319,17 @@ document.addEventListener('DOMContentLoaded', () => {
               maxHp: 12, xp: 0, honor: 0, freePoints: 0,
               growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}
             });
+            const titanBase2 = RoF.Data.UNITS.find(x => x.id === 'titan');
+            const titan2 = Object.assign({}, titanBase2, {
+              uid: 'editor_titan', isCompanion: true, isTitan: true, level: 1, equips: [],
+              maxHp: titanBase2.hp, xp: 0, honor: 0, freePoints: 0,
+              growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}
+            });
             db[TEST_ID] = {
               pw: TEST_PW,
               save: {
                 round: 0, hp: 3, maxHp: 3, gold: 999, xp: 0, level: 1, honor: 0,
-                deck: [hero, comp], relics: [], heroBaseId: 'h_m_holy',
+                deck: [hero, comp, titan2], relics: [], heroBaseId: 'h_m_holy',
                 bestRound: 0, totalWins: 0, totalGames: 0, leaguePoints: 0,
                 buildings: {castle:1, gate:1, forge:1, shop:1, tavern:1, training:1, library:1, church:1},
                 tutStep: 99, companionName: '에디터'
@@ -303,14 +345,21 @@ document.addEventListener('DOMContentLoaded', () => {
             'login':      () => RoF.UI.show('login-screen'),
             'signup':     () => RoF.UI.show('signup-screen'),
             'prologue':   () => RoF.UI.show('prologue-screen'),
+            'char-element': () => {
+              RoF.Auth._prologueUid = RoF.Auth._prologueUid || TEST_ID;
+              RoF.Auth._selElement = null; RoF.Auth._selRole = null;
+              RoF.Auth._showElementScreen && RoF.Auth._showElementScreen();
+            },
+            'char-hero': () => {
+              RoF.Auth._prologueUid = RoF.Auth._prologueUid || TEST_ID;
+              RoF.Auth._selElement = RoF.Auth._selElement || 'fire';
+              RoF.Auth._showHeroScreen && RoF.Auth._showHeroScreen();
+            },
             'charselect': () => {
-              // 영웅 선택 Step 2 로 강제 진입 (fire 원소 + melee 역할 선택된 상태)
-              RoF.UI.show('char-select-screen');
-              if(RoF.Auth._showStep2){
-                RoF.Auth._selElement = 'fire';
-                RoF.Auth._charStep = 1;
-                setTimeout(() => RoF.Auth._showStep2 && RoF.Auth._showStep2(), 50);
-              }
+              // Legacy alias → 기본 element 화면
+              RoF.Auth._prologueUid = RoF.Auth._prologueUid || TEST_ID;
+              RoF.Auth._selElement = null; RoF.Auth._selRole = null;
+              RoF.Auth._showElementScreen && RoF.Auth._showElementScreen();
             },
             'menu':       () => RoF.Game.showMenu(),
             'tavern':     () => RoF.Game.showTavern(),

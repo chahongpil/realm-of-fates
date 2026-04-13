@@ -1,12 +1,12 @@
 /* Non-battle screens: title, auth IDs, char-select, town, upgrade, choice, pick, reward, gameover, upgrade effects, tavern, loot, matchmaking, prologue + responsive @media queries. */
-#title-screen{justify-content:center;background:url('../img/bg_title2.png') center/cover no-repeat,url('../img/bg_title.png') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);position:relative;overflow:hidden;}
+#title-screen{justify-content:center;background:url('../img/bg_title.png') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);position:relative;overflow:hidden;}
 #title-screen::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.3);pointer-events:none;}
 #title-screen::after{content:'';position:absolute;inset:0;pointer-events:none;animation:titleLightning 4s infinite;opacity:0;}
 .title-fire{position:absolute;bottom:0;left:0;width:100%;height:30%;background:linear-gradient(0deg,rgba(255,60,0,.08),transparent);pointer-events:none;animation:titleFire 3s infinite alternate;}
 #title-screen h1{font-size:var(--title-logo-size);color:var(--curr-gold-pale);text-shadow:0 0 40px rgba(230,204,128,.6),0 0 80px rgba(255,215,0,.3),0 3px 6px rgba(0,0,0,.9);margin-bottom:.5rem;letter-spacing:var(--title-logo-spacing);font-family:var(--font-title);font-weight:700;animation:titleGlow 3s infinite alternate;}
 #title-screen .subtitle{color:var(--text-2);font-size:var(--title-subtitle-size);margin-bottom:var(--title-subtitle-mb);}
 .title-buttons{display:flex;gap:var(--title-buttons-gap);flex-wrap:wrap;justify-content:center;}
-#login-screen,#signup-screen,#char-select-screen{justify-content:center;background:radial-gradient(ellipse at center,var(--bg-magic) 0%,var(--bg-0) 70%);}
+#login-screen,#signup-screen,#char-element-screen,#char-hero-screen{justify-content:center;background:radial-gradient(ellipse at center,var(--bg-magic) 0%,var(--bg-0) 70%);}
 .char-select-title{font-size:2rem;color:var(--curr-gold);margin-bottom:10px;animation:titleGlowGold 3s ease-in-out infinite alternate;}
 /* 공용 제목 맥동 glow (2026-04-12 — FATES 레퍼런스) */
 @keyframes titleGlowGold{
@@ -33,6 +33,26 @@
 .char-option-v2{display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;padding:var(--charselect-item-pad);border-radius:12px;transition:transform .2s;}
 .char-option-v2:hover{transform:translateY(-4px);}
 .char-option-v2 .card-v2{cursor:pointer;}
+/* char-hero-screen: 720px 뷰포트 안에 3 카드 + 타이틀/메시지/버튼 전부 들어가도록 축소 */
+#char-hero-screen .card-v2{width:220px;}
+#char-hero-screen .char-option-v2{padding:10px;gap:4px;}
+#char-hero-screen .char-role-path{font-size:.72rem;}
+#char-hero-screen .char-select-grid{gap:24px;padding:0;}
+
+/* char-element-screen: 원소 6개를 3×2 그리드 고정 (2026-04-13 지시반영) */
+#char-element-screen .char-select-grid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  grid-template-rows:repeat(2, auto);
+  gap:24px;
+  max-width:900px;
+  margin:0 auto;
+  padding:0;
+}
+#char-element-screen .char-option{width:auto;max-width:none;padding:16px 12px;}
+#char-element-screen .char-option .co-icon{font-size:2.2rem;margin-bottom:4px;}
+#char-element-screen .char-option .co-name{font-size:1.05rem;margin-bottom:3px;}
+#char-element-screen .char-option .co-desc{font-size:.72rem;margin-bottom:0;}
 .char-option-v2 .char-role-path{font-family:var(--font-title);font-size:.95rem;color:var(--amber-bright);text-align:center;letter-spacing:1px;text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 8px rgba(0,0,0,.7);max-width:260px;line-height:1.4;}
 .char-option-v2 .char-role-icon{display:inline-block;margin-right:6px;font-size:1.1rem;}
 .char-option-v2.selected .char-role-path{color:var(--curr-gold);text-shadow:0 0 12px rgba(255,215,0,.6),0 1px 2px rgba(0,0,0,.9);}
@@ -796,6 +816,25 @@ body.game-mode #title-screen .title-buttons > button[data-arg="signup-screen"]{
   left:var(--title-btn-new-x); top:var(--title-btn-new-y);
   width:var(--title-btn-new-w); height:var(--title-btn-new-h);
 }
+/* title 텍스트 3종 — Type C 분해 (2026-04-13). 중간 래퍼는 이미 static. */
+body.game-mode #title-screen > div[style*="z-index:2"] > div:first-of-type{
+  position:absolute;
+  left:var(--title-league-x); top:var(--title-league-y);
+  width:var(--title-league-w); height:var(--title-league-h);
+  margin:0 !important;
+}
+body.game-mode #title-screen > div[style*="z-index:2"] > h1{
+  position:absolute;
+  left:var(--title-logo-x); top:var(--title-logo-y);
+  width:var(--title-logo-w); height:var(--title-logo-h);
+  margin:0 !important;
+}
+body.game-mode #title-screen > div[style*="z-index:2"] > .subtitle{
+  position:absolute;
+  left:var(--title-subtitle-x); top:var(--title-subtitle-y);
+  width:var(--title-subtitle-w); height:var(--title-subtitle-h);
+  margin:0 !important;
+}
 
 /* TAVERN — padding:10px;display:flex;gap:8px wrapper (맨 아래) */
 body.game-mode #tavern-screen > div[style*="padding:10px"][style*="gap:8px"]{
@@ -879,7 +918,9 @@ body.game-mode #battle-screen .tb-bottom > button#btn-fight{
  * ═════════════════════════════════════════════ */
 
 /* ── LOGIN ── */
-body.game-mode #login-screen { display:block; }
+/* 2026-04-13 버그픽스: .active 스코프 없이 display:block 이면 비활성 상태에서도 화면에 보임.
+   타이틀 진입 시 login/signup 이 뒤에 겹쳐 보이던 사고의 원인. */
+body.game-mode #login-screen.active { display:block; }
 body.game-mode #login-screen .auth-box{
   position:absolute;
   left:var(--login-box-x); top:var(--login-box-y);
@@ -920,7 +961,7 @@ body.game-mode #login-screen .auth-box > .auth-back{
 }
 
 /* ── SIGNUP ── */
-body.game-mode #signup-screen { display:block; }
+body.game-mode #signup-screen.active { display:block; }
 body.game-mode #signup-screen .auth-box{
   position:absolute;
   left:var(--signup-box-x); top:var(--signup-box-y);
@@ -982,6 +1023,29 @@ body.game-mode #prologue-btns > button[data-action="auth.endPrologue"]{
 body.game-mode #prologue-btns .auth-back{
   left:var(--prologue-btn-skip-x); top:var(--prologue-btn-skip-y);
   width:var(--prologue-btn-skip-w); height:var(--prologue-btn-skip-h);
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  background:rgba(10,12,20,.72);
+  border:1px solid rgba(200,180,120,.55);
+  border-radius:6px;
+  color:#e8e0c4;
+  font-size:15px; font-weight:600;
+  letter-spacing:1px;
+  text-decoration:none;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.45);
+  transition:background .15s, border-color .15s, transform .1s;
+  z-index:50;
+}
+body.game-mode #prologue-btns .auth-back::after{
+  content:'»'; font-size:18px; opacity:.85;
+}
+body.game-mode #prologue-btns .auth-back:hover{
+  background:rgba(40,30,14,.92);
+  border-color:rgba(240,210,130,.9);
+  color:#fff7d6;
+}
+body.game-mode #prologue-btns .auth-back:active{
+  transform:scale(.97);
 }
 
 /* ── TAVERN tabs (wrapper was single zone, now individual) ── */

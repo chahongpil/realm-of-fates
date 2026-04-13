@@ -158,15 +158,16 @@ const KOREAN_TITLES = {
   'login-screen':      '로그인',
   'signup-screen':     '회원가입',
   'prologue-screen':   '프롤로그',
-  'char-select-screen':'영웅 선택',
-  'menu-screen':       '메인 허브',
-  'tavern-screen':     '선술집',
+  'char-element-screen':'원소 선택 (Step 1)',    // 2026-04-13: char-select 2-screen split
+  'char-hero-screen':   '영웅 선택 (Step 2)',
+  'menu-screen':        '메인 허브',
+  'tavern-screen':     '선술집 (용병 / 영웅 탭)',  // 단일 DOM, tav-tab-unit/hero 로 콘텐츠 토글
   'upgrade-screen':    '단련소(구)',
   'deckview-screen':   '전력 열람',
   'castle-screen':     '성채',
   'church-screen':     '신전',
   'match-screen':      '매치메이킹',
-  'cardselect-screen': '카드 선택',
+  'cardselect-screen': '출정 편성',
   'formation-screen':  '진형 배치',
   'battle-screen':     '전투',
   'choice-screen':     '라운드 선택',
@@ -190,21 +191,28 @@ const ACTION_TO_SCREEN = {
   'game.showCastleQuestTab': 'castle-screen',
   'game.showChurch':         'church-screen',
   'game.showMatchmaking':    'match-screen',
-  'game.startBattle':        'cardselect-screen',
-  'game.confirmCardSelect':  'formation-screen',
-  'game.saveFormation':      'cardselect-screen',
-  'game.loadFormation':      'cardselect-screen',
-  'game.finishPick':         'choice-screen',
-  'game.rerollPick':         'pick-screen',
-  'game.afterBattle':        'pick-screen',
+  'game.startBattle':         'cardselect-screen',   // 성문 클릭 → 편성
+  'game.confirmCardSelect':   'match-screen',         // 출정편성 확정 → 매치메이킹
+  'game.startBattleFromMatch':'battle-screen',        // 매치 확정 → 전투
+  'game.saveFormation':       'cardselect-screen',
+  'game.loadFormation':       'cardselect-screen',
+  'game.doRoundChoice':       'pick-screen',          // 라운드 선택지 클릭 → 뽑기
+  'game.finishPick':          'battle-screen',        // 뽑기 확정 → 다음 라운드(전투)
+  'game.rerollPick':          'pick-screen',
+  'game.afterBattle':         'menu-screen',          // 보상 수령 → 마을
   'game.newRun':              'char-select-screen',
   'game.logout':             'title-screen',
   'auth.login':              'menu-screen',
   'auth.signup':             'prologue-screen',
-  'auth.endPrologue':        'char-select-screen',
-  'auth.skipPrologue':       'char-select-screen',
+  'auth.endPrologue':        'char-element-screen',
+  'auth.skipPrologue':       'char-element-screen',
+  'auth.confirmElement':     'char-hero-screen',
+  'auth.confirmHero':        'menu-screen',
+  'auth.backToPrologue':     'prologue-screen',
+  'auth.backToElement':      'char-element-screen',
+  // Legacy aliases
   'auth.confirmChar':        'menu-screen',
-  'auth.charBack':           'prologue-screen',
+  'auth.charBack':           'char-element-screen',
   'formation.auto':          'formation-screen',
   'formation.confirm':       'battle-screen',
   'turnBattle.startCombat':  'battle-screen',
@@ -258,10 +266,38 @@ async function parseIndexHtml() {
     });
   });
 
+  // 2.5) char-select 는 이제 실제 DOM 2 스크린 (char-element-screen + char-hero-screen).
+  //      가상 주입 불필요 — 파서가 [id$="-screen"] 스캔으로 자동 발견.
+
+  // 2.6) (삭제됨) tavern-hero 가상 노드 — 2026-04-13 롤백.
+  //      char-select 와 동일한 이유: DOM 은 #tavern-screen 하나, 탭 버튼으로 콘텐츠 교체.
+  //      라벨 "(용병 / 영웅 탭)" 로 두 상태 암시.
+
+  // 2.7) 내부 전환 엣지 (data-action 없이 JS 내부에서 UI.show 호출되는 플로우)
+  //    battle → choice: 라운드 종료 시 showRoundChoice()
+  //    choice → battle: _revealAndFinish() 로 다음 라운드 시작 (pick 미경유 케이스)
+  //    battle → reward: showBattleEnd() (HP=0 또는 승리)
+  //    reward → menu: afterBattle (이미 ACTION_TO_SCREEN 에 있음 → reward의 버튼에서 엣지 생성)
+  //    formation → battle: 라운드 간 편성 조정 후 복귀
+  const syntheticInternal = [
+    ['battle-screen',  'choice-screen',  '라운드 종료'],
+    ['battle-screen',  'reward-screen',  '전투 종료 (승/패)'],
+    ['choice-screen',  'battle-screen',  '즉시 다음 라운드'],
+    ['formation-screen','battle-screen', '편성 재조정 완료'],
+  ];
+  syntheticInternal.forEach(([f, t, lbl]) => {
+    if (newNodes[f] && newNodes[t]) newEdges.push({ from: f, to: t, label: lbl });
+  });
+
   // 3) 위치가 없는 노드는 자동 배치
   const unplaced = Object.values(newNodes).filter(n => n.x === 0 && n.y === 0);
   if (unplaced.length === Object.keys(newNodes).length) {
+    // 전체 fresh → 완전 자동 배치
     autoLayout(newNodes, newEdges);
+  } else if (unplaced.length > 0) {
+    // 일부만 새 노드 (예: index.html 에 스크린이 추가됨) → 새 노드만 tier 기준 배치
+    // localStorage 에 저장된 기존 좌표는 건드리지 않음.
+    placeUnplaced(unplaced, newNodes);
   }
 
   state.nodes = newNodes;
@@ -273,24 +309,27 @@ async function parseIndexHtml() {
 // ──────────────────────────────────────────────────────────────
 // Auto layout: 계층 배치 (title → menu → gameplay)
 // ──────────────────────────────────────────────────────────────
+const TIERS = {
+  'title-screen': 0,
+  'login-screen': 1, 'signup-screen': 1,
+  'prologue-screen': 2,
+  'char-element-screen': 3,
+  'char-hero-screen': 3,
+  'menu-screen': 4,
+  'tavern-screen': 5, 'deckview-screen': 5, 'castle-screen': 5, 'church-screen': 5, 'upgrade-screen': 5,
+  'match-screen': 6,
+  'cardselect-screen': 7,
+  'formation-screen': 8,
+  'battle-screen': 9,
+  'choice-screen': 10,
+  'pick-screen': 11,
+  'reward-screen': 12,
+  'gameover-screen': 13,
+};
+const COL_W = 220;
+const ROW_H = 110;
+
 function autoLayout(nodes, edges) {
-  // 임의 tier 정의
-  const TIERS = {
-    'title-screen': 0,
-    'login-screen': 1, 'signup-screen': 1,
-    'prologue-screen': 2,
-    'char-select-screen': 3,
-    'menu-screen': 4,
-    'tavern-screen': 5, 'deckview-screen': 5, 'castle-screen': 5, 'church-screen': 5, 'upgrade-screen': 5,
-    'match-screen': 6,
-    'cardselect-screen': 7,
-    'formation-screen': 8,
-    'battle-screen': 9,
-    'choice-screen': 10,
-    'pick-screen': 11,
-    'reward-screen': 12,
-    'gameover-screen': 13,
-  };
   const tierMap = {};
   Object.values(nodes).forEach(n => {
     const t = TIERS[n.id] != null ? TIERS[n.id] : 99;
@@ -298,14 +337,37 @@ function autoLayout(nodes, edges) {
     tierMap[t].push(n);
   });
   const tiers = Object.keys(tierMap).map(Number).sort((a, b) => a - b);
-  const COL_W = 220;
-  const ROW_H = 110;
   tiers.forEach((t, ti) => {
     const col = tierMap[t];
     col.forEach((n, i) => {
       n.x = 60 + ti * COL_W;
       n.y = 60 + i * ROW_H + (ti % 2) * 20;
     });
+  });
+}
+
+/**
+ * index.html 에 새 스크린이 추가된 경우, 기존에 배치된 노드는 건드리지 않고
+ * 새로 들어온 unplaced 노드만 같은 tier 의 빈 row 에 끼워 넣는다.
+ */
+function placeUnplaced(unplaced, allNodes) {
+  // tier 별로 이미 배치된 노드의 y 좌표들을 수집 → 다음 빈 row 계산
+  const occupiedY = {}; // tierIndex → Set(rowIndex)
+  Object.values(allNodes).forEach(n => {
+    if (n.x === 0 && n.y === 0) return;
+    const t = TIERS[n.id] != null ? TIERS[n.id] : 99;
+    const rowIdx = Math.round((n.y - 60 - (t % 2) * 20) / ROW_H);
+    if (!occupiedY[t]) occupiedY[t] = new Set();
+    occupiedY[t].add(rowIdx);
+  });
+  unplaced.forEach(n => {
+    const t = TIERS[n.id] != null ? TIERS[n.id] : 99;
+    if (!occupiedY[t]) occupiedY[t] = new Set();
+    let row = 0;
+    while (occupiedY[t].has(row)) row++;
+    occupiedY[t].add(row);
+    n.x = 60 + t * COL_W;
+    n.y = 60 + row * ROW_H + (t % 2) * 20;
   });
 }
 

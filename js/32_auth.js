@@ -28,16 +28,19 @@ RoF.Auth={
     localStorage.setItem('rof8_last_user',id);localStorage.setItem('rof8_last_pw',pw);
     this.user=id;SFX.init();setTimeout(()=>Game.load(db[id].save),300);
   },
-  _selElement:null,_selRole:null,_charStep:1,
+  _selElement:null,_selRole:null,
   showCharSel(uid){
-    UI.show('char-select-screen');this._selElement=null;this._selRole=null;this._charStep=1;
-    document.getElementById('char-id-preview').innerHTML=`모험자: <strong>${uid}</strong>`;
-    document.getElementById('btn-confirm-char').disabled=true;
-    this._showStep1();
+    // 2026-04-13: char-select-screen 분리 → element-screen + hero-screen
+    this._selElement=null;this._selRole=null;
+    this._prologueUid=uid;
+    this._showElementScreen();
   },
-  charBack(){
-    if(this._charStep===2){this._selRole=null;this._showStep1();}
-    else{UI.show('prologue-screen');}
+  // Legacy 호환 (외부 호출/튜토리얼 등)
+  charBack(){ this.backToElement(); },
+  backToPrologue(){ UI.show('prologue-screen'); },
+  backToElement(){
+    this._selRole=null;
+    this._showElementScreen();
   },
 
   showPrologue(uid){
@@ -82,41 +85,55 @@ RoF.Auth={
   },
   endPrologue(){SFX.play('magic');this.showCharSel(this._prologueUid||this.user);},
   skipPrologue(){this.showCharSel(this._prologueUid||this.user);},
-  _showStep1(){
-    this._charStep=1;document.getElementById('btn-char-back').style.display='inline-block';
-    document.getElementById('char-step-msg').innerHTML='<span style="color:#aaa;font-style:italic;">어떤 신이 당신에게 힘을 내려줄 것인가...</span>';
-    document.getElementById('char-select-title').textContent='어떤 신의 축복을 받겠습니까?';
-    const g=document.getElementById('char-select-grid');g.innerHTML='';
-    document.getElementById('btn-confirm-char').textContent='다음 →';
-    document.getElementById('btn-confirm-char').disabled=true;
+
+  // ── STEP 1: 원소 선택 (char-element-screen) ──
+  _showElementScreen(){
+    UI.show('char-element-screen');
+    document.getElementById('char-element-preview').innerHTML=`모험자: <strong>${this._prologueUid||this.user}</strong>`;
+    const g=document.getElementById('char-element-grid');g.innerHTML='';
+    const confirmBtn=document.getElementById('btn-confirm-element');
+    confirmBtn.disabled=!this._selElement;
     ELEMENTS.forEach(el=>{
-      const d=document.createElement('div');d.className='char-option';
+      const d=document.createElement('div');d.className='char-option' + (this._selElement===el?' selected':'');
       d.style.borderColor=ELEM_COLOR[el];
       d.innerHTML=`<div class="co-icon" style="font-size:2.5rem;">${ELEM_ICON[el]}</div><div class="co-name" style="color:${ELEM_COLOR[el]};">${ELEM_L[el]}</div>
         <div class="co-desc" style="font-size:.7rem;">${({fire:'공격과 파괴의 힘',water:'치유와 보호의 힘',lightning:'속도와 관통의 힘',earth:'방어와 인내의 힘',dark:'흡수와 저주의 힘',holy:'신성과 축복의 힘'})[el]}</div>`;
-      d.onclick=()=>{g.querySelectorAll('.char-option').forEach(c=>c.classList.remove('selected'));d.classList.add('selected');this._selElement=el;document.getElementById('btn-confirm-char').disabled=false;SFX.play('click');};
+      d.onclick=()=>{
+        g.querySelectorAll('.char-option').forEach(c=>c.classList.remove('selected'));
+        d.classList.add('selected');
+        this._selElement=el;
+        confirmBtn.disabled=false;
+        SFX.play('click');
+      };
       g.appendChild(d);
     });
   },
-  _showStep2(){
-    this._charStep=2;
-    document.getElementById('char-step-msg').innerHTML=`<span style="color:${ELEM_COLOR[this._selElement]};">${ELEM_ICON[this._selElement]} ${ELEM_L[this._selElement]}의 신이 당신을 선택했다!</span><br><span style="color:#aaa;font-style:italic;">어떤 방식으로 왕좌에 도전할 것인가...</span>`;
-    document.getElementById('char-select-title').textContent='왕좌를 향한 길을 선택하세요';
-    const g=document.getElementById('char-select-grid');g.innerHTML='';
-    document.getElementById('btn-confirm-char').textContent='영웅 확정!';
-    document.getElementById('btn-confirm-char').disabled=true;
-    // 2026-04-12: CardComponent 이주 — char-option inline HTML 제거, .card-v2 통합 렌더
-    const instances = [];
+  confirmElement(){
+    if(!this._selElement)return;
+    SFX.play('magic');
+    this._showHeroScreen();
+  },
+
+  // ── STEP 2: 역할/영웅 확정 (char-hero-screen) ──
+  _showHeroScreen(){
+    UI.show('char-hero-screen');
+    document.getElementById('char-hero-preview').innerHTML=`모험자: <strong>${this._prologueUid||this.user}</strong>`;
+    document.getElementById('char-hero-msg').innerHTML=`<span style="color:${ELEM_COLOR[this._selElement]};">${ELEM_ICON[this._selElement]} ${ELEM_L[this._selElement]}의 신이 당신을 선택했다!</span><br><span style="color:#aaa;font-style:italic;">어떤 방식으로 왕좌에 도전할 것인가...</span>`;
+    const g=document.getElementById('char-hero-grid');g.innerHTML='';
+    const confirmBtn=document.getElementById('btn-confirm-hero');
+    confirmBtn.disabled=!this._selRole;
+    const instances=[];
     HERO_ROLES.forEach(r=>{
       const heroId=getHeroId(this._selElement,r.id);
       const u=UNITS.find(x=>x.id===heroId);
       if(!u)return;
       const wrap=document.createElement('div');
-      wrap.className='char-option-v2';
+      wrap.className='char-option-v2' + (this._selRole===r.id?' selected':'');
       wrap.setAttribute('data-role',r.id);
       const inst=CardComponent.create(u,{mode:'select'});
       instances.push(inst);
       wrap.appendChild(inst.el);
+      if(this._selRole===r.id) inst.setSelected(true);
       const path=document.createElement('div');
       path.className='char-role-path';
       path.innerHTML=`<span class="char-role-icon">${r.icon}</span>${r.desc}`;
@@ -127,33 +144,39 @@ RoF.Auth={
         wrap.classList.add('selected');
         inst.setSelected(true);
         this._selRole=r.id;
-        document.getElementById('btn-confirm-char').disabled=false;
+        confirmBtn.disabled=false;
         SFX.play('click');
       };
       g.appendChild(wrap);
     });
   },
-  confirmChar(){
-    if(this._charStep===1&&this._selElement){
-      SFX.play('magic');this._showStep2();return;
-    }
-    if(this._charStep===2&&this._selRole&&this._selElement){
-      SFX.init();
-      const heroId=getHeroId(this._selElement,this._selRole);
-      const u=UNITS.find(x=>x.id===heroId);
-      if(!u){alert('영웅을 찾을 수 없습니다!');return;}
-      const hero={...u,uid:uid(),name:this.user,heroClass:u.name,isHero:true,rarity:'bronze',level:1,equips:[],maxHp:u.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
-      // Companion unit based on hero role
-      const companionMap={melee:'herbalist',ranged:'guard',support:'militia'};
-      const compId=companionMap[this._selRole]||'militia';
-      const compBase=UNITS.find(x=>x.id===compId);
-      const COMP_NAMES=['릴리아','카엘','모르간','세피라','톰린','에이다','피오나','가렛','에밀','소린','미라','덱스터','엘라','브룩','다미안','하젤'];
-      const compName=COMP_NAMES[Math.floor(Math.random()*COMP_NAMES.length)];
-      const companion={...compBase,uid:uid(),name:compName,isCompanion:true,level:1,equips:[],maxHp:compBase.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
-      const sv={round:0,hp:3,maxHp:3,gold:20,xp:0,level:1,honor:0,deck:[hero,companion],relics:[],heroBaseId:u.id,bestRound:0,totalWins:0,totalGames:0,leaguePoints:0,buildings:{},tutStep:0,companionName:compName};
-      const db=this.db();db[this.user]={pw:this.pendingPw,save:sv};this.save(db);this.pendingPw=null;Game.load(sv);
-    }
+  confirmHero(){
+    if(!this._selRole||!this._selElement)return;
+    SFX.init();
+    const heroId=getHeroId(this._selElement,this._selRole);
+    const u=UNITS.find(x=>x.id===heroId);
+    if(!u){alert('영웅을 찾을 수 없습니다!');return;}
+    const hero={...u,uid:uid(),name:this.user,heroClass:u.name,isHero:true,rarity:'bronze',level:1,equips:[],maxHp:u.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
+    const companionMap={melee:'herbalist',ranged:'guard',support:'militia'};
+    const compId=companionMap[this._selRole]||'militia';
+    const compBase=UNITS.find(x=>x.id===compId);
+    const COMP_NAMES=['릴리아','카엘','모르간','세피라','톰린','에이다','피오나','가렛','에밀','소린','미라','덱스터','엘라','브룩','다미안','하젤'];
+    const compName=COMP_NAMES[Math.floor(Math.random()*COMP_NAMES.length)];
+    const companion={...compBase,uid:uid(),name:compName,isCompanion:true,level:1,equips:[],maxHp:compBase.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
+    const titanBase=UNITS.find(x=>x.id==='titan');
+    const titan={...titanBase,uid:uid(),isCompanion:true,isTitan:true,level:1,equips:[],maxHp:titanBase.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
+    const sv={round:0,hp:3,maxHp:3,gold:20,xp:0,level:1,honor:0,deck:[hero,companion,titan],relics:[],heroBaseId:u.id,bestRound:0,totalWins:0,totalGames:0,leaguePoints:0,buildings:{},tutStep:0,companionName:compName};
+    const db=this.db();db[this.user]={pw:this.pendingPw,save:sv};this.save(db);this.pendingPw=null;Game.load(sv);
   },
+
+  // Legacy 호환 (test_run.js, _xct_char_select.js, 이전 튜토리얼 트리거 등)
+  confirmChar(){
+    // _selRole 이 있으면 hero 확정, 아니면 element 확정
+    if(this._selRole&&this._selElement) return this.confirmHero();
+    if(this._selElement) return this.confirmElement();
+  },
+  _showStep1(){ this._showElementScreen(); },
+  _showStep2(){ this._showHeroScreen(); },
 };
 
 // 호환성 레이어

@@ -102,15 +102,27 @@
   </div>
 </div>
 
-<!-- CHAR SELECT -->
-<div id="char-select-screen" class="screen">
-  <div class="char-select-title" id="char-select-title">당신의 운명을 결정하세요</div>
-  <div class="char-select-sub" id="char-step-msg">영웅 사망 = 패배! 신중히 선택하세요.</div>
-  <div class="char-id-preview" id="char-id-preview"></div>
-  <div class="char-select-grid" id="char-select-grid"></div>
+<!-- CHAR SELECT — STEP 1 (원소 선택) — 2026-04-13 분리 -->
+<div id="char-element-screen" class="screen">
+  <div class="char-select-title" id="char-element-title">어떤 신의 축복을 받겠습니까?</div>
+  <div class="char-select-sub" id="char-element-msg">어떤 신이 당신에게 힘을 내려줄 것인가...</div>
+  <div class="char-id-preview" id="char-element-preview"></div>
+  <div class="char-select-grid" id="char-element-grid"></div>
   <div style="padding:12px;display:flex;gap:10px;justify-content:center;">
-    <button class="btn btn-s" id="btn-char-back" data-action="auth.charBack" style="display:none;">← 돌아가기</button>
-    <button class="btn" data-action="auth.confirmChar" id="btn-confirm-char" disabled>선택 완료</button>
+    <button class="btn" data-action="auth.confirmElement" id="btn-confirm-element" disabled>다음 →</button>
+    <button class="btn btn-s" id="btn-element-back" data-action="auth.backToPrologue">← 돌아가기</button>
+  </div>
+</div>
+
+<!-- CHAR SELECT — STEP 2 (역할/영웅 확정) — 2026-04-13 분리 -->
+<div id="char-hero-screen" class="screen">
+  <div class="char-select-title" id="char-hero-title">왕좌를 향한 길을 선택하세요</div>
+  <div class="char-select-sub" id="char-hero-msg"></div>
+  <div class="char-id-preview" id="char-hero-preview"></div>
+  <div class="char-select-grid" id="char-hero-grid"></div>
+  <div style="padding:12px;display:flex;gap:10px;justify-content:center;">
+    <button class="btn" data-action="auth.confirmHero" id="btn-confirm-hero" disabled>영웅 확정!</button>
+    <button class="btn btn-s" id="btn-hero-back" data-action="auth.backToElement">← 원소 다시 선택</button>
   </div>
 </div>
 

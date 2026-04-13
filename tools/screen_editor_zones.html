@@ -175,81 +175,6 @@
 <a class="back" href="screen_editor.html">← 허브로</a>
 <h1 id="se-title">Zone 편집기</h1>
 
-<div class="help-panel" id="help-panel">
-  <div class="help-panel-head" onclick="toggleHelp()">
-    <span class="caret">▶</span>
-    <span class="title">❓ 사용법 (펼치기/접기) — 처음이면 자동 펼침</span>
-  </div>
-  <div class="help-panel-body">
-    <div class="cols">
-      <div>
-        <h4>🎯 기본 조작</h4>
-        <ul>
-          <li><b>드래그</b> = zone 이동</li>
-          <li><b>우하단 흰 핸들</b> = 리사이즈</li>
-          <li><kbd>Shift</kbd> = 스냅 해제</li>
-          <li><b>툴바 드롭다운</b> = 19화면 전환</li>
-          <li><kbd>🔄 iframe 재로드</kbd> = 게임 미리보기 새로고침</li>
-          <li><kbd>🎯 실제 DOM 에 맞춤</kbd> = 진짜 요소 rect 에 zone 강제 맞춤</li>
-        </ul>
-
-        <h4>📝 텍스트 편집 (stage 아래)</h4>
-        <ul>
-          <li>각 행의 textarea 에서 텍스트 수정 → <kbd>💾 텍스트 저장</kbd></li>
-          <li><code>css/text_overrides.json</code> 에 기록됨</li>
-          <li>게임 런타임에 <code>textContent</code> 로 덮어씀 — <b>index.html 수정 안 함</b></li>
-          <li>빈 칸 = 원본 복원</li>
-        </ul>
-
-        <h4>🗑️ 숨김 토글</h4>
-        <ul>
-          <li>각 행 우측 🗑️ 버튼 → <code>display:none</code> 처리</li>
-          <li><code>css/hidden_elements.json</code> 에 셀렉터 배열 저장</li>
-          <li>같은 버튼 다시 누르면 <code>↩︎ 복구</code></li>
-          <li>나중에 AI 가 해당 요소를 index.html 에서 물리 삭제</li>
-        </ul>
-      </div>
-      <div>
-        <h4>➕ 지시 추가 모드 (디자인 핸드오프)</h4>
-        <ul>
-          <li>툴바 <kbd>➕ 지시 추가</kbd> 클릭 → 커서가 십자로</li>
-          <li>스테이지를 <b>드래그</b>해서 네모 그리기</li>
-          <li>릴리즈 시 모달 → 한국어로 "여기에 뭐 넣어줘" 입력</li>
-          <li><b>더블클릭</b>으로 편집, × 로 삭제, 드래그로 이동</li>
-          <li><kbd>ESC</kbd> = 모드/모달 취소</li>
-          <li>저장 파일: <code>css/annotations.json</code></li>
-          <li>다음 세션에 AI 가 모든 지시를 읽고 자동 반영</li>
-        </ul>
-
-        <div class="tip">
-          💡 <b>권장 지시 템플릿</b><br>
-          "이 영역에 <u>hud_bar 배너</u> 배경으로 배치. 높이 44px, 좌우 20px 패딩. 클릭 시 메뉴 토글."
-        </div>
-
-        <h4>🧩 Zone 구조 개념</h4>
-        <ul>
-          <li>스테이지 = 1280×720 고정 (16:9 HD)</li>
-          <li>대부분 zone 은 스테이지 절대좌표</li>
-          <li>일부(auth-box 자식 등)는 <b>부모 rect 상대좌표</b> — 자동 계산됨</li>
-          <li>저장 = <code>10_tokens.css</code> 의 LAYOUT_VARS 블록 갱신</li>
-        </ul>
-
-        <div class="warn">
-          ⚠ 편집기가 <b>404</b> 뜨면 로컬 서버가 꺼져있는 것.<br>
-          <code>cd c:/work/game && node tools/coord_editor_server.js</code>
-        </div>
-      </div>
-    </div>
-    <h4>🔄 자주 쓰는 워크플로우</h4>
-    <ul>
-      <li><b>"여기 배너 넣어줘"</b> → ➕ 지시 추가 → 네모 + 텍스트 → 다음 세션 반영</li>
-      <li><b>"이 텍스트 바꿔줘"</b> → stage 아래 텍스트 패널 → 수정 → 💾 저장 → Ctrl+F5</li>
-      <li><b>"이 요소 빼줘"</b> → 🗑️ 숨김 → 즉시 사라짐 → 확신 서면 물리 삭제 요청</li>
-      <li><b>"이 영역 옮겨줘"</b> → 드래그 → 💾 저장</li>
-    </ul>
-  </div>
-</div>
-
 <div class="hint">
   드래그로 이동, <b>우하단 흰 핸들</b>로 리사이즈. <code>Shift</code> = 스냅 해제.<br>
   저장하면 <code>css/10_tokens.css</code> 의 해당 변수들이 갱신되고 게임 새로고침 시 반영됩니다.
@@ -262,7 +187,8 @@
     <option value="login">🔑 로그인 (login)</option>
     <option value="signup">🆕 회원가입 (signup)</option>
     <option value="prologue">📜 프롤로그 (prologue)</option>
-    <option value="charselect">🎭 영웅 선택 (char-select)</option>
+    <option value="char-element">🔮 원소 선택 — Step 1 (char-element)</option>
+    <option value="char-hero">⚔️ 영웅 선택 — Step 2 (char-hero)</option>
     <option value="menu">🗺️ 마을 맵 (menu)</option>
     <option value="cardselect">⚔️ 출정 편성 (cardselect)</option>
     <option value="tavern">🍺 선술집 (tavern)</option>
@@ -364,15 +290,15 @@ const SCREENS = {
        selector:'#cs-relics-grid'},
     ],
     defaults:{
-      'cs-title':          {x:0,   y:60,  w:1280, h:50},
-      'cs-selected':       {x:20,  y:120, w:400,  h:120},
-      'cs-btn-back':       {x:20,  y:250, w:120,  h:42},
+      'cs-title':          {x:10, y:13, w:1256, h:98},
+      'cs-selected':       {x:30, y:126, w:406, h:106},
+      'cs-btn-back':       {x:300, y:250, w:128, h:42},
       'cs-btn-save':       {x:150, y:250, w:130,  h:42},
-      'cs-btn-load':       {x:290, y:250, w:130,  h:42},
+      'cs-btn-load':       {x:20, y:250, w:130, h:42},
       'cs-btn-confirm':    {x:20,  y:302, w:400,  h:56},
-      'cs-relics-selected':{x:20,  y:370, w:400,  h:80},
-      'cs-grid':           {x:440, y:120, w:820,  h:590},
-      'cs-relics-grid':    {x:20,  y:460, w:400,  h:250},
+      'cs-relics-selected':{x:30, y:372, w:408, h:64},
+      'cs-grid':           {x:446, y:165, w:811, h:504},
+      'cs-relics-grid':    {x:20, y:460, w:409, h:216},
     }
   },
   tavern: {
@@ -389,9 +315,9 @@ const SCREENS = {
        selector:'#tavern-screen > div[style*="padding:10px"][style*="gap:8px"] > button[data-action="game.showMenu"]'},
     ],
     defaults:{
-      'tav-tab-unit':{x:460,y:60,w:180,h:44},
-      'tav-tab-hero':{x:650,y:60,w:180,h:44},
-      'tav-info':{x:20,y:115,w:1240,h:30},
+      'tav-tab-unit':{x:488, y:128, w:180, h:44},
+      'tav-tab-hero':{x:678, y:128, w:180, h:44},
+      'tav-info':{x:40, y:175, w:1240, h:40},
       'tav-grid':{x:20,y:160,w:1240,h:480},
       'tav-btn-refresh':{x:430,y:650,w:260,h:44},
       'tav-btn-back':{x:700,y:650,w:160,h:44},
@@ -411,11 +337,11 @@ const SCREENS = {
        selector:'#deckview-screen > div[style*="padding:8px;text-align:center"] > button'},
     ],
     defaults:{
-      'dv-tab-deck': {x:440,y:60,w:190,h:44},
-      'dv-tab-codex':{x:640,y:60,w:190,h:44},
-      'dv-grid':{x:20,y:130,w:820,h:580},
+      'dv-tab-deck': {x:466, y:126, w:190, h:44},
+      'dv-tab-codex':{x:666, y:126, w:190, h:44},
+      'dv-grid':{x:20, y:130, w:1240, h:860},
       'dv-codex':{x:860,y:130,w:400,h:580},
-      'dv-back':{x:1180,y:62,w:80,h:40},
+      'dv-back':{x:1188, y:70, w:69, h:144},
     }
   },
   castle: {
@@ -430,10 +356,10 @@ const SCREENS = {
        selector:'#castle-screen > div[style*="padding:8px;text-align:center"] > button'},
     ],
     defaults:{
-      'castle-tab-upgrade':{x:460,y:60,w:180,h:44},
-      'castle-tab-quest':  {x:650,y:60,w:180,h:44},
+      'castle-tab-upgrade':{x:486, y:126, w:180, h:44},
+      'castle-tab-quest':  {x:676, y:126, w:180, h:44},
       'castle-grid':{x:20,y:160,w:1240,h:500},
-      'castle-back':{x:20,y:670,w:200,h:40},
+      'castle-back':{x:50, y:678, w:140, h:48},
     }
   },
   church: {
@@ -450,10 +376,10 @@ const SCREENS = {
        selector:'#church-screen > div[style*="padding:8px;text-align:center"] > button'},
     ],
     defaults:{
-      'church-title':{x:20,y:60,w:1240,h:36},
-      'church-info': {x:20,y:100,w:1240,h:30},
+      'church-title':{x:28, y:68, w:1224, h:28},
+      'church-info': {x:40, y:160, w:1240, h:40},
       'church-grid':{x:20,y:140,w:1240,h:520},
-      'church-back':{x:20,y:670,w:200,h:40},
+      'church-back':{x:50, y:678, w:140, h:48},
     }
   },
   reward: {
@@ -466,7 +392,7 @@ const SCREENS = {
        selector:'#reward-cards'},
     ],
     defaults:{
-      'rew-title':{x:340,y:60,w:600,h:60},
+      'rew-title':{x:340, y:72, w:600, h:60},
       'rew-cards':{x:20,y:320,w:1240,h:320},
     }
   },
@@ -475,22 +401,22 @@ const SCREENS = {
     screenRoot: '#title-screen',
     zones: [
       {key:'title-league',   label:'LEAGUE OF THE GODS 장식', preview:'(영문 장식)',
-       selector:'#title-screen .title-league'},
-      {key:'title-logo',     label:'로고 H1',     preview:'REALM OF FATES',
-       selector:'#title-screen h1'},
-      {key:'title-subtitle', label:'서브타이틀',   preview:'THE DECKBUILDER',
-       selector:'#title-screen .subtitle'},
+       selector:'#title-screen > div[style*="z-index:2"] > div:first-of-type'},
+      {key:'title-logo',     label:'로고 H1',     preview:'신들의 리그',
+       selector:'#title-screen > div[style*="z-index:2"] > h1'},
+      {key:'title-subtitle', label:'서브타이틀',   preview:'운명의 왕좌를 차지하라',
+       selector:'#title-screen > div[style*="z-index:2"] > .subtitle'},
       {key:'title-btn-back', label:'← 왕좌로 돌아가기', preview:'(로그인 이동)',
        selector:'#title-screen .title-buttons > button[data-arg="login-screen"]'},
       {key:'title-btn-new',  label:'✨ 새로운 운명', preview:'(회원가입 이동)',
        selector:'#title-screen .title-buttons > button[data-arg="signup-screen"]'},
     ],
     defaults:{
-      'title-league':  {x:240, y:60, w:800, h:40},
-      'title-logo':    {x:240, y:120, w:800, h:140},
-      'title-subtitle':{x:340, y:270, w:600, h:40},
-      'title-btn-back':{x:420, y:480, w:200, h:56},
-      'title-btn-new': {x:660, y:480, w:200, h:56},
+      'title-league':  {x:240, y:180, w:800, h:30},
+      'title-logo':    {x:240, y:220, w:800, h:120},
+      'title-subtitle':{x:240, y:360, w:800, h:40},
+      'title-btn-back':{x:548, y:437, w:200, h:56},
+      'title-btn-new': {x:548, y:515, w:200, h:56},
     }
   },
   login: {
@@ -516,12 +442,12 @@ const SCREENS = {
     ],
     defaults:{
       'login-box':{x:440, y:160, w:400, h:420},
-      'li-title': {x:40,  y:28,  w:320, h:42},
-      'li-id':    {x:40,  y:100, w:320, h:44},
-      'li-pw':    {x:40,  y:160, w:320, h:44},
-      'li-msg':   {x:40,  y:220, w:320, h:22},
-      'li-btn':   {x:40,  y:260, w:320, h:50},
-      'li-back':  {x:40,  y:330, w:320, h:30},
+      'li-title': {x:480, y:198, w:320, h:42},
+      'li-id':    {x:480, y:260, w:320, h:44},
+      'li-pw':    {x:480, y:320, w:320, h:44},
+      'li-msg':   {x:480, y:370, w:320, h:22},
+      'li-btn':   {x:480, y:381, w:400, h:49},
+      'li-back':  {x:480, y:491, w:320, h:47},
     }
   },
   signup: {
@@ -547,13 +473,13 @@ const SCREENS = {
     ],
     defaults:{
       'signup-box':{x:440, y:140, w:400, h:470},
-      'su-title': {x:40,  y:24,  w:320, h:42},
-      'su-id':    {x:40,  y:90,  w:320, h:44},
-      'su-pw':    {x:40,  y:146, w:320, h:44},
-      'su-pw2':   {x:40,  y:202, w:320, h:44},
-      'su-msg':   {x:40,  y:258, w:320, h:22},
-      'su-btn':   {x:40,  y:294, w:320, h:50},
-      'su-back':  {x:40,  y:364, w:320, h:30},
+      'su-title': {x:480, y:164, w:320, h:42},
+      'su-id':    {x:480, y:230, w:320, h:44},
+      'su-pw':    {x:480, y:286, w:320, h:44},
+      'su-pw2':   {x:480, y:342, w:320, h:44},
+      'su-msg':   {x:480, y:398, w:320, h:22},
+      'su-btn':   {x:480, y:434, w:400, h:49},
+      'su-back':  {x:480, y:504, w:322, h:54},
     }
   },
   prologue: {
@@ -568,29 +494,49 @@ const SCREENS = {
        selector:'#prologue-btns .auth-back'},
     ],
     defaults:{
-      'prologue-text':   {x:140, y:160, w:1000, h:320},
-      'prologue-btn-ok': {x:510, y:520, w:260, h:56},
-      'prologue-btn-skip':{x:580,y:590, w:120,  h:30},
+      'prologue-text':   {x:290, y:360, w:700, h:0},
+      'prologue-btn-ok': {x:518, y:418, w:260, h:56},
+      'prologue-btn-skip':{x:1132, y:56, w:130, h:44},
     }
   },
-  charselect: {
-    title: '🎭 영웅 선택 Step 2 (char-select-screen)',
-    screenRoot: '#char-select-screen',
+  'char-element': {
+    title: '🔮 영웅 선택 Step 1 — 원소 (char-element-screen)',
+    screenRoot: '#char-element-screen',
     zones: [
-      {key:'charsel-title',label:'타이틀 (왕좌를 향한 길)', preview:'제목',
-       selector:'#char-select-title'},
-      {key:'charsel-msg',  label:'단계 메시지 (당신을 선택했다)', preview:'메시지',
-       selector:'#char-step-msg'},
-      {key:'charsel-grid', label:'3카드 그리드', preview:'역할 카드 3장',
-       selector:'#char-select-grid'},
-      {key:'charsel-confirm',label:'확정 버튼', preview:'[영웅 확정]',
-       selector:'#btn-confirm-char'},
+      {key:'cel-title',  label:'타이틀 (축복)', preview:'어떤 신의 축복', selector:'#char-element-title'},
+      {key:'cel-msg',    label:'단계 메시지', preview:'어떤 신이 당신을', selector:'#char-element-msg'},
+      {key:'cel-preview',label:'이름 프리뷰', preview:'모험자: ...', selector:'#char-element-preview'},
+      {key:'cel-grid',   label:'6원소 그리드', preview:'6 원소 카드', selector:'#char-element-grid'},
+      {key:'cel-back',   label:'← 돌아가기', preview:'(backToPrologue)', selector:'#btn-element-back'},
+      {key:'cel-confirm',label:'다음 → 버튼', preview:'(confirmElement)', selector:'#btn-confirm-element'},
     ],
     defaults:{
-      'charsel-title':  {x:20,  y:30,  w:1240, h:50},
-      'charsel-msg':    {x:20,  y:80,  w:1240, h:50},
-      'charsel-grid':   {x:20,  y:140, w:1240, h:520},
-      'charsel-confirm':{x:540, y:670, w:200,  h:40},
+      'cel-title':  {x:356, y:19, w:568, h:99},
+      'cel-msg':    {x:472, y:130, w:335, h:64},
+      'cel-preview':{x:578, y:231, w:123, h:21},
+      'cel-grid':   {x:0, y:264, w:1280, h:360},
+      'cel-back':   {x:487, y:636, w:140, h:65},
+      'cel-confirm':{x:636, y:636, w:157, h:65},
+    }
+  },
+  'char-hero': {
+    title: '⚔️ 영웅 선택 Step 2 — 역할 (char-hero-screen)',
+    screenRoot: '#char-hero-screen',
+    zones: [
+      {key:'chr-title',  label:'타이틀 (왕좌를 향한 길)', preview:'왕좌를 향한 길', selector:'#char-hero-title'},
+      {key:'chr-msg',    label:'원소 확정 메시지', preview:'...의 신이 당신을', selector:'#char-hero-msg'},
+      {key:'chr-preview',label:'이름 프리뷰', preview:'모험자: ...', selector:'#char-hero-preview'},
+      {key:'chr-grid',   label:'3역할 카드 그리드', preview:'3 역할 카드', selector:'#char-hero-grid'},
+      {key:'chr-back',   label:'← 원소 다시 선택', preview:'(backToElement)', selector:'#btn-hero-back'},
+      {key:'chr-confirm',label:'영웅 확정 버튼', preview:'(confirmHero)', selector:'#btn-confirm-hero'},
+    ],
+    defaults:{
+      'chr-title':  {x:363, y:-2, w:555, h:99},
+      'chr-msg':    {x:482, y:109, w:316, h:88},
+      'chr-preview':{x:578, y:234, w:123, h:21},
+      'chr-grid':   {x:0, y:267, w:1280, h:379},
+      'chr-back':   {x:453, y:657, w:183, h:65},
+      'chr-confirm':{x:645, y:657, w:182, h:65},
     }
   },
   menu: {
@@ -605,9 +551,9 @@ const SCREENS = {
        selector:'#menu-screen > .town-footer'},
     ],
     defaults:{
-      'menu-container':{x:0,   y:60,  w:1280, h:660},
-      'menu-hud':      {x:0,   y:0,   w:1280, h:60},
-      'menu-footer':   {x:0,   y:680, w:1280, h:40},
+      'menu-container':{x:0, y:72, w:1280, h:720},
+      'menu-hud':      {x:0, y:0, w:1280, h:72},
+      'menu-footer':   {x:572, y:872, w:137, h:60},
     }
   },
 
@@ -621,10 +567,10 @@ const SCREENS = {
       {key:'pick-btns',  label:'버튼 행', preview:'[완료] [건너뛰기] [다시 뽑기]', selector:'#pick-screen .pick-area > div[style*="margin-top:12px"]'},
     ],
     defaults:{
-      'pick-title':{x:0,y:40,w:1280,h:60},
+      'pick-title':{x:0, y:52, w:680, h:60},
       'pick-sub':  {x:0,y:110,w:1280,h:36},
       'pick-grid': {x:20,y:160,w:1240,h:460},
-      'pick-btns': {x:360,y:640,w:560,h:60},
+      'pick-btns': {x:360, y:652, w:560, h:96},
     }
   },
 
@@ -637,7 +583,7 @@ const SCREENS = {
       {key:'ch-options',label:'옵션 컨테이너', preview:'선택지 박스들', selector:'#ch-options'},
     ],
     defaults:{
-      'ch-title':  {x:0,y:60,w:1280,h:60},
+      'ch-title':  {x:0, y:72, w:680, h:60},
       'ch-sub':    {x:0,y:130,w:1280,h:40},
       'ch-options':{x:20,y:190,w:1240,h:510},
     }
@@ -658,7 +604,7 @@ const SCREENS = {
        selector:'#formation-screen > div[style*="padding:10px"][style*="gap:10px"] > button[data-action="formation.confirm"]'},
     ],
     defaults:{
-      'form-title':      {x:0,y:40,w:1280,h:60},
+      'form-title':      {x:0, y:52, w:680, h:60},
       'form-sub':        {x:0,y:105,w:1280,h:36},
       'form-diamond':    {x:140,y:160,w:1000,h:200},
       'form-bench-label':{x:0,y:380,w:1280,h:30},
@@ -678,7 +624,7 @@ const SCREENS = {
       {key:'upg-back', label:'돌아가기', preview:'← 돌아가기', selector:'#upgrade-screen > div[style*="padding:10px"]:last-child'},
     ],
     defaults:{
-      'upg-title':{x:0,y:60,w:1280,h:50},
+      'upg-title':{x:0, y:72, w:680, h:50},
       'upg-info': {x:0,y:115,w:1280,h:36},
       'upg-grid': {x:20,y:160,w:1240,h:500},
       'upg-back': {x:20,y:670,w:200,h:40},
@@ -711,7 +657,7 @@ const SCREENS = {
       {key:'match-box',label:'매치 박스 (전체 콘텐츠)', preview:'상대 초상화 + 매치 정보', selector:'#match-screen > .match-box'},
     ],
     defaults:{
-      'match-box':{x:240,y:80,w:800,h:560},
+      'match-box':{x:245, y:14, w:799, h:694},
     }
   },
 
@@ -744,7 +690,8 @@ let loadedVars = {};
 let currentScreen = 'cardselect';
 
 function getQueryScreen(){
-  const m = location.search.match(/screen=(\w+)/);
+  // 하이픈 포함 키 허용 (char-element, char-hero 등)
+  const m = location.search.match(/screen=([\w-]+)/);
   return (m && SCREENS[m[1]]) ? m[1] : 'cardselect';
 }
 
@@ -1422,8 +1369,8 @@ function toggleHelp(){
   if(!p) return;
   let state = null;
   try { state = localStorage.getItem('rof_editor_help_open'); } catch(e){}
-  // 첫 방문이면 자동 펼침, 그 외엔 저장된 상태
-  if(state === null || state === '1') p.classList.add('open');
+  // 맨 아래 이동 후 기본 접힘. 사용자가 열어뒀던 경우만 유지.
+  if(state === '1') p.classList.add('open');
 })();
 
 // ESC 로 모달/모드 취소
@@ -1618,5 +1565,82 @@ Promise.all([loadTextOverrides(), loadHiddenList(), loadAnnotations()]).then(() 
   renderAnnotations();
 });
 </script>
+
+<!-- 사용법 패널 — 페이지 맨 아래 (2026-04-13 이동: 방해되지 않게) -->
+<div class="help-panel" id="help-panel" style="margin-top:24px;">
+  <div class="help-panel-head" onclick="toggleHelp()">
+    <span class="caret">▶</span>
+    <span class="title">❓ 사용법 (펼치기/접기)</span>
+  </div>
+  <div class="help-panel-body">
+    <div class="cols">
+      <div>
+        <h4>🎯 기본 조작</h4>
+        <ul>
+          <li><b>드래그</b> = zone 이동</li>
+          <li><b>우하단 흰 핸들</b> = 리사이즈</li>
+          <li><kbd>Shift</kbd> = 스냅 해제</li>
+          <li><b>툴바 드롭다운</b> = 19화면 전환</li>
+          <li><kbd>🔄 iframe 재로드</kbd> = 게임 미리보기 새로고침</li>
+          <li><kbd>🎯 실제 DOM 에 맞춤</kbd> = 진짜 요소 rect 에 zone 강제 맞춤</li>
+        </ul>
+
+        <h4>📝 텍스트 편집 (stage 아래)</h4>
+        <ul>
+          <li>각 행의 textarea 에서 텍스트 수정 → <kbd>💾 텍스트 저장</kbd></li>
+          <li><code>css/text_overrides.json</code> 에 기록됨</li>
+          <li>게임 런타임에 <code>textContent</code> 로 덮어씀 — <b>index.html 수정 안 함</b></li>
+          <li>빈 칸 = 원본 복원</li>
+        </ul>
+
+        <h4>🗑️ 숨김 토글</h4>
+        <ul>
+          <li>각 행 우측 🗑️ 버튼 → <code>display:none</code> 처리</li>
+          <li><code>css/hidden_elements.json</code> 에 셀렉터 배열 저장</li>
+          <li>같은 버튼 다시 누르면 <code>↩︎ 복구</code></li>
+          <li>나중에 AI 가 해당 요소를 index.html 에서 물리 삭제</li>
+        </ul>
+      </div>
+      <div>
+        <h4>➕ 지시 추가 모드 (디자인 핸드오프)</h4>
+        <ul>
+          <li>툴바 <kbd>➕ 지시 추가</kbd> 클릭 → 커서가 십자로</li>
+          <li>스테이지를 <b>드래그</b>해서 네모 그리기</li>
+          <li>릴리즈 시 모달 → 한국어로 "여기에 뭐 넣어줘" 입력</li>
+          <li><b>더블클릭</b>으로 편집, × 로 삭제, 드래그로 이동</li>
+          <li><kbd>ESC</kbd> = 모드/모달 취소</li>
+          <li>저장 파일: <code>css/annotations.json</code></li>
+          <li>다음 세션에 AI 가 모든 지시를 읽고 자동 반영</li>
+        </ul>
+
+        <div class="tip">
+          💡 <b>권장 지시 템플릿</b><br>
+          "이 영역에 <u>hud_bar 배너</u> 배경으로 배치. 높이 44px, 좌우 20px 패딩. 클릭 시 메뉴 토글."
+        </div>
+
+        <h4>🧩 Zone 구조 개념</h4>
+        <ul>
+          <li>스테이지 = 1280×720 고정 (16:9 HD)</li>
+          <li>대부분 zone 은 스테이지 절대좌표</li>
+          <li>일부(auth-box 자식 등)는 <b>부모 rect 상대좌표</b> — 자동 계산됨</li>
+          <li>저장 = <code>10_tokens.css</code> 의 LAYOUT_VARS 블록 갱신</li>
+        </ul>
+
+        <div class="warn">
+          ⚠ 편집기가 <b>404</b> 뜨면 로컬 서버가 꺼져있는 것.<br>
+          <code>cd c:/work/game && node tools/coord_editor_server.js</code>
+        </div>
+      </div>
+    </div>
+    <h4>🔄 자주 쓰는 워크플로우</h4>
+    <ul>
+      <li><b>"여기 배너 넣어줘"</b> → ➕ 지시 추가 → 네모 + 텍스트 → 다음 세션 반영</li>
+      <li><b>"이 텍스트 바꿔줘"</b> → stage 아래 텍스트 패널 → 수정 → 💾 저장 → Ctrl+F5</li>
+      <li><b>"이 요소 빼줘"</b> → 🗑️ 숨김 → 즉시 사라짐 → 확신 서면 물리 삭제 요청</li>
+      <li><b>"이 영역 옮겨줘"</b> → 드래그 → 💾 저장</li>
+    </ul>
+  </div>
+</div>
+
 </body>
 </html>

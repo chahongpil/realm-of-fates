@@ -52,15 +52,19 @@
   --title-subtitle-mb: 2rem;
   /* title — 버튼 그룹 분리 (2026-04-13 심야). 래퍼는 full-container 투명. */
   --title-buttons-x: 0px;   --title-buttons-y: 0px;  --title-buttons-w: 1280px; --title-buttons-h: 720px;
-  --title-btn-back-x: 420px; --title-btn-back-y: 480px; --title-btn-back-w: 200px; --title-btn-back-h: 56px;
-  --title-btn-new-x:  660px; --title-btn-new-y:  480px; --title-btn-new-w:  200px; --title-btn-new-h:  56px;
+  --title-btn-back-x: 548px; --title-btn-back-y: 437px; --title-btn-back-w: 200px; --title-btn-back-h: 56px;
+  --title-btn-new-x:  548px; --title-btn-new-y:  515px; --title-btn-new-w:  200px; --title-btn-new-h:  56px;
+  /* title 텍스트 3종 래퍼 분해 (2026-04-13 Type C). 중간 래퍼는 이미 position:static. */
+  --title-league-x:    240px; --title-league-y:    180px; --title-league-w:    800px; --title-league-h:    30px;
+  --title-logo-x:      240px; --title-logo-y:      220px; --title-logo-w:      800px; --title-logo-h:      120px;
+  --title-subtitle-x:  240px; --title-subtitle-y:  360px; --title-subtitle-w:  800px; --title-subtitle-h:  40px;
   /* cardselect zones (출정 편성 화면) — 절대위치 레이아웃 */
   /* cardselect 레이아웃 재정비 (2026-04-13) — 1280×720 무겹침, 유물 클릭 가능 */
   --cs-title-x: 10px;
   --cs-title-y: 13px;
   --cs-title-w: 1256px;
   --cs-title-h: 98px;
-  --cs-selected-x: 20px;
+  --cs-selected-x: 30px;
   --cs-selected-y: 126px;
   --cs-selected-w: 406px;
   --cs-selected-h: 106px;
@@ -87,7 +91,7 @@
   --cs-btn-confirm-w: 408px;
   --cs-btn-confirm-h: 57px;
   /* 유물 영역 (선택/보유) — 클릭 가능한 높이 확보 */
-  --cs-relics-selected-x: 20px;
+  --cs-relics-selected-x: 30px;
   --cs-relics-selected-y: 372px;
   --cs-relics-selected-w: 408px;
   --cs-relics-selected-h: 64px;
@@ -103,11 +107,11 @@
 
   /* tavern zones */
   --tav-tabs-x: 20px; --tav-tabs-y: 60px; --tav-tabs-w: 1240px; --tav-tabs-h: 60px;
-  --tav-info-x: 20px; --tav-info-y: 125px; --tav-info-w: 1240px; --tav-info-h: 30px;
-  --tav-grid-x: 20px; --tav-grid-y: 160px; --tav-grid-w: 1240px; --tav-grid-h: 480px;
+  --tav-info-x: 40px; --tav-info-y: 119px; --tav-info-w: 1240px; --tav-info-h: 40px;
+  --tav-grid-x: 40px; --tav-grid-y: 159px; --tav-grid-w: 1240px; --tav-grid-h: 480px;
   --tav-buttons-x: 0px; --tav-buttons-y: 0px; --tav-buttons-w: 1280px; --tav-buttons-h: 720px;
-  --tav-btn-refresh-x: 430px; --tav-btn-refresh-y: 650px; --tav-btn-refresh-w: 260px; --tav-btn-refresh-h: 44px;
-  --tav-btn-back-x:    700px; --tav-btn-back-y:    650px; --tav-btn-back-w:    160px; --tav-btn-back-h:    44px;
+  --tav-btn-refresh-x: 482px; --tav-btn-refresh-y: 650px; --tav-btn-refresh-w: 186px; --tav-btn-refresh-h: 48px;
+  --tav-btn-back-x:    678px; --tav-btn-back-y:    650px; --tav-btn-back-w:    178px; --tav-btn-back-h:    50px;
 
   /* deckview zones */
   --dv-tabs-x: 20px; --dv-tabs-y: 60px; --dv-tabs-w: 1240px; --dv-tabs-h: 60px;
@@ -169,12 +173,12 @@
   --go-btn-rest-x:    650px; --go-btn-rest-y:    530px; --go-btn-rest-w:    200px; --go-btn-rest-h:    56px;
 
   /* match zones */
-  --match-box-x: 240px;   --match-box-y: 80px;   --match-box-w: 800px;   --match-box-h: 560px;
+  --match-box-x: 245px;   --match-box-y: 14px;   --match-box-w: 799px;   --match-box-h: 694px;
 
   /* battle zones */
   --b-hud-x: 0px;         --b-hud-y: 0px;        --b-hud-w: 1280px;      --b-hud-h: 44px;
-  --b-field-x: 20px;      --b-field-y: 50px;     --b-field-w: 1240px;    --b-field-h: 540px;
-  --b-log-x: 20px;        --b-log-y: 595px;      --b-log-w: 1240px;      --b-log-h: 40px;
+  --b-field-x: 65px;      --b-field-y: 84px;     --b-field-w: 1166px;    --b-field-h: 468px;
+  --b-log-x: 20px;        --b-log-y: 595px;      --b-log-w: 1240px;      --b-log-h: 35px;
   --b-bottom-x: 0px;      --b-bottom-y: 0px;     --b-bottom-w: 1280px;   --b-bottom-h: 720px;
   --b-btn-back-x:  440px; --b-btn-back-y:  640px; --b-btn-back-w:  160px; --b-btn-back-h:  44px;
   --b-btn-fight-x: 610px; --b-btn-fight-y: 640px; --b-btn-fight-w: 230px; --b-btn-fight-h: 44px;
@@ -185,12 +189,12 @@
    * auth-box 는 position:absolute 로 스테이지 배치, 자식은 auth-box 기준 상대좌표.
    * ──────────────────────────────────────────── */
   --login-box-x: 440px; --login-box-y: 160px; --login-box-w: 400px; --login-box-h: 420px;
-  --li-title-x:  40px;  --li-title-y:  28px;  --li-title-w:  320px; --li-title-h:  42px;
+  --li-title-x:  40px;  --li-title-y:  38px;  --li-title-w:  320px; --li-title-h:  42px;
   --li-id-x:     40px;  --li-id-y:     100px; --li-id-w:     320px; --li-id-h:     44px;
   --li-pw-x:     40px;  --li-pw-y:     160px; --li-pw-w:     320px; --li-pw-h:     44px;
-  --li-msg-x:    40px;  --li-msg-y:    220px; --li-msg-w:    320px; --li-msg-h:    22px;
-  --li-btn-x:    40px;  --li-btn-y:    260px; --li-btn-w:    320px; --li-btn-h:    50px;
-  --li-back-x:   40px;  --li-back-y:   330px; --li-back-w:   320px; --li-back-h:   30px;
+  --li-msg-x:    40px;  --li-msg-y:    210px; --li-msg-w:    320px; --li-msg-h:    22px;
+  --li-btn-x:    40px;  --li-btn-y:    221px; --li-btn-w:    320px; --li-btn-h:    54px;
+  --li-back-x:   40px;  --li-back-y:   331px; --li-back-w:   320px; --li-back-h:   47px;
 
   --signup-box-x: 440px; --signup-box-y: 140px; --signup-box-w: 400px; --signup-box-h: 470px;
   --su-title-x:  40px;  --su-title-y:  24px;  --su-title-w:  320px; --su-title-h:  42px;
@@ -198,15 +202,15 @@
   --su-pw-x:     40px;  --su-pw-y:     146px; --su-pw-w:     320px; --su-pw-h:     44px;
   --su-pw2-x:    40px;  --su-pw2-y:    202px; --su-pw2-w:    320px; --su-pw2-h:    44px;
   --su-msg-x:    40px;  --su-msg-y:    258px; --su-msg-w:    320px; --su-msg-h:    22px;
-  --su-btn-x:    40px;  --su-btn-y:    294px; --su-btn-w:    320px; --su-btn-h:    50px;
-  --su-back-x:   40px;  --su-back-y:   364px; --su-back-w:   320px; --su-back-h:   30px;
+  --su-btn-x:    40px;  --su-btn-y:    294px; --su-btn-w:    322px; --su-btn-h:    47px;
+  --su-back-x:   40px;  --su-back-y:   364px; --su-back-w:   322px; --su-back-h:   54px;
 
-  --prologue-btn-ok-x:   510px; --prologue-btn-ok-y:   520px; --prologue-btn-ok-w:   260px; --prologue-btn-ok-h:   56px;
-  --prologue-btn-skip-x: 580px; --prologue-btn-skip-y: 590px; --prologue-btn-skip-w: 120px; --prologue-btn-skip-h: 30px;
+  --prologue-btn-ok-x:   518px; --prologue-btn-ok-y:   418px; --prologue-btn-ok-w:   260px; --prologue-btn-ok-h:   56px;
+  --prologue-btn-skip-x: 1132px; --prologue-btn-skip-y: 56px; --prologue-btn-skip-w: 130px; --prologue-btn-skip-h: 44px;
 
   /* tavern/deckview/castle/church 탭 wrapper 분해 */
-  --tav-tab-unit-x:   460px; --tav-tab-unit-y:   60px;  --tav-tab-unit-w:   180px;  --tav-tab-unit-h:   44px;
-  --tav-tab-hero-x:   650px; --tav-tab-hero-y:   60px;  --tav-tab-hero-w:   180px;  --tav-tab-hero-h:   44px;
+  --tav-tab-unit-x:   457px; --tav-tab-unit-y:   59px;  --tav-tab-unit-w:   180px;  --tav-tab-unit-h:   44px;
+  --tav-tab-hero-x:   678px; --tav-tab-hero-y:   59px;  --tav-tab-hero-w:   180px;  --tav-tab-hero-h:   44px;
   --tav-info-x:       20px;  --tav-info-y:       115px; --tav-info-w:       1240px; --tav-info-h:       30px;
   --dv-tab-deck-x:    440px; --dv-tab-deck-y:    60px;  --dv-tab-deck-w:    190px;  --dv-tab-deck-h:    44px;
   --dv-tab-codex-x:   640px; --dv-tab-codex-y:   60px;  --dv-tab-codex-w:    190px; --dv-tab-codex-h:   44px;

@@ -75,7 +75,7 @@
     <input type="text" id="login-id" placeholder="영웅의 이름" autocomplete="off">
     <input type="password" id="login-pw" placeholder="암호" data-action-enter="auth.login">
     <div class="auth-msg" id="login-msg"></div>
-    <button class="btn" data-action="auth.login" style="width:100%">입장</button>
+    <button class="btn" data-action="auth.login">입장</button>
     <div class="auth-back" data-action="ui.show" data-arg="title-screen">← 돌아가기</div>
   </div>
 </div>
@@ -88,7 +88,7 @@
     <input type="password" id="signup-pw" placeholder="암호 (4자 이상)">
     <input type="password" id="signup-pw2" placeholder="암호 확인" data-action-enter="auth.signup">
     <div class="auth-msg" id="signup-msg"></div>
-    <button class="btn btn-green" data-action="auth.signup" style="width:100%">운명의 문을 열다</button>
+    <button class="btn btn-green" data-action="auth.signup">운명의 문을 열다</button>
     <div class="auth-back" data-action="ui.show" data-arg="title-screen">← 돌아가기</div>
   </div>
 </div>
@@ -96,9 +96,9 @@
 <!-- PROLOGUE -->
 <div id="prologue-screen" class="screen">
   <div class="prologue-text" id="prologue-text"></div>
-  <div id="prologue-btns" style="display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;text-align:center;">
+  <button class="btn btn-s prologue-skip" id="prologue-skip-btn" data-action="auth.skipPrologue">건너뛰기 →</button>
+  <div id="prologue-btns" style="display:none;position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);z-index:2;text-align:center;">
     <button class="btn" data-action="auth.endPrologue">운명을 받아들인다</button>
-    <div style="margin-top:10px;"><span class="auth-back" data-action="auth.skipPrologue">건너뛰기</span></div>
   </div>
 </div>
 
@@ -305,7 +305,7 @@
 
 <!-- BATTLE -->
 <div id="battle-screen" class="screen">
-  <div class="hud" style="padding:4px 15px;">
+  <div class="hud">
     <div class="hud-left"><div class="hud-name" id="b-name"></div><div class="hud-stat">라운드 <span id="b-round">1</span></div></div>
     <div class="hud-right"><div class="hud-stat" id="b-status">내 턴</div><div class="hud-stat" id="b-timer-display">⏱️ 60</div></div>
   </div>

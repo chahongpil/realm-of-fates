@@ -106,39 +106,75 @@
   border-color:rgba(255,200,80,.6)!important;
 }
 /* hover glow — 앰버 hotspot (2026-04-12 FATES 레퍼런스 반영) */
-.town-container .town-building:hover::after{
-  content:'';position:absolute;inset:-8%;
-  border-radius:12px;
-  box-shadow:
-    0 0 32px rgba(255,200,80,.75),
-    0 0 60px rgba(255,170,40,.35),
-    inset 0 0 24px rgba(255,200,80,.3);
-  border:2px solid rgba(255,200,80,.9);
-  pointer-events:none;
-  animation:townHoverPulse 1.4s ease-in-out infinite;
-}
-@keyframes townHoverPulse{
-  0%,100%{box-shadow:0 0 32px rgba(255,200,80,.75),0 0 60px rgba(255,170,40,.35),inset 0 0 24px rgba(255,200,80,.3);}
-  50%    {box-shadow:0 0 44px rgba(255,220,100,.95),0 0 80px rgba(255,180,50,.5),inset 0 0 32px rgba(255,220,100,.4);}
-}
+/* 네모난 box glow 제거 — 건물 실루엣 자체의 drop-shadow 로만 강조 (위 tb-icon:hover 참조) */
 .town-container .town-building .tb-label{
-  background:rgba(10,14,20,.85);
-  border:1px solid var(--text-1,#c9b88a);
+  position:absolute;left:50%;top:100%;transform:translate(-50%,4px);
+  background:rgba(10,14,20,.92);
+  border:1px solid rgba(255,200,80,.7);
   border-radius:4px;
-  padding:2px 8px;
-  font-size:.68rem;
+  padding:3px 10px;
+  font-size:.72rem;
   white-space:nowrap;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .2s ease, transform .2s ease;
+  box-shadow:0 4px 12px rgba(0,0,0,.6);
+  z-index:10;
 }
-.town-building{position:absolute;text-align:center;cursor:pointer;transition:all .3s;z-index:2;padding:4px;}
+.town-container .town-building:hover .tb-label{
+  opacity:1;visibility:visible;transform:translate(-50%,8px);
+}
+.town-building{position:absolute;text-align:center;cursor:pointer;transition:transform .25s;z-index:2;padding:0;background:none!important;border:none!important;}
+/* 미건설 건물 — 1/5 축소 마커 (작은 ➕ + 골드 비용만, 건물 div 중심에 작게) */
+.town-building.unbuilt .tb-empty{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:auto;height:auto;
+  border:1px dashed rgba(255,200,80,.55);
+  border-radius:6px;
+  background:rgba(0,0,0,.55);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;padding:3px 6px;box-sizing:border-box;
+  transition:all .25s;
+  animation:unbuiltPulse 2.4s ease-in-out infinite;
+}
+.town-building.unbuilt:hover .tb-empty{
+  border-color:#ffd700;
+  background:rgba(20,15,5,.8);
+  box-shadow:0 0 12px rgba(255,200,80,.6),inset 0 0 6px rgba(255,200,80,.25);
+  animation-play-state:paused;
+  transform:translate(-50%,-50%) scale(1.15);
+}
+.town-building.unbuilt .tb-empty-plus{
+  font-size:.7rem;color:rgba(255,215,0,.75);
+  text-shadow:0 1px 2px rgba(0,0,0,.95);
+  line-height:1;
+}
+.town-building.unbuilt .tb-empty-name{
+  display:none;
+}
+.town-building.unbuilt:hover .tb-empty-name{
+  display:block;
+  font-size:.55rem;font-weight:900;color:#ffd700;
+  font-family:var(--font-title,'Cinzel',serif);letter-spacing:.3px;
+  text-shadow:0 1px 2px #000;
+  white-space:nowrap;
+  margin-top:1px;
+}
+.town-building.unbuilt .tb-empty-cost{
+  font-size:.5rem;font-weight:900;color:#ffe066;
+  text-shadow:0 1px 2px #000;
+  white-space:nowrap;
+  line-height:1;
+}
+@keyframes unbuiltPulse{
+  0%,100%{border-color:rgba(255,200,80,.55);box-shadow:0 0 0 rgba(255,200,80,0);}
+  50%    {border-color:rgba(255,220,100,.85);box-shadow:0 0 20px rgba(255,200,80,.35);}
+}
 .town-building:hover{z-index:3;}
-.town-building:hover .tb-icon img{transform:scale(1.1);filter:drop-shadow(0 0 20px rgba(255,215,0,.6)) brightness(1.2);}
-.town-building:hover .tb-label{opacity:1;color:var(--curr-gold);text-shadow:0 0 10px rgba(255,215,0,.5);}
-.tb-icon img{transition:all .3s;border-radius:10px;}
-.tb-label{font-size:.65rem;color:var(--text-1);opacity:.7;transition:all .3s;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,.9);white-space:nowrap;}
+.town-building:hover .tb-icon img{transform:scale(1.08);filter:drop-shadow(0 0 24px rgba(255,200,80,.8)) drop-shadow(0 0 40px rgba(255,170,40,.4)) brightness(1.15);}
+.tb-icon img{transition:transform .25s, filter .25s;border-radius:0;}
 .tb-upgrade{font-size:.5rem;color:var(--curr-gold);cursor:pointer;margin-top:1px;opacity:.4;transition:all .2s;}
 .tb-upgrade:hover{opacity:1;text-decoration:underline;}
-.tb-icon{font-size:2.8rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));transition:all .3s;}
-.tb-label{font-size:.7rem;color:var(--curr-gold-pale);opacity:.7;transition:all .3s;margin-top:2px;text-shadow:0 1px 3px rgba(0,0,0,.8);white-space:nowrap;}
+.tb-icon{filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));transition:filter .25s;}
 .tb-cost{font-size:.6rem;color:var(--warn);margin-top:1px;}
 .town-building.ruins .tb-icon{filter:grayscale(.9) brightness(.3) sepia(.3) drop-shadow(0 4px 8px rgba(0,0,0,.8));}
 .town-building.ruins .tb-icon img{opacity:.5;}
@@ -271,7 +307,10 @@ body.game-mode #cardselect-screen > #cs-grid{
   width:var(--cs-grid-w);height:var(--cs-grid-h);
   padding:8px;
   overflow-y:auto;overflow-x:hidden;
+  align-content:flex-start;
 }
+/* cs-grid 카드 축소 — 기본 320×480 → 160×240 로 4×2 = 8장 가시 */
+body.game-mode #cardselect-screen > #cs-grid .card-v2{width:160px;}
 /* zone 6: 보유 유물 그리드 */
 body.game-mode #cardselect-screen > #cs-relics-grid{
   position:absolute;
@@ -310,16 +349,25 @@ body.game-mode #deckview-screen > div[style*="text-align:center;padding:6px"]{
 }
 body.game-mode #deckview-screen > #deck-tab{
   position:absolute;left:var(--dv-grid-x);top:var(--dv-grid-y);
-  width:var(--dv-grid-w);height:calc(var(--dv-grid-h) + var(--dv-skills-h) + var(--dv-relics-h) + 20px);
-  overflow-y:auto;
+  width:var(--dv-grid-w);height:var(--dv-grid-h);
+  overflow-y:auto;padding:0 8px;box-sizing:border-box;
 }
 body.game-mode #deckview-screen > #deck-tab #dv-grid{padding:0;margin-bottom:4px;}
 body.game-mode #deckview-screen > #deck-tab #dv-skills{padding:0;margin-bottom:4px;}
 body.game-mode #deckview-screen > #deck-tab #dv-relics{padding:0;}
+/* 도서관 NPC 대화 바 — 탭 바로 아래 고정 위치 */
+body.game-mode #deckview-screen > #lib-npc{
+  position:absolute;left:var(--dv-lib-npc-x);top:var(--dv-lib-npc-y);
+  width:var(--dv-lib-npc-w);height:var(--dv-lib-npc-h);
+  margin:0;padding:0;z-index:2;
+}
+body.game-mode #deckview-screen > #lib-npc .npc-bar{
+  width:100%;max-width:none;margin:0;height:100%;
+}
 body.game-mode #deckview-screen > #codex-tab{
   position:absolute;left:var(--dv-codex-x);top:var(--dv-codex-y);
   width:var(--dv-codex-w);height:var(--dv-codex-h);
-  overflow-y:auto;padding:8px;
+  overflow-y:auto;padding:8px;box-sizing:border-box;
 }
 body.game-mode #deckview-screen > div[style*="padding:8px;text-align:center"]:last-child{
   position:absolute;left:var(--dv-back-x);top:var(--dv-back-y);
@@ -437,11 +485,18 @@ body.game-mode #choice-screen #ch-title{
   width:var(--ch-title-w);height:var(--ch-title-h);
   margin:0;display:flex;align-items:center;justify-content:center;
 }
+/* 매치메이킹 card-v2 사이즈 — 프레임 카드 280px 고정 */
+body.game-mode #match-screen .match-card{width:280px;max-width:280px;}
 body.game-mode #choice-screen #ch-sub{
   position:absolute;left:var(--ch-sub-x);top:var(--ch-sub-y);
   width:var(--ch-sub-w);height:var(--ch-sub-h);
-  margin:0;display:flex;align-items:center;justify-content:center;
+  margin:0;padding:0 80px;box-sizing:border-box;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;
+  text-align:center;line-height:1.5;
 }
+body.game-mode #choice-screen #ch-sub .timer-bar{width:min(640px,80%);height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin:4px 0;}
+body.game-mode #choice-screen #ch-sub .timer-bar-fill{height:100%;background:linear-gradient(90deg,#4f8,#fa4,#f44);transition:width .5s linear;}
+body.game-mode #choice-screen #ch-sub .timer-text{font-size:.85rem;color:var(--text-2);}
 body.game-mode #choice-screen #ch-options{
   position:absolute;left:var(--ch-options-x);top:var(--ch-options-y);
   width:var(--ch-options-w);height:var(--ch-options-h);
@@ -540,12 +595,80 @@ body.game-mode #battle-screen{position:relative;}
 body.game-mode #battle-screen > .hud{
   position:absolute;left:var(--b-hud-x);top:var(--b-hud-y);
   width:var(--b-hud-w);height:var(--b-hud-h);
-  min-height:0;margin:0;
+  min-height:0;margin:0;padding:4px 64px 4px 20px;box-sizing:border-box;
 }
+body.game-mode #battle-screen > .hud .hud-right{max-width:620px;flex-wrap:nowrap;overflow:hidden;}
+body.game-mode #battle-screen > .hud #b-status{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:500px;}
+/* tb-field 는 화면 전체 투명 컨테이너 — slot 은 screen-absolute 좌표로 배치 */
 body.game-mode #battle-screen > .tb-field{
   position:absolute;left:var(--b-field-x);top:var(--b-field-y);
   width:var(--b-field-w);height:var(--b-field-h);
-  flex:none;padding:0;margin:0;
+  display:block;padding:0;margin:0;overflow:visible;background:none;
+}
+body.game-mode #battle-screen .tb-side,
+body.game-mode #battle-screen .tb-diamond{
+  display:contents;
+}
+body.game-mode #battle-screen .tb-field > .tb-vs{
+  position:absolute;left:var(--b-vs-x);top:var(--b-vs-y);
+  width:var(--b-vs-w);height:var(--b-vs-h);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;color:var(--curr-gold);
+  text-shadow:0 0 16px rgba(255,215,0,.5),0 2px 4px rgba(0,0,0,.9);
+  margin:0;padding:0;pointer-events:none;
+}
+/* 10 battle slot (5 enemy + 5 ally) — 각각 프레임 카드 크기로 절대 배치 */
+body.game-mode #battle-screen .bs-en-1{position:absolute;left:var(--b-en-1-x);top:var(--b-en-1-y);width:var(--b-en-1-w);height:var(--b-en-1-h);margin:0;}
+body.game-mode #battle-screen .bs-en-2{position:absolute;left:var(--b-en-2-x);top:var(--b-en-2-y);width:var(--b-en-2-w);height:var(--b-en-2-h);margin:0;}
+body.game-mode #battle-screen .bs-en-3{position:absolute;left:var(--b-en-3-x);top:var(--b-en-3-y);width:var(--b-en-3-w);height:var(--b-en-3-h);margin:0;}
+body.game-mode #battle-screen .bs-en-4{position:absolute;left:var(--b-en-4-x);top:var(--b-en-4-y);width:var(--b-en-4-w);height:var(--b-en-4-h);margin:0;}
+body.game-mode #battle-screen .bs-en-5{position:absolute;left:var(--b-en-5-x);top:var(--b-en-5-y);width:var(--b-en-5-w);height:var(--b-en-5-h);margin:0;}
+body.game-mode #battle-screen .bs-al-1{position:absolute;left:var(--b-al-1-x);top:var(--b-al-1-y);width:var(--b-al-1-w);height:var(--b-al-1-h);margin:0;}
+body.game-mode #battle-screen .bs-al-2{position:absolute;left:var(--b-al-2-x);top:var(--b-al-2-y);width:var(--b-al-2-w);height:var(--b-al-2-h);margin:0;}
+body.game-mode #battle-screen .bs-al-3{position:absolute;left:var(--b-al-3-x);top:var(--b-al-3-y);width:var(--b-al-3-w);height:var(--b-al-3-h);margin:0;}
+body.game-mode #battle-screen .bs-al-4{position:absolute;left:var(--b-al-4-x);top:var(--b-al-4-y);width:var(--b-al-4-w);height:var(--b-al-4-h);margin:0;}
+body.game-mode #battle-screen .bs-al-5{position:absolute;left:var(--b-al-5-x);top:var(--b-al-5-y);width:var(--b-al-5-w);height:var(--b-al-5-h);margin:0;}
+/* slot 안의 card-v2 는 zone 을 꽉 채움 (aspect override) */
+body.game-mode #battle-screen .td-slot .card-v2{
+  width:100%;height:100%;max-width:none;aspect-ratio:auto;
+  cursor:pointer;
+}
+body.game-mode #battle-screen .td-slot.bs-empty{
+  border:2px dashed rgba(100,80,40,.3);border-radius:10px;opacity:.4;
+}
+body.game-mode #battle-screen .td-slot.bs-empty::after{
+  content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:2rem;color:rgba(200,180,120,.2);
+}
+/* 전장 슬롯 공통: HP 바 오버레이 + 상태 표시 */
+body.game-mode #battle-screen .td-slot .bs-hp-overlay{
+  position:absolute;left:6%;right:6%;bottom:4%;
+  background:rgba(0,0,0,.75);border-radius:4px;padding:2px 4px;
+  z-index:4;pointer-events:none;font-size:.7rem;color:#fff;
+  text-align:center;text-shadow:0 1px 2px #000;
+}
+/* slim 모드 — 숫자 제거, 바만 (하트가 숫자 담당) */
+body.game-mode #battle-screen .td-slot .bs-hp-overlay.slim{
+  background:none;padding:0;left:8%;right:8%;bottom:6%;
+}
+body.game-mode #battle-screen .td-slot .bs-hp-bar{
+  height:3px;background:rgba(40,40,40,.9);border-radius:2px;margin-top:2px;overflow:hidden;
+}
+body.game-mode #battle-screen .td-slot .bs-hp-fill{height:100%;transition:width .3s;}
+body.game-mode #battle-screen .td-slot .bs-status{
+  position:absolute;top:4%;right:4%;font-size:.9rem;z-index:4;pointer-events:none;
+  text-shadow:0 1px 3px #000;
+}
+body.game-mode #battle-screen .td-slot.td-selected .card-v2{
+  outline:3px solid var(--curr-gold);outline-offset:-3px;
+  filter:drop-shadow(0 0 14px rgba(255,215,0,.7));
+}
+body.game-mode #battle-screen .td-slot.td-ordered .card-v2{
+  opacity:.5;filter:brightness(.7);
+}
+body.game-mode #battle-screen .td-slot.td-ordered::after{
+  content:'✅';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;z-index:5;pointer-events:none;
 }
 body.game-mode #battle-screen > .battle-log{
   position:absolute;left:var(--b-log-x);top:var(--b-log-y);
@@ -589,13 +712,42 @@ body.game-mode #battle-screen > .tb-timer-bar{
 #prologue-screen{justify-content:center;align-items:center;background:url('../img/bg_prologue.png') center/cover no-repeat,#050408;text-align:center;position:relative;}
 #prologue-screen::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.7);pointer-events:none;}
 .prologue-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;width:100%;text-align:center;}
-.pl-line{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80%;max-width:600px;text-align:center;font-family:var(--font-body);opacity:0;text-shadow:0 2px 12px rgba(0,0,0,.95),0 0 30px rgba(0,0,0,.8);line-height:1.8;word-break:keep-all;}
-.pl-line.pl-gold{color:var(--curr-gold);font-size:1.3rem;font-weight:bold;text-shadow:0 0 15px rgba(255,215,0,.5),0 2px 12px rgba(0,0,0,.95);}
-.pl-line.pl-dim{color:var(--text-2);font-size:1rem;}
-.pl-line.pl-bright{color:var(--text-0);font-size:1.15rem;text-shadow:0 0 12px rgba(255,255,255,.3),0 2px 12px rgba(0,0,0,.95);}
-.pl-line.pl-normal{color:var(--text-1);font-size:1.05rem;}
+/* 프롤로그 텍스트 — 모든 줄 동일 스타일 (노랑 진한 굵은 글씨) */
+.pl-line,
+.pl-line.pl-normal,
+.pl-line.pl-gold,
+.pl-line.pl-dim,
+.pl-line.pl-bright{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:80%;max-width:720px;
+  text-align:center;
+  font-family:var(--font-title,'Cinzel','Noto Serif KR',serif);
+  font-size:1.5rem;
+  font-weight:900;
+  color:#ffd700;
+  letter-spacing:1px;
+  line-height:1.9;
+  word-break:keep-all;
+  opacity:0;
+  text-shadow:
+    0 0 18px rgba(255,215,0,.55),
+    0 2px 14px rgba(0,0,0,.98),
+    0 0 30px rgba(0,0,0,.85);
+}
 .pl-line.pl-show{animation:plCinIn .8s ease-out forwards;}
 .pl-line.pl-hide{animation:plCinOut .6s ease-in forwards;}
+/* 항상 보이는 건너뛰기 — 우상단 (설정 패널 아래) 고정 */
+.prologue-skip{
+  position:absolute!important;
+  top:64px;right:8px;
+  z-index:50;
+  padding:8px 22px!important;
+  font-size:.85rem!important;
+  min-width:0!important;min-height:0!important;
+  opacity:.85;
+  animation:none!important;
+}
+.prologue-skip:hover{opacity:1;}
 @media(max-width:700px){
   .card{width:42vw;min-height:55vw;}.card-icon{font-size:2.5rem;}.card-name{font-size:.9rem;}.card-stats{font-size:.7rem;}
   .card-stats .st{padding:3px 5px;}.card-ability{font-size:.65rem;padding:4px 6px;}
@@ -644,7 +796,7 @@ body.game-mode .choice-box{width:220px;padding:24px 18px;}
 body.game-mode .choice-box .cb-icon{font-size:2.5rem;}
 body.game-mode .choice-box .cb-title{font-size:1.1rem;}
 body.game-mode .choice-box .cb-desc{font-size:.8rem;}
-body.game-mode .hud,body.game-mode .town-hud{padding:12px 20px;}
+body.game-mode .hud,body.game-mode .town-hud{padding:12px 64px 12px 20px;}
 body.game-mode .hud-stat,body.game-mode .th-stat{font-size:.95rem;}
 body.game-mode .hud-name{font-size:.95rem;}
 body.game-mode .tb-icon{font-size:3.8rem;}

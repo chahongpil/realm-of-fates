@@ -107,19 +107,20 @@
 
   /* tavern zones */
   --tav-tabs-x: 20px; --tav-tabs-y: 60px; --tav-tabs-w: 1240px; --tav-tabs-h: 60px;
-  --tav-info-x: 40px; --tav-info-y: 119px; --tav-info-w: 1240px; --tav-info-h: 40px;
+  --tav-info-x: 40px; --tav-info-y: 175px; --tav-info-w: 1240px; --tav-info-h: 30px;
   --tav-grid-x: 40px; --tav-grid-y: 159px; --tav-grid-w: 1240px; --tav-grid-h: 480px;
   --tav-buttons-x: 0px; --tav-buttons-y: 0px; --tav-buttons-w: 1280px; --tav-buttons-h: 720px;
-  --tav-btn-refresh-x: 482px; --tav-btn-refresh-y: 650px; --tav-btn-refresh-w: 186px; --tav-btn-refresh-h: 48px;
-  --tav-btn-back-x:    678px; --tav-btn-back-y:    650px; --tav-btn-back-w:    178px; --tav-btn-back-h:    50px;
+  --tav-btn-refresh-x: 260px; --tav-btn-refresh-y: 650px; --tav-btn-refresh-w: 186px; --tav-btn-refresh-h: 48px;
+  --tav-btn-back-x:    870px; --tav-btn-back-y:    650px; --tav-btn-back-w:    178px; --tav-btn-back-h:    50px;
 
-  /* deckview zones */
-  --dv-tabs-x: 20px; --dv-tabs-y: 60px; --dv-tabs-w: 1240px; --dv-tabs-h: 60px;
-  --dv-grid-x: 20px; --dv-grid-y: 130px; --dv-grid-w: 1240px; --dv-grid-h: 580px;
-  --dv-skills-x: 20px; --dv-skills-y: 440px; --dv-skills-w: 820px; --dv-skills-h: 130px;
-  --dv-relics-x: 20px; --dv-relics-y: 580px; --dv-relics-w: 820px; --dv-relics-h: 130px;
-  --dv-codex-x: 0px; --dv-codex-y: 0px; --dv-codex-w: 0px; --dv-codex-h: 0px;
-  --dv-back-x: 1180px; --dv-back-y: 62px; --dv-back-w: 80px; --dv-back-h: 40px;
+  /* deckview zones — hud(0-44) · tabs(50-94) · npc(104-180) · content(190-700) */
+  --dv-tabs-x: 20px;     --dv-tabs-y: 50px;     --dv-tabs-w: 1240px;  --dv-tabs-h: 44px;
+  --dv-lib-npc-x: 20px; --dv-lib-npc-y: 72px; --dv-lib-npc-w: 1228px;--dv-lib-npc-h: 98px;
+  --dv-grid-x: 20px;     --dv-grid-y: 190px;    --dv-grid-w: 1240px;  --dv-grid-h: 510px;
+  --dv-skills-x: 20px;   --dv-skills-y: 440px;  --dv-skills-w: 1240px;--dv-skills-h: 120px;
+  --dv-relics-x: 20px;   --dv-relics-y: 570px;  --dv-relics-w: 1240px;--dv-relics-h: 120px;
+  --dv-codex-x: 20px;    --dv-codex-y: 190px;   --dv-codex-w: 1240px; --dv-codex-h: 510px;
+  --dv-back-x: 959px;   --dv-back-y: 72px;     --dv-back-w: 165px;    --dv-back-h: 38px;
 
   /* castle zones */
   --castle-tabs-x: 20px; --castle-tabs-y: 60px; --castle-tabs-w: 1240px; --castle-tabs-h: 60px;
@@ -128,9 +129,9 @@
   --castle-back-x: 20px; --castle-back-y: 670px; --castle-back-w: 200px; --castle-back-h: 40px;
 
   /* church zones */
-  --church-title-x: 20px; --church-title-y: 60px; --church-title-w: 1240px; --church-title-h: 70px;
+  --church-title-x: 28px; --church-title-y: 68px; --church-title-w: 1224px; --church-title-h: 28px;
   --church-grid-x: 20px; --church-grid-y: 140px; --church-grid-w: 1240px; --church-grid-h: 520px;
-  --church-back-x: 20px; --church-back-y: 670px; --church-back-w: 200px; --church-back-h: 40px;
+  --church-back-x: 660px; --church-back-y: 660px; --church-back-w: 136px; --church-back-h: 44px;
 
   /* reward zones */
   --rew-title-x: 340px; --rew-title-y: 60px; --rew-title-w: 600px; --rew-title-h: 60px;
@@ -145,9 +146,9 @@
   --pick-btns-x: 360px;   --pick-btns-y: 640px;  --pick-btns-w: 560px;   --pick-btns-h: 60px;
 
   /* choice zones (라운드 선택지) */
-  --ch-title-x: 0px;      --ch-title-y: 60px;    --ch-title-w: 1280px;   --ch-title-h: 60px;
-  --ch-sub-x: 0px;        --ch-sub-y: 130px;     --ch-sub-w: 1280px;     --ch-sub-h: 40px;
-  --ch-options-x: 20px;   --ch-options-y: 190px; --ch-options-w: 1240px; --ch-options-h: 510px;
+  --ch-title-x: 0px;      --ch-title-y: 40px;    --ch-title-w: 1280px;   --ch-title-h: 50px;
+  --ch-sub-x: 0px;        --ch-sub-y: 100px;     --ch-sub-w: 1280px;     --ch-sub-h: 140px;
+  --ch-options-x: 20px;   --ch-options-y: 260px; --ch-options-w: 1240px; --ch-options-h: 440px;
 
   /* formation zones (진형 배치) */
   --form-title-x: 0px;    --form-title-y: 40px;  --form-title-w: 1280px; --form-title-h: 60px;
@@ -177,12 +178,26 @@
 
   /* battle zones */
   --b-hud-x: 0px;         --b-hud-y: 0px;        --b-hud-w: 1280px;      --b-hud-h: 44px;
-  --b-field-x: 65px;      --b-field-y: 84px;     --b-field-w: 1166px;    --b-field-h: 468px;
-  --b-log-x: 20px;        --b-log-y: 595px;      --b-log-w: 1240px;      --b-log-h: 35px;
+  --b-field-x: 0px;       --b-field-y: 0px;      --b-field-w: 1280px;    --b-field-h: 720px;
+  --b-log-x: 9px;        --b-log-y: 234px;      --b-log-w: 160px;      --b-log-h: 251px;
   --b-bottom-x: 0px;      --b-bottom-y: 0px;     --b-bottom-w: 1280px;   --b-bottom-h: 720px;
-  --b-btn-back-x:  440px; --b-btn-back-y:  640px; --b-btn-back-w:  160px; --b-btn-back-h:  44px;
-  --b-btn-fight-x: 610px; --b-btn-fight-y: 640px; --b-btn-fight-w: 230px; --b-btn-fight-h: 44px;
-  --b-timer-x: 0px;       --b-timer-y: 705px;    --b-timer-w: 1280px;    --b-timer-h: 4px;
+  --b-btn-back-x:  640px; --b-btn-back-y:  655px; --b-btn-back-w:  171px; --b-btn-back-h:  49px;
+  --b-btn-fight-x: 450px; --b-btn-fight-y: 655px; --b-btn-fight-w: 194px; --b-btn-fight-h: 53px;
+  --b-timer-x: 0px;       --b-timer-y: 708px;    --b-timer-w: 1280px;    --b-timer-h: 4px;
+
+  /* battle slot zones — 프레임 카드 일러스트 크기(170×255, aspect 1:1.5) 기준.
+     5 enemy row y≈55, VS y≈320, 5 ally row y≈410. 화면 중앙 정렬: x = 175,365,555,745,935 */
+  --b-en-1-x: 175px; --b-en-1-y: 55px;  --b-en-1-w: 170px; --b-en-1-h: 255px;
+  --b-en-2-x: 365px; --b-en-2-y: 55px;  --b-en-2-w: 170px; --b-en-2-h: 255px;
+  --b-en-3-x: 555px; --b-en-3-y: 55px;  --b-en-3-w: 170px; --b-en-3-h: 255px;
+  --b-en-4-x: 745px; --b-en-4-y: 55px;  --b-en-4-w: 170px; --b-en-4-h: 255px;
+  --b-en-5-x: 935px; --b-en-5-y: 55px;  --b-en-5-w: 170px; --b-en-5-h: 255px;
+  --b-vs-x:  590px;  --b-vs-y:  320px;  --b-vs-w:  100px;  --b-vs-h:  60px;
+  --b-al-1-x: 175px; --b-al-1-y: 400px; --b-al-1-w: 170px; --b-al-1-h: 255px;
+  --b-al-2-x: 365px; --b-al-2-y: 400px; --b-al-2-w: 170px; --b-al-2-h: 255px;
+  --b-al-3-x: 555px; --b-al-3-y: 400px; --b-al-3-w: 170px; --b-al-3-h: 255px;
+  --b-al-4-x: 745px; --b-al-4-y: 400px; --b-al-4-w: 170px; --b-al-4-h: 255px;
+  --b-al-5-x: 935px; --b-al-5-y: 400px; --b-al-5-w: 170px; --b-al-5-h: 255px;
 
   /* ──────────────────────────────────────────────
    * login/signup/prologue 개별 요소 분해 (2026-04-13 심야 2차)
@@ -193,7 +208,7 @@
   --li-id-x:     40px;  --li-id-y:     100px; --li-id-w:     320px; --li-id-h:     44px;
   --li-pw-x:     40px;  --li-pw-y:     160px; --li-pw-w:     320px; --li-pw-h:     44px;
   --li-msg-x:    40px;  --li-msg-y:    210px; --li-msg-w:    320px; --li-msg-h:    22px;
-  --li-btn-x:    40px;  --li-btn-y:    221px; --li-btn-w:    320px; --li-btn-h:    54px;
+  --li-btn-x:    40px;  --li-btn-y:    242px; --li-btn-w:    323px; --li-btn-h:    61px;
   --li-back-x:   40px;  --li-back-y:   331px; --li-back-w:   320px; --li-back-h:   47px;
 
   --signup-box-x: 440px; --signup-box-y: 140px; --signup-box-w: 400px; --signup-box-h: 470px;
@@ -202,21 +217,21 @@
   --su-pw-x:     40px;  --su-pw-y:     146px; --su-pw-w:     320px; --su-pw-h:     44px;
   --su-pw2-x:    40px;  --su-pw2-y:    202px; --su-pw2-w:    320px; --su-pw2-h:    44px;
   --su-msg-x:    40px;  --su-msg-y:    258px; --su-msg-w:    320px; --su-msg-h:    22px;
-  --su-btn-x:    40px;  --su-btn-y:    294px; --su-btn-w:    322px; --su-btn-h:    47px;
+  --su-btn-x:    40px;  --su-btn-y:    294px; --su-btn-w:    322px; --su-btn-h:    49px;
   --su-back-x:   40px;  --su-back-y:   364px; --su-back-w:   322px; --su-back-h:   54px;
 
   --prologue-btn-ok-x:   518px; --prologue-btn-ok-y:   418px; --prologue-btn-ok-w:   260px; --prologue-btn-ok-h:   56px;
   --prologue-btn-skip-x: 1132px; --prologue-btn-skip-y: 56px; --prologue-btn-skip-w: 130px; --prologue-btn-skip-h: 44px;
 
   /* tavern/deckview/castle/church 탭 wrapper 분해 */
-  --tav-tab-unit-x:   457px; --tav-tab-unit-y:   59px;  --tav-tab-unit-w:   180px;  --tav-tab-unit-h:   44px;
-  --tav-tab-hero-x:   678px; --tav-tab-hero-y:   59px;  --tav-tab-hero-w:   180px;  --tav-tab-hero-h:   44px;
+  --tav-tab-unit-x:   463px; --tav-tab-unit-y:   659px;  --tav-tab-unit-w:   180px;  --tav-tab-unit-h:   44px;
+  --tav-tab-hero-x:   660px; --tav-tab-hero-y:   659px;  --tav-tab-hero-w:   180px;  --tav-tab-hero-h:   44px;
   --tav-info-x:       20px;  --tav-info-y:       115px; --tav-info-w:       1240px; --tav-info-h:       30px;
-  --dv-tab-deck-x:    440px; --dv-tab-deck-y:    60px;  --dv-tab-deck-w:    190px;  --dv-tab-deck-h:    44px;
-  --dv-tab-codex-x:   640px; --dv-tab-codex-y:   60px;  --dv-tab-codex-w:    190px; --dv-tab-codex-h:   44px;
+  --dv-tab-deck-x:    149px; --dv-tab-deck-y:    72px;  --dv-tab-deck-w:    180px;  --dv-tab-deck-h:    40px;
+  --dv-tab-codex-x:   149px; --dv-tab-codex-y:   121px;  --dv-tab-codex-w:    180px; --dv-tab-codex-h:   40px;
   --castle-tab-upgrade-x: 460px; --castle-tab-upgrade-y: 60px; --castle-tab-upgrade-w: 180px; --castle-tab-upgrade-h: 44px;
   --castle-tab-quest-x:   650px; --castle-tab-quest-y:   60px; --castle-tab-quest-w:   180px; --castle-tab-quest-h:   44px;
-  --church-info-x:    20px;  --church-info-y:    100px; --church-info-w:    1240px; --church-info-h:    30px;
+  --church-info-x:    40px;  --church-info-y:    160px; --church-info-w:    1240px; --church-info-h:    30px;
 }
 /* END_LAYOUT_VARS */
 

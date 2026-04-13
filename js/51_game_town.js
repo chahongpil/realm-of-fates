@@ -21,7 +21,7 @@ Object.assign(RoF.Game, {
   BUILDINGS:[
     {id:'castle',name:'성',icon:'🏰',desc:'퀘스트 & 동료 단련',cost:[0,30,80,180,400],
       x:52.3,y:25.6,w:22.1,h:51.4,action:'showCastle',
-      lvNames:['오두막','목조관저','석조성채','왕의성','왕궁'],
+      lvNames:['성','목조관저','석조성채','왕의성','왕궁'],
       lvDesc:['Lv1: 기본 단련','Lv2: 단련비용 -10%','Lv3: 단련비용 -20%','Lv4: 등급업 4단계마다','Lv5: 단련 시 보너스+1']},
     {id:'gate',name:'차원의 문',icon:'🚪',desc:'리그 전투 참여',cost:[0,20,55,130,300],
       x:50.7,y:79.7,w:20.3,h:28.6,action:'startBattle',
@@ -29,15 +29,15 @@ Object.assign(RoF.Game, {
       lvDesc:['Lv1: 리그 참여 가능','Lv2: 승리 보상+20%','Lv3: 승리 보상+40%','Lv4: 리그점수+20%','Lv5: 전설 보상 확률↑']},
     {id:'forge',name:'대장간',icon:'⚒️',desc:'장비 제작 & 분해',cost:[10,30,75,170,380],
       x:24.1,y:35.2,w:16,h:28.6,action:'showForge',
-      lvNames:['모루터','대장간','용광로','마법대장간','신의대장간'],
+      lvNames:['대장간','용광로','마법대장간','신의대장간','천공대장간'],
       lvDesc:['Lv1: 장비 제작 가능','Lv2: 제작비용 -10%','Lv3: 분해 수율 +20%','Lv4: 레어 제작 해금','Lv5: 전설 제작 해금']},
     {id:'shop',name:'상점',icon:'🏪',desc:'비전/유물 구매',cost:[15,40,90,200,450],
       x:74,y:24.6,w:16,h:27.3,action:'showShop',
-      lvNames:['노점','잡화점','상점','교역소','대상회'],
+      lvNames:['상점','잡화점','교역소','대상회','왕립상회'],
       lvDesc:['Lv1: 기본 상점 개점','Lv2: 상품 4→5개','Lv3: 할인 -10%','Lv4: 희귀 상품 등장','Lv5: 전설 상품 등장']},
     {id:'tavern',name:'선술집',icon:'🍺',desc:'용병 고용',cost:[10,30,75,170,380],
       x:37.9,y:51.8,w:16,h:28.6,action:'showTavern',
-      lvNames:['주막','선술집','주점','대주점','영웅의전당'],
+      lvNames:['선술집','주점','대주점','영웅의전당','전설의전당'],
       lvDesc:['Lv1: 용병 고용 가능','Lv2: 용병 4→5명','Lv3: 고용비 -10%','Lv4: 실버 용병 등장↑','Lv5: 골드 용병 등장↑']},
     {id:'training',name:'콜로세움',icon:'🏟️',desc:'동료 수련 & 경험',cost:[10,25,65,150,350],
       x:83.46,y:133.23,w:18,h:28,action:'showTraining',
@@ -45,11 +45,11 @@ Object.assign(RoF.Game, {
       lvDesc:['Lv1: 기본 수련 가능','Lv2: 수련 경험+20%','Lv3: 수련 경험+40%','Lv4: 합동 수련 해금','Lv5: 명예 수련 해금']},
     {id:'library',name:'서고',icon:'📋',desc:'전력 편성 & 생명의 서',cost:[5,18,50,120,280],
       x:37.2,y:18.5,w:14.5,h:27.3,action:'showDeckView',
-      lvNames:['책장','서재','서고','도서관','대도서관'],
+      lvNames:['도서관','서재','서고','대도서관','왕립도서관'],
       lvDesc:['Lv1: 전력 편성 & 생명의 서','Lv2: 적 정보 해금','Lv3: 비전 설명 상세화','Lv4: 모의 전투 해금','Lv5: 숨겨진 기록 해금']},
     {id:'church',name:'대성당',icon:'⛪',desc:'치료 & 장례',cost:[8,22,55,130,300],
       x:69.3,y:48.2,w:19,h:37.5,action:'showChurch',
-      lvNames:['기도처','예배당','교회','성당','대성당'],
+      lvNames:['성당','예배당','교회','대성당','천상신전'],
       lvDesc:['Lv1: 치료 & 장례 가능','Lv2: 치료비용 -10%','Lv3: 장례 명예+20%','Lv4: 치료비용 -20%','Lv5: 무료 치료 1회/전투']},
   ],
 
@@ -222,7 +222,8 @@ Object.assign(RoF.Game, {
           upgEl.onclick=(e)=>{e.stopPropagation();this.upgradeBuilding(b);};
         }
       } else {
-        div.innerHTML=`<div class="tb-icon" style="width:70px;height:70px;border:2px dashed rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.2);"><div style="font-size:1.5rem;opacity:.3;">➕</div></div><div class="tb-label">${b.name}</div><div class="tb-cost">🔨 ${b.cost[0]}💰</div>`;
+        div.classList.add('unbuilt');
+        div.innerHTML=`<div class="tb-icon tb-empty"><div class="tb-empty-plus">➕</div><div class="tb-empty-name">${b.name}</div><div class="tb-empty-cost">🔨 ${b.cost[0]}💰</div></div>`;
         div.onclick=()=>this.buildBuilding(b);
       }
       tc.appendChild(div);

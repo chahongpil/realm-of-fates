@@ -19,3 +19,14 @@ Thumbs.db
 *.log
 *.tmp
 *~
+
+# Garbage cleanup staging (복구 가능, git 추적 불필요)
+trash/
+
+# Editor audit scratch scripts
+tools/_battle_audit*.js
+tools/_frames_titan*/
+tools/_titan_frames/
+tools/copy_titan.py
+tools/build_titan_apng.py
+

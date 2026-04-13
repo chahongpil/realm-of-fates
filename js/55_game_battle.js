@@ -56,60 +56,68 @@ Object.assign(RoF.Game, {
     const hero=this.deck.find(c=>c.isHero);
     const lg=this.getLeague();
     const box=document.getElementById('match-box');
-    const heroImg=hero?getCardImg(hero):'';
     const heroClass=hero?(hero.heroClass||hero.type):'';
     const heroElem=hero?hero.element:'';
-    // Phase 1: Searching
+    // Phase 1: Searching — 내 쪽만 card-v2, 상대는 물음표 플레이스홀더
     box.innerHTML=`
       <div class="match-search" style="font-size:1.2rem;">⚔️ 도전자를 찾는 중<span class="dots">...</span></div>
-      <div style="display:flex;align-items:center;justify-content:center;gap:30px;width:100%;margin-top:20px;">
-        <!-- 상대 (왼쪽, 미확인) -->
-        <div style="text-align:center;flex:1;">
-          <div style="width:45vw;max-width:320px;aspect-ratio:4/5;border-radius:15px;border:3px dashed #444;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+      <div class="match-row" style="display:flex;align-items:center;justify-content:center;gap:40px;width:100%;margin-top:20px;">
+        <div class="match-side match-enemy" style="text-align:center;">
+          <div class="match-placeholder" style="width:280px;height:420px;border-radius:15px;border:3px dashed #444;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin:0 auto;">
             <div style="font-size:4rem;opacity:.3;animation:dotPulse 1s infinite;">❓</div>
           </div>
           <div style="color:#555;font-size:1.1rem;font-weight:bold;margin-top:8px;">검색중...</div>
         </div>
-        <!-- VS -->
         <div class="match-vs" style="opacity:.3;font-size:2rem;">⚔<br>VS<br>⚔</div>
-        <!-- 나 (오른쪽) -->
-        <div style="text-align:center;flex:1;">
-          ${heroImg?`<img src="${heroImg}" style="width:45vw;max-width:320px;aspect-ratio:4/5;border-radius:15px;border:4px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[heroElem]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${hero?hero.icon:'⚔️'}</div>`}
-          <div style="color:#fff;font-size:1.3rem;font-weight:bold;margin-top:8px;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>
-          <div style="color:${lg.color};font-size:.9rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>
-        </div>
+        <div class="match-side match-player" style="text-align:center;" id="match-player-side"></div>
       </div>`;
+    // card-v2 삽입 (내 영웅)
+    if(hero){
+      const myCard=mkCardEl(hero);myCard.classList.add('match-card');
+      const side=document.getElementById('match-player-side');
+      side.appendChild(myCard);
+      const cap=document.createElement('div');cap.style.cssText='margin-top:8px;';
+      cap.innerHTML=`<div style="color:#fff;font-size:1.3rem;font-weight:bold;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>
+        <div style="color:${lg.color};font-size:.9rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>`;
+      side.appendChild(cap);
+    }
     // Phase 2: Found (after 2-3 sec)
     const delay=1500+Math.random()*1500;
     setTimeout(()=>{
       const bot=this.generateBot();
       this._currentBot=bot;
       SFX.play('magic');
-      const botImg=getCardImg(bot.heroBase);
       box.innerHTML=`
         <div style="color:#44ff88;font-size:1.2rem;margin-bottom:15px;" class="match-found">도전자가 나타났다!</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:30px;width:100%;" class="match-found">
-          <!-- 상대 (왼쪽) -->
-          <div style="text-align:center;flex:1;">
-            ${botImg?`<img src="${botImg}" style="width:45vw;max-width:320px;aspect-ratio:4/5;border-radius:15px;border:4px solid ${ELEM_COLOR[bot.element]||'#888'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[bot.element]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${ELEM_ICON[bot.element]}</div>`}
-            <div style="color:#fff;font-size:1.3rem;font-weight:bold;margin-top:8px;font-family:'Cinzel','Georgia',serif;">${bot.name}</div>
-            <div style="color:${bot.league.color};font-size:.9rem;">${bot.league.icon} ${bot.league.name} Lv.${bot.level}</div>
-            <div style="color:#aaa;font-size:.8rem;">${bot.roleName||bot.role} · ${ELEM_ICON[bot.element]} ${ELEM_L[bot.element]}</div>
-          </div>
-          <!-- VS -->
+        <div class="match-row match-found" style="display:flex;align-items:center;justify-content:center;gap:40px;width:100%;">
+          <div class="match-side match-enemy" style="text-align:center;" id="match-enemy-side"></div>
           <div class="match-vs" style="font-size:2rem;">⚔<br>VS<br>⚔</div>
-          <!-- 나 (오른쪽) -->
-          <div style="text-align:center;flex:1;">
-            ${heroImg?`<img src="${heroImg}" style="width:45vw;max-width:320px;aspect-ratio:4/5;border-radius:15px;border:4px solid ${ELEM_COLOR[heroElem]||'#8b6914'};object-fit:cover;box-shadow:0 0 25px ${ELEM_COLOR[heroElem]||'rgba(0,0,0,.5)'};">`:`<div style="font-size:5rem;">${hero?hero.icon:'⚔️'}</div>`}
-            <div style="color:#fff;font-size:1.3rem;font-weight:bold;margin-top:8px;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>
-            <div style="color:${lg.color};font-size:.9rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>
-            <div style="color:#aaa;font-size:.8rem;">${heroClass} · ${heroElem?ELEM_ICON[heroElem]+' '+ELEM_L[heroElem]:''}</div>
-          </div>
+          <div class="match-side match-player" style="text-align:center;" id="match-player-side"></div>
         </div>
         <div style="display:flex;gap:15px;justify-content:center;margin-top:20px;">
-          <button class="btn" onclick="Game.startBattleFromMatch()" style="font-size:1.2rem;padding:14px 40px;">⚔️ 출전!</button>
+          <button class="btn" onclick="Game.startBattleFromMatch()" style="font-size:1.2rem;">⚔️ 출전!</button>
           <button class="btn btn-s btn-red" onclick="Game.showMenu()">철수</button>
         </div>`;
+      // 상대 card-v2
+      const enemySide=document.getElementById('match-enemy-side');
+      const botCard=mkCardEl(bot.heroBase);botCard.classList.add('match-card');
+      enemySide.appendChild(botCard);
+      const ecap=document.createElement('div');ecap.style.cssText='margin-top:8px;';
+      ecap.innerHTML=`<div style="color:#fff;font-size:1.3rem;font-weight:bold;font-family:'Cinzel','Georgia',serif;">${bot.name}</div>
+        <div style="color:${bot.league.color};font-size:.9rem;">${bot.league.icon} ${bot.league.name} Lv.${bot.level}</div>
+        <div style="color:#aaa;font-size:.8rem;">${bot.roleName||bot.role} · ${ELEM_ICON[bot.element]} ${ELEM_L[bot.element]}</div>`;
+      enemySide.appendChild(ecap);
+      // 내 card-v2
+      if(hero){
+        const mySide=document.getElementById('match-player-side');
+        const myCard=mkCardEl(hero);myCard.classList.add('match-card');
+        mySide.appendChild(myCard);
+        const pcap=document.createElement('div');pcap.style.cssText='margin-top:8px;';
+        pcap.innerHTML=`<div style="color:#fff;font-size:1.3rem;font-weight:bold;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>
+          <div style="color:${lg.color};font-size:.9rem;">${lg.icon} ${lg.name} Lv.${this.getHeroLevel()}</div>
+          <div style="color:#aaa;font-size:.8rem;">${heroClass} · ${heroElem?ELEM_ICON[heroElem]+' '+ELEM_L[heroElem]:''}</div>`;
+        mySide.appendChild(pcap);
+      }
     },delay);
   },
 

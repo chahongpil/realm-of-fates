@@ -39,7 +39,8 @@ RoF.TurnBattle ={
     this._orderedCount=0;
     UI.show('battle-screen');SFX.bgm('battle');
     document.getElementById('b-round').textContent=this.bs.currentRound;
-    document.getElementById('b-status').textContent='카드를 선택하세요 (WASD 이동, Enter 확인)';
+    { const bn=document.getElementById('b-name'); if(bn) bn.textContent=(typeof Auth!=='undefined'&&Auth.user)?Auth.user:''; }
+    document.getElementById('b-status').textContent='카드 선택 [WASD/⏎]';
     document.getElementById('btn-back').style.display='none';
     document.getElementById('btn-fight').textContent='⚔️ 전투 개시!';
     document.getElementById('btn-fight').disabled=false;
@@ -56,21 +57,27 @@ RoF.TurnBattle ={
     const container=document.getElementById('tb-enemy-diamond');container.innerHTML='';
     for(let i=0;i<5;i++){
       const c=enemies[i];
-      const slot=document.createElement('div');slot.className='td-slot';
+      const slot=document.createElement('div');
+      slot.className=`td-slot bs-en-${i+1}`;
       if(c&&c.currentHp>0){
-        const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
-        const img=getCardImg(c);slot.id=`bc-${c.uid}`;
+        slot.id=`bc-${c.uid}`;
+        const cardEl=mkCardEl(c);
+        // card-v2 의 하트(.cv-hp) / 공격력(.cv-atk) 슬롯 숫자를 현재 전투값으로 덮어쓰기
+        const hpEl=cardEl.querySelector('.cv-hp');if(hpEl)hpEl.textContent=Math.ceil(c.currentHp);
+        const atkEl=cardEl.querySelector('.cv-atk');if(atkEl)atkEl.textContent=c.atk;
+        const nrgEl=cardEl.querySelector('.cv-nrg');if(nrgEl)nrgEl.textContent=Math.floor(c.curNrg||c.nrg||0);
+        slot.appendChild(cardEl);
+        const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);
+        const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
         const isTaunt=c.skill==='taunt';
-        slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:2px solid ${isTaunt?'#ffd700':'#ff4444'};background:linear-gradient(180deg,rgba(30,10,10,.85),rgba(10,5,5,.9));${isTaunt?'box-shadow:0 0 12px rgba(255,215,0,.4);':''}">
-          ${isTaunt?'<div style="position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:.8rem;">🛡️</div>':''}
-          ${img?`<img src="${img}">`:`<div style="font-size:1.5rem;">${c.icon}</div>`}
-          <div class="td-name">${c.name}</div>
-          <div class="td-hp">♥${Math.ceil(c.currentHp)} ⚔${c.atk}</div>
-          <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
-        </div>`;
+        const statusIcons=(isTaunt?'🛡️':'')+(c.frozen>0?'❄️':'')+(c.burn>0?'🔥':'');
+        if(statusIcons){const s=document.createElement('div');s.className='bs-status';s.textContent=statusIcons;slot.appendChild(s);}
+        // 슬림 HP 바만 (숫자 없음 — 카드 하트가 숫자 담당)
+        const bar=document.createElement('div');bar.className='bs-hp-overlay slim';
+        bar.innerHTML=`<div class="bs-hp-bar"><div class="bs-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>`;
+        slot.appendChild(bar);
       } else {
-        slot.innerHTML=`<div class="td-card" style="border:2px dashed #333;background:rgba(0,0,0,.3);opacity:.3;padding:12px 4px;">
-          <div style="font-size:1rem;color:#333;">✕</div></div>`;
+        slot.classList.add('bs-empty');
       }
       container.appendChild(slot);
     }
@@ -81,45 +88,37 @@ RoF.TurnBattle ={
     const src=cards||(this.bs?this.bs.pCards.filter(c=>c.currentHp>0):[]);
     const diamond=document.getElementById('tb-diamond');diamond.innerHTML='';
     if(this.phase!=='combat')document.getElementById('tb-actions').style.display='none';
-    src.slice(0,5).forEach((c,i)=>{
+    // Always render 5 slots (빈 슬롯 = dashed outline)
+    for(let i=0;i<5;i++){
+      const c=src[i];
+      const slot=document.createElement('div');
+      slot.className=`td-slot bs-al-${i+1}`;
+      if(!c){slot.classList.add('bs-empty');diamond.appendChild(slot);continue;}
       const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);
       const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
-      const img=getCardImg(c);
       const ordered=this.orders.find(o=>o.uid===c.uid);
       const isHighlighted=i===this._highlightIdx&&!isEnemy;
-      const slot=document.createElement('div');
-      slot.className=`td-slot ${isHighlighted?'td-selected':''} ${ordered?'td-ordered':''}`;
-      const borderColor=isHighlighted?'#ffd700':ordered?'#44ff88':'#44aaff';
-      // Status icons
-      const frozen=c.frozen>0;const burning=c.burn>0;const defending=c._defending;
-      const statusIcons=(frozen?'❄️':'')+(burning?'🔥':'')+(defending?'🛡️':'');
-      // Order display
-      const orderDesc=ordered?({attack:'⚔️',defend:'🛡️',skill:'🔮'})[ordered.action]||'✓':'';
-      // Row label
-      const rowLabel=`${i+1}번`;
-      slot.innerHTML=`
-        <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid ${borderColor};background:linear-gradient(180deg,rgba(20,15,10,.9),rgba(5,5,5,.95));">
-          ${img?`<img src="${img}">`:`<div style="font-size:2rem;">${c.icon}</div>`}
-          <div class="td-name">${c.isHero?'⭐':''}${c.name}</div>
-          <div class="td-hp">♥${Math.ceil(c.currentHp)}/${c.maxBHp} ⚔${c.atk} ⚡${Math.floor(c.curNrg||0)}</div>
-          <div class="td-hp-bar"><div class="td-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>
-          ${statusIcons?`<div style="font-size:.6rem;margin-top:1px;">${statusIcons}</div>`:''}
-          <div class="td-order" style="${ordered?'display:flex;background:#44ff88;':''}">${orderDesc}</div>
-          <div style="font-size:.4rem;color:#666;margin-top:1px;">${rowLabel}</div>
-        </div>`;
+      if(isHighlighted)slot.classList.add('td-selected');
+      if(ordered)slot.classList.add('td-ordered');
+      const cardEl=mkCardEl(c);
+      // card-v2 슬롯에 현재 전투값 주입 (하트=currentHp, 공격력, 에너지)
+      const hpEl=cardEl.querySelector('.cv-hp');if(hpEl)hpEl.textContent=Math.ceil(c.currentHp);
+      const atkEl=cardEl.querySelector('.cv-atk');if(atkEl)atkEl.textContent=c.atk;
+      const nrgEl=cardEl.querySelector('.cv-nrg');if(nrgEl)nrgEl.textContent=Math.floor(c.curNrg||c.nrg||0);
+      slot.appendChild(cardEl);
+      const statusIcons=(c.frozen>0?'❄️':'')+(c.burn>0?'🔥':'')+(c._defending?'🛡️':'');
+      if(statusIcons){const s=document.createElement('div');s.className='bs-status';s.textContent=statusIcons;slot.appendChild(s);}
+      const bar=document.createElement('div');bar.className='bs-hp-overlay slim';
+      bar.innerHTML=`<div class="bs-hp-bar"><div class="bs-hp-fill" style="width:${hp}%;background:${hpC};"></div></div>`;
+      slot.appendChild(bar);
       slot.onclick=()=>{
         if(isEnemy){this._selectTarget(c);return;}
         if(this.phase==='target_ally'){this._selectAllyTarget(c);return;}
-        // Click = highlight first, click again = confirm
-        if(this._highlightIdx===i){
-          this._confirmHighlight();
-        } else {
-          this._highlightIdx=i;SFX.play('click');
-          this.renderDiamond(cards,isEnemy);
-        }
+        if(this._highlightIdx===i){this._confirmHighlight();}
+        else{this._highlightIdx=i;SFX.play('click');this.renderDiamond(cards,isEnemy);}
       };
       diamond.appendChild(slot);
-    });
+    }
   },
 
   // Show action cards for selected unit (fan card hand)
@@ -338,7 +337,7 @@ RoF.TurnBattle ={
       this.phase='select';this.selectedIdx=-1;this._highlightIdx=-1;this._pendingAction=null;
       document.getElementById('btn-back').style.display='none';
       document.getElementById('tb-actions').style.display='none';
-      document.getElementById('b-status').textContent='카드를 선택하세요 (WASD 이동, Enter 확인)';
+      document.getElementById('b-status').textContent='카드 선택 [WASD/⏎]';
       this.renderDiamond();
     }
   },

@@ -1,0 +1,103 @@
+== Realm of Fates — 업데이트 필요 영웅 9종 (1차 전직) ==
+
+아래 9개 블록을 하나씩 Gemini/ChatGPT Image 에 붙여넣고
+파일명을 [대괄호 id].png 로 저장 → c:/work/game/img/ 덮어쓰기
+
+═══════════════════════════════════════════════════════════
+  4. [h_m_earth]  근접 전사 · 땅 — 거대 철퇴 탱커
+═══════════════════════════════════════════════════════════
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio (2:3 vertical, card frame arch window), rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI,
+
+young sturdy novice warrior at 1st promotion tier, basic stone-plated armor and rough iron mace, grounded solid stance, stoic face, chestplate with earth element motif, early-tier metallic details, earthy brown and moss green palette, rocky canyon background, rising dust, stone fragments floating, character aura: earth/stone
+
+Negative prompt: hearthstone, blizzard, warcraft, logo, watermark, text, multiple characters, full body, wide shot, flat color, anime, cartoon, 3d render, photo, blurry, low quality
+
+Output: 1024x1536 portrait, PNG, filename h_m_earth.png
+
+═══════════════════════════════════════════════════════════
+  5. [h_m_dark]  근접 전사 · 암흑 — 그림자 흡혈검
+═══════════════════════════════════════════════════════════
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio (2:3 vertical, card frame arch window), rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI,
+
+young novice warrior at 1st promotion tier, basic dark leather armor and curved dagger, crouched stealth stance, glowing red eyes, early-tier dark metallic details, shadowy black and violet palette, cursed forest background at night, dark mist tendrils, eerie purple glow, character aura: shadow
+
+Negative prompt: hearthstone, blizzard, warcraft, logo, watermark, text, multiple characters, full body, wide shot, flat color, anime, cartoon, 3d render, photo, blurry, low quality
+
+Output: 1024x1536 portrait, PNG, filename h_m_dark.png
+
+═══════════════════════════════════════════════════════════
+  6. [h_m_holy]  근접 전사 · 신성 — 금빛 성기사
+═══════════════════════════════════════════════════════════
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio (2:3 vertical, card frame arch window), rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI,
+
+young novice paladin at 1st promotion tier, basic white and gold chestplate, simple blessed sword, devout prayer face, heroic pose, chestplate with holy element motif, early-tier metallic details, ivory and golden palette, cathedral rays of light background, floating golden feathers, divine halo, character aura: holy light
+
+Negative prompt: hearthstone, blizzard, warcraft, logo, watermark, text, multiple characters, full body, wide shot, flat color, anime, cartoon, 3d render, photo, blurry, low quality
+
+Output: 1024x1536 portrait, PNG, filename h_m_holy.png
+
+═══════════════════════════════════════════════════════════
+  7. [h_r_fire]  원거리 궁수 · 화염 — 화염 석궁수
+═══════════════════════════════════════════════════════════
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio (2:3 vertical, card frame arch window), rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI,
+
+young novice archer at 1st promotion tier, basic leather armor and simple crossbow, aiming pose with focused eyes, flaming arrow nocked, quiver visible, flaming red and orange palette, volcanic battlefield background, embers and sparks floating, heat waves, character aura: fire
+
+Negative prompt: hearthstone, blizzard, warcraft, logo, watermark, text, multiple characters, full body, wide shot, flat color, anime, cartoon, 3d render, photo, blurry, low quality
+
+Output: 1024x1536 portrait, PNG, filename h_r_fire.png
+
+═══════════════════════════════════════════════════════════
+  8. [h_r_water]  원거리 궁수 · 물 — 얼음 활 명사수
+═══════════════════════════════════════════════════════════
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio (2:3 vertical, card frame arch window), rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI,
+
+young novice archer at 1st promotion tier, basic cloth and leather armor and simple longbow, aiming pose with focused eyes, ice-infused arrow, quiver visible, deep ocean blue and cyan palette, misty coastal cliff background, water droplets and ice crystals, flowing robes, character aura: water/ice
+
+Negative prompt: hearthstone, blizzard, warcraft, logo, watermark, text, multiple characters, full body, wide shot, flat color, anime, cartoon, 3d render, photo, blurry, low quality
+
+Output: 1024x1536 portrait, PNG, filename h_r_water.png
+
+═══════════════════════════════════════════════════════════
+  9. [h_r_lightning]  원거리 궁수 · 번개 — 뇌전 활수
+═══════════════════════════════════════════════════════════
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio (2:3 vertical, card frame arch window), rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI,
+
+young novice archer at 1st promotion tier, basic light leather armor and simple shortbow, aiming pose with focused eyes, electric-infused arrow, quiver visible, electric purple and gold palette, storm cloud sky background, crackling lightning bolts, glowing eyes, character aura: lightning
+
+Negative prompt: hearthstone, blizzard, warcraft, logo, watermark, text, multiple characters, full body, wide shot, flat color, anime, cartoon, 3d render, photo, blurry, low quality
+
+Output: 1024x1536 portrait, PNG, filename h_r_lightning.png
+
+═══════════════════════════════════════════════════════════
+  10. [h_r_earth]  원거리 궁수 · 땅 — 돌 투석 레인저
+═══════════════════════════════════════════════════════════
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio (2:3 vertical, card frame arch window), rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI,
+
+young novice ranger at 1st promotion tier, rough cloth and leather armor and simple hunting bow, aiming pose with focused eyes, stone-tipped arrow, quiver visible, earthy brown and moss green palette, rocky canyon background, rising dust, stone fragments floating, character aura: earth/stone
+
+Negative prompt: hearthstone, blizzard, warcraft, logo, watermark, text, multiple characters, full body, wide shot, flat color, anime, cartoon, 3d render, photo, blurry, low quality
+
+Output: 1024x1536 portrait, PNG, filename h_r_earth.png
+
+═══════════════════════════════════════════════════════════
+  11. [h_r_dark]  원거리 궁수 · 암흑 — 독화살 그림자 궁수
+═══════════════════════════════════════════════════════════
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio (2:3 vertical, card frame arch window), rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI,
+
+young novice archer at 1st promotion tier, basic dark leather armor and simple recurve bow, aiming pose with focused eyes, poison-dripping arrow, quiver visible, shadowy black and violet palette, cursed forest background at night, dark mist tendrils, eerie purple glow, character aura: shadow
+
+Negative prompt: hearthstone, blizzard, warcraft, logo, watermark, text, multiple characters, full body, wide shot, flat color, anime, cartoon, 3d render, photo, blurry, low quality
+
+Output: 1024x1536 portrait, PNG, filename h_r_dark.png
+
+═══════════════════════════════════════════════════════════
+  12. [h_r_holy]  원거리 궁수 · 신성 — 빛의 성궁수
+═══════════════════════════════════════════════════════════
+Dark fantasy card illustration, single character portrait, chest-up composition centered upper third, dramatic lighting, stylized digital painting, 1024x1536 portrait ratio (2:3 vertical, card frame arch window), rich detail, intricate costume, atmospheric background, vignette darkened edges, NO frame, NO text, NO UI,
+
+young novice holy archer at 1st promotion tier, simple white robe and basic bow, aiming pose with focused eyes, light-infused arrow, quiver visible, ivory and golden palette, cathedral rays of light background, floating golden feathers, divine halo, character aura: holy light
+
+Negative prompt: hearthstone, blizzard, warcraft, logo, watermark, text, multiple characters, full body, wide shot, flat color, anime, cartoon, 3d render, photo, blurry, low quality
+
+Output: 1024x1536 portrait, PNG, filename h_r_holy.png

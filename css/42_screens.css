@@ -99,11 +99,7 @@
 .town-container .town-building[data-id="gate"] .tb-icon{
   width:120px;height:80px;
   background:transparent;
-  border:1px dashed rgba(255,200,80,0)!important;
-  transition:border-color .2s;
-}
-.town-container .town-building[data-id="gate"]:hover .tb-icon{
-  border-color:rgba(255,200,80,.6)!important;
+  border:none!important;
 }
 /* hover glow — 앰버 hotspot (2026-04-12 FATES 레퍼런스 반영) */
 /* 네모난 box glow 제거 — 건물 실루엣 자체의 drop-shadow 로만 강조 (위 tb-icon:hover 참조) */
@@ -183,9 +179,9 @@
 .town-building.ruins:hover .tb-label{color:var(--curr-gold-mid);}
 .town-building.ruins::after{content:'🏚️';position:absolute;top:0;right:-5px;font-size:.8rem;opacity:.6;}
 .town-building.built .tb-icon{filter:drop-shadow(0 0 10px rgba(255,215,0,.25)) drop-shadow(0 4px 8px rgba(0,0,0,.5));}
-.town-building.built .tb-icon img{border:1px solid rgba(255,215,0,.3);border-radius:8px;}
+.town-building.built .tb-icon img{border:none;border-radius:0;}
 .town-building.built:hover .tb-icon{filter:drop-shadow(0 0 18px rgba(255,215,0,.5)) drop-shadow(0 4px 8px rgba(0,0,0,.5));}
-.town-building.built .tb-icon::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 70%,rgba(255,200,100,.08),transparent 60%);pointer-events:none;border-radius:8px;}
+.town-building.built .tb-icon::after{content:none;}
 .town-npc{position:absolute;font-size:.7rem;z-index:1;pointer-events:none;opacity:.6;}
 .town-npc.walk-right{animation:walkRight 20s linear infinite;}
 .town-npc.walk-left{animation:walkLeft 25s linear infinite;}

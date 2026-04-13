@@ -1,5 +1,24 @@
 /* ==========================================================
-   35_banners.css — 비활성 (2026-04-13)
-   기존 banner_*.png 11종은 모두 삭제됨. 새 배너 에셋 제작 대기.
-   필요 사이즈 목록은 game/BANNER_SIZES_NEEDED.md 참고.
+   35_banners.css — P0 배너 활성화 (2026-04-13)
+   교훈: 투명 여백이 있는 PNG 를 background-size:100% 100% 로 깔면
+   부모 배경이 여백으로 투과됨 → 반드시 불투명 폴백 레이어 동반.
+   (.claude/rules/08-garbage-lessons.md 참고)
    ========================================================== */
+
+/* 2. 화면 타이틀 — banner_screen_title.png (900×220 원본, 640×96 슬롯) */
+body.game-mode .char-select-title,
+body.game-mode .form-title,
+body.game-mode .upgrade-title,
+body.game-mode .choice-title,
+body.game-mode .reward-title,
+body.game-mode .pick-title {
+  background:url('../img/ui/banner_screen_title.png') center/100% 100% no-repeat,#0a0810;
+  border: none;
+  padding: 14px 32px;
+}
+
+/* 3. 일반 모달 박스 — banner_modal_box.png (스컬 장식 + X 버튼 포함) */
+body.game-mode .modal-box {
+  background:url('../img/ui/banner_modal_box.png') center/100% 100% no-repeat,#0a0810;
+  border: none;
+}

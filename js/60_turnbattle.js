@@ -147,20 +147,25 @@ RoF.TurnBattle ={
 
     actions.forEach((a,i)=>{
       const card=document.createElement('div');
-      card.className=`ta-card${a.disabled?' tac-disabled':''}`;
-      card.innerHTML=`<div class="tac-key">${i+1}</div>${a.img?`<img src="${a.img}" style="width:70px;height:70px;border-radius:6px;object-fit:cover;margin-top:4px;">`:`<div class="tac-icon">${a.icon}</div>`}<div class="tac-name">${a.name}</div><div class="tac-desc">${a.desc}</div>`;
-      if(!a.disabled){
-        card.onclick=()=>{
-          // First click = zoom card to center
-          if(this._activeCardIdx===i){
-            // Second click = use it
-            SFX.play('magic');this._chooseAction(unit,a);
-          } else {
-            this._activeCardIdx=i;SFX.play('click');
-            this._highlightHandCard(i,a);
-          }
-        };
-      }
+      card.className=`ta-card${a.disabled?' tac-disabled':''}${a.passive?' tac-passive':''}`;
+      if(a.passive) card.title='패시브 — 자동 발동, 직접 사용 불가';
+      else if(a.disabled && a.nrgCost) card.title=`에너지 부족 — 필요 ${a.nrgCost}`;
+      const badge = a.passive
+        ? `<div class="tac-badge passive">⚠️ 패시브</div>`
+        : (a.disabled && a.nrgCost ? `<div class="tac-badge nrg">⚡ 에너지 ${a.nrgCost} 필요</div>` : '');
+      card.innerHTML=`<div class="tac-key">${i+1}</div>${a.img?`<img src="${a.img}" style="width:70px;height:70px;border-radius:6px;object-fit:cover;margin-top:4px;">`:`<div class="tac-icon">${a.icon}</div>`}<div class="tac-name">${a.name}</div><div class="tac-desc">${a.desc}</div>${badge}`;
+      card.onclick=()=>{
+        // 같은 카드 2차 클릭 → 사용 (패시브/에너지부족 차단)
+        if(this._activeCardIdx===i){
+          if(a.passive){ SFX.play('error'); return; }
+          if(a.disabled){ SFX.play('error'); return; }
+          SFX.play('magic');this._chooseAction(unit,a);
+          return;
+        }
+        // 1차 클릭(또는 다른 카드로 전환) = 확대 (disabled/passive 포함 — 정보 확인 허용)
+        this._activeCardIdx=i;SFX.play('click');
+        this._highlightHandCard(i,a);
+      };
       hand.appendChild(card);
     });
   },
@@ -171,18 +176,29 @@ RoF.TurnBattle ={
     // Show zoomed card detail
     const zoom=document.getElementById('ta-zoom-area');
     const a=action||this._currentActions[idx];
+    let footer;
+    if(a.passive){
+      footer = `<div class="taz-passive-notice">⚠️ 패시브 스킬 — 자동 발동, 직접 사용 불가</div>`;
+    } else if(a.disabled){
+      const nrgMsg = a.nrgCost ? `에너지 ${a.nrgCost} 필요` : '일시적 사용 불가';
+      footer = `<div class="taz-passive-notice" style="background:rgba(30,70,120,.6);border-color:#4488cc;color:#8fd0ff;">⚡ ${nrgMsg} — 사용 불가</div>`;
+    } else {
+      footer = `<div style="margin-top:8px;color:#88ff88;font-size:.75rem;">이 카드 영역을 다시 클릭 → 대상 선택</div>`;
+    }
     zoom.innerHTML=`<div style="text-align:center;margin-top:8px;">
       <div style="font-size:2rem;">${a.icon}</div>
       <div style="font-size:.9rem;color:#ffd700;font-weight:bold;margin-top:4px;">${a.name}</div>
       <div style="font-size:.7rem;color:#ccc;margin-top:4px;">${a.desc}</div>
-      <button class="btn btn-s btn-green" style="margin-top:8px;" onclick="TurnBattle._useActiveCard()">사용하기 (Enter)</button>
+      ${footer}
     </div>`;
   },
 
   _useActiveCard(){
     if(this._activeCardIdx<0||!this._currentUnit||!this._currentActions)return;
     const a=this._currentActions[this._activeCardIdx];
-    if(a&&!a.disabled){SFX.play('magic');this._chooseAction(this._currentUnit,a);}
+    if(!a) return;
+    if(a.passive){ SFX.play('error'); return; } // Enter 방어 — 패시브 사용 불가
+    if(!a.disabled){SFX.play('magic');this._chooseAction(this._currentUnit,a);}
   },
 
   _getActions(unit){
@@ -203,11 +219,22 @@ RoF.TurnBattle ={
     if(sk&&sk!=='none'&&skT==='active'){
       actions.push({id:'skill',icon:'🔮',name:unit.skillDesc?unit.skillDesc.split(']')[0].replace('[',''):'비전',
         desc:`${unit.skillDesc||sk} (에너지${skNrg})`,target:this._skillTarget(sk),
-        disabled:nrg<skNrg,img:getSkillImg(sk)});
+        disabled:nrg<skNrg,nrgCost:skNrg,img:getSkillImg(sk)});
     }
-    // Equipped skills
+    // Equipped skills — passive 는 클릭/확대는 허용, 사용은 zoom area 안내로 차단
     (unit.equips||[]).forEach((eq,i)=>{
-      actions.push({id:'equip_'+i,icon:eq.icon||'🔮',name:eq.name,desc:`장착 비전`,target:'enemy'});
+      const isPassive = RoF.isSkillPassive && RoF.isSkillPassive(eq.id);
+      const skData = eq.id && RoF.Data.SKILLS.find(s=>s.id===eq.id);
+      const skDesc = skData ? skData.desc : '장착 비전';
+      actions.push({
+        id:'equip_'+i,
+        icon:eq.icon||'🔮',
+        name:eq.name,
+        desc: isPassive ? `[패시브] ${skDesc}` : skDesc,
+        target:'enemy',
+        passive: isPassive || false,
+        img:getSkillImg(eq.id)
+      });
     });
     return actions;
   },
@@ -276,7 +303,7 @@ RoF.TurnBattle ={
       const willDie=afterThis<=0&&canReach;
 
       if(isHL)slot.classList.add('td-target-hl');
-      slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:3px solid ${isHL?'#ff4444':isTaunt?'#ffd700':'#555'};background:linear-gradient(180deg,rgba(30,10,10,.9),rgba(10,5,5,.95));${!canReach?'opacity:.35;':''}position:relative;">
+      slot.innerHTML=`<div class="td-card ${c.rarity||'bronze'}" style="border:none;background:transparent;${!canReach?'opacity:.35;':''}position:relative;${isHL?'filter:drop-shadow(0 0 8px #ff4444);':isTaunt?'filter:drop-shadow(0 0 8px #ffd700);':''}">
         ${isTaunt?'<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:1rem;">🛡️</div>':''}
         ${willDie?'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2rem;z-index:2;">💀</div>':''}
         ${img?`<img src="${img}" style="width:95%;max-width:200px;aspect-ratio:1;border-radius:8px;object-fit:cover;${willDie?'opacity:.4;':''}">`:`<div style="font-size:2.5rem;">${c.icon}</div>`}
@@ -351,7 +378,7 @@ RoF.TurnBattle ={
       const pos=this.SLOTS[i];const img=getCardImg(c);
       const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
       html+=`<div class="td-slot" style="left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);cursor:${forTarget?'pointer':'default'};" data-euid="${c.uid}">
-        <div class="td-card ${c.rarity||'bronze'}" style="border:2px solid #ff4444;background:linear-gradient(180deg,rgba(30,10,10,.9),rgba(10,5,5,.95));">
+        <div class="td-card ${c.rarity||'bronze'}" style="border:none;background:transparent;filter:drop-shadow(0 0 6px rgba(255,68,68,.5));">
           ${img?`<img src="${img}">`:`<div style="font-size:2rem;">${c.icon}</div>`}
           <div class="td-name">${c.name}</div>
           <div class="td-hp">♥${Math.ceil(c.currentHp)}/${c.maxBHp} ⚔${c.atk}</div>

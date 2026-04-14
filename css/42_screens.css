@@ -168,8 +168,10 @@
 .town-building:hover{z-index:3;}
 .town-building:hover .tb-icon img{transform:scale(1.08);filter:drop-shadow(0 0 24px rgba(255,200,80,.8)) drop-shadow(0 0 40px rgba(255,170,40,.4)) brightness(1.15);}
 .tb-icon img{transition:transform .25s, filter .25s;border-radius:0;}
-.tb-upgrade{font-size:.5rem;color:var(--curr-gold);cursor:pointer;margin-top:1px;opacity:.4;transition:all .2s;}
-.tb-upgrade:hover{opacity:1;text-decoration:underline;}
+.tb-upgrade{font-size:.5rem;color:var(--curr-gold);cursor:pointer;margin-top:1px;opacity:0;pointer-events:none;transition:all .2s;}
+.town-building.selected .tb-upgrade{opacity:1;pointer-events:auto;color:#ffcf33;font-weight:bold;text-shadow:0 0 6px rgba(0,0,0,.9),0 0 3px rgba(255,215,0,.8);background:rgba(0,0,0,.7);padding:2px 8px;border-radius:4px;border:1px solid rgba(255,215,0,.5);}
+.town-building.selected .tb-icon img{filter:brightness(1.15) drop-shadow(0 0 12px rgba(255,215,0,.6));}
+.tb-upgrade:hover{text-decoration:underline;}
 .tb-icon{filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));transition:filter .25s;}
 .tb-cost{font-size:.6rem;color:var(--warn);margin-top:1px;}
 .town-building.ruins .tb-icon{filter:grayscale(.9) brightness(.3) sepia(.3) drop-shadow(0 4px 8px rgba(0,0,0,.8));}
@@ -964,24 +966,31 @@ body.game-mode #title-screen .title-buttons > button[data-arg="signup-screen"]{
   left:var(--title-btn-new-x); top:var(--title-btn-new-y);
   width:var(--title-btn-new-w); height:var(--title-btn-new-h);
 }
-/* title 텍스트 3종 — Type C 분해 (2026-04-13). 중간 래퍼는 이미 static. */
+/* title 텍스트 3종 — Type C 분해 (2026-04-13). 중간 래퍼는 이미 static.
+   2026-04-14: flex center 로 박스 내부 수평·수직 완전 중앙정렬. */
 body.game-mode #title-screen > div[style*="z-index:2"] > div:first-of-type{
   position:absolute;
   left:var(--title-league-x); top:var(--title-league-y);
   width:var(--title-league-w); height:var(--title-league-h);
   margin:0 !important;
+  display:flex !important;align-items:center;justify-content:center;
+  text-align:center !important;letter-spacing:8px;
 }
 body.game-mode #title-screen > div[style*="z-index:2"] > h1{
   position:absolute;
   left:var(--title-logo-x); top:var(--title-logo-y);
   width:var(--title-logo-w); height:var(--title-logo-h);
   margin:0 !important;
+  display:flex !important;align-items:center;justify-content:center;
+  text-align:center !important;
 }
 body.game-mode #title-screen > div[style*="z-index:2"] > .subtitle{
   position:absolute;
   left:var(--title-subtitle-x); top:var(--title-subtitle-y);
   width:var(--title-subtitle-w); height:var(--title-subtitle-h);
   margin:0 !important;
+  display:flex !important;align-items:center;justify-content:center;
+  text-align:center !important;
 }
 
 /* TAVERN — padding:10px;display:flex;gap:8px wrapper (맨 아래) */

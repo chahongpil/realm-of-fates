@@ -40,7 +40,17 @@
 .ta-card .tac-name{font-size:1rem;color:var(--amber-bright);margin-top:8px;font-weight:bold;}
 .ta-card .tac-desc{font-size:.8rem;color:var(--text-3);margin-top:6px;line-height:1.4;}
 .ta-card .tac-key{position:absolute;top:6px;left:6px;font-size:.85rem;color:var(--curr-gold);background:rgba(0,0,0,.7);padding:4px 10px;border-radius:4px;font-weight:bold;}
-.ta-card.tac-disabled{opacity:.25;pointer-events:none;filter:grayscale(.8);}
+/* 일시적 사용 불가 (에너지 부족) — 푸른 필터. 확대/정보 확인은 허용, 2차 클릭만 차단. */
+.ta-card.tac-disabled{opacity:.55;filter:grayscale(.5) brightness(.75) hue-rotate(190deg) saturate(1.2);}
+.ta-card.tac-disabled .tac-desc{color:#7aaacc !important;}
+/* 패시브 스킬 — 클릭은 허용(정보 확인용), 사용은 zoom area 안내 라벨로 차단 */
+.ta-card.tac-passive{opacity:.6;filter:grayscale(.75);border-style:dashed !important;}
+.ta-card.tac-passive .tac-desc{color:#9a8866 !important;font-style:italic;}
+/* 카드 하단 배지 — 왜 사용 불가인지 즉각 전달 */
+.tac-badge{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:bold;white-space:nowrap;pointer-events:none;}
+.tac-badge.nrg{background:rgba(30,70,120,.85);color:#8fd0ff;border:1px solid #4488cc;}
+.tac-badge.passive{background:rgba(80,60,30,.85);color:#e8c88a;border:1px dashed #b89858;}
+.taz-passive-notice{margin-top:8px;padding:8px 12px;background:rgba(80,70,50,.6);border:1px dashed #aa9966;border-radius:6px;color:#ccb88a;font-size:.8rem;font-weight:bold;}
 .ta-zoom{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;text-align:center;animation:cardZoomIn .3s ease-out;}
 .ta-zoom .taz-card{width:220px;border-radius:12px;border:3px solid var(--curr-gold);background:linear-gradient(180deg,rgba(30,25,15,.95),rgba(10,8,5,.98));padding:14px;box-shadow:0 0 30px rgba(255,215,0,.4);}
 .ta-zoom .taz-card img{width:180px;height:180px;border-radius:8px;object-fit:cover;}

@@ -94,9 +94,31 @@ Object.assign(RoF.Game, {
     bs._enemyMsgs=msgs;bs._enemyMsgsHidden=null;
     if(msgs.length){
       const botName=this._currentBot?this._currentBot.name:'적';
-      UI.modal(`⚔️ ${botName}의 행동`,msgs.map((m,i)=>`${i+1}. ${m}`).join('\n'),()=>{
+      let confirmed=false;
+      UI.modal(`⚔️ ${botName}의 행동 (5초 후 자동 확인)`,msgs.map((m,i)=>`${i+1}. ${m}`).join('\n'),()=>{
+        confirmed=true;
+        if(this._enemyModalAutoTimer){clearTimeout(this._enemyModalAutoTimer);this._enemyModalAutoTimer=null;}
         this.finishRound();
       });
+      // 5초 카운트다운 — 타이틀 갱신 + 자동 확인
+      let cdLeft=5;
+      const titleEl=document.getElementById('modal-title');
+      this._enemyModalCDTimer&&clearInterval(this._enemyModalCDTimer);
+      this._enemyModalCDTimer=setInterval(()=>{
+        cdLeft--;
+        if(confirmed||!document.getElementById('modal-overlay').classList.contains('active')){
+          clearInterval(this._enemyModalCDTimer);this._enemyModalCDTimer=null;return;
+        }
+        if(titleEl)titleEl.textContent=`⚔️ ${botName}의 행동 (${cdLeft}초 후 자동 확인)`;
+      },1000);
+      this._enemyModalAutoTimer=setTimeout(()=>{
+        this._enemyModalAutoTimer=null;
+        if(confirmed)return;
+        if(document.getElementById('modal-overlay').classList.contains('active')){
+          const btn=document.getElementById('modal-confirm');
+          if(btn)btn.click();
+        }
+      },5000);
     } else {
       this.finishRound();
     }

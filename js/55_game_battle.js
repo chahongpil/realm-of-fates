@@ -68,7 +68,7 @@ Object.assign(RoF.Game, {
           </div>
           <div style="color:#555;font-size:1.1rem;font-weight:bold;margin-top:8px;">검색중...</div>
         </div>
-        <div class="match-vs" style="opacity:.3;font-size:2rem;">⚔<br>VS<br>⚔</div>
+        <div class="match-vs" style="opacity:.3;font-size:2.4rem;font-weight:bold;">VS</div>
         <div class="match-side match-player" style="text-align:center;" id="match-player-side"></div>
       </div>`;
     // card-v2 삽입 (내 영웅)
@@ -91,12 +91,13 @@ Object.assign(RoF.Game, {
         <div style="color:#44ff88;font-size:1.2rem;margin-bottom:15px;" class="match-found">도전자가 나타났다!</div>
         <div class="match-row match-found" style="display:flex;align-items:center;justify-content:center;gap:40px;width:100%;">
           <div class="match-side match-enemy" style="text-align:center;" id="match-enemy-side"></div>
-          <div class="match-vs" style="font-size:2rem;">⚔<br>VS<br>⚔</div>
+          <div class="match-vs" style="font-size:2.4rem;font-weight:bold;">VS</div>
           <div class="match-side match-player" style="text-align:center;" id="match-player-side"></div>
         </div>
-        <div style="display:flex;gap:15px;justify-content:center;margin-top:20px;">
-          <button class="btn" onclick="Game.startBattleFromMatch()" style="font-size:1.2rem;">⚔️ 출전!</button>
-          <button class="btn btn-s btn-red" onclick="Game.showMenu()">철수</button>
+        <div id="match-countdown" style="color:#ffcc44;font-size:1rem;margin-top:15px;text-align:center;">⏳ <span id="match-cd-num">15</span>초 후 자동 출전</div>
+        <div style="display:flex;gap:15px;justify-content:center;margin-top:10px;">
+          <button class="btn" onclick="Game._matchCDClear&&Game._matchCDClear();Game.startBattleFromMatch()" style="font-size:1.2rem;">⚔️ 출전!</button>
+          <button class="btn btn-s btn-red" onclick="Game._matchCDClear&&Game._matchCDClear();Game.showMenu()">철수</button>
         </div>`;
       // 상대 card-v2
       const enemySide=document.getElementById('match-enemy-side');
@@ -118,6 +119,21 @@ Object.assign(RoF.Game, {
           <div style="color:#aaa;font-size:.8rem;">${heroClass} · ${heroElem?ELEM_ICON[heroElem]+' '+ELEM_L[heroElem]:''}</div>`;
         mySide.appendChild(pcap);
       }
+      // 15초 카운트다운 → 자동 출전
+      let cdLeft=15;
+      const cdNum=document.getElementById('match-cd-num');
+      this._matchCDClear=()=>{if(this._matchCDTimer){clearInterval(this._matchCDTimer);this._matchCDTimer=null;}};
+      this._matchCDTimer=setInterval(()=>{
+        cdLeft--;
+        const el=document.getElementById('match-cd-num');
+        if(el)el.textContent=cdLeft;
+        if(cdLeft<=0){
+          this._matchCDClear();
+          if(document.getElementById('match-screen')&&document.getElementById('match-screen').classList.contains('active')){
+            this.startBattleFromMatch();
+          }
+        }
+      },1000);
     },delay);
   },
 

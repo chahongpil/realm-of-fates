@@ -1,0 +1,86 @@
+/* ─────────────────────────────────────────────────────────────
+   PHASE 3 시네마틱 전투 v2 — 키프레임
+   기획서: game/PHASE3_BATTLE_CINEMATIC.md §시각 연출 목록
+
+   모든 duration 은 41_battle_v2.css 의 CSS 변수와 연동.
+   JS 에서는 건드리지 않음 — 애니 제어는 class 토글만.
+   ───────────────────────────────────────────────────────────── */
+
+/* 캐릭터 카드 중앙 확대 인 — FLIP: 클릭한 그리드 카드 위치에서 중앙으로 이동+확대
+   CSS 변수 --bv2-origin-dx/dy/scale 는 JS 가 클릭 직전 주입. */
+@keyframes bv2CardFocusIn{
+  0%   {
+    transform: translate(calc(-50% + var(--bv2-origin-dx, 0px)),
+                         calc(-58% + var(--bv2-origin-dy, 0px)))
+               scale(var(--bv2-origin-scale, 0.5));
+    opacity: .2;
+  }
+  100% {
+    transform: translate(-50%, -58%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* 캐릭터 카드 원복 아웃 */
+@keyframes bv2CardFocusOut{
+  0%   { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.6); opacity: 0; }
+}
+
+/* 스킬 카드 호버 확대 */
+@keyframes bv2CardHoverPop{
+  0%   { transform: scale(1); }
+  100% { transform: scale(var(--bv2-card-hover-scale, 1.2)); }
+}
+
+/* 스킬 발사 — 중앙에서 타겟으로 */
+@keyframes bv2SpellFly{
+  0%   { transform: scale(0.5) translateY(0); opacity: 0; }
+  30%  { transform: scale(1.3) translateY(-20px); opacity: 1; }
+  100% { transform: scale(1) translateY(-80px); opacity: 0; }
+}
+
+/* 피격 흔들림 — 진폭은 --bv2-shake-amp 변수로 */
+@keyframes bv2CardShake{
+  0%,100% { transform: translateX(0); }
+  15%     { transform: translateX(calc(var(--bv2-shake-amp) * -1)); }
+  30%     { transform: translateX(calc(var(--bv2-shake-amp) * 0.83)); }
+  45%     { transform: translateX(calc(var(--bv2-shake-amp) * -0.67)); }
+  60%     { transform: translateX(calc(var(--bv2-shake-amp) * 0.5)); }
+  75%     { transform: translateX(calc(var(--bv2-shake-amp) * -0.25)); }
+}
+
+/* 치명타 팝 — duration 은 --bv2-dur-crit-pop (JS TIMING.CRIT_POP 에서 주입) */
+@keyframes bv2CritPop{
+  0%   { transform: scale(0.5); opacity: 0; }
+  45%  { transform: scale(1.5); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 사망 멜트 (불/물/얼음/신성) */
+@keyframes bv2CardMelt{
+  0%   { transform: scaleY(1) translateY(0); opacity: 1; filter: blur(0); }
+  50%  { transform: scaleY(0.7) translateY(12px); opacity: .6; filter: blur(1.5px); }
+  100% { transform: scaleY(0) translateY(28px); opacity: 0; filter: blur(4px); }
+}
+
+/* 사망 크러시 (땅/전기/암흑) */
+@keyframes bv2CardCrush{
+  0%   { transform: scale(1) rotate(0); opacity: 1; }
+  40%  { transform: scale(1.05) rotate(-4deg); opacity: 1; }
+  100% { transform: scale(.4) rotate(8deg); opacity: 0; filter: brightness(.3); }
+}
+
+/* HP 숫자 롤 */
+@keyframes bv2HpCountdown{
+  0%   { transform: translateY(0); opacity: 1; }
+  50%  { transform: translateY(-4px); opacity: .7; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* 와이어 연결 (스킬 호버 → 포인터) */
+@keyframes bv2WireConnect{
+  0%   { stroke-dashoffset: 40; opacity: 0; }
+  30%  { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}

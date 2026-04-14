@@ -90,6 +90,7 @@ Object.assign(RoF.Game, {
       box.innerHTML='📦';box.title=`상자 ${i+1}`;
       box.onclick=()=>{
         if(lootPicked)return;lootPicked=true;this._lootPicked=true;
+        if(lootDiv.firstElementChild)lootDiv.firstElementChild.style.display='none';
         const reward=lootRewards[tier];
         SFX.play(tier==='gold'?'rarity_up':tier==='silver'?'magic':'click');
         boxRow.querySelectorAll('.loot-box').forEach((b,j)=>{

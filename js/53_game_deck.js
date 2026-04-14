@@ -324,7 +324,7 @@ Object.assign(RoF.Game, {
       d.innerHTML=`<div class="dm-icon">${c.icon}</div><div class="dm-name">${c.isHero?'⭐':''}${c.name}</div>`;
       d.onclick=()=>{
         applySkillToUnit(skillData,c);
-        c.equips=c.equips||[];c.equips.push({icon:skillData.icon,name:skillData.name});
+        c.equips=c.equips||[];c.equips.push({icon:skillData.icon,name:skillData.name,id:skillData.id});
         modal.classList.remove('active');SFX.play('magic');
       };targets.appendChild(d);});
     modal.classList.add('active');

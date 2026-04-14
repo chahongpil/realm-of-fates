@@ -52,12 +52,12 @@
   --title-subtitle-mb: 2rem;
   /* title — 버튼 그룹 분리 (2026-04-13 심야). 래퍼는 full-container 투명. */
   --title-buttons-x: 0px;   --title-buttons-y: 0px;  --title-buttons-w: 1280px; --title-buttons-h: 720px;
-  --title-btn-back-x: 548px; --title-btn-back-y: 437px; --title-btn-back-w: 200px; --title-btn-back-h: 56px;
-  --title-btn-new-x:  548px; --title-btn-new-y:  515px; --title-btn-new-w:  200px; --title-btn-new-h:  56px;
+  --title-btn-back-x: 540px; --title-btn-back-y: 437px; --title-btn-back-w: 200px; --title-btn-back-h: 56px;
+  --title-btn-new-x:  540px; --title-btn-new-y:  515px; --title-btn-new-w:  200px; --title-btn-new-h:  56px;
   /* title 텍스트 3종 래퍼 분해 (2026-04-13 Type C). 중간 래퍼는 이미 position:static. */
   --title-league-x:    240px; --title-league-y:    180px; --title-league-w:    800px; --title-league-h:    30px;
   --title-logo-x:      240px; --title-logo-y:      220px; --title-logo-w:      800px; --title-logo-h:      120px;
-  --title-subtitle-x:  240px; --title-subtitle-y:  360px; --title-subtitle-w:  800px; --title-subtitle-h:  40px;
+  --title-subtitle-x:  240px; --title-subtitle-y:  340px; --title-subtitle-w:  800px; --title-subtitle-h:  40px;
   /* cardselect zones (출정 편성 화면) — 절대위치 레이아웃 */
   /* cardselect 레이아웃 재정비 (2026-04-13) — 1280×720 무겹침, 유물 클릭 가능 */
   --cs-title-x: 10px;
@@ -115,7 +115,7 @@
 
   /* deckview zones — hud(0-44) · tabs(50-94) · npc(104-180) · content(190-700) */
   --dv-tabs-x: 20px;     --dv-tabs-y: 50px;     --dv-tabs-w: 1240px;  --dv-tabs-h: 44px;
-  --dv-lib-npc-x: 20px; --dv-lib-npc-y: 72px; --dv-lib-npc-w: 1228px;--dv-lib-npc-h: 98px;
+  --dv-lib-npc-x: 31px; --dv-lib-npc-y: 72px; --dv-lib-npc-w: 1228px;--dv-lib-npc-h: 99px;
   --dv-grid-x: 20px;     --dv-grid-y: 190px;    --dv-grid-w: 1240px;  --dv-grid-h: 510px;
   --dv-skills-x: 20px;   --dv-skills-y: 440px;  --dv-skills-w: 1240px;--dv-skills-h: 120px;
   --dv-relics-x: 20px;   --dv-relics-y: 570px;  --dv-relics-w: 1240px;--dv-relics-h: 120px;
@@ -126,15 +126,15 @@
   --castle-tabs-x: 20px; --castle-tabs-y: 60px; --castle-tabs-w: 1240px; --castle-tabs-h: 60px;
   --castle-info-x: 20px; --castle-info-y: 125px; --castle-info-w: 1240px; --castle-info-h: 30px;
   --castle-grid-x: 20px; --castle-grid-y: 160px; --castle-grid-w: 1240px; --castle-grid-h: 500px;
-  --castle-back-x: 20px; --castle-back-y: 670px; --castle-back-w: 200px; --castle-back-h: 40px;
+  --castle-back-x: 52px; --castle-back-y: 678px; --castle-back-w: 136px; --castle-back-h: 44px;
 
   /* church zones */
-  --church-title-x: 28px; --church-title-y: 68px; --church-title-w: 1224px; --church-title-h: 28px;
+  --church-title-x: 36px; --church-title-y: 76px; --church-title-w: 1208px; --church-title-h: 28px;
   --church-grid-x: 20px; --church-grid-y: 140px; --church-grid-w: 1240px; --church-grid-h: 520px;
-  --church-back-x: 660px; --church-back-y: 660px; --church-back-w: 136px; --church-back-h: 44px;
+  --church-back-x: 668px; --church-back-y: 668px; --church-back-w: 136px; --church-back-h: 44px;
 
   /* reward zones */
-  --rew-title-x: 340px; --rew-title-y: 60px; --rew-title-w: 600px; --rew-title-h: 60px;
+  --rew-title-x: 260px; --rew-title-y: 50px; --rew-title-w: 760px; --rew-title-h: 110px;
   --rew-box-x: 340px; --rew-box-y: 130px; --rew-box-w: 600px; --rew-box-h: 180px;
   --rew-cards-x: 20px; --rew-cards-y: 320px; --rew-cards-w: 1240px; --rew-cards-h: 320px;
   --rew-btn-x: 540px; --rew-btn-y: 650px; --rew-btn-w: 200px; --rew-btn-h: 60px;
@@ -179,7 +179,7 @@
   /* battle zones */
   --b-hud-x: 0px;         --b-hud-y: 0px;        --b-hud-w: 1280px;      --b-hud-h: 44px;
   --b-field-x: 0px;       --b-field-y: 0px;      --b-field-w: 1280px;    --b-field-h: 720px;
-  --b-log-x: 9px;        --b-log-y: 234px;      --b-log-w: 160px;      --b-log-h: 251px;
+  --b-log-x: 9px;        --b-log-y: 234px;      --b-log-w: 160px;      --b-log-h: 35px;
   --b-bottom-x: 0px;      --b-bottom-y: 0px;     --b-bottom-w: 1280px;   --b-bottom-h: 720px;
   --b-btn-back-x:  640px; --b-btn-back-y:  655px; --b-btn-back-w:  171px; --b-btn-back-h:  49px;
   --b-btn-fight-x: 450px; --b-btn-fight-y: 655px; --b-btn-fight-w: 194px; --b-btn-fight-h: 53px;
@@ -220,18 +220,18 @@
   --su-btn-x:    40px;  --su-btn-y:    294px; --su-btn-w:    322px; --su-btn-h:    49px;
   --su-back-x:   40px;  --su-back-y:   364px; --su-back-w:   322px; --su-back-h:   54px;
 
-  --prologue-btn-ok-x:   518px; --prologue-btn-ok-y:   418px; --prologue-btn-ok-w:   260px; --prologue-btn-ok-h:   56px;
-  --prologue-btn-skip-x: 1132px; --prologue-btn-skip-y: 56px; --prologue-btn-skip-w: 130px; --prologue-btn-skip-h: 44px;
+  --prologue-btn-ok-x:   525px; --prologue-btn-ok-y:   344px; --prologue-btn-ok-w:   260px; --prologue-btn-ok-h:   56px;
+  --prologue-btn-skip-x: 1127px; --prologue-btn-skip-y: 62px; --prologue-btn-skip-w: 130px; --prologue-btn-skip-h: 44px;
 
   /* tavern/deckview/castle/church 탭 wrapper 분해 */
   --tav-tab-unit-x:   463px; --tav-tab-unit-y:   659px;  --tav-tab-unit-w:   180px;  --tav-tab-unit-h:   44px;
   --tav-tab-hero-x:   660px; --tav-tab-hero-y:   659px;  --tav-tab-hero-w:   180px;  --tav-tab-hero-h:   44px;
   --tav-info-x:       20px;  --tav-info-y:       115px; --tav-info-w:       1240px; --tav-info-h:       30px;
-  --dv-tab-deck-x:    149px; --dv-tab-deck-y:    72px;  --dv-tab-deck-w:    180px;  --dv-tab-deck-h:    40px;
-  --dv-tab-codex-x:   149px; --dv-tab-codex-y:   121px;  --dv-tab-codex-w:    180px; --dv-tab-codex-h:   40px;
-  --castle-tab-upgrade-x: 460px; --castle-tab-upgrade-y: 60px; --castle-tab-upgrade-w: 180px; --castle-tab-upgrade-h: 44px;
-  --castle-tab-quest-x:   650px; --castle-tab-quest-y:   60px; --castle-tab-quest-w:   180px; --castle-tab-quest-h:   44px;
-  --church-info-x:    40px;  --church-info-y:    160px; --church-info-w:    1240px; --church-info-h:    30px;
+  --dv-tab-deck-x:    144px; --dv-tab-deck-y:    72px;  --dv-tab-deck-w:    180px;  --dv-tab-deck-h:    40px;
+  --dv-tab-codex-x:   144px; --dv-tab-codex-y:   122px;  --dv-tab-codex-w:    180px; --dv-tab-codex-h:   40px;
+  --castle-tab-upgrade-x: 150px; --castle-tab-upgrade-y: 51px; --castle-tab-upgrade-w: 180px; --castle-tab-upgrade-h: 44px;
+  --castle-tab-quest-x:   150px; --castle-tab-quest-y:   106px; --castle-tab-quest-w:   180px; --castle-tab-quest-h:   44px;
+  --church-info-x:    68px;  --church-info-y:    228px; --church-info-w:    1240px; --church-info-h:    30px;
 }
 /* END_LAYOUT_VARS */
 

@@ -1,0 +1,738 @@
+/* ─────────────────────────────────────────────────────────────
+   PHASE 3 시네마틱 전투 v2 — 레이아웃
+   기획서: game/PHASE3_BATTLE_CINEMATIC.md
+   스토리보드: game/docs/battle_logic_v2/1~9.png
+
+   구조:
+     .battle-stage    — 배경 + 2×5 그리드 (항상 렌더)
+     .battle-overlay  — 상태별 서브스크린 오버레이 (display 토글)
+   ───────────────────────────────────────────────────────────── */
+
+:root{
+  --battle-speed: 1;
+
+  /* 카드 크기 — 2026-04-14 3차 튜닝
+     여백 더 줄임: 170×240 → 210×290. 가로 예산: 5×210 + 4×16 = 1114 (1280 대비) */
+  --bv2-card-w: 210px;
+  --bv2-card-h: 290px;
+  --bv2-card-focus-scale: 1.8;         /* 유닛 선택 (스킬 고르기) 시 중앙 확대 */
+  --bv2-card-action-scale: 1.2;        /* 실제 액션(공격 애니) 시 중앙 확대 */
+  --bv2-card-hover-scale: 1.15;
+  --bv2-target-hover-scale: 1.2;       /* 스토리보드 13.png "1.2배 정도" */
+  --bv2-card-focus-hover-scale: 1.1;   /* 스토리보드 5.png: 확대 카드 위 호버 */
+
+  /* FLIP origin — JS 가 클릭 시 주입, 기본값은 중앙 pop */
+  --bv2-origin-dx: 0px;
+  --bv2-origin-dy: 0px;
+  --bv2-origin-scale: 0.5;
+
+  /* 서브스크린 배경 dim */
+  --bv2-dim-bg: rgba(0, 0, 0, .58);
+
+  /* 색상 토큰 */
+  --bv2-accent:      #ffd700;
+  --bv2-accent-dim:  #8b7a00;
+  --bv2-danger:      #ff4422;
+  --bv2-crit:        #ff8800;
+  --bv2-success:     #44ff88;
+  --bv2-wire:        rgba(255, 215, 0, .6);
+  --bv2-stage-bg:    linear-gradient(180deg, #1a0f20, #0a0812);
+
+  /* 흔들림 진폭 */
+  --bv2-shake-amp: 14px;
+
+  /* 타이밍 fallback — JS 가 boot 타임에 덮어씀 */
+  --bv2-dur-focus-in:   350ms;
+  --bv2-dur-focus-out:  250ms;
+  --bv2-dur-hover:      180ms;
+  --bv2-dur-fire:       450ms;
+  --bv2-dur-shake:      350ms;
+  --bv2-dur-death:      800ms;
+  --bv2-dur-crit-pop:   400ms;
+  --bv2-dur-border:     150ms;
+}
+
+/* ── v2 컨테이너 ──────────────────────────────────────────── */
+#battle-v2-container{
+  position: absolute;
+  inset: 0;
+  background: var(--bv2-stage-bg);
+  z-index: 50;
+  overflow: hidden;
+  color: #fff;
+}
+
+/* ── 스테이지 (배경 + 2×5 그리드, 항상 보임) ───────────────── */
+.battle-stage{
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.battle-stage-bg{
+  position: absolute;
+  inset: 0;
+  background: url('../img/bg_battle.png') center/cover no-repeat;
+  opacity: .35;
+  filter: brightness(.6);
+}
+.battle-stage-grid{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;                               /* 중앙 바가 자체 패딩을 가지므로 축소 */
+  padding: 14px 20px;
+}
+.battle-row{
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* 중앙 바 — VS + 자동 전투 + 전투 시작하기 */
+.battle-stage-mid{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 80px;
+  height: 64px;
+  pointer-events: auto;
+}
+.bsm-vs{
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: var(--bv2-accent);
+  letter-spacing: 6px;
+  text-shadow: 0 0 24px rgba(255, 215, 0, .65),
+               0 4px 10px rgba(0, 0, 0, .95);
+}
+.bsm-btn{
+  padding: 12px 26px;
+  background: rgba(20, 15, 8, .92);
+  border: 2px solid var(--bv2-accent-dim);
+  color: var(--bv2-accent);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .95);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .75);
+  transition: background 150ms, border-color 150ms, box-shadow 150ms, transform 150ms;
+}
+.bsm-btn:hover{
+  background: rgba(45, 32, 12, .98);
+  border-color: var(--bv2-accent);
+  box-shadow: 0 0 18px rgba(255, 215, 0, .55),
+              0 6px 16px rgba(0, 0, 0, .8);
+  transform: translateY(-1px);
+}
+.bsm-start{
+  border-color: #aa5020;
+  color: #ffcc99;
+}
+.bsm-start:hover{
+  border-color: #ff8844;
+  color: #ffeecc;
+  box-shadow: 0 0 22px rgba(255, 140, 70, .6),
+              0 6px 16px rgba(0, 0, 0, .8);
+}
+
+/* ── 카드 (2×5 그리드 기본 카드) ──────────────────────────── */
+.bv2-card{
+  width: var(--bv2-card-w);
+  height: var(--bv2-card-h);
+  position: relative;
+  cursor: pointer;
+  transition: transform var(--bv2-dur-hover) ease-out,
+              box-shadow var(--bv2-dur-border),
+              filter var(--bv2-dur-border);
+}
+.bv2-card:hover{
+  transform: translateY(-8px) scale(var(--bv2-card-hover-scale));
+  z-index: 5;
+}
+.bv2-card.bv2-card-hero{
+  /* 영웅 = 중앙 슬롯, 살짝 강조 */
+}
+
+/* 카드 프레임 — 스토리보드 1번 스타일 (다크 석재 고딕 아치)
+   2026-04-14 2차: 프레임 가시성 강화. border 2→3px, inset glow 2px, drop 확대. */
+.bv2c-frame{
+  position: absolute;
+  inset: 0;
+  border-radius: 10px 10px 6px 6px;
+  background: linear-gradient(180deg, #1a0814, #0a0408);
+  border: 3px solid #aa2436;
+  box-shadow:
+    inset 0 0 0 2px rgba(220, 70, 90, .75),
+    inset 0 0 14px rgba(0, 0, 0, .6),
+    0 4px 14px rgba(0,0,0,.75);
+  overflow: hidden;
+}
+.bv2-card-hero .bv2c-frame{
+  border-color: var(--bv2-accent);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 215, 0, .5),
+    0 0 16px rgba(255, 180, 0, .35);
+}
+.bv2-card-enemy .bv2c-frame{
+  border-color: #4a1a1a;
+}
+
+/* 카드 이미지 — 프레임리스, 카드 전체를 덮음 */
+.bv2c-img{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .85;
+}
+.bv2c-icon{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #8899aa;
+}
+
+/* 이름 (상단 중앙 금색 밴드) — 스토리보드 1번 구조 */
+.bv2c-name{
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 4px;
+  font-size: .72rem;
+  color: var(--bv2-accent);
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0,0,0,.95), 0 0 4px rgba(0,0,0,.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 3;
+}
+
+/* 상태이상 배지 슬롯 (이름 위 정중앙, 06-card-ui-principles.md 2026-04-14 규정) */
+.bv2c-status-row{
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 4;
+}
+
+/* 우상단 HP — 스토리보드처럼 큼직하게 */
+.bv2c-hp{
+  position: absolute;
+  top: 20px;
+  right: 6px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,.95), 0 0 8px rgba(255,100,100,.6);
+  z-index: 3;
+}
+
+/* 좌측 세로 ATK/DEF/SPD 3칸 (스토리보드 구조) */
+.bv2c-stats{
+  position: absolute;
+  top: 44px;
+  left: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: .68rem;
+  color: #fff;
+  z-index: 3;
+}
+.bv2c-stats span{
+  background: rgba(0,0,0,.65);
+  padding: 2px 5px;
+  border-radius: 3px;
+  min-width: 32px;
+}
+.bv2c-atk{ color: #ff8866; }
+.bv2c-def{ color: #88aaff; }
+.bv2c-spd{ color: #aaff88; }
+
+/* 카드 하단 설명 밴드 (스토리보드 "뇌격: 전체8데미지") */
+.bv2c-desc{
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 20px;
+  font-size: .6rem;
+  color: #ccc;
+  text-align: center;
+  line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0,0,0,.95);
+  max-height: 28px;
+  overflow: hidden;
+  z-index: 3;
+}
+
+/* 우하단 NRG */
+.bv2c-nrg{
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  font-size: .78rem;
+  color: #ffe066;
+  text-shadow: 0 1px 2px rgba(0,0,0,.95);
+  z-index: 3;
+}
+
+/* 카드 상태 */
+.bv2-card.is-selected{
+  visibility: hidden;                    /* 중앙 오버레이로 이동한 상태 */
+}
+.bv2-card.is-target-valid .bv2c-frame{
+  border-color: var(--bv2-danger);
+  box-shadow: 0 0 12px rgba(255, 68, 34, .6);
+  animation: bv2TargetPulse 1.5s ease-in-out infinite;
+}
+.bv2-card.is-target-hover .bv2c-frame{
+  border-color: #ffaa00;
+  box-shadow: 0 0 24px rgba(255, 170, 0, .9);
+}
+.bv2-card.is-hit{
+  animation: bv2CardShake var(--bv2-dur-shake) ease-out;
+}
+.bv2-card.is-dead{
+  filter: grayscale(1) brightness(.4);
+  opacity: .55;
+  pointer-events: none;
+}
+
+/* 큐잉 완료 아군 — 체크마크 + 초록 테두리. 클릭 불가. */
+.bv2-card.is-queued{
+  pointer-events: none;
+}
+.bv2-card.is-queued .bv2c-frame{
+  border-color: #66dd88;
+  box-shadow:
+    inset 0 0 0 2px rgba(120, 240, 150, .7),
+    inset 0 0 14px rgba(0, 0, 0, .6),
+    0 4px 14px rgba(0, 80, 30, .7),
+    0 0 18px rgba(100, 230, 130, .5);
+}
+.bv2-card.is-queued::after{
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40, 100, 60, .95);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 50%;
+  border: 2px solid #66dd88;
+  box-shadow: 0 0 10px rgba(100, 230, 130, .8);
+  z-index: 5;
+}
+
+/* P1 dim 페이즈 — 스토리보드 10·11·12.png
+   타겟 타입별로 비유효 카드를 회색+비활성화.
+   공격 스킬: 본인+아군 dim / 지원 스킬: 적 dim / self: 본인 외 전부 dim. */
+.bv2-card.is-dimmed{
+  filter: grayscale(1) brightness(.45);
+  pointer-events: none;
+  transition: filter 220ms ease-out;
+}
+
+/* P4 HP 프리뷰: 카드 내부 플로팅 델타 라벨 (−dmg) */
+.bv2c-hp-delta-floating{
+  position: absolute;
+  top: 46px;
+  right: 6px;
+  font-size: .7rem;
+  font-weight: bold;
+  color: #ff6666;
+  text-shadow: 0 1px 3px #000, 0 0 6px rgba(255,100,100,.7);
+  z-index: 4;
+  pointer-events: none;
+  animation: bv2HpCountdown .3s ease-out;
+}
+
+/* P6 fire 모드 — 스토리보드 14.png
+   중앙 확대 카드 1장만 남기고 전부 페이드아웃. */
+.battle-stage-grid .bv2-card{
+  transition: opacity 280ms ease-out, transform var(--bv2-dur-hover) ease-out,
+              box-shadow var(--bv2-dur-border), filter var(--bv2-dur-border);
+}
+#battle-v2-container.is-fire-mode .battle-stage-grid .bv2-card{
+  opacity: 0;
+  pointer-events: none;
+}
+#battle-v2-container.is-fire-mode .bcf-skill-row,
+#battle-v2-container.is-fire-mode .bcf-backdrop{
+  display: none !important;
+}
+
+@keyframes bv2TargetPulse{
+  0%,100% { box-shadow: 0 0 12px rgba(255, 68, 34, .4); }
+  50%     { box-shadow: 0 0 20px rgba(255, 68, 34, .85); }
+}
+
+/* ── 오버레이 레이어 ──────────────────────────────────────── */
+.battle-overlay{
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;                  /* 카드 클릭이 stage 까지 닿도록 */
+}
+.battle-sub{
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: auto;
+}
+
+/* battle-idle — 오버레이는 투명. 데모 버튼만 노출. */
+#battle-idle{
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 14px;
+  background: transparent;
+  pointer-events: none;                  /* 카드 클릭 방해 금지 */
+}
+#battle-idle .bi-hint{
+  display: none;                          /* 버튼 하나로 충분 */
+}
+#battle-idle .bi-demo-btn{
+  pointer-events: auto;
+  padding: 10px 22px;
+  background: rgba(40,30,10,.85);
+  border: 2px solid var(--bv2-accent);
+  color: var(--bv2-accent);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .9rem;
+  font-weight: bold;
+}
+#battle-idle .bi-demo-btn:hover{ background: rgba(60,45,15,.95); }
+
+/* ── battle-char-focus — 중앙 확대 카드 + 스킬 row 겹침 ───────
+   스토리보드 3번: 스킬 카드가 확대 카드 하단 절반을 물고 올라옴. */
+#battle-char-focus{
+  display: block;                                    /* 절대위치 children 용 */
+}
+.bcf-backdrop{
+  position: absolute;
+  inset: 0;
+  background: var(--bv2-dim-bg);
+  pointer-events: auto;                              /* 빈 곳 클릭 취소 */
+}
+.bcf-main-card{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* 수직 위치: 상단 쪽으로 약간 끌어올려 스킬 row 가 하단 1/3 지점에 걸치게 */
+  transform: translate(-50%, -58%);
+  width: calc(var(--bv2-card-w) * var(--bv2-card-focus-scale));
+  height: calc(var(--bv2-card-h) * var(--bv2-card-focus-scale));
+  border-radius: 12px 12px 6px 6px;
+  background: linear-gradient(180deg, #1a0814, #0a0408);
+  border: 3px solid var(--bv2-accent);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 215, 0, .5),
+    0 0 48px rgba(255, 180, 0, .45);
+  overflow: hidden;
+  animation: bv2CardFocusIn var(--bv2-dur-focus-in) ease-out;
+  pointer-events: auto;
+  z-index: 2;
+  transition: transform 220ms ease-out;
+}
+/* 액션 모드: 공격 애니 중에는 더 작게 (1.5배) */
+#battle-char-focus.is-action-mode .bcf-main-card{
+  width:  calc(var(--bv2-card-w) * var(--bv2-card-action-scale));
+  height: calc(var(--bv2-card-h) * var(--bv2-card-action-scale));
+}
+/* P5 확대 카드 자체 호버 — 스토리보드 5.png "위로 더 확대"
+   + 스킬 row 위로 올라옴 (z-index 2 → 50). 2026-04-14 사용자 지적: 겹쳐서 안 보임. */
+.bcf-main-card:hover{
+  transform: translate(-50%, -62%) scale(var(--bv2-card-focus-hover-scale));
+  z-index: 50;
+}
+/* P8 확대 카드 원위치 복귀 — 스토리보드 19.png */
+#battle-char-focus.is-returning .bcf-main-card{
+  animation: bv2CardFocusOut 260ms ease-in forwards;
+}
+#battle-char-focus.is-returning .bcf-skill-row{
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+}
+.bcf-card-img{
+  position: absolute;
+  inset: 0;
+}
+.bcf-card-img img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bcf-hp{
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 2.1rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,.95);
+}
+.bcf-stat-col{
+  position: absolute;
+  top: 80px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+.bcf-stat-col span{
+  background: rgba(0,0,0,.65);
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 50px;
+}
+.bcf-atk{ color: #ff8866; }
+.bcf-def{ color: #88aaff; }
+.bcf-spd{ color: #aaff88; }
+.bcf-name{
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 52px;
+  font-size: 1.6rem;
+  color: var(--bv2-accent);
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 0 2px 6px rgba(0,0,0,.95);
+}
+.bcf-desc{
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 28px;
+  font-size: .85rem;
+  color: #ccc;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,.9);
+}
+.bcf-nrg{
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  font-size: 1.4rem;
+  color: #ffe066;
+  text-shadow: 0 2px 4px rgba(0,0,0,.9);
+}
+
+/* 스킬 row — 확대 카드 하단 1/3 지점에 걸쳐 올라옴 (스토리보드 3번) */
+.bcf-skill-row{
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  z-index: 3;                                       /* 확대 카드(2)보다 앞 */
+  pointer-events: auto;
+}
+.bcf-skill-card{
+  width: 150px;
+  height: 210px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #0a1428, #050812);
+  border: 2px solid #4466aa;
+  box-shadow: 0 6px 20px rgba(68, 102, 170, .65);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--bv2-dur-hover) ease-out,
+              border-color var(--bv2-dur-border),
+              box-shadow var(--bv2-dur-border);
+}
+/* P3 스킬 카드 호버 — 스토리보드 9.png
+   "위로 올라오면서 확대, 제일 앞 레이어, 아래로는 짤릴 수 있으니 위로" */
+.bcf-skill-card:hover{
+  transform: translateY(-120px) scale(2.0);
+  border-color: #88ccff;
+  box-shadow: 0 16px 40px rgba(136, 204, 255, .95),
+              0 0 24px rgba(136, 204, 255, .6);
+  z-index: 100;
+}
+.bcf-skill-card.is-passive{
+  opacity: .6;
+  filter: grayscale(.65);
+  border-style: dashed !important;
+  cursor: not-allowed;
+}
+.bsc-card-img{
+  position: absolute;
+  inset: 0;
+}
+.bsc-card-img img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .9;
+}
+.bsc-cost{
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: .9rem;
+  font-weight: bold;
+  color: #ffe066;
+  text-shadow: 0 1px 3px rgba(0,0,0,.95);
+}
+.bsc-name{
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 28px;
+  font-size: .85rem;
+  color: #aaddff;
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0,0,0,.95);
+}
+.bsc-desc{
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  font-size: .6rem;
+  color: #bbb;
+  text-align: center;
+  line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0,0,0,.9);
+  max-height: 22px;
+  overflow: hidden;
+}
+
+/* ── battle-skill-active — 타겟 선택 안내 (하이라이트는 grid 에) ─ */
+#battle-skill-active{
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 14px;
+  pointer-events: none;
+}
+.bsa-hint{
+  pointer-events: none;
+  background: rgba(20,10,10,.85);
+  border: 1px solid var(--bv2-danger);
+  color: #ffcccc;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: .9rem;
+  font-weight: bold;
+}
+
+/* ── battle-target-preview — HP 변화 플로팅 박스 ──────────── */
+#battle-target-preview{
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 14px;
+  pointer-events: none;
+}
+.btp-hp-delta{
+  background: rgba(20,5,5,.92);
+  border: 2px solid var(--bv2-danger);
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffcccc;
+  text-shadow: 0 2px 4px rgba(0,0,0,.95);
+  pointer-events: none;
+}
+
+/* ── battle-action-fire — 중앙 이펙트 ──────────────────────── */
+#battle-action-fire{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.baf-effect{
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255,220,100,.85) 0%, rgba(255,180,50,.4) 30%, transparent 70%);
+  border-radius: 50%;
+  animation: bv2SpellFly var(--bv2-dur-fire) ease-out;
+}
+
+/* ── battle-hit-react — 데미지 숫자 플로팅 ────────────────── */
+#battle-hit-react{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.bhr-dmg{
+  font-size: 4rem;
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 0 0 12px rgba(255,100,100,.9), 0 3px 8px rgba(0,0,0,.95);
+  animation: bv2CardShake var(--bv2-dur-shake) ease-out;
+}
+.bhr-dmg.is-crit{
+  color: var(--bv2-crit);
+  font-size: 6rem;
+  animation: bv2CritPop var(--bv2-dur-crit-pop) ease-out;
+}
+
+/* ── battle-death ──────────────────────────────────────────── */
+#battle-death{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bd-name{
+  font-size: 1.8rem;
+  color: #aa3333;
+  font-weight: bold;
+  text-shadow: 0 0 12px rgba(170,50,50,.8);
+  animation: bv2CardMelt var(--bv2-dur-death) ease-out;
+}
+
+/* ── battle-queueing / battle-round-end ───────────────────── */
+#battle-queueing{ display: flex; align-items: flex-start; justify-content: center; padding-top: 20px; }
+.bq-timer{ font-size: 2rem; color: var(--bv2-accent); font-weight: bold; }
+
+#battle-round-end{ display: flex; align-items: center; justify-content: center; }
+.bre-msg{ font-size: 1.8rem; color: var(--bv2-accent); font-weight: bold; }
+
+/* ── 개발용 닫기 버튼 ────────────────────────────────────── */
+.bv2-close-btn{
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  z-index: 99;
+  padding: 6px 14px;
+  background: rgba(40,10,10,.85);
+  border: 1px solid #884444;
+  color: #ffaaaa;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: .75rem;
+}
+.bv2-close-btn:hover{ background: rgba(60,20,20,.95); }

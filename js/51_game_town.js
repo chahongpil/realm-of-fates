@@ -186,6 +186,8 @@ Object.assign(RoF.Game, {
 
     // Buildings
     const tc=document.getElementById('town-container');tc.innerHTML='';
+    // 빈 곳 클릭 시 선택 해제
+    tc.onclick=(e)=>{if(e.target===tc)document.querySelectorAll('.town-building.selected').forEach(el=>el.classList.remove('selected'));};
     this.BUILDINGS.forEach(b=>{
       const lv=this.getBuildingLv(b.id);
       const built=lv>0;
@@ -209,13 +211,24 @@ Object.assign(RoF.Game, {
         const upgBlocked=b.id!=='castle'&&lv>=castleLv;
         // 2026-04-12 밤: div 가 편집기 설정 w/h(%) 로 크기 잡음. img 는 div 100% 채움 + contain.
         const imgStyle=`width:100%;height:100%;object-fit:contain;border-radius:0;`;
-        // 2026-04-13 지시반영: shop/library/gate 는 라벨을 건물 윗쪽으로 이동 (아래 공간 겹침 문제)
-        const labelAbove = (b.id==='shop'||b.id==='library'||b.id==='gate');
-        const labelPos = labelAbove
-          ? 'position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;'
-          : 'position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;';
-        div.innerHTML=`<div class="tb-icon" style="width:100%;height:100%;"><img src="${bImg}" onerror="this.src='${bImgFallback}'" style="${imgStyle}"></div><div class="tb-label" style="${labelPos}">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}" style="position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);white-space:nowrap;">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:'<div class="tb-upgrade" style="position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);color:#44ff88;white-space:nowrap;">✅ 최고 경지</div>'}`;
-        div.querySelector('.tb-icon').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
+        // 2026-04-14: shop/library 방식(labelAbove)으로 전체 통일 — 건물 이미지 윗쪽에 라벨
+        // 단 castle 은 이미지가 너무 커서 라벨을 성 본체 중앙(약 55%) 위에 겹쳐 배치
+        const labelPos = (b.id==='castle')
+          ? 'position:absolute;top:55%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;'
+          : 'position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;';
+        const upgPos = (b.id==='castle')
+          ? 'position:absolute;top:55%;left:50%;transform:translate(-50%,22px);white-space:nowrap;'
+          : 'position:absolute;top:-40px;left:50%;transform:translateX(-50%);white-space:nowrap;';
+        div.innerHTML=`<div class="tb-icon" style="width:100%;height:100%;"><img src="${bImg}" onerror="this.src='${bImgFallback}'" style="${imgStyle}"></div><div class="tb-label" style="${labelPos}">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}" style="${upgPos}">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:`<div class="tb-upgrade" style="${upgPos};color:#44ff88;">✅ 최고 경지</div>`}`;
+        div.querySelector('.tb-icon').onclick=(e)=>{
+          e.stopPropagation();SFX.play('click');
+          if(div.classList.contains('selected')){
+            if(this[b.action])this[b.action]();
+          } else {
+            document.querySelectorAll('.town-building.selected').forEach(el=>el.classList.remove('selected'));
+            div.classList.add('selected');
+          }
+        };
         div.querySelector('.tb-label').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
         const upgEl=div.querySelector('.tb-upgrade');
         if(upgEl&&canUpgrade&&!upgBlocked){
@@ -229,26 +242,8 @@ Object.assign(RoF.Game, {
       tc.appendChild(div);
     });
 
-    // Walking NPCs (only add once, and only if buildings exist)
-    if(!document.querySelector('.town-npc')){
-      const npcs=['🚶','🚶‍♂️','🧙','⚔️','🛡️','🏹'];
-      const routes=[
-        {cls:'walk-right',top:'75%',delay:0},
-        {cls:'walk-left',top:'70%',delay:5},
-        {cls:'walk-right',top:'82%',delay:10},
-        {cls:'walk-left',top:'65%',delay:3},
-        {cls:'walk-up',left:'30%',delay:7},
-        {cls:'walk-up',left:'70%',delay:12},
-      ];
-      routes.forEach((r,i)=>{
-        const npc=document.createElement('div');npc.className=`town-npc ${r.cls}`;
-        npc.textContent=npcs[i%npcs.length];
-        if(r.top)npc.style.top=r.top;
-        if(r.left)npc.style.left=r.left;
-        npc.style.animationDelay=r.delay+'s';
-        tc.appendChild(npc);
-      });
-    }
+    // Walking NPCs 제거 (2026-04-14) — 사람·전투 이모티콘 애니메이션 삭제
+    document.querySelectorAll('.town-npc').forEach(el=>el.remove());
 
     // Deck preview
     const md=document.getElementById('menu-deck');md.innerHTML='';

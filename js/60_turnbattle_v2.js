@@ -123,6 +123,20 @@
     return Battle.DEMO.skills.filter(function(s){ return s.ownerId === unit.id; });
   };
 
+  // 자원 체크 — 큐잉 시점에 쓸 수 있는가. 적/아군 공용.
+  // HS/Snap/LoR 공통 원칙: 자원 없으면 행동 불가. 대칭 필수.
+  Battle.canAfford = function(caster, skill){
+    if(!caster || !skill) return false;
+    if(skill.passive === true) return false;
+    const type = skill.costType || 'nrg';
+    const cost = skill.cost ?? 0;
+    if(cost <= 0) return true;
+    if(type === 'nrg') return (caster.currentNrg ?? 0) >= cost;
+    if(type === 'hp')  return (caster.currentHp  ?? 0) >  cost;
+    if(type === 'sacrifice') return true; // 수직슬라이스 미구현
+    return true;
+  };
+
   // 이미지 URL 해결 (CARD_IMG 매핑 → fallback 이모지)
   Battle.resolveImg = function(imgKey){
     if(!imgKey) return null;
@@ -416,6 +430,8 @@
         slot.style.visibility = '';
         slot.setAttribute('data-skill-id', sk.id);
         slot.classList.toggle('is-passive', sk.passive === true);
+        slot.classList.toggle('is-unaffordable',
+          sk.passive !== true && !Battle.canAfford(c, sk));
         const skImg = Battle.resolveImg(sk.imgKey);
         const skImgEl = slot.querySelector('.bsc-card-img');
         if(skImgEl) skImgEl.innerHTML = skImg ? '<img src="' + skImg + '" alt="">' : '';
@@ -647,8 +663,23 @@
   };
 
   Battle.onSkillClick = async function(sk){
-    if(!sk || !sk.id) sk = Battle.getSkillsOf(Battle.state.selectedChar)[0];
+    const caster = Battle.state.selectedChar;
+    if(!sk || !sk.id) sk = Battle.getSkillsOf(caster)[0];
     if(!sk || sk.passive === true) return;
+    // 자원 부족 시 차단 — HS/Snap/LoR 대칭 원칙
+    if(!Battle.canAfford(caster, sk)){
+      const slotEl = document.querySelector(
+        '#battle-char-focus .bcf-skill-card[data-skill-id="' + sk.id + '"]'
+      );
+      if(slotEl){
+        slotEl.classList.remove('is-deny-shake');
+        // reflow 강제 → 같은 클래스 재부여 시 애니 재생
+        void slotEl.offsetWidth;
+        slotEl.classList.add('is-deny-shake');
+        setTimeout(function(){ slotEl.classList.remove('is-deny-shake'); }, 420);
+      }
+      return;
+    }
     Battle.state.selectedSkill = sk;
     Battle.showScreen(Battle.SCREEN.SKILL_ACTIVE);
     renderSkillActive();
@@ -676,8 +707,9 @@
   // 내부 공통 — 한 유닛이 타겟에게 1회 공격 (플레이어/적 공통).
   // opts.preSelectedSkill: 스킬 row 를 건너뛰고 바로 중앙 확대 → fire 흐름.
   // opts.showSkillRow: 플레이어 스킬 선택 UI 표시 여부.
-  const performAttack = async function(attacker, tgt, skill){
+  const performAttack = async function(attacker, tgt, skill, opts){
     if(!attacker || !tgt || !skill) return;
+    const preCharged = !!(opts && opts.preCharged);
     if(Battle.isDead(attacker) || Battle.isDead(tgt)) return;
 
     const calc = Battle.calcDamage(attacker, tgt, skill);
@@ -717,7 +749,7 @@
       await Battle.beat(Battle.TIMING.DEATH_OUT);
     }
 
-    Battle.consumeCost(attacker, skill);
+    if(!preCharged) Battle.consumeCost(attacker, skill);
     refreshStageCard(attacker);
 
     // 행동 완료 표시 — 큐잉 초록 → 실행 후 회색으로 전환
@@ -798,17 +830,21 @@
       const skill = pickEnemySkill(e);
       if(skill){
         // NRG 선차감 (실행 시점 재검증 없이 큐잉 기준으로 확정)
+        let preCharged = false;
         if(skill.costType === 'nrg' && (skill.cost ?? 0) > 0){
           e.currentNrg = Math.max(0, (e.currentNrg ?? 0) - (skill.cost ?? 0));
+          preCharged = true;
           refreshStageCard(e);
         }
         Battle.state.queue.push({
-          attackerId: e.id, targetId: tgt.id, skillId: skill.id, _basic: (skill.cost ?? 0) === 0
+          attackerId: e.id, targetId: tgt.id, skillId: skill.id,
+          _basic: (skill.cost ?? 0) === 0, _preCharged: preCharged
         });
       } else {
         // Fallback — stub 기본 공격
         Battle.state.queue.push({
-          attackerId: e.id, targetId: tgt.id, skillId: BASIC_ATTACK_SKILL.id, _basic: true
+          attackerId: e.id, targetId: tgt.id, skillId: BASIC_ATTACK_SKILL.id,
+          _basic: true, _preCharged: false
         });
       }
     });
@@ -820,7 +856,7 @@
       const attacker = Battle.findUnitById(q.attackerId);
       const target   = Battle.findUnitById(q.targetId);
       const skill    = q._basic ? BASIC_ATTACK_SKILL : Battle.findSkillById(q.skillId);
-      return { attacker: attacker, target: target, skill: skill };
+      return { attacker: attacker, target: target, skill: skill, preCharged: !!q._preCharged };
     }).filter(function(x){ return x.attacker && x.target && x.skill; });
 
     items.sort(function(a,b){
@@ -839,7 +875,7 @@
         if(!alt.length) continue;
         target = alt[Math.floor(Math.random()*alt.length)];
       }
-      await performAttack(it.attacker, target, it.skill);
+      await performAttack(it.attacker, target, it.skill, { preCharged: it.preCharged });
       await Battle.beat(Battle.TIMING.BETWEEN_ACTION);
     }
   };
@@ -994,9 +1030,17 @@
     clearHpPreview();
     clearTargetHighlight();
 
+    // NRG 선차감 (적 AI 와 동일 대칭) — 이후 performAttack 에서 _preCharged 로 중복 차감 방지
+    let preCharged = false;
+    if((sk.costType || 'nrg') === 'nrg' && (sk.cost ?? 0) > 0){
+      c.currentNrg = Math.max(0, (c.currentNrg ?? 0) - (sk.cost ?? 0));
+      preCharged = true;
+      refreshStageCard(c);
+    }
+
     // 큐에 push (즉시 실행 금지)
     Battle.state.queue.push({
-      attackerId: c.id, targetId: tgt.id, skillId: sk.id, _basic: false
+      attackerId: c.id, targetId: tgt.id, skillId: sk.id, _basic: false, _preCharged: preCharged
     });
 
     // 확대 카드 축소 애니 + 아군 카드 그리드 복귀.

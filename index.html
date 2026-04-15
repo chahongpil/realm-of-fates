@@ -433,11 +433,21 @@
   <!-- 배경 + 2×5 그리드 (항상 렌더) -->
   <div class="battle-stage">
     <div class="battle-stage-bg"></div>
+
+    <!-- 상단 HUD — 타이머 (검수관 블로커 #1, Slay the Spire / Monster Train 2 레이아웃 참조) -->
+    <div class="bv2-hud-top">
+      <div class="bsm-timer" id="bv2-queue-timer" aria-live="polite">
+        <span class="bsm-timer-icon">⏱</span><span class="bsm-timer-val">30</span>
+      </div>
+    </div>
+
     <div class="battle-stage-grid">
       <div class="battle-row battle-row-enemy" id="bv2-enemy-row"></div>
       <div class="battle-stage-mid">
         <button class="bsm-btn bsm-auto"  type="button" data-action="v2.autoBattle">자동 전투</button>
-        <div class="bsm-vs">VS</div>
+        <div class="bsm-vs">
+          <div class="bsm-vs-label">VS</div>
+        </div>
         <button class="bsm-btn bsm-start" type="button" data-action="v2.startCombat">전투 시작하기</button>
       </div>
       <div class="battle-row battle-row-ally"  id="bv2-ally-row"></div>

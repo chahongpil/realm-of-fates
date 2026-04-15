@@ -21,10 +21,19 @@
   }
 }
 
-/* 캐릭터 카드 원복 아웃 */
+/* 캐릭터 카드 원복 아웃 — FLIP 대칭: 중앙에서 원래 그리드 자리로 복귀
+   focusIn 의 0% 와 동일한 목표 transform 을 써야 중앙→srcRect 방향으로 정확히 돌아감. */
 @keyframes bv2CardFocusOut{
-  0%   { transform: scale(1); opacity: 1; }
-  100% { transform: scale(0.6); opacity: 0; }
+  0%   {
+    transform: translate(-50%, -58%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--bv2-origin-dx, 0px)),
+                         calc(-58% + var(--bv2-origin-dy, 0px)))
+               scale(var(--bv2-origin-scale, 0.5));
+    opacity: 0;
+  }
 }
 
 /* 스킬 카드 호버 확대 */

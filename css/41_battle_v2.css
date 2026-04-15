@@ -11,10 +11,21 @@
 :root{
   --battle-speed: 1;
 
-  /* 카드 크기 — 2026-04-14 3차 튜닝
-     여백 더 줄임: 170×240 → 210×290. 가로 예산: 5×210 + 4×16 = 1114 (1280 대비) */
-  --bv2-card-w: 210px;
-  --bv2-card-h: 290px;
+  /* 카드 크기 — 2026-04-15 검수관 블로커 #3 (10장 배치 호흡 확보)
+     172×248 + gap 14. 가로 예산: 5×172 + 4×14 = 916 → 좌우 safe 182 each. */
+  --bv2-card-w: 172px;
+  --bv2-card-h: 248px;
+  --bv2-card-gap: 14px;
+
+  /* 공간 예산 (1280×720 수직 분배) — 검수관 #2 겹침 방지 */
+  --bv2-hud-h:       56px;   /* 상단 타이머 HUD */
+  --bv2-mid-h:       68px;   /* 중앙 VS + 버튼 바 */
+  --bv2-row-h:       280px;  /* enemy-row */
+  --bv2-row-h-ally:  296px;  /* ally-row (조금 더 크게) */
+  --bv2-side-pad:    96px;
+  --bv2-btn-w:       164px;
+  --bv2-btn-h:       48px;
+  --bv2-vs-size:     52px;
   --bv2-card-focus-scale: 1.8;         /* 유닛 선택 (스킬 고르기) 시 중앙 확대 */
   --bv2-card-action-scale: 1.2;        /* 실제 액션(공격 애니) 시 중앙 확대 */
   --bv2-card-hover-scale: 1.15;
@@ -77,36 +88,103 @@
 }
 .battle-stage-grid{
   position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;                               /* 중앙 바가 자체 패딩을 가지므로 축소 */
-  padding: 14px 20px;
+  top: var(--bv2-hud-h);                  /* 상단 HUD 영역 비움 */
+  left: 0; right: 0; bottom: 0;
+  display: grid;
+  grid-template-rows:
+    var(--bv2-row-h)
+    var(--bv2-mid-h)
+    var(--bv2-row-h-ally);                /* 56 + 280 + 68 + 296 = 700, 하단 safe 20 */
+  padding: 0;
 }
 .battle-row{
   display: flex;
   justify-content: center;
-  gap: 16px;
+  align-items: center;
+  gap: var(--bv2-card-gap);
 }
 
-/* 중앙 바 — VS + 자동 전투 + 전투 시작하기 */
+/* 중앙 바 — grid 3열: [자동 전투] [VS] [전투 시작]. 겹침 물리 불가 */
 .battle-stage-mid{
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: var(--bv2-btn-w) 1fr var(--bv2-btn-w);
   align-items: center;
-  padding: 0 80px;
-  height: 64px;
+  padding: 0 var(--bv2-side-pad);
+  gap: 24px;
+  height: var(--bv2-mid-h);
   pointer-events: auto;
 }
 .bsm-vs{
-  font-size: 3.2rem;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bsm-vs-label{
+  font-size: var(--bv2-vs-size);
   font-weight: 900;
   color: var(--bv2-accent);
   letter-spacing: 6px;
   text-shadow: 0 0 24px rgba(255, 215, 0, .65),
                0 4px 10px rgba(0, 0, 0, .95);
+  line-height: 1;
 }
+.bsm-auto  { justify-self: start; }
+.bsm-start { justify-self: end; }
+
+/* 상단 HUD — 타이머 독립 영역 (검수관 블로커 #1: 겹침 제거) */
+.bv2-hud-top{
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: var(--bv2-hud-h);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 28px;
+  gap: 16px;
+  z-index: 40;
+  background: linear-gradient(to bottom, rgba(8, 6, 14, .72), rgba(8, 6, 14, 0));
+  pointer-events: none;
+}
+.bv2-hud-top > *{ pointer-events: auto; }
+
+.bsm-timer{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  background: rgba(20, 14, 28, .82);
+  border: 1.5px solid var(--bv2-accent-dim);
+  border-radius: 22px;
+  color: var(--bv2-accent);
+  font-size: 1.25rem;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(255, 180, 60, .35) inset,
+              0 3px 10px rgba(0, 0, 0, .75);
+  transition: color 180ms, border-color 180ms, box-shadow 180ms;
+}
+.bsm-timer-val{ min-width: 28px; text-align: center; }
+
+/* 실전 진입 시 dev 데모 버튼 숨김 (startFromLegacyBS 에서 .is-real-battle 부여) */
+#battle-v2-container.is-real-battle .bi-demo-btn{ display: none !important; }
+.bsm-timer-icon{ font-size: .9rem; opacity: .85; }
+.bsm-timer.is-warning{
+  color: #ff8c3a;
+  border-color: #ff8c3a;
+  box-shadow: 0 0 14px rgba(255, 140, 58, .55);
+}
+.bsm-timer.is-critical{
+  color: #ff4040;
+  border-color: #ff4040;
+  box-shadow: 0 0 18px rgba(255, 64, 64, .75);
+  animation: bv2TimerPulse 700ms ease-in-out infinite;
+}
+@keyframes bv2TimerPulse{
+  0%,100%{ transform: scale(1); }
+  50%    { transform: scale(1.08); }
+}
+.bsm-timer.is-hidden{ visibility: hidden; }
 .bsm-btn{
   padding: 12px 26px;
   background: rgba(20, 15, 8, .92);
@@ -304,10 +382,57 @@
 .bv2-card.is-hit{
   animation: bv2CardShake var(--bv2-dur-shake) ease-out;
 }
+/* 사망 최종 상태 — is-dying-* 애니가 끝나고 swap 될 때, forwards 최종 프레임(opacity 0)이
+   사라지고 static 규칙으로 되돌아간다. 여기서 opacity > 0 이면 카드가 "다시 나타나" 버림.
+   그래서 is-dead 는 완전히 숨기는 상태(visibility hidden + opacity 0)여야 함.
+   그리드 슬롯 자체는 유지(layout 안정) — display:none 대신 visibility. */
 .bv2-card.is-dead{
-  filter: grayscale(1) brightness(.4);
-  opacity: .55;
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+}
+
+/* 원소별 사망 연출 — 사망 판정 직후 잠깐 적용 → .is-dead 로 전환 */
+.bv2-card.is-dying-melt{
+  animation: bv2CardMelt var(--bv2-dur-death, 700ms) ease-out forwards;
+  pointer-events: none;
+  z-index: 6;
+}
+.bv2-card.is-dying-crush{
+  animation: bv2CardCrush var(--bv2-dur-death, 700ms) ease-in forwards;
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* 행동 완료 (이번 라운드 큐 실행이 끝난 유닛) — 회색 처리, 체크마크 유지 */
+.bv2-card.is-acted{
+  filter: grayscale(1) brightness(.6);
+  opacity: .6;
+  pointer-events: none;
+}
+.bv2-card.is-acted .bv2c-frame{
+  border-color: #555;
+  box-shadow:
+    inset 0 0 0 2px rgba(120,120,120,.5),
+    inset 0 0 14px rgba(0,0,0,.7);
+}
+.bv2-card.is-acted::after{
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(60,60,60,.9);
+  color: #ccc;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 50%;
+  border: 2px solid #888;
+  z-index: 5;
 }
 
 /* 큐잉 완료 아군 — 체크마크 + 초록 테두리. 클릭 불가. */

@@ -319,6 +319,14 @@ Object.assign(RoF.Game, {
     }
     if(!bs.currentRound)bs.currentRound=1;// 첫 진입시만
     this.persist();
+    // PHASE 3 시네마틱 전투 어댑터 (블로커 #3 배선)
+    // FEATURE.CINEMATIC_BATTLE=true 이면 v2 엔진으로 라우트. 실패 시 레거시 fallback.
+    if(RoF && RoF.FEATURE && RoF.FEATURE.CINEMATIC_BATTLE
+       && RoF.Battle && typeof RoF.Battle.startFromLegacyBS === 'function'){
+      const ok = RoF.Battle.startFromLegacyBS(bs);
+      if(ok !== false) return;
+      console.warn('[battle] v2 adapter failed, fallback to legacy TurnBattle');
+    }
     TurnBattle.start(bs);
   },
 

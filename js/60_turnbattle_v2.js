@@ -315,6 +315,9 @@
   };
 
   // 카드의 HP/NRG 만 갱신 (피격 후)
+  // NOTE: is-dead 토글은 여기서 하지 않는다 — 사망 연출이 renderDeath 에서 is-dying-* 애니 후
+  // is-dead 를 붙여야 함. 여기서 즉시 grayscale 을 씌우면 melt/crush 키프레임이 묻혀버림.
+  // 생존 유닛의 is-dead 해제(부활 등)만 안전하게 유지.
   const refreshStageCard = function(unit){
     const el = stageCardOf(unit);
     if(!el) return;
@@ -322,7 +325,7 @@
     const nrgEl = el.querySelector('.bv2c-nrg-val');
     if(hpEl)  hpEl.textContent  = unit.currentHp;
     if(nrgEl) nrgEl.textContent = unit.currentNrg ?? 0;
-    el.classList.toggle('is-dead', Battle.isDead(unit));
+    if(!Battle.isDead(unit)) el.classList.remove('is-dead');
   };
 
   // ── 슬롯 원자 조작 ──────────────────────────────────────────
@@ -375,6 +378,13 @@
   const renderCharFocus = function(opts){
     const c = Battle.state.selectedChar;
     if(!c) return;
+    // 이전 복귀 잔재 제거 — is-returning 이 남아있으면 focusOut 최종 상태(투명)에 갇혀
+    // 들어오는 애니가 안 보임. is-action-mode 는 호출자(performAttack)가 미리 세팅하므로
+    // 여기서 건드리지 않는다. (is-fire-mode 는 #battle-v2-container 소속, 여기 대상 아님)
+    const cfScreenReset = document.getElementById('battle-char-focus');
+    if(cfScreenReset){
+      cfScreenReset.classList.remove('is-returning');
+    }
     const suppressSkillRow = !!(opts && opts.suppressSkillRow);
     const img = Battle.resolveImg(c.imgKey);
     const bcfImg = document.querySelector('#battle-char-focus .bcf-card-img');
@@ -534,19 +544,89 @@
     }
   };
 
+  // 원소별 사망 연출 그룹 — 부드러운 소멸 vs 격렬한 파괴
+  const MELT_ELEMENTS  = ['fire','water','ice','holy','light'];
+  const CRUSH_ELEMENTS = ['earth','electric','lightning','dark','shadow'];
+  const deathClassFor = function(unit){
+    const e = (unit && unit.element || '').toLowerCase();
+    if(MELT_ELEMENTS.indexOf(e) >= 0)  return 'is-dying-melt';
+    if(CRUSH_ELEMENTS.indexOf(e) >= 0) return 'is-dying-crush';
+    return 'is-dying-melt'; // 기본값: 부드럽게
+  };
+
   const renderDeath = function(target){
     if(!target) return;
     setText('#battle-death .bd-name', (target.name || '') + ' 쓰러지다');
     const el = stageCardOf(target);
-    if(el) el.classList.add('is-dead');
+    if(!el) return;
+    const dyingCls = deathClassFor(target);
+    el.classList.add(dyingCls);
+    // 애니 종료 후 최종 상태로 전환
+    const dur = parseFloat(getComputedStyle(el).getPropertyValue('--bv2-dur-death')) || 700;
+    setTimeout(function(){
+      el.classList.remove(dyingCls);
+      el.classList.add('is-dead');
+    }, dur);
   };
 
   const renderRoundEnd = function(){
     setText('#battle-round-end .bre-msg', '라운드 ' + Battle.state.round + ' 종료');
   };
 
+  // ── 큐잉 타이머 (블로커 #2) ──────────────────────────────────
+  // CLAUDE.md 03-terminology.md: 라운드 길이 90초 = 큐잉 30 + 실행 60
+  // 큐잉 단계 진입 시 카운트다운 시작. 만료 시 자동 onStartCombat.
+  // 플레이어가 수동 "전투 시작" / "자동 전투" / cancel 하면 정지.
+  Battle.QUEUE_TIMER_SECONDS = 30;
+  Battle._queueTimer = { intervalId: null, remaining: 0 };
+
+  const getQueueTimerEl = function(){ return document.getElementById('bv2-queue-timer'); };
+  const renderQueueTimer = function(){
+    const el = getQueueTimerEl();
+    if(!el) return;
+    const r = Battle._queueTimer.remaining;
+    const valEl = el.querySelector('.bsm-timer-val');
+    if(valEl) valEl.textContent = String(Math.max(0, r));
+    el.classList.toggle('is-warning',  r <= 10 && r > 5);
+    el.classList.toggle('is-critical', r <= 5);
+  };
+
+  Battle.stopQueueTimer = function(){
+    if(Battle._queueTimer.intervalId != null){
+      clearInterval(Battle._queueTimer.intervalId);
+      Battle._queueTimer.intervalId = null;
+    }
+    const el = getQueueTimerEl();
+    if(el){ el.classList.remove('is-warning','is-critical'); }
+  };
+
+  Battle.startQueueTimer = function(){
+    Battle.stopQueueTimer();
+    const el = getQueueTimerEl();
+    if(el) el.classList.remove('is-hidden');
+    Battle._queueTimer.remaining = Battle.QUEUE_TIMER_SECONDS;
+    renderQueueTimer();
+    Battle._queueTimer.intervalId = setInterval(function(){
+      Battle._queueTimer.remaining--;
+      renderQueueTimer();
+      if(Battle._queueTimer.remaining <= 0){
+        Battle.stopQueueTimer();
+        // 만료 → 자동 전투 시작 (미큐잉 유닛은 대기 처리)
+        if(typeof Battle.onStartCombat === 'function'){
+          // confirm 프롬프트 없이 강제 진행 — 타이머 만료는 유저 의사 표시와 다름
+          const prevConfirm = (typeof window !== 'undefined') ? window.confirm : null;
+          if(typeof window !== 'undefined') window.confirm = function(){ return true; };
+          Promise.resolve(Battle.onStartCombat()).finally(function(){
+            if(typeof window !== 'undefined' && prevConfirm) window.confirm = prevConfirm;
+          });
+        }
+      }
+    }, 1000);
+  };
+
   const renderIdle = function(){
     setText('#battle-idle .bi-hint', '아군 카드를 클릭하세요');
+    Battle.startQueueTimer();
   };
 
   // ── 상호작용 ─────────────────────────────────────────────────
@@ -606,7 +686,7 @@
     Battle.state.selectedSkill = skill;
     Battle.state.hoveredTarget = tgt;
 
-    // 액션 모드 — 1.5배 (선택 확대는 1.8배). CSS 가 is-action-mode 로 크기 결정.
+    // 액션 모드 — 1.2배 (선택 확대는 1.8배). CSS 가 is-action-mode 로 크기 결정.
     const cfScreenEl = document.getElementById('battle-char-focus');
     if(cfScreenEl) cfScreenEl.classList.add('is-action-mode');
     applyFocusOrigin(attacker, '--bv2-card-action-scale');
@@ -640,13 +720,22 @@
     Battle.consumeCost(attacker, skill);
     refreshStageCard(attacker);
 
-    // 원위치 복귀
+    // 행동 완료 표시 — 큐잉 초록 → 실행 후 회색으로 전환
+    const atkEl = stageCardOf(attacker);
+    if(atkEl && !Battle.isDead(attacker)){
+      atkEl.classList.remove('is-queued');
+      atkEl.classList.add('is-acted');
+    }
+
+    // 원위치 복귀 — FLIP 대칭: 복귀 직전 origin 재계산.
+    // is-returning 은 그대로 두어 focusOut `forwards` 최종 상태(opacity 0 @ srcRect)를 유지.
+    // 다음 renderCharFocus 진입 시 클래스가 리셋됨. 중간에 removing 하면
+    // 기본 animation:bv2CardFocusIn 이 재실행되어 "중앙으로 한번 더 튀어나오는" 버그 발생.
     const cfEl = document.getElementById('battle-char-focus');
     if(cfEl){
+      applyFocusOrigin(attacker, '--bv2-card-action-scale');
       cfEl.classList.add('is-returning');
       await Battle.beatRaw(260);
-      cfEl.classList.remove('is-returning');
-      cfEl.classList.remove('is-action-mode');
     }
     document.querySelectorAll('.battle-stage-grid .bv2-card.is-selected')
       .forEach(function(el){ el.classList.remove('is-selected'); });
@@ -668,8 +757,11 @@
     if(el) el.classList.add('is-queued');
   };
   const clearAllQueuedUI = function(){
-    document.querySelectorAll('.battle-stage-grid .bv2-card.is-queued')
-      .forEach(function(el){ el.classList.remove('is-queued'); });
+    document.querySelectorAll('.battle-stage-grid .bv2-card.is-queued, .battle-stage-grid .bv2-card.is-acted')
+      .forEach(function(el){
+        el.classList.remove('is-queued');
+        el.classList.remove('is-acted');
+      });
   };
 
   const allAlliesQueuedOrDead = function(){
@@ -678,16 +770,47 @@
     });
   };
 
-  // 적군 자동 큐잉 — 수직슬라이스: 기본 공격, 랜덤 생존 아군
+  // 적군 자동 큐잉 — 각 적 유닛이 자신의 스킬 풀에서 현 NRG 로 쓸 수 있는 것 중 랜덤 선택.
+  // 시그니처 스킬이 있고 nrg 충분하면 60% 확률로 시그니처, 40% 기본. 없으면 기본(fallback stub).
+  const pickEnemySkill = function(enemy){
+    const pool = Battle.getSkillsOf(enemy);
+    if(!pool || !pool.length) return null;
+    const curNrg = enemy.currentNrg ?? 0;
+    const affordable = pool.filter(function(s){
+      const cost = s.cost ?? 0;
+      return (s.costType === 'nrg' ? curNrg >= cost : true);
+    });
+    if(!affordable.length) return null;
+    // 시그니처(cost>0) 우선 60%, 기본(cost==0) 40%. 시그니처 없으면 기본만.
+    const sigs = affordable.filter(function(s){ return (s.cost ?? 0) > 0; });
+    const basics = affordable.filter(function(s){ return (s.cost ?? 0) === 0; });
+    const useSig = sigs.length > 0 && Math.random() < 0.6;
+    const list = useSig ? sigs : (basics.length ? basics : affordable);
+    return list[Math.floor(Math.random() * list.length)];
+  };
+
   const autoQueueEnemies = function(){
     Battle.DEMO.enemies.forEach(function(e){
       if(Battle.isDead(e)) return;
       const targets = Battle.DEMO.allies.filter(function(a){ return !Battle.isDead(a); });
       if(!targets.length) return;
       const tgt = targets[Math.floor(Math.random() * targets.length)];
-      Battle.state.queue.push({
-        attackerId: e.id, targetId: tgt.id, skillId: BASIC_ATTACK_SKILL.id, _basic: true
-      });
+      const skill = pickEnemySkill(e);
+      if(skill){
+        // NRG 선차감 (실행 시점 재검증 없이 큐잉 기준으로 확정)
+        if(skill.costType === 'nrg' && (skill.cost ?? 0) > 0){
+          e.currentNrg = Math.max(0, (e.currentNrg ?? 0) - (skill.cost ?? 0));
+          refreshStageCard(e);
+        }
+        Battle.state.queue.push({
+          attackerId: e.id, targetId: tgt.id, skillId: skill.id, _basic: (skill.cost ?? 0) === 0
+        });
+      } else {
+        // Fallback — stub 기본 공격
+        Battle.state.queue.push({
+          attackerId: e.id, targetId: tgt.id, skillId: BASIC_ATTACK_SKILL.id, _basic: true
+        });
+      }
     });
   };
 
@@ -723,6 +846,7 @@
 
   // 자동 전투 — 미큐잉 아군 전부 기본 공격으로 자동 큐잉 후 즉시 실행
   Battle.onAutoBattle = async function(){
+    Battle.stopQueueTimer();
     Battle.DEMO.allies.forEach(function(a){
       if(Battle.isDead(a) || isAllyQueued(a)) return;
       const targets = Battle.DEMO.enemies.filter(function(e){ return !Battle.isDead(e); });
@@ -738,6 +862,7 @@
 
   // 전투 시작 — 미큐잉 아군 있으면 확인 후 강제 종료 (대기 처리)
   Battle.onStartCombat = async function(){
+    Battle.stopQueueTimer();
     const unq = Battle.DEMO.allies.filter(function(a){
       return !Battle.isDead(a) && !isAllyQueued(a);
     });
@@ -750,7 +875,86 @@
     await startCombatExecution();
   };
 
-  // 큐잉 완료 → 적군 큐잉 → 실행
+  // ── 리워드 테이블 (블로커 #4) ──────────────────────────────
+  // 수치는 레거시 55_game_battle.js:582,596 과 동일. 하드코딩 방지용 상수화.
+  Battle.REWARD_TABLE = {
+    victory: { goldR: 10, xpR: 10, honorR: 10, lpR:  15 },
+    defeat:  { goldR:  3, xpR: 10, honorR:  1, lpR:  -5 },
+  };
+
+  // v2 유닛 HP/NRG → 레거시 bs.pCards/eCards 역동기화
+  // 라운드 종료·전투 종료 시마다 호출해서 레거시 코드 경로가 정확한 상태를 읽도록 함.
+  Battle.syncHpToLegacy = function(){
+    const sync = function(u){
+      if(u && u._legacyRef){
+        u._legacyRef.currentHp = u.currentHp;
+        u._legacyRef.curNrg    = u.currentNrg;
+      }
+    };
+    (Battle.DEMO.allies  || []).forEach(sync);
+    (Battle.DEMO.enemies || []).forEach(sync);
+  };
+
+  // 전투 종료 판정 — 영웅 HP 0 기준 (레거시와 동일 규칙)
+  Battle.getBattleResult = function(){
+    const pH = (Battle.DEMO.allies  || []).find(function(u){ return u.isHero; });
+    const eH = (Battle.DEMO.enemies || []).find(function(u){ return u.isHero; });
+    const myHeroDead    = pH && Battle.isDead(pH);
+    const enemyHeroDead = eH && Battle.isDead(eH);
+    if(enemyHeroDead) return 'victory';
+    if(myHeroDead)    return 'defeat';
+    return null;
+  };
+
+  // 승패 확정 → HP 역동기화 → 레거시 Game.showBattleEnd 로 리워드 화면 인계
+  Battle._handoffToReward = function(result){
+    Battle.stopQueueTimer();
+    Battle.syncHpToLegacy();
+
+    const bs = Battle._legacyBS;
+    const G  = (typeof Game !== 'undefined') ? Game : (RoF && RoF.Game);
+    if(!bs || !G || typeof G.showBattleEnd !== 'function'){
+      console.warn('[v2] handoff failed — missing Game.showBattleEnd or legacy bs');
+      Battle.close();
+      return;
+    }
+
+    const table = Battle.REWARD_TABLE[result] || Battle.REWARD_TABLE.defeat;
+    const won = (result === 'victory');
+
+    // 레거시 사이드이펙트 복제 (55_game_battle.js:576-608)
+    if(won && typeof G.totalWins === 'number'){ G.totalWins++; }
+    G.gold = (G.gold || 0) + table.goldR;
+    G.leaguePoints = Math.max(0, (G.leaguePoints || 0) + table.lpR);
+
+    // 참여 카드 XP/honor 분배
+    const levelUps = [];
+    const participated = (bs.battleDeck || []).map(function(c){ return c.uid; });
+    if(Array.isArray(G.deck)){
+      G.deck.filter(function(c){ return participated.indexOf(c.uid) >= 0; })
+            .forEach(function(c){
+        try {
+          if(typeof G.giveCardXp === 'function' && G.giveCardXp(c, table.xpR)){
+            levelUps.push(c.name);
+          }
+          if(typeof G.giveCardHonor === 'function'){ G.giveCardHonor(c, table.honorR); }
+        } catch(err){
+          console.warn('[v2] xp/honor dispatch err for', c && c.name, err);
+        }
+      });
+    }
+    if(typeof G.persist === 'function'){ G.persist(); }
+
+    // v2 컨테이너 닫고 리워드 화면으로
+    Battle.close();
+    try {
+      G.showBattleEnd(won, table.goldR, table.xpR, table.honorR, levelUps);
+    } catch(err){
+      console.error('[v2] showBattleEnd failed:', err);
+    }
+  };
+
+  // 큐잉 완료 → 적군 큐잉 → 실행 → (종료 판정) → 다음 라운드 또는 리워드
   const startCombatExecution = async function(){
     autoQueueEnemies();
     Battle.showScreen(Battle.SCREEN.IDLE);
@@ -759,6 +963,21 @@
     Battle.state.queue = [];
     clearAllQueuedUI();
     Battle.state.round = (Battle.state.round || 1) + 1;
+
+    // HP 레거시 역동기화 (라운드마다)
+    Battle.syncHpToLegacy();
+    if(Battle._legacyBS){ Battle._legacyBS.currentRound = Battle.state.round; }
+
+    // 전투 종료 체크 (블로커 #4)
+    const result = Battle.getBattleResult();
+    if(result && Battle._legacyBS){
+      // 실전 모드 — 레거시 리워드 화면으로 인계 후 종료
+      await Battle.beat(Battle.TIMING.ROUND_END);
+      Battle._handoffToReward(result);
+      return;
+    }
+
+    // 종료 아님 → 다음 라운드로
     Battle.showScreen(Battle.SCREEN.ROUND_END);
     renderRoundEnd();
     await Battle.beat(Battle.TIMING.ROUND_END);
@@ -780,12 +999,14 @@
       attackerId: c.id, targetId: tgt.id, skillId: sk.id, _basic: false
     });
 
-    // 확대 카드 축소 애니 + 아군 카드 그리드 복귀
+    // 확대 카드 축소 애니 + 아군 카드 그리드 복귀.
+    // is-returning 은 showScreen(IDLE) 이 char-focus 를 display:none 으로 숨길 때까지 유지.
+    // (removing 직후 기본 focusIn 애니가 재실행되는 버그 방지)
     const cfEl = document.getElementById('battle-char-focus');
     if(cfEl){
+      applyFocusOrigin(c, '--bv2-card-focus-scale');
       cfEl.classList.add('is-returning');
       await Battle.beatRaw(260);
-      cfEl.classList.remove('is-returning');
     }
     document.querySelectorAll('.battle-stage-grid .bv2-card.is-selected')
       .forEach(function(el){ el.classList.remove('is-selected'); });
@@ -835,6 +1056,7 @@
   };
 
   Battle.close = function(){
+    Battle.stopQueueTimer();
     const container = document.getElementById('battle-v2-container');
     if(container){
       container.style.display = 'none';
@@ -908,6 +1130,155 @@
       const fn = Battle.HANDLERS[action];
       if(fn) fn(e);
     }, false);
+  };
+
+  // ── 레거시 → v2 어댑터 ──────────────────────────────────────
+  // 55_game_battle.js 의 bs(battleState) 를 v2 DEMO 구조로 변환.
+  // 블로커 #1(적 AI 스킬셋) / #4(리워드 플로우) 는 이후 단계에서 확장.
+  //   - bs.pCards[i]  : 플레이어 덱 카드 (11_data_units.js 스프레드 + battle runtime 필드)
+  //   - bs.eCards[i]  : 적 생성 카드 (genEnemy)
+  //   - bs.currentRound / bs.battleRelics 등은 리워드/라운드 연결에서 사용.
+  const legacyCardToV2Unit = function(c, idx, side){
+    const sideKey = side === 'ally' ? 'a' : 'e';
+    return {
+      id:          sideKey + '_' + (c.uid || ('i' + idx)),
+      unitId:      c.id,                          // 원본 data id
+      name:        c.name || '',
+      desc:        c.skillDesc || '',
+      imgKey:      c.id,                          // CARD_IMG key = 원본 id
+      element:     c.element || 'neutral',
+      rarity:      c.rarity || 'bronze',
+      atk:         c.atk  ?? 0,
+      def:         c.def  ?? 0,
+      spd:         c.spd  ?? 0,
+      luck:        c.luck ?? 0,
+      nrg:         c.nrg  ?? 10,
+      currentNrg:  c.curNrg ?? 0,
+      nrgReg:      c.nrgReg ?? 1,
+      hp:          c.hp ?? 10,
+      currentHp:   c.currentHp ?? c.hp ?? 10,
+      maxHp:       c.maxBHp || c.hp || 10,
+      isHero:      !!c.isHero,
+      _legacyRef:  c,                             // 라운드 종료 시 역동기화용
+    };
+  };
+
+  // 블로커 #1: 유닛별 스킬셋 생성기 — 원소/등급 기반 "기본 공격 + 시그니처" 2장.
+  // 수치는 04-balance.md 의 "스킬 등급별 수치 가이드" 스펠 테이블을 따름.
+  // 추후 11_data_units.js 에 skillIds 필드 추가 시, 이 생성기는 fallback 으로 남김.
+  const makeBasicAttackFor = function(unit){
+    return {
+      id:          'sp_basic_' + unit.id,
+      ownerId:     unit.id,
+      name:        '기본 공격',
+      imgKey:      'sk_power',
+      rarity:      'bronze',
+      attackType:  'weapon',
+      mult:        1.0,
+      flatBonus:   0,
+      penetration: 0,
+      cost:        0,
+      costType:    'nrg',
+      tpCost:      1,
+      critBonus:   0,
+      critMult:    1.5,
+      targetType:  'single_enemy',
+      desc:        '기본 무기 공격.',
+      passive:     false,
+    };
+  };
+
+  // 스펠 등급별 데미지·코스트 테이블 (04-balance.md)
+  const SIG_TIER = {
+    bronze:    { damage: 8,  cost: 3,  cooldown: 0, critBonus: 0,  critMult: 1.5 },
+    silver:    { damage: 15, cost: 5,  cooldown: 0, critBonus: 5,  critMult: 1.5 },
+    gold:      { damage: 25, cost: 10, cooldown: 1, critBonus: 10, critMult: 1.6 },
+    legendary: { damage: 40, cost: 20, cooldown: 2, critBonus: 15, critMult: 1.7 },
+    divine:    { damage: 60, cost: 30, cooldown: 3, critBonus: 20, critMult: 1.8 },
+  };
+
+  // 원소별 시그니처 스킬 메타 (이름/아이콘/설명 템플릿)
+  const SIG_ELEM = {
+    fire:      { name: '불지옥',     imgKey: 'sk_rage',      descT: '화염이 대상을 집어삼킨다.' },
+    water:     { name: '한빙의 창',   imgKey: 'sk_focus',     descT: '얼어붙은 창이 대상을 관통한다.' },
+    lightning: { name: '뇌격',       imgKey: 'sk_godslayer', descT: '뇌운이 하늘을 가르며 대상을 내리친다.' },
+    earth:     { name: '대지 강타',   imgKey: 'sk_power',     descT: '대지의 힘이 대상을 짓누른다.' },
+    dark:      { name: '암흑 폭발',   imgKey: 'sk_venom',     descT: '어둠의 파동이 대상을 잠식한다.' },
+    holy:      { name: '성광 심판',   imgKey: 'sk_aura',      descT: '신성한 빛이 대상을 심판한다.' },
+    neutral:   { name: '에너지 파동', imgKey: 'sk_power',     descT: '순수 마력이 대상을 강타한다.' },
+  };
+
+  const makeSignatureSkillFor = function(unit){
+    const tier = SIG_TIER[unit.rarity] || SIG_TIER.bronze;
+    const elem = SIG_ELEM[unit.element] || SIG_ELEM.neutral;
+    return {
+      id:          'sp_sig_' + unit.id,
+      ownerId:     unit.id,
+      name:        elem.name,
+      imgKey:      elem.imgKey,
+      rarity:      unit.rarity || 'bronze',
+      attackType:  'spell',
+      damage:      tier.damage,
+      cost:        tier.cost,
+      costType:    'nrg',
+      tpCost:      1,
+      cooldown:    tier.cooldown,
+      critBonus:   tier.critBonus,
+      critMult:    tier.critMult,
+      targetType:  'single_enemy',
+      desc:        elem.descT + ' (' + tier.damage + ' 피해)',
+      passive:     false,
+    };
+  };
+
+  // 유닛 → 스킬 배열 (기본 공격 + 원소 시그니처)
+  const buildUnitSkillSet = function(unit){
+    return [ makeBasicAttackFor(unit), makeSignatureSkillFor(unit) ];
+  };
+
+  Battle.startFromLegacyBS = async function(bs){
+    if(!RoF.FEATURE || !RoF.FEATURE.CINEMATIC_BATTLE){
+      console.warn('[v2] startFromLegacyBS: FEATURE.CINEMATIC_BATTLE=false');
+      return false;
+    }
+    if(!bs || !Array.isArray(bs.pCards) || !Array.isArray(bs.eCards)){
+      console.warn('[v2] startFromLegacyBS: invalid bs', bs);
+      return false;
+    }
+    const container = document.getElementById('battle-v2-container');
+    if(!container){ console.warn('[v2] #battle-v2-container not found'); return false; }
+
+    // 1) 유닛 변환
+    Battle.DEMO.allies  = bs.pCards.map(function(c,i){ return legacyCardToV2Unit(c, i, 'ally'); });
+    Battle.DEMO.enemies = bs.eCards.map(function(c,i){ return legacyCardToV2Unit(c, i, 'enemy'); });
+
+    // 2) 스킬셋 — 아군/적 모두 기본공격+원소 시그니처 2장씩.
+    // 추후 11_data_units.js 의 skillIds 필드가 생기면 fallback 으로만 사용.
+    const allSkills = [];
+    Battle.DEMO.allies.forEach(function(u){
+      buildUnitSkillSet(u).forEach(function(s){ allSkills.push(s); });
+    });
+    Battle.DEMO.enemies.forEach(function(u){
+      buildUnitSkillSet(u).forEach(function(s){ allSkills.push(s); });
+    });
+    Battle.DEMO.skills = allSkills;
+
+    // 3) 리워드/라운드 연결용 참조 보관 — startCombatExecution 의
+    //    syncHpToLegacy() 가 매 라운드마다 _legacyRef.currentHp 를 갱신.
+    Battle._legacyBS = bs;
+
+    // 4) 부팅 시퀀스 — startDemo 와 동일한 흐름
+    Battle._installDelegatedListeners();
+    if(typeof UI !== 'undefined' && UI && typeof UI.show === 'function'){
+      UI.show('battle-screen');
+    }
+    container.classList.add('is-real-battle');  // dev 데모 버튼 숨김 트리거
+    container.style.display = '';
+    buildStageGrid();
+    Battle.resetState();
+    Battle.showScreen(Battle.SCREEN.IDLE);
+    renderIdle();
+    return true;
   };
 
   // ── 진입점 ───────────────────────────────────────────────────

@@ -696,6 +696,65 @@ body.game-mode #battle-screen > .tb-timer-bar{
 .loot-box.bronze-loot{border-color:#cd7f32;box-shadow:0 0 10px rgba(205,127,50,.3);background:linear-gradient(180deg,var(--amber-stop-1),var(--rar-bronze-deep));}
 .loot-result{font-size:.75rem;color:var(--text-1);text-align:center;margin-top:4px;animation:lootReveal .5s ease-out;}
 .loot-double-btn{margin-top:10px;font-size:.75rem;}
+
+/* ═══════════════════════════════════════════════════
+   P0-2 (2026-04-15): 리워드 화면 시각 보상 패스
+   - 승리 스탬프 scale-in
+   - 전리품 상자 stagger entrance
+   - tween 숫자 펄스
+   - 확인 버튼 주기 하이라이트
+   ═══════════════════════════════════════════════════ */
+
+/* 승리 배너 스탬프 — 크게 회전하며 들어와서 착 박히는 느낌 (StS2/LoR 공식) */
+.reward-title.victory.is-stamping{
+  animation: rewVictoryStamp .9s cubic-bezier(.2,1.3,.3,1) both;
+}
+@keyframes rewVictoryStamp{
+  0%   { opacity: 0; transform: scale(3.6) rotate(-14deg); filter: brightness(2) drop-shadow(0 0 30px rgba(255,215,0,.9)); }
+  60%  { opacity: 1; transform: scale(.92) rotate(2deg);   filter: brightness(1.3) drop-shadow(0 0 18px rgba(255,215,0,.7)); }
+  80%  {             transform: scale(1.05) rotate(-1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0);        filter: brightness(1) drop-shadow(0 0 8px rgba(255,215,0,.35)); }
+}
+
+/* 전리품 상자 — 순차 등장 (3개 stagger 120ms) */
+.loot-boxes .loot-box{
+  animation: rewLootEnter .55s cubic-bezier(.2,1.2,.3,1) backwards;
+}
+.loot-boxes .loot-box:nth-child(1){ animation-delay: .25s; }
+.loot-boxes .loot-box:nth-child(2){ animation-delay: .37s; }
+.loot-boxes .loot-box:nth-child(3){ animation-delay: .49s; }
+@keyframes rewLootEnter{
+  0%   { opacity: 0; transform: translateY(40px) scale(.6); }
+  70%  { opacity: 1; transform: translateY(-4px) scale(1.08); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 카운트업 중 span 에 미세 금광 효과 */
+#rew-stats .rew-tween{
+  display: inline-block;
+  color: #ffd76a;
+  font-weight: 700;
+  text-shadow: 0 0 6px rgba(255,215,0,.45);
+  transition: transform .2s ease-out;
+}
+#rew-stats .rew-tween.rew-tween-done{
+  animation: rewTweenPop .3s ease-out;
+}
+@keyframes rewTweenPop{
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.18); text-shadow: 0 0 14px rgba(255,215,0,.85); }
+  100% { transform: scale(1); }
+}
+
+/* 확인 버튼 — 주기 펄스. 확인 후 어디 클릭할지 선명 */
+#reward-screen button[data-action="game.afterBattle"]{
+  animation: rewConfirmPulse 1.8s ease-in-out 1.2s infinite;
+  position: relative;
+}
+@keyframes rewConfirmPulse{
+  0%,100% { box-shadow: 0 0 0 0 rgba(120,255,140,0), 0 4px 12px rgba(0,0,0,.5); transform: translateY(0); }
+  50%     { box-shadow: 0 0 0 8px rgba(120,255,140,.25), 0 8px 22px rgba(0,0,0,.6); transform: translateY(-2px); }
+}
 #match-screen{justify-content:center;background:radial-gradient(ellipse at center,var(--bg-magic) 0%,var(--bg-0) 70%);}
 .match-box{text-align:center;max-width:600px;padding:30px;}
 .match-vs{font-size:2.5rem;color:var(--danger);margin:20px 0;font-family:var(--font-title);text-shadow:0 0 20px rgba(255,68,68,.5);}
@@ -809,8 +868,9 @@ body.game-mode .loot-box{width:100px;height:120px;font-size:3rem;}
 body.game-mode .match-player .mp-icon{font-size:3.5rem;}
 body.game-mode .match-player .mp-name{font-size:1.2rem;}
 body.game-mode .match-vs{font-size:2.5rem;}
-body.game-mode .tut-box{max-width:600px;padding:24px 32px;}
-body.game-mode .tut-box .tut-text{font-size:1rem;}
+/* P0-1: 우상단 힌트 박스 크기 — 중앙 콘텐츠 가리지 않게 좁게 유지 */
+body.game-mode .tut-box{max-width:360px;padding:14px 20px;}
+body.game-mode .tut-box .tut-text{font-size:.92rem;line-height:1.55;}
 body.game-mode .deck-mini{width:55px;height:72px;}
 body.game-mode .modal-box{min-width:360px;padding:30px 35px;}
 body.game-mode .modal-box h3{font-size:1.2rem;}

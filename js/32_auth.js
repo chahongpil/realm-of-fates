@@ -46,17 +46,18 @@ RoF.Auth={
   showPrologue(uid){
     UI.show('prologue-screen');
     // Cinematic: one line at a time, fade in → hold → fade out
+    // 2026-04-15 "일곱 번째 자리" 스토리로 교체 — design/concept.md 참조
     const scenes=[
-      {text:'태초에 6개의 원소가\n세상을 다스렸다.',cls:'pl-normal',hold:2200},
-      {text:'불, 물, 전기, 땅, 암흑, 신성.',cls:'pl-gold',hold:2000},
-      {text:'그 위에 군림하는 하나의 왕좌 —\n"운명의 왕좌"',cls:'pl-gold',hold:2500},
-      {text:'왕좌에 앉은 자만이\n모든 원소를 지배하는\n절대신이 될 수 있었다.',cls:'pl-dim',hold:2500},
-      {text:'하지만 세계의 균형을 위해\n신들은 직접 싸울 수 없었다.',cls:'pl-normal',hold:2500},
-      {text:'"오직 필멸자만이\n왕좌에 도전할 자격이 있다."',cls:'pl-bright',hold:2500},
-      {text:'각 원소의 신은\n자신의 힘을 나눠줄\n하나의 영웅을 선택했다.',cls:'pl-normal',hold:2500},
-      {text:`${uid},\n당신이 그 영웅이다.`,cls:'pl-gold',hold:2500},
-      {text:'폐허에서 시작하여\n왕좌를 차지하라.',cls:'pl-bright',hold:2200},
-      {text:'당신이 새로운 신이 된다.',cls:'pl-gold',hold:2500},
+      {text:'창세에, 운명의 여신이\n세계를 직조하며\n일곱 자리를 남겼다.',cls:'pl-normal',hold:2400},
+      {text:'여섯 자리는\n원초의 여섯이 차지했다.',cls:'pl-normal',hold:2000},
+      {text:'불의 블랙드래곤 · 물의 히드라\n땅의 싸이클롭스 · 번개의 타이탄\n빛의 대천사 · 어둠의 대악마',cls:'pl-gold',hold:3400},
+      {text:'그리고 일곱 번째 자리는\n여신이 비워두었다.',cls:'pl-dim',hold:2400},
+      {text:'여신은 조건 하나를 남기고\n깊은 잠에 들었다.',cls:'pl-normal',hold:2400},
+      {text:'"오직 필멸자 출신만이\n이 자리에 오를 수 있다."',cls:'pl-bright',hold:2800},
+      {text:'여섯은 그 자리를\n두려워한다.\n그들은 자신의 파편을 흘려\n오를 법한 자들을 시험한다.',cls:'pl-normal',hold:3000},
+      {text:`${uid},\n여섯의 눈이\n당신에게 꽂혔다.`,cls:'pl-gold',hold:2500},
+      {text:'평범한 카드 한 장으로\n시작하여,\n여섯의 시험을 넘어서라.',cls:'pl-bright',hold:2500},
+      {text:'당신이 일곱 번째 신이 된다.',cls:'pl-gold',hold:2600},
     ];
     const ct=document.getElementById('prologue-text');ct.innerHTML='';
     document.getElementById('prologue-btns').style.display='none';

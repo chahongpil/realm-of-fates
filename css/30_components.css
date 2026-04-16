@@ -216,8 +216,11 @@
 .timer-bar{width:100%;height:6px;background:var(--gray-8);border-radius:3px;margin:8px 0;overflow:hidden;}
 .timer-bar-fill{height:100%;background:linear-gradient(90deg,var(--success),var(--el-lightning),var(--danger));border-radius:3px;transition:width .5s linear;}
 .timer-text{font-size:.75rem;color:var(--warn);text-align:center;}
-.tut-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:300;display:flex;justify-content:center;align-items:flex-end;padding-bottom:60px;}
-.tut-box{background:linear-gradient(180deg,var(--bg-magic),var(--bg-0));border:2px solid var(--curr-gold-dark);border-radius:10px;padding:20px 28px;max-width:500px;width:90%;text-align:center;box-shadow:0 0 30px rgba(139,105,20,.3);}
+/* P0-1 (2026-04-15): fullscreen dim 제거 + 우상단 힌트 박스로 이동.
+   리워드/전투 중에는 NPC 다이얼로그처럼 구석에 떠 있고 중앙 콘텐츠(배너·전리품 상자·확인 버튼)를 가리지 않음.
+   pointer-events: none 으로 클릭 패스스루, .tut-box 만 pointer-events: auto */
+.tut-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:transparent;z-index:300;display:flex;justify-content:flex-end;align-items:flex-end;padding:16px;pointer-events:none;}
+.tut-box{pointer-events:auto;background:linear-gradient(180deg,var(--bg-magic),var(--bg-0));border:2px solid var(--curr-gold-dark);border-radius:10px;padding:12px 18px;max-width:320px;width:88%;text-align:left;box-shadow:0 8px 40px rgba(0,0,0,.92),0 0 24px rgba(139,105,20,.45);backdrop-filter:blur(2px);}
 .tut-box .tut-text{color:var(--amber-pale);font-size:.9rem;line-height:1.7;margin-bottom:14px;}
 .tut-box .tut-speaker{color:var(--curr-gold);font-size:.8rem;margin-bottom:8px;font-weight:bold;}
 .tut-highlight{animation:tutPulse 1s infinite alternate;position:relative;z-index:301;}

@@ -21,8 +21,10 @@ Object.assign(RoF.Game, {
     const rcards=document.getElementById('reward-cards');rcards.innerHTML='';
     const rd=this.battleState?this.battleState.currentRound:0;
 
+    // P0-2: 승리 스탬프 애니 리셋 → 재생 (reflow 강제로 keyframe 재실행)
     if(won){
       title.textContent='🏆 승전!';title.className='reward-title victory';
+      title.classList.remove('is-stamping'); void title.offsetWidth; title.classList.add('is-stamping');
       sub.textContent=`${rd}라운드 만에 적 영웅을 쓰러뜨렸습니다!`;
     } else {
       title.textContent='💀 패전';title.className='reward-title defeat';
@@ -30,7 +32,9 @@ Object.assign(RoF.Game, {
     }
     const lg=this.getLeague();
     let lvStr=levelUps.length?`<br>🎉 성장: ${levelUps.join(', ')}`:'';
-    stats.innerHTML=`💰+${goldR} | 🏆${won?'+15':'-5'}점 | 동료별 ✨+${xpR}경험 ⭐+${honorR}${lvStr}<br><span style="color:${lg.color};">${lg.icon} ${lg.name} (${this.leaguePoints}점)</span>`;
+    // P0-2: 주요 숫자(gold, lp) 는 0 에서 카운트업. class="rew-tween" + data-target 속성으로 마킹.
+    const lpDelta=won?15:-5;
+    stats.innerHTML=`💰+<span class="rew-tween" data-target="${goldR}">0</span> | 🏆<span class="rew-tween" data-target="${lpDelta}">0</span>점 | 동료별 ✨+${xpR}경험 ⭐+${honorR}${lvStr}<br><span style="color:${lg.color};">${lg.icon} ${lg.name} (${this.leaguePoints}점)</span>`;
 
     // === WIN STREAK + BLESSINGS ===
     if(won){
@@ -174,6 +178,28 @@ Object.assign(RoF.Game, {
     this.relics=[];
     this.battleState=null;
     this.persist();
+
+    // P0-2: 숫자 tween 시작 — 모든 동기 innerHTML 업데이트가 끝난 후 실행.
+    // innerHTML += 가 노드를 재생성하므로 여기서 querySelectorAll 로 새로 찾음.
+    setTimeout(()=>{
+      const nodes=document.querySelectorAll('#rew-stats .rew-tween');
+      nodes.forEach(el=>{
+        const target=parseInt(el.getAttribute('data-target'),10);
+        if(isNaN(target)){return;}
+        const from=0, dur=1100, start=performance.now();
+        const ease=t=>1-Math.pow(1-t,3); // easeOutCubic
+        const tick=now=>{
+          // 중간에 innerHTML += 로 노드가 교체됐으면 기존 ref 는 detached — 새로 찾기
+          const live=el.isConnected?el:document.querySelector('#rew-stats .rew-tween[data-target="'+target+'"]');
+          if(!live){return;}
+          const t=Math.min(1,(now-start)/dur);
+          const v=Math.round(from+(target-from)*ease(t));
+          live.textContent=(target>0&&v>0?'+':'')+v;
+          if(t<1){requestAnimationFrame(tick);} else {live.classList.add('rew-tween-done');}
+        };
+        requestAnimationFrame(tick);
+      });
+    },30);
   },
 
   // Equip a permanent skill to a unit

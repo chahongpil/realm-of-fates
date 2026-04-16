@@ -45,7 +45,7 @@ Object.assign(RoF.Game, {
       else if(this.winStreak>=5){streakBonus=2;}
       else if(this.winStreak>=3){streakBonus=1;}
       if(streakBonus>0){this.blessings+=streakBonus;}
-      const streakMsg=this.winStreak>=3?`<br>🔥 <span style="color:#ff6644;">${this.winStreak}연승! 신의축복 +${1+streakBonus}개</span>`:`<br>✨ 신의축복 +1`;
+      const streakMsg=this.winStreak>=3?`<br>🔥 <span style="color:var(--danger);">${this.winStreak}연승! 신의축복 +${1+streakBonus}개</span>`:`<br>✨ 신의축복 +1`;
       stats.innerHTML+=streakMsg;
     } else {
       this.winStreak=0;
@@ -104,7 +104,7 @@ Object.assign(RoF.Game, {
     const self=this;
 
     const RARE_LABEL={bronze:'평범',silver:'희귀',gold:'고귀',legendary:'전설',divine:'신'};
-    const RARE_COLOR={bronze:'var(--rarity-bronze)',silver:'var(--rarity-silver)',gold:'var(--rarity-gold)',legendary:'var(--rarity-legendary)',divine:'var(--curr-gold)'};
+    const RARE_COLOR={bronze:'var(--rar-bronze)',silver:'var(--rar-silver)',gold:'var(--rar-gold)',legendary:'var(--rar-legendary)',divine:'var(--curr-gold)'};
 
     // 선택지 4개 정의
     const choices=[

@@ -1,0 +1,130 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -c \"[console]::beep\\(880,180\\); [console]::beep\\(1100,180\\)\")",
+      "Bash(echo \"exit=$?\")",
+      "Bash(node -e \"const s=require\\('c:/work/design/.claude/settings.json'\\); console.log\\('mode:',s.permissions.defaultMode\\); console.log\\('Stop:',s.hooks.Stop[0].hooks[0].command\\); console.log\\('Notif:',s.hooks.Notification[0].hooks[0].command\\); console.log\\('Perm:',s.hooks.PermissionRequest[0].hooks[0].command\\);\")",
+      "Bash(ls c:/work/game/HANDOFF* c:/work/HANDOFF*)",
+      "Bash(ls c:/work/game/PHASE*.md)",
+      "Bash(mkdir -p c:/work/design/.claude/skills c:/work/design/.claude/agents)",
+      "Bash(cp c:/work/.claude/skills/card-art-generation.md c:/work/.claude/skills/sd-generate.md c:/work/.claude/skills/card-game-ui-design.md c:/work/.claude/skills/game-design.md c:/work/.claude/skills/rof-asset-prompt.md c:/work/.claude/skills/rof-design-system.md c:/work/design/.claude/skills/)",
+      "Bash(cp c:/work/.claude/agents/content-generator.md c:/work/.claude/agents/rof-ui-inspector.md c:/work/design/.claude/agents/)",
+      "Bash(grep -l \"c:/work/game\\\\|work/game\" c:/work/design/.claude/skills/*.md c:/work/design/.claude/agents/*.md)",
+      "Bash(curl -s -m 3 http://127.0.0.1:7860/sdapi/v1/sd-models)",
+      "Bash(curl -sS -m 5 http://127.0.0.1:7860/sdapi/v1/sd-models -o /tmp/sd_models.json -w \"HTTP=%{http_code}\\\\n\")",
+      "Bash(cmd //c \"start /b webui-user.bat > /tmp/webui.log 2>&1\")",
+      "Bash(tasklist //FI \"IMAGENAME eq python.exe\")",
+      "Bash(tasklist //FI \"WINDOWTITLE eq webui*\")",
+      "Bash(cmd //c webui-user.bat)",
+      "Bash(cmd //c \"D:\\\\\\\\AI\\\\\\\\stable-diffusion\\\\\\\\stable-diffusion-webui\\\\\\\\webui-user.bat\")",
+      "Bash(cmd //c \"cd /d D:\\\\\\\\AI\\\\\\\\stable-diffusion\\\\\\\\stable-diffusion-webui && webui-user.bat\")",
+      "Bash(powershell -Command \"Set-Location 'D:\\\\AI\\\\stable-diffusion\\\\stable-diffusion-webui'; & .\\\\webui-user.bat\")",
+      "Bash(ls /d/AI/stable-diffusion/stable-diffusion-webui/webui*)",
+      "Bash(cmd //c \"dir webui*.bat\")",
+      "Bash(cmd //c \".\\\\\\\\webui-user.bat\")",
+      "Bash(cmd //c \"dir /b webui.bat 2>&1; echo ---; type webui.bat 2>&1 | head -5\")",
+      "Bash(cmd //c \"echo CWD: %CD% && call webui.bat\")",
+      "Bash(cmd //c \"echo PATHEXT=%PATHEXT% && webui.bat\")",
+      "Bash(cmd //c \".\\\\\\\\webui.bat\")",
+      "Bash(tasklist //FI \"IMAGENAME eq cmd.exe\")",
+      "Bash(tasklist //FI \"IMAGENAME eq pip.exe\")",
+      "Bash(curl -s -m 5 -o /dev/null -w \"HTTP=%{http_code}\\\\n\" http://127.0.0.1:7860/sdapi/v1/sd-models)",
+      "Bash(/d/AI/stable-diffusion/stable-diffusion-webui/venv/Scripts/python.exe -c \"import torch, diffusers; print\\('torch', torch.__version__, 'cuda', torch.cuda.is_available\\(\\)\\); print\\('diffusers', diffusers.__version__\\)\")",
+      "Bash(/d/AI/kohya_ss/venv/Scripts/python.exe -c \"import torch, diffusers; print\\('torch', torch.__version__, 'cuda', torch.cuda.is_available\\(\\)\\); print\\('diffusers', diffusers.__version__\\)\")",
+      "Bash(where python:*)",
+      "Bash(where python3:*)",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" -c \"import torch, diffusers; print\\('torch', torch.__version__, 'cuda', torch.cuda.is_available\\(\\)\\); print\\('diffusers', diffusers.__version__\\)\")",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" c:/work/design/prompts/_gen_town_diffusers.py)",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" c:/work/design/prompts/_gen_town_seedroll.py)",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" -c \"import rembg, PIL; print\\('rembg', rembg.__version__\\); print\\('PIL', PIL.__version__\\)\")",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" -c \"import PIL; print\\('PIL', PIL.__version__\\); from PIL import Image; print\\('Image OK'\\)\")",
+      "Bash(notepad \"c:\\\\work\\\\design\\\\prompts\\\\gemini_town_assets.md\")",
+      "Bash(cp C:/Users/USER/Downloads/마을배경.png c:/work/design/refs/town/gemini/base_terrain.png)",
+      "Bash(cp C:/Users/USER/Downloads/성111.png c:/work/design/refs/town/gemini/castle.png)",
+      "Bash(cp C:/Users/USER/Downloads/대장간111.png c:/work/design/refs/town/gemini/forge.png)",
+      "Bash(cp C:/Users/USER/Downloads/차원문111.png c:/work/design/refs/town/gemini/portal.png)",
+      "Bash(cp C:/Users/USER/Downloads/성당1111.png c:/work/design/refs/town/gemini/cathedral.png)",
+      "Bash(C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe -c ':*)",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" c:/work/design/prompts/_compose_town.py)",
+      "Bash(cmd //c start \"\" \"c:\\\\work\\\\design\\\\prototypes\\\\town_v1.html\")",
+      "Bash(cmd //c start \"\" \"c:\\\\work\\\\design\\\\prototypes\\\\town_editor.html\")",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" -m pip install rembg onnxruntime)",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" c:/work/design/prompts/_rembg_buildings.py)",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" c:/work/design/prompts/_kill_checker.py)",
+      "Bash(\"C:/Users/USER/AppData/Local/Programs/Python/Python310/python.exe\" c:/work/design/prompts/_inpaint_watermark.py)",
+      "Bash(rm c:/work/design/refs/town/_wm_*.png c:/work/design/refs/town/_br_*.png)",
+      "Bash(start notepad:*)",
+      "Bash(grep -iE \"\\\\.png$|\\\\.jpg$\")",
+      "Bash(python -c ':*)",
+      "Bash(start \"\" \"c:/work/design/prototypes/town_editor.html\")",
+      "Bash(python)",
+      "Bash(cp \"마을배경4.png\" \"c:/work/design/refs/town/gemini/base_terrain.png\")",
+      "Bash(rm \"c:/work/design/refs/town/cutouts/gate.png\")",
+      "Bash(python -c \"import PIL; print\\(PIL.__version__\\)\")",
+      "Bash(ffmpeg -version)",
+      "Bash(magick -version)",
+      "Bash(python -c 'from PIL import Image; import os:*)",
+      "Bash(mkdir -p /tmp/titan_frames)",
+      "Bash(cp \"C:/Users/USER/Downloads/타이탄프레임/\"*.jpg /tmp/titan_frames/)",
+      "Bash(PYTHONIOENCODING=utf-8 PYTHONUTF8=1 python /tmp/copy_titan.py)",
+      "Read(//c//**)",
+      "Bash(ls -la ~/AppData/Local/Temp/*.py)",
+      "Bash(PYTHONUTF8=1 python c:/work/game/tools/copy_titan.py)",
+      "Bash(PYTHONUTF8=1 python c:/work/game/tools/build_titan_apng.py)",
+      "Bash(ls -la c:/work/game/img/titan.*)",
+      "Bash(python -m http.server 8765)",
+      "Bash(start \"\" \"http://localhost:8765/img/titan.png\")",
+      "Bash(explorer \"C:\\\\work\\\\game\\\\img\")",
+      "Bash(explorer /select,\"C:\\\\work\\\\game\\\\img\\\\titan.png\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8765/img/titan.png)"
+    ],
+    "defaultMode": "bypassPermissions",
+    "additionalDirectories": [
+      "C:\\work",
+      "C:\\Users\\USER\\.claude",
+      "D:\\AI",
+      "C:\\Users\\USER\\Downloads",
+      "c:\\work\\design\\refs\\town\\cutouts",
+      "\\tmp",
+      "c:\\tmp"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -c \"[console]::beep(659,140); [console]::beep(988,180)\"",
+            "timeout": 3,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -c \"[console]::beep(880,180); [console]::beep(1100,180)\"",
+            "timeout": 3,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -c \"[console]::beep(1320,140); [console]::beep(880,140); [console]::beep(1320,140)\"",
+            "timeout": 3,
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}

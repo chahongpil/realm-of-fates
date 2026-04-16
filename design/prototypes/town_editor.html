@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>마을 배치 에디터 — 운명의 왕좌</title>
+<style>
+  :root {
+    --bg-0: #0a0e14;
+    --bg-1: #141920;
+    --bg-2: #1e252f;
+    --text-0: #f4ecd8;
+    --text-1: #c9b88a;
+    --text-2: #8a8270;
+    --accent: #4ec9ff;
+    --danger: #ff6b6b;
+    --line: #2a3340;
+    --base-w: 1376;
+    --base-h: 768;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body { margin: 0; padding: 0; background: var(--bg-0); color: var(--text-0); font-family: "Noto Sans KR", system-ui, sans-serif; height: 100vh; overflow: hidden; }
+
+  .app { display: flex; height: 100vh; }
+
+  /* canvas wrap */
+  .canvas-wrap {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    overflow: auto;
+    padding: 20px;
+    background: repeating-linear-gradient(45deg, #0a0e14, #0a0e14 10px, #0c1218 10px, #0c1218 20px);
+  }
+  .canvas {
+    position: relative;
+    width: min(1100px, calc(100vw - 380px));
+    aspect-ratio: 1376 / 768;
+    box-shadow: 0 0 60px rgba(0,0,0,.7), 0 0 0 1px var(--line);
+    background: #000;
+  }
+  .canvas img.bg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  .building {
+    position: absolute;
+    cursor: grab;
+    transition: filter .15s, outline .15s;
+    will-change: transform;
+  }
+  .building img {
+    width: 100%; height: 100%;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  .building:hover { filter: brightness(1.1); }
+  .building.selected {
+    outline: 2px dashed var(--accent);
+    outline-offset: 2px;
+    filter: brightness(1.15) drop-shadow(0 0 8px rgba(78,201,255,.5));
+    z-index: 999 !important;
+  }
+  .building.dragging { cursor: grabbing; }
+  /* hotspot: 배경에 그려진 영역 (성문 등) — 이미지 없이 클릭 영역만 */
+  .building.hotspot {
+    background: rgba(78, 201, 255, 0.08);
+    border: 2px dashed rgba(78, 201, 255, 0.4);
+    border-radius: 8px;
+  }
+  .building.hotspot:hover {
+    background: rgba(78, 201, 255, 0.22);
+    border-color: rgba(78, 201, 255, 0.9);
+    box-shadow: 0 0 24px rgba(78, 201, 255, 0.55);
+  }
+  .building.hotspot.selected {
+    background: rgba(78, 201, 255, 0.35) !important;
+    border: 3px solid #4ec9ff !important;
+    outline: none !important;
+    box-shadow: 0 0 40px rgba(78, 201, 255, 0.85), inset 0 0 30px rgba(78, 201, 255, 0.4) !important;
+    animation: gatePulse 1.4s ease-in-out infinite;
+  }
+  @keyframes gatePulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(78, 201, 255, 0.7), inset 0 0 20px rgba(78, 201, 255, 0.3); }
+    50%      { box-shadow: 0 0 50px rgba(78, 201, 255, 1.0), inset 0 0 40px rgba(78, 201, 255, 0.55); }
+  }
+
+  /* grid overlay */
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+    background-size: calc(100% / 8) calc(100% / 12);
+    pointer-events: none;
+    display: none;
+  }
+  .grid.show { display: block; }
+
+  /* sidebar */
+  .sidebar {
+    width: 320px; min-width: 320px;
+    background: var(--bg-1);
+    border-left: 1px solid var(--line);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .sidebar h1 {
+    font-size: 16px; margin: 0; padding: 16px;
+    background: var(--bg-2); border-bottom: 1px solid var(--line);
+    color: var(--accent); letter-spacing: .5px;
+  }
+  .sec {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sec h2 { margin: 0 0 10px; font-size: 12px; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+  .blist { display: flex; flex-direction: column; gap: 4px; }
+  .blist button {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--text-0);
+    border-radius: 4px; cursor: pointer;
+    font: 13px/1 inherit;
+    text-align: left;
+  }
+  .blist button:hover { border-color: var(--text-1); }
+  .blist button.active { border-color: var(--accent); background: rgba(78,201,255,.1); color: var(--accent); }
+  .blist button .num { font-size: 10px; color: var(--text-2); font-family: monospace; }
+
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .controls button, .controls .btn {
+    padding: 8px 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--text-0);
+    border-radius: 4px; cursor: pointer;
+    font: 12px/1 inherit;
+  }
+  .controls button:hover { border-color: var(--accent); }
+  .controls button.danger { color: var(--danger); border-color: rgba(255,107,107,.3); }
+  .controls button.full { grid-column: span 2; }
+
+  .slider-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+  .slider-row label { flex: 0 0 50px; font-size: 11px; color: var(--text-1); }
+  .slider-row input[type=range] { flex: 1; }
+  .slider-row .val { flex: 0 0 45px; font: 11px monospace; color: var(--text-0); text-align: right; }
+
+  .info { font: 11px monospace; color: var(--text-2); white-space: pre-wrap; line-height: 1.6; padding: 8px; background: var(--bg-0); border-radius: 4px; max-height: 100px; overflow: auto; }
+
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: var(--bg-0);
+    padding: 10px 18px; border-radius: 6px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  @media (max-width: 800px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: 0; max-height: 50vh; border-left: none; border-top: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+      <img class="bg" src="../refs/town/gemini/base_terrain.png" alt="base">
+      <div class="grid" id="grid"></div>
+      <!-- buildings injected by JS -->
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <h1>🏰 마을 배치 에디터</h1>
+
+    <div class="sec">
+      <h2>건물 (클릭→선택, 드래그→이동)</h2>
+      <div class="blist" id="blist"></div>
+    </div>
+
+    <div class="sec">
+      <h2>선택 건물 조정</h2>
+      <div class="slider-row">
+        <label>크기</label>
+        <input type="range" id="scale" min="20" max="200" value="100">
+        <span class="val" id="scale-val">100%</span>
+      </div>
+      <div class="slider-row">
+        <label>z-순서</label>
+        <input type="range" id="zord" min="1" max="20" value="10">
+        <span class="val" id="zord-val">10</span>
+      </div>
+      <div class="info" id="info">선택된 건물 없음</div>
+    </div>
+
+    <div class="sec">
+      <h2>전역 도구</h2>
+      <div class="controls">
+        <button id="grid-btn">▦ 그리드</button>
+        <button id="reset-btn">↺ 초기화</button>
+        <button class="full" id="export-btn">📋 좌표 복사 + 다운로드</button>
+        <button class="full danger" id="delete-btn">🗑 선택 건물 숨기기</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>현재 좌표 (JSON)</h2>
+      <div class="info" id="json-out">…</div>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast">복사됨!</div>
+
+<script>
+const BASE_W = 1376, BASE_H = 768;
+
+// 가로판 초기 좌표 — 중앙 성 + 링 배치, 하단 중앙 성문
+// 임시값: 사용자가 에디터로 드래그해서 최종 확정 → 📋 좌표 복사 → 반영
+const DEFAULTS = {
+  castle:    {x:568, y:-1,  w:304, h:395, name:"성채",    z:10},
+  cathedral: {x:823, y:226, w:262, h:288, name:"대성당",  z:7},
+  library:   {x:412, y:37,  w:200, h:210, name:"서고",    z:7},
+  forge:     {x:222, y:160, w:220, h:220, name:"대장간",  z:6},
+  shop:      {x:908, y:84,  w:220, h:210, name:"상점",    z:6},
+  tavern:    {x:412, y:288, w:220, h:220, name:"선술집",  z:5},
+  arena:     {x:900, y:470, w:240, h:200, name:"투기장",  z:5, hidden:true},
+  gate:      {x:560, y:520, w:280, h:220, name:"🚪 성문",  z:20, hotspot:true},
+};
+// cutout PNG는 transparent 배경 (refs/town/cutouts/)
+const SRC_DIR = '../refs/town/cutouts/';
+
+const canvas = document.getElementById('canvas');
+const blist  = document.getElementById('blist');
+const info   = document.getElementById('info');
+const jsonOut= document.getElementById('json-out');
+const scale  = document.getElementById('scale');
+const scaleV = document.getElementById('scale-val');
+const zord   = document.getElementById('zord');
+const zordV  = document.getElementById('zord-val');
+const toast  = document.getElementById('toast');
+
+let state = JSON.parse(JSON.stringify(DEFAULTS));
+let selected = null;
+let elemMap = {};
+
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1400);
+}
+
+function render() {
+  // 캔버스에서 기존 buildings 제거
+  canvas.querySelectorAll('.building').forEach(b => b.remove());
+  blist.innerHTML = '';
+  elemMap = {};
+
+  for (const [key, s] of Object.entries(state)) {
+    if (s.hidden) continue;
+    // canvas element
+    const el = document.createElement('div');
+    el.className = 'building';
+    el.dataset.key = key;
+    el.style.left   = (s.x / BASE_W * 100) + '%';
+    el.style.top    = (s.y / BASE_H * 100) + '%';
+    el.style.width  = (s.w / BASE_W * 100) + '%';
+    el.style.height = (s.h / BASE_H * 100) + '%';
+    el.style.zIndex = s.z;
+    if (s.hotspot) {
+      el.classList.add('hotspot');
+      el.innerHTML = '';
+    } else {
+      el.innerHTML = `<img src="${SRC_DIR}${key}.png" alt="${s.name}">`;
+    }
+    canvas.appendChild(el);
+    elemMap[key] = el;
+    attachDrag(el, key);
+
+    // sidebar list button
+    const btn = document.createElement('button');
+    btn.dataset.key = key;
+    btn.innerHTML = `<span>${s.name}</span><span class="num">${key}</span>`;
+    btn.addEventListener('click', () => select(key));
+    blist.appendChild(btn);
+  }
+
+  // hidden 항목 표시
+  for (const [key, s] of Object.entries(state)) {
+    if (!s.hidden) continue;
+    const btn = document.createElement('button');
+    btn.dataset.key = key;
+    btn.style.opacity = .4;
+    btn.innerHTML = `<span>${s.name} (숨김)</span><span class="num">+</span>`;
+    btn.addEventListener('click', () => { state[key].hidden = false; render(); select(key); });
+    blist.appendChild(btn);
+  }
+
+  if (selected && state[selected] && !state[selected].hidden) {
+    elemMap[selected]?.classList.add('selected');
+    blist.querySelector(`button[data-key=${selected}]`)?.classList.add('active');
+  }
+  refreshJson();
+}
+
+function select(key) {
+  selected = key;
+  canvas.querySelectorAll('.building').forEach(b => b.classList.remove('selected'));
+  blist.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  const el = elemMap[key];
+  if (el) el.classList.add('selected');
+  blist.querySelector(`button[data-key=${key}]`)?.classList.add('active');
+
+  const s = state[key];
+  scale.value = 100;
+  scaleV.textContent = '100%';
+  zord.value = s.z;
+  zordV.textContent = s.z;
+  updateInfo();
+}
+
+function updateInfo() {
+  if (!selected) { info.textContent = '선택된 건물 없음'; return; }
+  const s = state[selected];
+  info.textContent = `${s.name} (${selected})\nx: ${s.x}  y: ${s.y}\nw: ${s.w}  h: ${s.h}\nz: ${s.z}`;
+}
+
+function refreshJson() {
+  const out = {};
+  for (const [k, s] of Object.entries(state)) {
+    if (s.hidden) continue;
+    out[k] = { x: s.x, y: s.y, w: s.w, h: s.h, z: s.z };
+  }
+  jsonOut.textContent = JSON.stringify(out, null, 2);
+}
+
+function attachDrag(el, key) {
+  let startX, startY, origX, origY;
+  function onPointerDown(e) {
+    e.preventDefault();
+    select(key);
+    el.classList.add('dragging');
+    const pt = e.touches ? e.touches[0] : e;
+    startX = pt.clientX; startY = pt.clientY;
+    origX = state[key].x; origY = state[key].y;
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  }
+  function onMove(e) {
+    const pt = e.touches ? e.touches[0] : e;
+    const rect = canvas.getBoundingClientRect();
+    const dxPx = pt.clientX - startX;
+    const dyPx = pt.clientY - startY;
+    // 캔버스 픽셀 → 베이스 좌표 환산
+    const dx = dxPx * BASE_W / rect.width;
+    const dy = dyPx * BASE_H / rect.height;
+    state[key].x = Math.round(origX + dx);
+    state[key].y = Math.round(origY + dy);
+    el.style.left = (state[key].x / BASE_W * 100) + '%';
+    el.style.top  = (state[key].y / BASE_H * 100) + '%';
+    updateInfo();
+    refreshJson();
+  }
+  function onUp() {
+    el.classList.remove('dragging');
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+  }
+  el.addEventListener('pointerdown', onPointerDown);
+}
+
+// scale slider
+scale.addEventListener('input', () => {
+  if (!selected) return;
+  const ratio = scale.value / 100;
+  scaleV.textContent = scale.value + '%';
+  const def = DEFAULTS[selected];
+  state[selected].w = Math.round(def.w * ratio);
+  state[selected].h = Math.round(def.h * ratio);
+  const el = elemMap[selected];
+  el.style.width  = (state[selected].w / BASE_W * 100) + '%';
+  el.style.height = (state[selected].h / BASE_H * 100) + '%';
+  updateInfo();
+  refreshJson();
+});
+
+// z-order slider
+zord.addEventListener('input', () => {
+  if (!selected) return;
+  state[selected].z = +zord.value;
+  zordV.textContent = zord.value;
+  elemMap[selected].style.zIndex = zord.value;
+  updateInfo();
+  refreshJson();
+});
+
+// grid toggle
+document.getElementById('grid-btn').addEventListener('click', () => {
+  document.getElementById('grid').classList.toggle('show');
+});
+
+// reset
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('초기 좌표로 되돌릴까요?')) return;
+  state = JSON.parse(JSON.stringify(DEFAULTS));
+  selected = null;
+  render();
+});
+
+// delete (hide)
+document.getElementById('delete-btn').addEventListener('click', () => {
+  if (!selected) return;
+  state[selected].hidden = true;
+  selected = null;
+  render();
+});
+
+// export
+document.getElementById('export-btn').addEventListener('click', () => {
+  const out = {};
+  for (const [k, s] of Object.entries(state)) {
+    if (s.hidden) continue;
+    out[k] = { x: s.x, y: s.y, w: s.w, h: s.h, z: s.z };
+  }
+  const json = JSON.stringify(out, null, 2);
+  // 클립보드 복사
+  navigator.clipboard.writeText(json).then(() => showToast('📋 좌표 클립보드에 복사됨!'));
+  // 다운로드
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'slot_coords_edited.json';
+  a.click();
+});
+
+// 키보드 이동 (선택된 건물 1px씩)
+document.addEventListener('keydown', e => {
+  if (!selected) return;
+  if (e.target.tagName === 'INPUT') return;
+  const step = e.shiftKey ? 10 : 1;
+  let moved = true;
+  if      (e.key === 'ArrowLeft')  state[selected].x -= step;
+  else if (e.key === 'ArrowRight') state[selected].x += step;
+  else if (e.key === 'ArrowUp')    state[selected].y -= step;
+  else if (e.key === 'ArrowDown')  state[selected].y += step;
+  else moved = false;
+  if (moved) {
+    e.preventDefault();
+    const el = elemMap[selected];
+    el.style.left = (state[selected].x / BASE_W * 100) + '%';
+    el.style.top  = (state[selected].y / BASE_H * 100) + '%';
+    updateInfo();
+    refreshJson();
+  }
+});
+
+render();
+</script>
+
+</body>
+</html>

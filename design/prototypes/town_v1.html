@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>운명의 왕좌 — 마을 프로토타입 v1</title>
+<style>
+  :root {
+    --base-w: 848;
+    --base-h: 1264;
+    --max-w: 480px;
+    --bg-0: #0a0e14;
+    --text-0: #f4ecd8;
+    --text-1: #c9b88a;
+    --accent: #4ec9ff;
+    --rare-glow: 0 0 24px rgba(78, 201, 255, .55);
+    --ease: cubic-bezier(.4, 0, .2, 1);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--bg-0); color: var(--text-0); font-family: "Noto Sans KR", system-ui, sans-serif; overflow-x: hidden; }
+  body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+
+  .hud {
+    position: sticky; top: 0; z-index: 50;
+    width: 100%; max-width: var(--max-w);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px;
+    background: linear-gradient(180deg, rgba(10,14,20,.95), rgba(10,14,20,.7));
+    backdrop-filter: blur(8px);
+    font-size: 14px;
+  }
+  .hud .left { color: var(--text-1); }
+  .hud .right { display: flex; gap: 12px; }
+  .hud .right span { color: var(--text-0); }
+
+  .town-wrap {
+    position: relative;
+    width: 100%; max-width: var(--max-w);
+    aspect-ratio: 848 / 1264;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0,0,0,.5);
+  }
+  .town-bg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    user-select: none; -webkit-user-drag: none;
+  }
+
+  /* hotspot — slot_coords.json 기반, 백분율로 변환됨 */
+  .hot {
+    position: absolute;
+    cursor: pointer;
+    transition: filter .25s var(--ease), transform .25s var(--ease);
+    will-change: filter, transform;
+  }
+  .hot::after {
+    content: ""; position: absolute; inset: 0;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    pointer-events: none;
+    transition: border-color .25s var(--ease), box-shadow .25s var(--ease);
+  }
+  .hot:hover, .hot:focus-visible {
+    filter: brightness(1.15);
+    transform: translateY(-2px);
+    outline: none;
+  }
+  .hot:hover::after, .hot:focus-visible::after {
+    border-color: var(--accent);
+    box-shadow: var(--rare-glow), inset 0 0 18px rgba(78,201,255,.25);
+  }
+  .hot-label {
+    position: absolute;
+    bottom: -22px; left: 50%; transform: translateX(-50%);
+    padding: 2px 8px;
+    background: rgba(10, 14, 20, .85);
+    border: 1px solid var(--text-1);
+    border-radius: 4px;
+    font-size: 11px; white-space: nowrap;
+    color: var(--text-0);
+    opacity: 0;
+    transition: opacity .2s var(--ease);
+    pointer-events: none;
+  }
+  .hot:hover .hot-label, .hot:focus-visible .hot-label { opacity: 1; }
+
+  /* modal */
+  .modal-mask {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(10, 14, 20, .82);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center; justify-content: center;
+    animation: fade .25s var(--ease);
+  }
+  .modal-mask.open { display: flex; }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+  .modal {
+    width: min(92vw, 420px);
+    background: linear-gradient(180deg, #1a1f2c, #10141c);
+    border: 1px solid var(--text-1);
+    border-radius: 12px;
+    padding: 22px 22px 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 40px rgba(78,201,255,.15);
+    transform: translateY(8px);
+    animation: pop .35s var(--ease) forwards;
+  }
+  @keyframes pop { to { transform: translateY(0) } }
+  .modal h2 { margin: 0 0 8px; font-size: 20px; color: var(--accent); letter-spacing: .5px; }
+  .modal .sub { margin: 0 0 16px; color: var(--text-1); font-size: 13px; }
+  .modal .body { color: var(--text-0); font-size: 14px; line-height: 1.6; min-height: 60px; }
+  .modal .actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .modal button {
+    flex: 1; min-width: 120px;
+    padding: 10px 14px;
+    background: rgba(78, 201, 255, .12);
+    border: 1px solid var(--accent);
+    color: var(--text-0);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    transition: background .2s var(--ease);
+  }
+  .modal button:hover { background: rgba(78, 201, 255, .25); }
+  .modal button.secondary { background: transparent; border-color: var(--text-1); }
+
+  /* footer 디버그 */
+  .debug {
+    width: 100%; max-width: var(--max-w);
+    padding: 8px 14px;
+    font-size: 11px;
+    color: var(--text-1);
+    background: rgba(0,0,0,.4);
+  }
+</style>
+</head>
+<body>
+
+<div class="hud">
+  <div class="left">⚔️ 도전자 · 전력 1240</div>
+  <div class="right"><span>💰 1234</span><span>💎 56</span><span>✨ 12</span></div>
+</div>
+
+<div class="town-wrap" id="town">
+  <img class="town-bg" src="../refs/town/town_composed.png" alt="마을">
+  <!-- hotspots: JS가 slot_coords.json 기반으로 렌더링 -->
+</div>
+
+<div class="debug">v1 · 8 buildings · 클릭하면 모달 열림</div>
+
+<div class="modal-mask" id="modal-mask" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h2 id="m-title">건물</h2>
+    <p class="sub" id="m-sub">설명</p>
+    <div class="body" id="m-body">…</div>
+    <div class="actions">
+      <button id="m-action">진입</button>
+      <button class="secondary" id="m-close">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 베이스 캔버스 기준 좌표 (slot_coords.json — 에디터 결과 반영)
+  const SLOTS = {
+    castle:    {x:338, y:10,  w:194, h:285, z:8,  name:"성채",   desc:"운명의 왕좌가 머무는 곳",  action:"영웅 선택",  body:"수석 영웅이 그대를 기다리고 있습니다. 누구를 출진시키시겠습니까?"},
+    forge:     {x:66,  y:285, w:191, h:200, z:7,  name:"대장간", desc:"불꽃의 장인이 일하는 곳",   action:"장비 제작",  body:"용암의 숨결로 단련된 장비가 그대의 손길을 기다립니다."},
+    library:   {x:627, y:575, w:145, h:222, z:7,  name:"서고",   desc:"잊혀진 지식이 잠든 곳",     action:"스펠 연구",  body:"고대의 두루마리가 페이지를 넘기지 않은 채 그대를 부릅니다."},
+    portal:    {x:383, y:369, w:106, h:154, z:9,  name:"차원문", desc:"운명이 갈리는 관문",        action:"전투 출진",  body:"푸른 균열 너머로 적의 그림자가 어른거립니다."},
+    arena:     {x:50,  y:913, w:272, h:196, z:6,  name:"투기장", desc:"영광이 새겨지는 모래",      action:"아레나 진입", body:"수많은 용사의 함성이 메아리칩니다. 그대의 이름도 새기시겠습니까?"},
+    cathedral: {x:616, y:259, w:207, h:224, z:1,  name:"대성당", desc:"여섯 신의 가호를 빌다",     action:"축복 받기",  body:"빛이 스테인드글라스를 통과해 그대 위에 내립니다."},
+    tavern:    {x:346, y:628, w:216, h:220, z:4,  name:"선술집", desc:"용병들이 모이는 곳",        action:"용병 모병",  body:"술잔 너머로 전장의 이야기가 흘러나옵니다."},
+    shop:      {x:104, y:514, w:227, h:200, z:11, name:"상점",   desc:"방랑 상인의 좌판",          action:"아이템 구매", body:"\"오늘의 특가가 그대를 기다립니다, 모험가여.\""},
+  };
+
+  const BASE_W = 848, BASE_H = 1264;
+  const town = document.getElementById('town');
+
+  for (const [key, s] of Object.entries(SLOTS)) {
+    const el = document.createElement('button');
+    el.className = 'hot';
+    el.dataset.id = key;
+    el.style.left   = (s.x / BASE_W * 100) + '%';
+    el.style.top    = (s.y / BASE_H * 100) + '%';
+    el.style.width  = (s.w / BASE_W * 100) + '%';
+    el.style.height = (s.h / BASE_H * 100) + '%';
+    el.style.zIndex = s.z || 5;
+    el.setAttribute('aria-label', s.name);
+    el.innerHTML = `<span class="hot-label">${s.name}</span>`;
+    el.addEventListener('click', () => openModal(key));
+    town.appendChild(el);
+  }
+
+  const mask = document.getElementById('modal-mask');
+  const mTitle = document.getElementById('m-title');
+  const mSub   = document.getElementById('m-sub');
+  const mBody  = document.getElementById('m-body');
+  const mAct   = document.getElementById('m-action');
+  const mClose = document.getElementById('m-close');
+
+  function openModal(key) {
+    const s = SLOTS[key];
+    mTitle.textContent = s.name;
+    mSub.textContent = s.desc;
+    mBody.textContent = s.body;
+    mAct.textContent = s.action;
+    mask.classList.add('open');
+  }
+  function close() { mask.classList.remove('open'); }
+  mClose.addEventListener('click', close);
+  mask.addEventListener('click', e => { if (e.target === mask) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+</script>
+
+</body>
+</html>

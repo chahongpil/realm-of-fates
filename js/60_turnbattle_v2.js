@@ -593,7 +593,7 @@
   // CLAUDE.md 03-terminology.md: 라운드 길이 90초 = 큐잉 30 + 실행 60
   // 큐잉 단계 진입 시 카운트다운 시작. 만료 시 자동 onStartCombat.
   // 플레이어가 수동 "전투 시작" / "자동 전투" / cancel 하면 정지.
-  Battle.QUEUE_TIMER_SECONDS = 30;
+  Battle.QUEUE_TIMER_SECONDS = 10;
   Battle._queueTimer = { intervalId: null, remaining: 0 };
 
   const getQueueTimerEl = function(){ return document.getElementById('bv2-queue-timer'); };
@@ -880,6 +880,18 @@
     }
   };
 
+  // 준비 완료 — 큐잉된 유닛이 있으면 즉시 실행, 없으면 자동 전투로 대체
+  Battle.onReady = async function(){
+    Battle.stopQueueTimer();
+    if(Battle.state.queue.length > 0){
+      // 미큐잉 아군은 대기 (행동 안 함) — 큐잉된 것만 실행
+      await startCombatExecution();
+    } else {
+      // 아무도 큐잉 안 했으면 전부 자동 전투
+      await Battle.onAutoBattle();
+    }
+  };
+
   // 자동 전투 — 미큐잉 아군 전부 기본 공격으로 자동 큐잉 후 즉시 실행
   Battle.onAutoBattle = async function(){
     Battle.stopQueueTimer();
@@ -1146,6 +1158,7 @@
       if(u) Battle.onTargetHover(u);
     },
     'v2.autoBattle': function(){ Battle.onAutoBattle(); },
+    'v2.ready':      function(){ Battle.onReady(); },
     'v2.startCombat':function(){ Battle.onStartCombat(); },
     'v2.cancel':     function(){ Battle.cancelOne(); },
     'v2.close':      function(){ Battle.close(); },

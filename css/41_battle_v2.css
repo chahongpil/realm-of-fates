@@ -104,13 +104,13 @@
   gap: var(--bv2-card-gap);
 }
 
-/* 중앙 바 — grid 3열: [자동 전투] [VS] [전투 시작]. 겹침 물리 불가 */
+/* 중앙 바 — grid 4열: [자동 전투] [VS] [준비 완료] [전투 시작]. 겹침 물리 불가 */
 .battle-stage-mid{
   display: grid;
-  grid-template-columns: var(--bv2-btn-w) 1fr var(--bv2-btn-w);
+  grid-template-columns: var(--bv2-btn-w) 1fr var(--bv2-btn-w) var(--bv2-btn-w);
   align-items: center;
   padding: 0 var(--bv2-side-pad);
-  gap: 24px;
+  gap: 16px;
   height: var(--bv2-mid-h);
   pointer-events: auto;
 }
@@ -204,6 +204,17 @@
   box-shadow: 0 0 18px rgba(255, 215, 0, .55),
               0 6px 16px rgba(0, 0, 0, .8);
   transform: translateY(-1px);
+}
+.bsm-ready{
+  border-color: #228844;
+  color: #88ffaa;
+  font-size: 1.1rem;
+}
+.bsm-ready:hover{
+  border-color: #44cc66;
+  color: #ccffdd;
+  box-shadow: 0 0 22px rgba(68, 255, 136, .5),
+              0 6px 16px rgba(0, 0, 0, .8);
 }
 .bsm-start{
   border-color: #aa5020;

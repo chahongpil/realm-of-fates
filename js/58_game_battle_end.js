@@ -50,99 +50,120 @@ Object.assign(RoF.Game, {
     } else {
       this.winStreak=0;
     }
-    // === LOOT / REWARD ===
+    // === LOOT / REWARD — 4지선다 (유닛/스킬/유물/골드) ===
     const lgIdx=this.LEAGUES.indexOf(lg);
     const leagueGoldBonus=lgIdx>=5?0.6:lgIdx>=4?0.4:lgIdx>=3?0.4:lgIdx>=2?0.2:lgIdx>=1?0.2:0;
 
     if(!won){
-      // === DEFEAT: simple reward + 신의 은총 2배 ===
-      this._lootPicked=true; // 패전은 선택 없으므로 바로 통과
-      const defeatGold=Math.floor(3*(1+leagueGoldBonus));
+      // === DEFEAT: 고정 패전 골드 ===
+      this._lootPicked=true;
+      const defeatGold=Math.floor(5*(1+leagueGoldBonus));
       this.gold+=defeatGold;
-      const lootDiv=document.createElement('div');lootDiv.style.cssText='text-align:center;margin:10px 0;';
-      lootDiv.innerHTML=`<div style="color:#aaa;font-size:.85rem;margin-bottom:8px;">📦 패전 보상: 💰+${defeatGold}</div>`;
-      const dblBtn=document.createElement('div');dblBtn.className='loot-double-btn';
-      dblBtn.innerHTML=`<button class="btn btn-s btn-green">📺 신의 은총 (보상 2배: +${defeatGold}💰)</button>`;
-      dblBtn.querySelector('button').onclick=()=>{
-        this.gold+=defeatGold;SFX.play('upgrade');
-        stats.innerHTML+=`<br>📺 <span style="color:#44ff88;">신의 은총! 💰+${defeatGold} 추가!</span>`;
-        dblBtn.querySelector('button').disabled=true;dblBtn.querySelector('button').textContent='✅ 은총 적용됨';
-        this.persist();
-      };
-      lootDiv.appendChild(dblBtn);
+      const lootDiv=document.createElement('div');lootDiv.className='reward-loot';
+      lootDiv.innerHTML=`<div class="rew-defeat-msg">패전 보상: 💰+${defeatGold}</div>`;
       rcards.appendChild(lootDiv);
     } else {
-    // === VICTORY: loot boxes ===
-    const baseGold={gold:15,silver:8,bronze:3};
-    const lootDiv=document.createElement('div');lootDiv.style.cssText='text-align:center;margin:10px 0;';
-    // 5 streak = guaranteed gold box
-    const forceGold=won&&this.winStreak>=5;
-    lootDiv.innerHTML=`<div style="color:#ffd700;font-size:.9rem;margin-bottom:8px;">🎁 전리품을 선택하세요!${forceGold?' <span style="color:#ff6644;">(5연승! 금 상자 확정)</span>':''}</div>`;
-    const boxRow=document.createElement('div');boxRow.className='loot-boxes';
-    const tiers=forceGold?['gold','gold','silver']:['gold','silver','bronze'];
-    const shuffled=[...tiers].sort(()=>Math.random()-.5);
-    // League-scaled loot rarity for item drops
-    const itemRarPool=lgIdx>=4?'legendary':lgIdx>=3?'gold':lgIdx>=2?'gold':lgIdx>=1?'silver':'bronze';
-    const lootRewards={
-      gold:{label:'금 상자',gold:Math.floor(baseGold.gold*(1+leagueGoldBonus)),bonus:'gold',color:'#ffd700'},
-      silver:{label:'은 상자',gold:Math.floor(baseGold.silver*(1+leagueGoldBonus)),bonus:'silver',color:'#c0c0c0'},
-      bronze:{label:'동 상자',gold:Math.floor(baseGold.bronze*(1+leagueGoldBonus)),bonus:null,color:'#cd7f32'},
+    // === VICTORY: 4지선다 ===
+    // 등급 풀 결정 (리그 + 연승)
+    let maxRarIdx=lgIdx>=5?3:lgIdx>=3?2:lgIdx>=1?1:0; // 0=bronze,1=silver,2=gold,3=legendary
+    if(this.winStreak>=10) maxRarIdx=3;
+    else if(this.winStreak>=5) maxRarIdx=Math.max(maxRarIdx,2);
+    else if(this.winStreak>=3) maxRarIdx=Math.max(maxRarIdx,1);
+    const maxRar=R_ORDER[Math.min(maxRarIdx,3)]; // divine 은 보상에서 제외
+
+    // 등급 내 랜덤 선택 (높을수록 낮은 확률)
+    const pickRarity=()=>{
+      const pool=R_ORDER.slice(0,R_ORDER.indexOf(maxRar)+1);
+      // 가중치: bronze=40, silver=30, gold=20, legendary=10
+      const weights=[40,30,20,10];
+      const w=pool.map((_,i)=>weights[i]||5);
+      const total=w.reduce((a,b)=>a+b,0);
+      let r=Math.random()*total;
+      for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i];}
+      return pool[0];
     };
-    let lootPicked=false;
-    shuffled.forEach((tier,i)=>{
-      const box=document.createElement('div');box.className='loot-box';
-      box.innerHTML='📦';box.title=`상자 ${i+1}`;
-      box.onclick=()=>{
-        if(lootPicked)return;lootPicked=true;this._lootPicked=true;
-        if(lootDiv.firstElementChild)lootDiv.firstElementChild.style.display='none';
-        const reward=lootRewards[tier];
-        SFX.play(tier==='gold'?'rarity_up':tier==='silver'?'magic':'click');
-        boxRow.querySelectorAll('.loot-box').forEach((b,j)=>{
-          const t=shuffled[j];const rw=lootRewards[t];
-          b.classList.add('opened',t+'-loot');
-          b.innerHTML=`<div style="font-size:1.5rem;">${t==='gold'?'🏆':t==='silver'?'🥈':'🥉'}</div>`;
-          const res=document.createElement('div');res.className='loot-result';
-          if(j===i){res.innerHTML=`<span style="color:${rw.color};font-weight:bold;">✅ ${rw.label}</span><br>💰+${rw.gold}`;b.style.transform='scale(1.1)';}
-          else{res.innerHTML=`<span style="color:#555;">${rw.label}</span><br><span style="color:#555;">💰+${rw.gold}</span>`;b.style.opacity='.5';}
-          b.appendChild(res);
+
+    // 보상 3종 생성
+    const unitRar=pickRarity();
+    const unitPool=UNITS.filter(u=>u.rarity===unitRar&&!u.isHero);
+    const rewardUnit=unitPool.length?unitPool[Math.floor(Math.random()*unitPool.length)]:UNITS.find(u=>!u.isHero);
+
+    const skillRar=pickRarity();
+    const skillPool=SKILLS_DB.filter(s=>s.rarity===skillRar);
+    const rewardSkill=skillPool.length?skillPool[Math.floor(Math.random()*skillPool.length)]:SKILLS_DB[0];
+
+    const relicRar=pickRarity();
+    const relicPool=RELICS_DB.filter(r=>r.rarity===relicRar);
+    const rewardRelic=relicPool.length?relicPool[Math.floor(Math.random()*relicPool.length)]:RELICS_DB[0];
+
+    const lootDiv=document.createElement('div');lootDiv.className='reward-loot';
+    const streak=this.winStreak||0;
+    lootDiv.innerHTML=`<div class="rew-pick-title">보상을 선택하세요${streak>=3?` <span style="color:var(--danger);">(${streak}연승!)</span>`:''}</div>`;
+    const row=document.createElement('div');row.className='rew-pick-row';
+    let picked=false;
+    const self=this;
+
+    const RARE_LABEL={bronze:'평범',silver:'희귀',gold:'고귀',legendary:'전설',divine:'신'};
+    const RARE_COLOR={bronze:'var(--rarity-bronze)',silver:'var(--rarity-silver)',gold:'var(--rarity-gold)',legendary:'var(--rarity-legendary)',divine:'var(--curr-gold)'};
+
+    // 선택지 4개 정의
+    const choices=[
+      {icon:rewardUnit.icon||'🗡️',cat:'유닛',name:rewardUnit.name,rarity:rewardUnit.rarity,
+       desc:`HP ${rewardUnit.hp} ATK ${rewardUnit.atk} DEF ${rewardUnit.def}`,
+       onPick(){self.deck.push({...rewardUnit,uid:uid(),level:1,equips:[],maxHp:rewardUnit.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}});
+         stats.innerHTML+=`<br>🗡️ <span style="color:${RARE_COLOR[rewardUnit.rarity]};">${RARE_LABEL[rewardUnit.rarity]} ${rewardUnit.name}</span> 합류!`;}},
+      {icon:rewardSkill.icon||'⚡',cat:'스킬',name:rewardSkill.name,rarity:rewardSkill.rarity,
+       desc:rewardSkill.desc,
+       onPick(){self.ownedSkills=self.ownedSkills||[];self.ownedSkills.push({...rewardSkill,uid:uid()});
+         stats.innerHTML+=`<br>⚡ <span style="color:${RARE_COLOR[rewardSkill.rarity]};">${RARE_LABEL[rewardSkill.rarity]} ${rewardSkill.name}</span> 습득!`;}},
+      {icon:rewardRelic.icon||'🏺',cat:'유물',name:rewardRelic.name,rarity:rewardRelic.rarity,
+       desc:rewardRelic.desc,
+       onPick(){self.ownedRelics=self.ownedRelics||[];self.ownedRelics.push({...rewardRelic,uid:uid()});applyRelic(rewardRelic,self.deck);
+         stats.innerHTML+=`<br>🏺 <span style="color:${RARE_COLOR[rewardRelic.rarity]};">${RARE_LABEL[rewardRelic.rarity]} ${rewardRelic.name}</span> 획득!`;}},
+      {icon:'💰',cat:'골드',name:'신의 은총',rarity:null,
+       desc:'🎲 1~100 랜덤 골드',
+       onPick(){
+         const roll=Math.floor(Math.random()*100)+1;
+         self.gold+=roll;
+         stats.innerHTML+=`<br>💰 <span style="color:var(--curr-gold);">🎲 ${roll} 골드 획득!</span>`;
+         // 신의 은총: 2배 버튼 표시
+         const graceDiv=document.createElement('div');graceDiv.className='rew-grace';
+         graceDiv.innerHTML=`<button class="btn btn-s" style="border-color:var(--curr-gold);">✨ 신의 은총 (💰×2 = +${roll})</button>`;
+         graceDiv.querySelector('button').onclick=()=>{
+           self.gold+=roll;SFX.play('rarity_up');
+           stats.innerHTML+=`<br>✨ <span style="color:var(--success);">신의 은총! 💰+${roll} 추가!</span>`;
+           graceDiv.querySelector('button').disabled=true;graceDiv.querySelector('button').textContent='✅ 은총 적용됨';
+           self.persist();
+         };
+         lootDiv.appendChild(graceDiv);
+       }},
+    ];
+
+    choices.forEach((c,i)=>{
+      const card=document.createElement('div');
+      card.className='rew-pick-card'+(c.rarity?' '+c.rarity:'');
+      card.innerHTML=`
+        <div class="rpc-icon">${c.icon}</div>
+        <div class="rpc-cat">${c.cat}</div>
+        <div class="rpc-name" ${c.rarity?`style="color:${RARE_COLOR[c.rarity]}"`:''}>${c.name}</div>
+        ${c.rarity?`<div class="rpc-rarity" style="color:${RARE_COLOR[c.rarity]};">${RARE_LABEL[c.rarity]}</div>`:''}
+        <div class="rpc-desc">${c.desc}</div>`;
+      card.onclick=()=>{
+        if(picked)return;picked=true;this._lootPicked=true;
+        SFX.play(c.rarity==='legendary'?'rarity_up':c.rarity==='gold'?'magic':'click');
+        // 선택된 카드 강조, 나머지 흐리게
+        row.querySelectorAll('.rew-pick-card').forEach((el,j)=>{
+          if(j===i){el.classList.add('picked');}
+          else{el.classList.add('dimmed');}
         });
-        this.gold+=reward.gold;
-        let bonusText='';
-        // Gold box: 30% blessing + 70% skill/relic
-        if(reward.bonus==='gold'&&won){
-          if(Math.random()<0.3){this.blessings=(this.blessings||0)+1;bonusText=`✨ 신의축복 +1 추가!`;}
-          else{
-            const maxR=itemRarPool;const pool=SKILLS_DB.filter(s=>R_ORDER.indexOf(s.rarity)<=R_ORDER.indexOf(maxR));
-            if(pool.length){const sk={...pool[Math.floor(Math.random()*pool.length)],uid:uid()};this.ownedSkills=this.ownedSkills||[];this.ownedSkills.push(sk);bonusText=`⚡ ${sk.name} 비전 획득!`;}
-          }
-        }
-        // Silver box: 10% blessing
-        if(reward.bonus==='silver'&&won){
-          if(Math.random()<0.1){this.blessings=(this.blessings||0)+1;bonusText=`✨ 신의축복 +1 추가!`;}
-        }
-        // 10 streak: guaranteed legendary reward
-        if(won&&this.winStreak>=10&&tier==='gold'){
-          const pool=RELICS_DB.filter(r=>r.rarity==='legendary');
-          if(pool.length){const rl=pool[Math.floor(Math.random()*pool.length)];this.ownedRelics=this.ownedRelics||[];this.ownedRelics.push({...rl,uid:uid()});applyRelic(rl,this.deck);bonusText=`🏺 전설 유물 ${rl.name} 획득!`;}
-        }
-        stats.innerHTML+=`<br>📦 ${reward.label}: 💰+${reward.gold}${bonusText?'<br>🏆 <span style="color:#ffd700;">'+bonusText+'</span>':''}`;
-        // Double reward button
-        const dblBtn=document.createElement('div');dblBtn.className='loot-double-btn';
-        dblBtn.innerHTML=`<button class="btn btn-s btn-green" id="double-reward-btn">📺 신의 은총 (골드 2배)</button>`;
-        dblBtn.querySelector('button').onclick=()=>{
-          this.gold+=reward.gold;SFX.play('rarity_up');
-          stats.innerHTML+=`<br>📺 <span style="color:#44ff88;">신의 은총! 💰+${reward.gold} 추가!</span>`;
-          dblBtn.querySelector('button').disabled=true;dblBtn.querySelector('button').textContent='✅ 은총 적용됨';
-          this.persist();
-        };
-        lootDiv.appendChild(dblBtn);
+        c.onPick();
         this.persist();
       };
-      boxRow.appendChild(box);
+      row.appendChild(card);
     });
-    lootDiv.appendChild(boxRow);
+    lootDiv.appendChild(row);
     rcards.appendChild(lootDiv);
-    } // end if(won) loot boxes
+    } // end if(won) 4지선다
 
     // === ROGUELIKE RESET — restore stats but keep XP/honor/level ===
     // Track which deployed units died in battle

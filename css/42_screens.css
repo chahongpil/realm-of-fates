@@ -1348,3 +1348,73 @@ body.game-mode #church-info{
   left:var(--church-info-x); top:var(--church-info-y);
   width:var(--church-info-w); height:var(--church-info-h);
 }
+
+/* ═══════════════════════════════════════════════════════════ */
+/* ══ S2: ARENA (고스트 PvP) ════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════ */
+#arena-match-screen{
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(ellipse at center, #1a1020 0%, #0a0810 60%);
+}
+.arena-match-box{
+  text-align: center;
+  padding: var(--sp-7);
+  max-width: 600px;
+  width: 100%;
+}
+.arena-title{
+  font-size: var(--fs-2xl);
+  color: var(--bv2-accent, var(--curr-gold));
+  font-family: var(--font-title);
+  margin-bottom: var(--sp-6);
+  text-shadow: 0 0 20px rgba(255,215,0,.4);
+}
+.arena-vs-row{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-7);
+}
+.arena-player{
+  flex: 1;
+  padding: var(--sp-5);
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-lg);
+}
+.arena-player-name{
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--text-0);
+  margin-bottom: var(--sp-2);
+}
+.arena-player-lp{
+  font-size: var(--fs-lg);
+  color: var(--curr-gold);
+  font-weight: 600;
+}
+.arena-player-sub{
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+  margin-top: var(--sp-1);
+}
+.arena-vs-badge{
+  font-size: var(--fs-2xl);
+  font-weight: 900;
+  color: var(--danger);
+  text-shadow: 0 0 16px rgba(255,68,68,.5);
+  letter-spacing: 4px;
+  flex-shrink: 0;
+}
+.arena-btn-row{
+  display: flex;
+  gap: var(--sp-4);
+  justify-content: center;
+}
+.arena-btn-row .btn{
+  min-width: 140px;
+  padding: 14px 28px;
+  font-size: var(--fs-lg);
+}

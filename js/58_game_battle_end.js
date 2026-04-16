@@ -200,6 +200,15 @@ Object.assign(RoF.Game, {
     this.battleState=null;
     this.persist();
 
+    // S2: 승리 시 덱 스냅샷 자동 업로드 (고스트 PvP 방어덱)
+    if(won && Backend && Backend.isReady && Backend.getCurrentUser()){
+      const hero = this.deck.find(c => c.isHero);
+      Backend.uploadDeckSnapshot(
+        this.deck, this.ownedSkills || [], this.ownedRelics || [],
+        hero ? {id:hero.id, name:hero.name, element:hero.element, rarity:hero.rarity} : {}
+      ).catch(()=>{});
+    }
+
     // P0-2: 숫자 tween 시작 — 모든 동기 innerHTML 업데이트가 끝난 후 실행.
     // innerHTML += 가 노드를 재생성하므로 여기서 querySelectorAll 로 새로 찾음.
     setTimeout(()=>{

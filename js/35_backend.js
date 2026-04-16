@@ -267,6 +267,116 @@
     _updateCloudBtn();
   };
 
+  // ── S2: 고스트 PvP (비동기 대전) ──────────────────────
+
+  /** 덱 스냅샷 업로드 (전투 승리 시 자동 호출) */
+  B.uploadDeckSnapshot = async function(deckData, skillsData, relicsData, heroData){
+    if(!B.isReady || !_user) return {error:'offline'};
+    const {profile} = await B.getProfile();
+    if(!profile) return {error:'프로필 없음'};
+
+    const row = {
+      user_id:       _user.id,
+      nickname:      profile.nickname || 'hero',
+      league_points: profile.league_points || 0,
+      total_wins:    profile.total_wins || 0,
+      deck_data:     deckData   || [],
+      skills_data:   skillsData || [],
+      relics_data:   relicsData || [],
+      hero_data:     heroData   || {},
+    };
+
+    const {error} = await _sb.from('deck_snapshots')
+      .upsert(row, {onConflict:'user_id'});
+    if(error) return {error: error.message};
+    console.log('[Ghost PvP] 덱 스냅샷 업로드 완료');
+    return {error: null};
+  };
+
+  /**
+   * 랜덤 상대 매칭 — 비슷한 리그 포인트 범위에서 자기 자신 제외.
+   * @param {number} [range=100] LP 허용 범위 (±)
+   * @returns {{opponent: object|null, error: string|null}}
+   */
+  B.findGhostOpponent = async function(range){
+    if(!B.isReady || !_user) return {opponent:null, error:'offline'};
+    const {profile} = await B.getProfile();
+    if(!profile) return {opponent:null, error:'프로필 없음'};
+    const myLP = profile.league_points || 0;
+    const r = range || 100;
+
+    // 1차: ±range 범위에서 랜덤 1명
+    let {data, error} = await _sb.from('deck_snapshots')
+      .select('*')
+      .neq('user_id', _user.id)
+      .gte('league_points', myLP - r)
+      .lte('league_points', myLP + r)
+      .limit(10);
+
+    if(error) return {opponent:null, error: error.message};
+
+    // 범위 내 없으면 범위 2배로 확장 재시도
+    if(!data || data.length === 0){
+      const res2 = await _sb.from('deck_snapshots')
+        .select('*')
+        .neq('user_id', _user.id)
+        .gte('league_points', myLP - r * 2)
+        .lte('league_points', myLP + r * 2)
+        .limit(10);
+      if(res2.error) return {opponent:null, error: res2.error.message};
+      data = res2.data;
+    }
+
+    // 그래도 없으면 아무나
+    if(!data || data.length === 0){
+      const res3 = await _sb.from('deck_snapshots')
+        .select('*')
+        .neq('user_id', _user.id)
+        .limit(5);
+      if(res3.error) return {opponent:null, error: res3.error.message};
+      data = res3.data;
+    }
+
+    if(!data || data.length === 0){
+      return {opponent:null, error:'상대를 찾을 수 없습니다. 다른 플레이어가 아직 덱을 등록하지 않았습니다.'};
+    }
+
+    // 랜덤 선택
+    const pick = data[Math.floor(Math.random() * data.length)];
+    return {opponent: pick, error: null};
+  };
+
+  /** PvP 결과 기록 */
+  B.recordPvpMatch = async function(defenderId, defenderLP, result, lpChange, goldReward, rounds){
+    if(!B.isReady || !_user) return {error:'offline'};
+    const {profile} = await B.getProfile();
+    const row = {
+      attacker_id:   _user.id,
+      defender_id:   defenderId,
+      attacker_lp:   (profile && profile.league_points) || 0,
+      defender_lp:   defenderLP || 0,
+      result:        result,
+      lp_change:     lpChange || 0,
+      gold_reward:   goldReward || 0,
+      rounds_played: rounds || 1,
+    };
+    const {error} = await _sb.from('pvp_matches').insert(row);
+    if(error) return {error: error.message};
+    return {error: null};
+  };
+
+  /** 최근 PvP 전적 조회 */
+  B.getPvpHistory = async function(limit){
+    if(!B.isReady || !_user) return {matches:[], error:'offline'};
+    const {data, error} = await _sb.from('pvp_matches')
+      .select('*')
+      .eq('attacker_id', _user.id)
+      .order('created_at', {ascending: false})
+      .limit(limit || 10);
+    if(error) return {matches:[], error: error.message};
+    return {matches: data || [], error: null};
+  };
+
   // ── 네임스페이스 등록 ─────────────────────────────────
   if(typeof RoF === 'undefined') window.RoF = {};
   RoF.Backend = B;

@@ -23,6 +23,14 @@ Thumbs.db
 # Garbage cleanup staging (복구 가능, git 추적 불필요)
 trash/
 
+# 환경 변수 (비밀 키 — 절대 커밋 금지)
+.env.local
+.env.production
+../.env.local
+
+# Supabase 임시
+supabase/.temp/
+
 # Editor audit scratch scripts
 tools/_battle_audit*.js
 tools/_frames_titan*/

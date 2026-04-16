@@ -33,6 +33,10 @@
 <script defer src="js/30_sfx.js"></script>
 <script defer src="js/31_ui.js"></script>
 <script defer src="js/32_auth.js"></script>
+<!-- S1: Supabase Backend (오프라인 시 자동 폴백) -->
+<script>window.__ROF_SUPABASE_URL='https://bagfcvjazzfekjazpoah.supabase.co';window.__ROF_SUPABASE_KEY='sb_publishable_RSNFwIVKTsGn4NG8ZbYPpg_MGoGMCza';</script>
+<script defer src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script defer src="js/35_backend.js"></script>
 <script defer src="js/40_cards.js"></script>
 <script defer src="js/50_game_core.js"></script>
 <script defer src="js/51_game_town.js"></script>
@@ -159,7 +163,26 @@
   <div class="town-container" id="town-container"></div>
   <div class="menu-deck" id="menu-deck"></div>
   <div class="town-footer">
+    <button class="btn btn-s" id="btn-cloud-link" data-action="backend.showLinkModal">☁️ 클라우드</button>
     <button class="btn btn-s btn-red" data-action="game.logout">🛏️ 휴식</button>
+  </div>
+</div>
+
+<!-- CLOUD LINK MODAL -->
+<div id="cloud-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3 id="cloud-modal-title">☁️ 클라우드 세이브</h3>
+    <div id="cloud-status"></div>
+    <div id="cloud-form">
+      <input type="email" id="cloud-email" placeholder="이메일 주소" class="auth-input" autocomplete="email">
+      <input type="password" id="cloud-pw" placeholder="비밀번호 (6자 이상)" class="auth-input" autocomplete="new-password">
+      <div id="cloud-msg" class="auth-msg"></div>
+      <div class="modal-buttons">
+        <button class="btn btn-s" id="cloud-btn-register" data-action="backend.register">새로 등록</button>
+        <button class="btn btn-s" id="cloud-btn-login" data-action="backend.linkLogin">기존 연결</button>
+      </div>
+    </div>
+    <button class="btn btn-s btn-red" data-action="backend.closeModal">닫기</button>
   </div>
 </div>
 

@@ -37,9 +37,12 @@ Object.assign(RoF.Game, {
   },
   persist(){
     if(!Auth.user)return;const db=Auth.db();if(!db[Auth.user])return;
-    db[Auth.user].save={round:this.round,hp:this.hp,maxHp:this.maxHp,gold:this.gold,gems:this.gems||0,blessings:this.blessings||0,divineGrace:this.divineGrace||0,
+    const sv={round:this.round,hp:this.hp,maxHp:this.maxHp,gold:this.gold,gems:this.gems||0,blessings:this.blessings||0,divineGrace:this.divineGrace||0,
       deck:this.deck,relics:this.relics,ownedRelics:this.ownedRelics||[],ownedSkills:this.ownedSkills||[],heroBaseId:this.heroBaseId,bestRound:this.bestRound,totalWins:this.totalWins,totalGames:this.totalGames,leaguePoints:this.leaguePoints||0,buildings:this.buildings||{},tutStep:this.tutStep||0,companionName:this.companionName||'동료',blessings:this.blessings||0,winStreak:this.winStreak||0,tavernSlots:this.tavernSlots||null,tavernDate:this.tavernDate||null,savedFormations:this.savedFormations||[]};
+    db[Auth.user].save=sv;
     Auth.save(db);
+    // S1: 클라우드 세이브 (비동기, 실패해도 로컬은 이미 저장됨)
+    if(Backend && Backend.isReady) Backend.saveProgress(sv).catch(()=>{});
   },
   logout(){this.persist();Auth.user=null;this.battleRunning=false;SFX.bgm(false);
     ['login-id','login-pw','signup-id','signup-pw','signup-pw2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});

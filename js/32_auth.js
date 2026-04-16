@@ -26,7 +26,10 @@ RoF.Auth={
     m.className='auth-msg success';m.textContent=`영웅이여, 돌아오셨군요!`;
     // 로그인 정보 기억
     localStorage.setItem('rof8_last_user',id);localStorage.setItem('rof8_last_pw',pw);
-    this.user=id;SFX.init();setTimeout(()=>Game.load(db[id].save),300);
+    this.user=id;SFX.init();
+    // S1: Backend 클라우드 세이브 마이그레이션 (비동기, 실패해도 로컬 진행)
+    if(Backend && Backend.isReady) Backend.migrateFromLocal(id).catch(()=>{});
+    setTimeout(()=>Game.load(db[id].save),300);
   },
   _selElement:null,_selRole:null,
   showCharSel(uid){

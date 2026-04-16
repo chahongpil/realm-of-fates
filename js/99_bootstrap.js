@@ -68,6 +68,9 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Enter 키 바인딩 → 99_bindings.js 의 data-action-enter 로 이관됨
 
+  // ── 0. Backend 초기화 (S1: Supabase, 실패해도 로컬 폴백) ──
+  if(typeof Backend !== 'undefined' && Backend.init) Backend.init().catch(()=>{});
+
   // ── 1. 마지막 로그인 정보 자동 입력 ──
   const u = localStorage.getItem('rof8_last_user');
   const p = localStorage.getItem('rof8_last_pw');

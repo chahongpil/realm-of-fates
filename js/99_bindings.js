@@ -22,6 +22,7 @@
     turnBattle: 'TurnBattle',
     formation:  'Formation',
     fx:         'FX',
+    backend:    'Backend',
   };
 
   function resolveAction(actionStr) {

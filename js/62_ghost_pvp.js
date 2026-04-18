@@ -203,8 +203,8 @@
       return;
     }
 
-    // v2 DEMO 데이터를 실제 데이터로 교체
-    Battle.DEMO.allies = myDeck.map(function(c, i){
+    // v2 STATE 에 실 덱 주입
+    Battle.STATE.allies = myDeck.map(function(c, i){
       return {
         id: 'ally_' + (i+1),
         unitId: c.id,
@@ -221,7 +221,7 @@
       };
     });
 
-    Battle.DEMO.enemies = enemyDeck.slice(0, 5).map(function(c, i){
+    Battle.STATE.enemies = enemyDeck.slice(0, 5).map(function(c, i){
       return {
         id: 'enemy_' + (i+1),
         unitId: c.id,

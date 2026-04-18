@@ -165,9 +165,6 @@
   transition: color 180ms, border-color 180ms, box-shadow 180ms;
 }
 .bsm-timer-val{ min-width: 28px; text-align: center; }
-
-/* 실전 진입 시 dev 데모 버튼 숨김 (startFromLegacyBS 에서 .is-real-battle 부여) */
-#battle-v2-container.is-real-battle .bi-demo-btn{ display: none !important; }
 .bsm-timer-icon{ font-size: .9rem; opacity: .85; }
 .bsm-timer.is-warning{
   color: #ff8c3a;
@@ -545,20 +542,8 @@
   pointer-events: none;                  /* 카드 클릭 방해 금지 */
 }
 #battle-idle .bi-hint{
-  display: none;                          /* 버튼 하나로 충분 */
+  display: none;                          /* 큐잉 타이머가 안내 역할 */
 }
-#battle-idle .bi-demo-btn{
-  pointer-events: auto;
-  padding: 10px 22px;
-  background: rgba(40,30,10,.85);
-  border: 2px solid var(--bv2-accent);
-  color: var(--bv2-accent);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: .9rem;
-  font-weight: bold;
-}
-#battle-idle .bi-demo-btn:hover{ background: rgba(60,45,15,.95); }
 
 /* ── battle-char-focus — 중앙 확대 카드 + 스킬 row 겹침 ───────
    스토리보드 3번: 스킬 카드가 확대 카드 하단 절반을 물고 올라옴. */

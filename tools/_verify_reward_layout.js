@@ -30,7 +30,7 @@ const path = require('path');
   await page.evaluate(async () => {
     for(let i=0; i<3; i++){
       await RoF.Battle.onAutoBattle();
-      const eh = RoF.Battle.DEMO.enemies.find(u=>u.isHero);
+      const eh = RoF.Battle.STATE.enemies.find(u=>u.isHero);
       if(eh) eh.currentHp = Math.floor(eh.currentHp * 0.4);
       await new Promise(r=>setTimeout(r,100));
       if(RoF.Battle.getBattleResult()) break;

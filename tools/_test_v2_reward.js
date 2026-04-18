@@ -63,7 +63,7 @@ const path = require('path');
   const victoryResult = await page.evaluate(async () => {
     const B = window.RoF.Battle;
     const G = window.Game;
-    const enemyHero = B.DEMO.enemies.find(u=>u.isHero);
+    const enemyHero = B.STATE.enemies.find(u=>u.isHero);
     if(enemyHero) enemyHero.currentHp = 0;
 
     const res = B.getBattleResult();

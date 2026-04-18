@@ -39,7 +39,7 @@ const path = require('path');
   // 2) 케이스 (a): NRG 0 + 고비용 스킬 차단
   const caseA = await page.evaluate(async () => {
     const B = RoF.Battle;
-    const ally = B.DEMO.allies.find(a => !a.isHero) || B.DEMO.allies[0];
+    const ally = B.STATE.allies.find(a => !a.isHero) || B.STATE.allies[0];
     const skills = B.getSkillsOf(ally).filter(s => !s.passive && (s.cost ?? 0) > 0);
     if(!skills.length) return { skipped: 'no-cost-skill' };
     const sig = skills[0];
@@ -76,8 +76,8 @@ const path = require('path');
   // 3) 케이스 (b)+(c): NRG 충분 → 선차감 → 실행 → 중복 차감 없음
   const caseBC = await page.evaluate(async () => {
     const B = RoF.Battle;
-    const ally = B.DEMO.allies.find(a => !a.isHero) || B.DEMO.allies[0];
-    const enemy = B.DEMO.enemies.find(e => !B.isDead(e));
+    const ally = B.STATE.allies.find(a => !a.isHero) || B.STATE.allies[0];
+    const enemy = B.STATE.enemies.find(e => !B.isDead(e));
     const skills = B.getSkillsOf(ally).filter(s => !s.passive && (s.cost ?? 0) > 0);
     if(!skills.length || !enemy) return { skipped: true };
     const sig = skills[0];

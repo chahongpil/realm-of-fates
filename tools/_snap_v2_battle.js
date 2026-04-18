@@ -75,7 +75,7 @@ const path = require('path');
   // 첫 아군 클릭 → 스킬 펼침
   const click1 = await page.evaluate(() => {
     if(!window.RoF || !window.RoF.Battle) return false;
-    const u = window.RoF.Battle.DEMO.allies[0];
+    const u = window.RoF.Battle.STATE.allies[0];
     window.RoF.Battle.onCharClick(u);
     return true;
   });
@@ -97,7 +97,7 @@ const path = require('path');
   const skillsInfo = await page.evaluate(() => {
     const B = window.RoF && window.RoF.Battle;
     if(!B) return null;
-    return B.DEMO.allies.map(a => ({
+    return B.STATE.allies.map(a => ({
       id: a.id, name: a.name, element: a.element, rarity: a.rarity,
       skills: B.getSkillsOf(a).map(s=>({name:s.name, type:s.attackType, dmg:s.damage, mult:s.mult, cost:s.cost})),
     }));

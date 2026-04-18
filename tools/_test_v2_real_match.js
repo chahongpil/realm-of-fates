@@ -53,19 +53,14 @@ const path = require('path');
     const bvVisible = bv ? getComputedStyle(bv).display !== 'none' : false;
     return {
       bvVisible,
-      isRealBattle: bv ? bv.classList.contains('is-real-battle') : false,
-      allyCount: (RoF.Battle.DEMO.allies || []).length,
-      enemyCount: (RoF.Battle.DEMO.enemies || []).length,
-      allyNames: (RoF.Battle.DEMO.allies || []).map(u=>u.name),
-      enemyNames: (RoF.Battle.DEMO.enemies || []).map(u=>u.name),
-      firstAllySkills: (RoF.Battle.getSkillsOf(RoF.Battle.DEMO.allies[0]) || []).map(s=>s.name),
+      allyCount: (RoF.Battle.STATE.allies || []).length,
+      enemyCount: (RoF.Battle.STATE.enemies || []).length,
+      allyNames: (RoF.Battle.STATE.allies || []).map(u=>u.name),
+      enemyNames: (RoF.Battle.STATE.enemies || []).map(u=>u.name),
+      firstAllySkills: (RoF.Battle.getSkillsOf(RoF.Battle.STATE.allies[0]) || []).map(s=>s.name),
       bsPCards: Game.battleState.pCards.length,
       bsECards: Game.battleState.eCards.length,
       timerPresent: !!document.getElementById('bv2-queue-timer'),
-      demoBtnHidden: (() => {
-        const d = document.querySelector('.bi-demo-btn');
-        return d ? getComputedStyle(d).display === 'none' : true;
-      })(),
     };
   });
   console.log('enter:', enter);
@@ -83,14 +78,14 @@ const path = require('path');
     let lastPhase = null;
     while(iterations < 5){
       iterations++;
-      if(!B.DEMO.enemies || !B.DEMO.enemies.length) break;
+      if(!B.STATE.enemies || !B.STATE.enemies.length) break;
       // 자동 전투 호출
       await B.onAutoBattle();
       lastPhase = B.state.phase;
       const result = B.getBattleResult();
       if(result) return { iterations, result, phase: lastPhase };
       // 안 끝나면 강제 종결 위해 적 영웅 HP 를 반 깎음
-      const eh = B.DEMO.enemies.find(u=>u.isHero);
+      const eh = B.STATE.enemies.find(u=>u.isHero);
       if(eh) eh.currentHp = Math.max(0, Math.floor(eh.currentHp * 0.4));
     }
     return { iterations, result: B.getBattleResult(), phase: lastPhase };
@@ -127,7 +122,6 @@ const path = require('path');
   const check = (cond, name) => checks.push({ name, pass: !!cond });
   check(signupInfo.deckCount >= 3,           '신규 유저 덱 3장 이상 (hero+companion+titan)');
   check(enter.bvVisible,                     'v2 container 표시됨');
-  check(enter.isRealBattle,                  'is-real-battle 클래스 부여');
   check(enter.allyCount >= 1,                '아군 1명 이상');
   check(enter.enemyCount >= 1,               '적군 1명 이상');
   check(enter.bsPCards === enter.allyCount,  '아군 pCards → v2 allies 동일 수');
@@ -135,7 +129,6 @@ const path = require('path');
   check(enter.firstAllySkills.length === 2,  '첫 아군 스킬 2장 (기본+시그니처)');
   check(enter.firstAllySkills.indexOf('기본 공격') >= 0, '기본 공격 포함');
   check(enter.timerPresent,                  '큐잉 타이머 DOM 존재');
-  check(enter.demoBtnHidden,                 'dev 데모 버튼 숨김');
   check(roundLoop.result === 'victory' || roundLoop.result === 'defeat', '전투 결과 확정');
   check(after.rewardVisible,                 '리워드 화면 표시');
   check(after.bvHidden,                      'v2 container 닫힘');

@@ -63,8 +63,6 @@
     CRIT_POP:       400,        // CSS bv2CritPop 과 동기화
     ROUND_END:      600,
     BETWEEN_ACTION: 250,
-    DEMO_PRE:       200,        // playDemoRound 사전 대기
-    DEMO_STEP:      100,        // playDemoRound 스텝 간 대기
   };
 
   // ── 레이아웃 상수 (CSS 와 연동) ──────────────────────────────

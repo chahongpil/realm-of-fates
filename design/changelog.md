@@ -8,6 +8,22 @@
 
 ---
 
+## 2026-04-16 ▶ 세션 ▶ 핸드오프 저장 (오후)
+
+**변경**: 세션 상태를 `docs/handoff/handoff-2026-04-16-session2.md` 에 저장.
+**이유**: P1-3 Ready + P2-1 Lore Bible + S2 Ghost PvP + design/ 통합 완료. 커밋 4개.
+**영향**: `docs/handoff/`
+
+---
+
+## 2026-04-16 ▶ 게임 메커닉 ▶ S2 고스트 PvP 비동기 대전
+
+**변경**: deck_snapshots + pvp_matches DB, Backend API 4종, Arena 모듈, 매칭 UI.
+**이유**: 트랙6 S2. LP ±100 범위 랜덤 매칭, 승리 시 덱 자동 스냅샷.
+**영향**: `js/62_ghost_pvp.js`(신규), `js/35_backend.js`, `js/58_game_battle_end.js`, `supabase/migrations/002_s2_ghost_pvp.sql`
+
+---
+
 ## 2026-04-16 ▶ 게임 메커닉 ▶ P1-3 큐잉 Ready 버튼 + 10초 타임아웃
 
 **변경**: 큐잉 타이머 30초→10초 단축. "⚔️ 준비 완료" Ready 버튼 추가 — 누르면 즉시 실행 단계.

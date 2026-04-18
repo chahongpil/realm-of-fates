@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>프레임 9장 투명도 검증</title>
+<style>
+  :root {
+    --card-w: 260px;
+    --card-h: 390px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    background:
+      repeating-conic-gradient(#e0e0e0 0% 25%, #ffffff 0% 50%) 50% / 20px 20px;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  h1 {
+    margin: 0 0 24px;
+    font-size: 22px;
+    color: #222;
+    text-shadow: 0 1px 0 #fff;
+  }
+  .legend {
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,.85);
+    border-radius: 6px;
+    max-width: 900px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, var(--card-w));
+    gap: 24px;
+    justify-content: center;
+  }
+  .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .frame {
+    width: var(--card-w);
+    height: var(--card-h);
+    position: relative;
+  }
+  .frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  /* 중앙 일러스트 자리 표시 — 붉은 반투명 배경으로 불투명 픽셀 잔존 여부 확인 */
+  .frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #ff3366;
+    z-index: -1;
+  }
+  .label {
+    font-size: 13px;
+    color: #222;
+    background: rgba(255,255,255,.95);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .status {
+    font-size: 11px;
+    color: #d00;
+    background: rgba(255,255,255,.95);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .status.ok { color: #080; }
+</style>
+</head>
+<body>
+
+<h1>🛡️ 방패(tank) 프레임 9장 투명도 검증</h1>
+
+<div class="legend">
+  📋 <strong>검증 방법</strong>: 프레임 뒤에 붉은색(#ff3366) 배경을 깔아뒀습니다.
+  중앙 일러스트 영역이 <strong>온전히 붉게</strong> 보이면 투명 OK.
+  흰색/베이지 패치가 보이면 그 부분이 불투명하게 남은 것.
+</div>
+
+<div class="grid">
+  <div class="cell">
+    <div class="frame"><img src="../../img/frame_bronze_tank.png" alt=""></div>
+    <span class="label">평범 (bronze)</span>
+    <span class="status ok">OK 99.9%</span>
+  </div>
+
+  <div class="cell">
+    <div class="frame"><img src="../../img/frame_silver_tank.png" alt=""></div>
+    <span class="label">희귀 (silver)</span>
+    <span class="status">NEAR 96.4%</span>
+  </div>
+
+  <div class="cell">
+    <div class="frame"><img src="../../img/frame_gold_tank.png" alt=""></div>
+    <span class="label">고귀 (gold)</span>
+    <span class="status">NEAR 96.2%</span>
+  </div>
+
+  <div class="cell">
+    <div class="frame"><img src="../../img/frame_legendary_tank.png" alt=""></div>
+    <span class="label">전설 (legendary)</span>
+    <span class="status ok">OK 99.9%</span>
+  </div>
+
+  <div class="cell">
+    <div class="frame"><img src="../../img/frame_divine_fire_tank.png" alt=""></div>
+    <span class="label">신 - 불 (divine fire)</span>
+    <span class="status ok">OK 100%</span>
+  </div>
+
+  <div class="cell">
+    <div class="frame"><img src="../../img/frame_divine_water_tank.png" alt=""></div>
+    <span class="label">신 - 물 (divine water)</span>
+    <span class="status ok">OK 99.8%</span>
+  </div>
+
+  <div class="cell">
+    <div class="frame"><img src="../../img/frame_divine_earth_tank.png" alt=""></div>
+    <span class="label">신 - 땅 (divine earth)</span>
+    <span class="status ok">OK 100%</span>
+  </div>
+
+  <div class="cell">
+    <div class="frame"><img src="../../img/frame_divine_lightning_tank.png" alt=""></div>
+    <span class="label">신 - 전기 (divine lightning)</span>
+    <span class="status ok">OK 99.6%</span>
+  </div>
+
+  <div class="cell">
+    <div class="frame"><img src="../../img/frame_divine_holy_tank.png" alt=""></div>
+    <span class="label">신 - 신성 (divine holy)</span>
+    <span class="status ok">OK 99.9%</span>
+  </div>
+</div>
+
+</body>
+</html>

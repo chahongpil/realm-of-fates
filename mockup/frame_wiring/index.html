@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>프레임 배선 테스트</title>
+<link rel="stylesheet" href="../../css/10_tokens.css">
+<link rel="stylesheet" href="../../css/11_frame_coords.json">
+<link rel="stylesheet" href="../../css/31_card_system.css">
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2c2c44 100%);
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #e0e0e0;
+  }
+  h1 {
+    margin: 0 0 24px;
+    font-size: 22px;
+    color: #fff;
+  }
+  h2 {
+    margin: 20px 0 12px;
+    color: #b0b0b0;
+    font-size: 15px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 6px;
+  }
+  .row {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .card-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-wrap .label {
+    font-size: 12px;
+    color: #c0c0c0;
+  }
+  /* 테스트용 카드 크기 축소 */
+  .card-v2 { width: 240px !important; }
+</style>
+</head>
+<body>
+
+<h1>🎴 방패 프레임 배선 테스트 — 실제 CSS 적용 확인</h1>
+
+<h2>일반 4등급 (모든 역할 동일 방패 프레임 사용)</h2>
+<div class="row">
+  <div class="card-wrap">
+    <div class="card-v2 bronze" data-role="tank" data-element="earth">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">평범 · bronze</span>
+  </div>
+  <div class="card-wrap">
+    <div class="card-v2 silver" data-role="dps" data-element="water">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">희귀 · silver</span>
+  </div>
+  <div class="card-wrap">
+    <div class="card-v2 gold" data-role="support" data-element="holy">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">고귀 · gold</span>
+  </div>
+  <div class="card-wrap">
+    <div class="card-v2 legendary" data-role="tank" data-element="fire">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">전설 · legendary</span>
+  </div>
+</div>
+
+<h2>신(divine) 등급 — 원소별 분기 매핑</h2>
+<div class="row">
+  <div class="card-wrap">
+    <div class="card-v2 divine" data-role="tank" data-element="fire">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">신 · 🔥 fire</span>
+  </div>
+  <div class="card-wrap">
+    <div class="card-v2 divine" data-role="tank" data-element="water">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">신 · 🌊 water</span>
+  </div>
+  <div class="card-wrap">
+    <div class="card-v2 divine" data-role="tank" data-element="earth">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">신 · ⛰️ earth</span>
+  </div>
+  <div class="card-wrap">
+    <div class="card-v2 divine" data-role="tank" data-element="lightning">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">신 · ⚡ lightning</span>
+  </div>
+  <div class="card-wrap">
+    <div class="card-v2 divine" data-role="tank" data-element="holy">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">신 · ✨ holy</span>
+  </div>
+  <div class="card-wrap">
+    <div class="card-v2 divine" data-role="tank" data-element="dark">
+      <div class="cv-illust"></div>
+      <div class="cv-frame"></div>
+    </div>
+    <span class="label">신 · 🌑 dark (구 fallback)</span>
+  </div>
+</div>
+
+</body>
+</html>

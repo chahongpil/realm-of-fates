@@ -37,6 +37,13 @@ RoF.CardComponent = (function(){
     el.className = `card-v2 ${rarity} cv-mode-${mode}`;
     el.setAttribute('data-type', unit.type || '');
     el.setAttribute('data-uid', unit.id || '');
+    // PHASE 3 방패 프레임 배선 (2026-04-18):
+    //   unit.role (attack/defense/support) → data-role (dps/tank/support) 정규화
+    //   unit.element (fire/water/earth/lightning/holy/dark) → data-element
+    //   CSS 에서 [data-role="tank"][data-element="..."] 셀렉터로 프레임 매핑
+    const ROLE_MAP = { attack:'dps', defense:'tank', support:'support' };
+    el.setAttribute('data-role', ROLE_MAP[unit.role] || unit.role || '');
+    if(unit.element) el.setAttribute('data-element', unit.element);
     if(scale !== 1) el.style.transform = `scale(${scale})`;
 
     const illust = document.createElement('div');

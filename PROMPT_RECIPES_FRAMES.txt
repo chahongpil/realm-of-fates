@@ -1,0 +1,399 @@
+═══════════════════════════════════════════════════════════════════════════════
+  Realm of Fates — 유닛 카드 프레임 프롬프트 (복붙용) v2.1
+  4등급 (평범/희귀/고귀/전설) × 3역할 (방패/일반/지원) = 12개
+  각 블록은 ``` 사이만 복사 → Gemini 2.5 Flash Image / MJ / SD 에 1회 입력
+  캔버스 1024×1536 세로 / 투명 일러스트 창: 중앙 대형 구멍 (후술)
+
+  ※ 2026-04-18 재작성 — 기존 v2 가 "스탯 슬롯" 을 명시 안 해서 빈 프레임만 나옴
+  ※ rof-ui-inspector 검수관 리포트 반영:
+    - 14 영역 중 프레임 PNG 가 실제 렌더할 슬롯 = 7개 (이름·HP·4스탯·설명·NRG)
+    - LUCK 4번째 노랑 슬롯 신규 추가 (기존 7장 프레임은 3슬롯뿐이었음)
+    - 픽셀 좌표 대신 "상대 위치 + 갯수 + 색" 키워드 사용
+    - CENTER WINDOW 는 Gemini 가 종종 "검정 배경"으로 오인 → 후처리 알파 펀치 권장
+  ※ 신(divine)은 제외 — 카드 1장마다 개별 자체제작
+  ※ 원소 문양은 프레임에 넣지 않음 — 카드 위 별도 뱃지 레이어
+═══════════════════════════════════════════════════════════════════════════════
+
+🔒 고정 UI 규격 (절대 변경 금지 — design/frame-prompt-rules.md 참조)
+  캔버스: 1024×1536 px 확정 / 프롬프트 숫자는 AI 편의상 라운드값 유지
+  ─ 좌측 4슬롯: 150×80 px, (160, 520/610/700/790), 간격 10px, 순서 빨→파→초→노 고정
+  ─ 상단 두루마리 이름표: 940×180 px, (210, 220)
+  ─ 우상단 HP 루비: 150×150 px, (1080, 430), 항상 빨강
+  ─ 우하단 NRG 루비: 150×150 px, (1080, 1320), 항상 파랑
+  등급·역할 불문 위 4개 규격은 고정. (CSS 실제 좌표는 frame-prompt-rules.md 환산표 참조)
+═══════════════════════════════════════════════════════════════════════════════
+
+
+───── 1. 평범(bronze) × 방패(Tank) ✅ 검증됨 (2026-04-18, frame_bronze_tank.png) ─────
+
+```
+fantasy trading card frame, vertical 1024x1536 composition, fills entire canvas with minimal outer margin
+
+shield-shaped metal frame with slightly raised curved top edges (both sides lifted upward), strong and sturdy medieval shield silhouette
+
+material: thin metal, weathered oxidized silver-copper tone (#b8b8c0), matte finish, no shine, no glow, plain/common tier (no luxury, no gold, no ornate engraving)
+
+border thickness approx 60px, simple straight lines with slight bevel, small rivets along edges, minimal decoration (only tiny dots at corners)
+
+TOP AREA:
+above the name banner, add a rounded reinforced shield plate (semi-circular armor plate), thick and solid, integrated into the frame (NOT floating), medieval metal structure feeling
+below it, a parchment scroll banner for card name (scroll must be in front layer)
+
+RIGHT SIDE:
+top-right: inset red gemstone (hex or shield shape), NO number
+bottom-right: inset blue gemstone (same style), NO number
+both gems must be embedded into the frame (not floating)
+
+LEFT SIDE:
+4 stacked inset stat slots aligned vertically:
+1st: red
+2nd: blue
+3rd: green
+4th: yellow
+slots must be embedded into the frame, slightly angled
+
+CENTER:
+large empty artwork window, clean white fill (no transparency pattern)
+
+BOTTOM:
+large description box (expanded height), dark textured surface (brown/stone/metal feel), NO lines inside, clean area for text
+leave extra margin below the description box (bottom padding visible)
+
+BACKGROUND:
+outside the frame must be pure white
+
+STYLE:
+clean game UI, high detail, sharp edges, realistic metal texture, no text, no numbers, no logo, no watermark
+NOT cartoon, NOT hearthstone style, NOT blizzard style
+```
+
+▸ 후처리 파이프라인 (Gemini 생성 후)
+  1. 리사이즈 3870x5805 → 1024x1536 (LANCZOS)
+  2. RGB → RGBA 변환
+  3. 중앙 흰색 flood-fill (RGB ≥ 235) → 알파 0
+  4. `c:/work/game/img/frame_{tier}_{role}.png` 저장
+  스크립트: `c:/tmp/process_frame.py`
+
+
+───── 2. 평범(bronze) × 일반(DPS) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, rectangular body with a pointed gothic arch at the top and sharp angular corners (DPS role outline), thin metal border approximately 60 pixels wide made of weathered oxidized silver-copper (#b8b8c0 tone, PLAIN tier — minimal engraving, only tiny dot accents at the four corners, no vine scrollwork, no gold leaf).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork, matte finish, no shine, no glow, no stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. The seven gem slots listed above are the ONLY ornamentation — do not add extra gems, pendants, chains, or filigree beyond tiny corner dots.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 3. 평범(bronze) × 지원(Support) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, oval-tall silhouette with rounded soft corners and small ribbon flourishes on both sides (SUPPORT role outline), thin metal border approximately 60 pixels wide made of weathered oxidized silver-copper (#b8b8c0 tone, PLAIN tier — minimal engraving, only tiny dot accents at the four corners, no vine scrollwork, no gold leaf).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork, matte finish, no shine, no glow, no stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. The seven gem slots listed above are the ONLY ornamentation — do not add extra gems, pendants, chains, or filigree beyond tiny corner dots.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 4. 희귀(silver) × 방패(Tank) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, shield-shaped silhouette with a pointed V-bottom and flat top (TANK role outline), thin metal border approximately 65 pixels wide made of cool silver with a subtle cobalt blue undertone (#3a7bd5 tint, REFINED tier — slender vine tendrils growing from each of the four corners, small spiral accents at each corner, one tiny gemstone at the top center of the nameplate).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork, subtle point-light reflection from upper left, polished but not flashy, no heavy stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. Beyond the seven gem slots and the corner vine tendrils described above, do not add extra gems, pendants, chains, or filigree.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 5. 희귀(silver) × 일반(DPS) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, rectangular body with a pointed gothic arch at the top and sharp angular corners (DPS role outline), thin metal border approximately 65 pixels wide made of cool silver with a subtle cobalt blue undertone (#3a7bd5 tint, REFINED tier — slender vine tendrils growing from each of the four corners, small spiral accents at each corner, one tiny gemstone at the top center of the nameplate).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork, subtle point-light reflection from upper left, polished but not flashy, no heavy stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. Beyond the seven gem slots and the corner vine tendrils described above, do not add extra gems, pendants, chains, or filigree.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 6. 희귀(silver) × 지원(Support) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, oval-tall silhouette with rounded soft corners and small ribbon flourishes on both sides (SUPPORT role outline), thin metal border approximately 65 pixels wide made of cool silver with a subtle cobalt blue undertone (#3a7bd5 tint, REFINED tier — slender vine tendrils growing from each of the four corners, small spiral accents at each corner, one tiny gemstone at the top center of the nameplate).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork, subtle point-light reflection from upper left, polished but not flashy, no heavy stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. Beyond the seven gem slots and the corner vine tendrils described above, do not add extra gems, pendants, chains, or filigree.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 7. 고귀(gold) × 방패(Tank) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, shield-shaped silhouette with a pointed V-bottom and flat top (TANK role outline), thin metal border approximately 70 pixels wide made of amethyst-tinted silver (#9b59b6 undertone, ORNATE tier — continuous flowering vine scrollwork with bud and star motifs running along the entire border, four corner medallions each set with a tiny purple gemstone, small crown ornaments centered at both the top and the bottom of the border).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork with moderate specular highlights and a soft purple ambient glow emanating from the corner medallions, balanced two-sided dramatic lighting, no heavy stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. Beyond the seven gem slots and the vine scrollwork with four corner medallions and two crown ornaments described above, do not add extra chains or pendants.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 8. 고귀(gold) × 일반(DPS) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, rectangular body with a pointed gothic arch at the top and sharp angular corners (DPS role outline), thin metal border approximately 70 pixels wide made of amethyst-tinted silver (#9b59b6 undertone, ORNATE tier — continuous flowering vine scrollwork with bud and star motifs running along the entire border, four corner medallions each set with a tiny purple gemstone, small crown ornaments centered at both the top and the bottom of the border).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork with moderate specular highlights and a soft purple ambient glow emanating from the corner medallions, balanced two-sided dramatic lighting, no heavy stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. Beyond the seven gem slots and the vine scrollwork with four corner medallions and two crown ornaments described above, do not add extra chains or pendants.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 9. 고귀(gold) × 지원(Support) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, oval-tall silhouette with rounded soft corners and small ribbon flourishes on both sides (SUPPORT role outline), thin metal border approximately 70 pixels wide made of amethyst-tinted silver (#9b59b6 undertone, ORNATE tier — continuous flowering vine scrollwork with bud and star motifs running along the entire border, four corner medallions each set with a tiny purple gemstone, small crown ornaments centered at both the top and the bottom of the border).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork with moderate specular highlights and a soft purple ambient glow emanating from the corner medallions, balanced two-sided dramatic lighting, no heavy stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. Beyond the seven gem slots and the vine scrollwork with four corner medallions and two crown ornaments described above, do not add extra chains or pendants.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 10. 전설(legendary) × 방패(Tank) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, shield-shaped silhouette with a pointed V-bottom and flat top (TANK role outline), thin metal border approximately 75 pixels wide made of polished warm gold (#f39c12 tone, LUXURIOUS tier — dense layered scrollwork of intertwined vine, leaf, and flame motifs covering the entire border, four large amber gemstones set at the corners, smaller ruby accents spaced along the edges roughly eight to ten gem points in total).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork with rich specular highlights and a warm golden rim light emanating from the frame edges, slight volumetric glow around the border, master goldsmith craftsmanship, no heavy stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. Beyond the seven gem slots and the dense flame-vine scrollwork with four corner amber gems and smaller edge rubies described above, do not add chains, pendants, or extra charms.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 11. 전설(legendary) × 일반(DPS) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, rectangular body with a pointed gothic arch at the top and sharp angular corners (DPS role outline), thin metal border approximately 75 pixels wide made of polished warm gold (#f39c12 tone, LUXURIOUS tier — dense layered scrollwork of intertwined vine, leaf, and flame motifs covering the entire border, four large amber gemstones set at the corners, smaller ruby accents spaced along the edges roughly eight to ten gem points in total).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork with rich specular highlights and a warm golden rim light emanating from the frame edges, slight volumetric glow around the border, master goldsmith craftsmanship, no heavy stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. Beyond the seven gem slots and the dense flame-vine scrollwork with four corner amber gems and smaller edge rubies described above, do not add chains, pendants, or extra charms.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+───── 12. 전설(legendary) × 지원(Support) ─────
+
+```
+A fantasy trading card frame, vertical 1024x1536 composition, oval-tall silhouette with rounded soft corners and small ribbon flourishes on both sides (SUPPORT role outline), thin metal border approximately 75 pixels wide made of polished warm gold (#f39c12 tone, LUXURIOUS tier — dense layered scrollwork of intertwined vine, leaf, and flame motifs covering the entire border, four large amber gemstones set at the corners, smaller ruby accents spaced along the edges roughly eight to ten gem points in total).
+
+CRITICAL — the frame MUST include these SEVEN recessed gemstone slots carved INTO the metal border (not floating on top, not outside the frame, but inset flush with the border surface):
+
+1. A horizontal engraved NAMEPLATE spanning the top-center between the two upper corners, roughly half the card width, dark recessed stone surface with decorative metal caps on both ends, surface is completely blank (no text).
+
+2. A HEART-SHAPED gemstone badge embedded in the TOP-RIGHT corner of the frame, roughly 140px wide, recessed into the metal with a polished bezel, the heart gem surface is dark and empty — no number, no symbol drawn on it.
+
+3. A vertical column of FOUR equally-spaced rectangular gemstone slots running down the ENTIRE LEFT border from just under the top corner to just above the bottom corner, each slot is an inset rounded rectangle about 100x180px framed by a metal bezel, the four gems colored TOP-TO-BOTTOM in this EXACT order: RED ruby, BLUE sapphire, GREEN emerald, YELLOW topaz — all four gem surfaces polished but blank, no numbers, no symbols, no engravings inside the gems.
+
+4. A horizontal engraved DESCRIPTION PANEL occupying the bottom 12% of the card, full width minus 60px margin on each side, dark slate recessed surface with thin metal border, surface is completely blank — no text, no lines.
+
+5. A small DIAMOND-SHAPED gemstone badge in the BOTTOM-RIGHT corner just above the description panel, roughly 100x60px, recessed with a metal bezel, gem surface dark and empty.
+
+CRITICAL — the large CENTRAL AREA of the card (approximately 80% of width and 65% of height, starting below the nameplate and ending above the description panel, bounded on the left by the four stat slots and on the right by the heart and diamond badges) is a TRUE TRANSPARENT PNG HOLE with alpha channel 0 — checkerboard pattern should be visible through it, absolutely no painted background, no texture, no character, no creature, no illustration, no color, no shadow inside this central hole. A separate character image will be composited into this hole later.
+
+Style: elegant lightweight metalwork with rich specular highlights and a warm golden rim light emanating from the frame edges, slight volumetric glow around the border, master goldsmith craftsmanship, no heavy stone arches, no cave-like chunky borders, no hearthstone style, no blizzard style. Beyond the seven gem slots and the dense flame-vine scrollwork with four corner amber gems and smaller edge rubies described above, do not add chains, pendants, or extra charms.
+
+No text, no numbers, no letters, no logo, no watermark, no signature anywhere on the card.
+```
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  부가 메모 (프롬프트 복붙 시 무시, 작업 참고용)
+═══════════════════════════════════════════════════════════════════════════════
+
+▸ 주요 변경점 (v2 → v2.1)
+  - 좌측 스탯 슬롯 3개 → **4개 (LUCK 노랑 신규 추가)**
+  - HP 하트 / NRG 마름모 / 이름플레이트 / 설명 패널 프롬프트에 명시
+  - 보석 색 순서 고정: **RED / BLUE / GREEN / YELLOW** (top→bottom, 전 등급 동일)
+  - "transparent hole = alpha 0 checkerboard" 강조 (Gemini 가 검정 배경 오인 방지)
+
+▸ 테스트 순서 추천
+  1) #2 평범 × DPS — 기본 구조 검증 (7슬롯 전부 들어가는지)
+  2) #11 전설 × DPS — 밀도 끝 확인
+  3) #5, #8 — 중간 단계
+  4) OK 시 나머지 8개 일괄
+
+▸ 결과 OK 체크리스트
+  - [ ] 좌측에 **4개 보석** (빨/파/초/노) 세로 배치
+  - [ ] 우상단 **하트형 HP** 홈
+  - [ ] 우하단 **마름모 NRG** 홈
+  - [ ] 상단 **가로 이름 플레이트**
+  - [ ] 하단 **가로 설명 패널**
+  - [ ] 중앙 대형 **투명 홀** (체커보드 비침)
+  - [ ] 스탯 슬롯 내부에 **숫자·심볼 없음** (빈 보석)
+  - [ ] 등급 시각 격차 체감 (bronze 민무늬 → legendary 밀도)
+
+▸ Gemini 한계 + 후처리 권장
+  - 7슬롯 정확 배치 성공률 약 50-70% → 1 프롬프트당 5-10회 재롤 현실적
+  - "투명 홀" 을 검정 배경으로 오인하는 경우가 흔함 → 생성 후 Photoshop/PIL 로
+    중앙 영역(154-1024 × 160-1170) 알파 펀치아웃 권장
+  - 12장 × 5분 후처리 = 약 60분 예상
+
+▸ 12장 프롬프트 구조 (디버깅용)
+  1문장: 역할 실루엣 + 등급 톤
+  2문장~: CRITICAL 7슬롯 블록 (전 프롬프트 동일 — 숫자/심볼 없음 강조)
+  마지막: CRITICAL 투명 중앙 (alpha 0) + Style (등급별) + No text
+
+▸ 원소 표시 (차후 구현)
+  - 프레임에 원소 문양 직접 넣지 않음
+  - 카드 완성 시 상단 바 or 코너에 원소 뱃지(아이콘/이모티콘) 별도 레이어로 합성
+  - 6원소: 🔥불 / 🌊물 / ⛰️땅 / ⚡전기 / ✨신성 / 🌑암흑
+
+▸ 신(divine) 등급은 이번 제외
+  - 카드 1장마다 개별 제작 (시그니처 디자인)
+  - 원소 뱃지 + 다이아 이중 테두리는 CSS 로 런타임 적용
+
+═══════════════════════════════════════════════════════════════════════════════

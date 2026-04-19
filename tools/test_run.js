@@ -140,6 +140,30 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
     else pass('sk_handoff', `proc_double_cast ${hf.chance}%`);
   } catch (e) { fail('sk_handoff', e.message); }
 
+  // ── 6.6 skillIds 필드 파이프라인 (명시 액티브 vs 자동매칭 fallback) ──
+  try {
+    pageErrors = [];
+    const si = await page.evaluate(() => {
+      const hmFire = RoF.Data.UNITS.find(u => u.id === 'h_m_fire');
+      const knight = RoF.Data.UNITS.find(u => u.id === 'knight');
+      const hmWater = RoF.Data.UNITS.find(u => u.id === 'h_m_water');
+      return {
+        hmFire: hmFire && hmFire.skillIds,
+        knight: knight && knight.skillIds,
+        hmWater: hmWater && hmWater.skillIds,
+      };
+    });
+    const expect = (label, got, want) => JSON.stringify(got) === JSON.stringify(want)
+      ? null : `${label}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`;
+    const errs = [
+      expect('h_m_fire', si.hmFire, ['sk_flame_arrow']),
+      expect('knight',   si.knight, ['sk_healing_light']),
+      expect('h_m_water', si.hmWater, undefined),
+    ].filter(Boolean);
+    if (errs.length) fail('skillIds', errs.join('; '));
+    else pass('skillIds', 'h_m_fire/knight pinned; h_m_water uses fallback');
+  } catch (e) { fail('skillIds', e.message); }
+
   // ── 6.7 card-coords (골든: 보석 좌표 정합성) ──
   // PNG에서 뽑은 진실(11_frame_coords.json)과 DOM 실측을 비교.
   // 오차 ±1.5% 이내여야 통과. 좌표 drift를 사람이 눈으로 체크할 필요 없게 만듦.

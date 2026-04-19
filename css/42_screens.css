@@ -321,11 +321,13 @@ body.game-mode #cardselect-screen > #cs-relics-grid{
 /* ═══ TAVERN zones ═══ */
 body.game-mode #tavern-screen.active{display:block;flex-direction:unset;align-items:unset;}
 body.game-mode #tavern-screen{position:relative;}
+/* Type A 래퍼: 전면(inset:0) 으로 고정. 자식 좌표는 스테이지 절대값.
+   과거 부분 absolute(top:60) 로 자식 좌표가 부모 기준 해석되던 사고 해소 — rules/08-garbage-lessons.md 참조. */
 body.game-mode #tavern-screen > div[style*="text-align:center;padding:8px"]{
-  position:absolute;left:var(--tav-tabs-x);top:var(--tav-tabs-y);
-  width:var(--tav-tabs-w);height:calc(var(--tav-tabs-h) + var(--tav-info-h) - 30px);
-  padding:0;margin:0;
+  position:absolute;inset:0;width:100%;height:100%;
+  padding:0;margin:0;pointer-events:none;
 }
+body.game-mode #tavern-screen > div[style*="text-align:center;padding:8px"] > *{pointer-events:auto;}
 body.game-mode #tavern-screen > #tav-grid{
   position:absolute;left:var(--tav-grid-x);top:var(--tav-grid-y);
   width:var(--tav-grid-w);height:var(--tav-grid-h);
@@ -340,11 +342,12 @@ body.game-mode #tavern-screen > div[style*="padding:10px"][style*="gap:8px"]{
 /* ═══ DECKVIEW zones ═══ */
 body.game-mode #deckview-screen.active{display:block;flex-direction:unset;align-items:unset;}
 body.game-mode #deckview-screen{position:relative;}
+/* Type A 래퍼: 전면. 자식 좌표는 스테이지 절대값. */
 body.game-mode #deckview-screen > div[style*="text-align:center;padding:6px"]{
-  position:absolute;left:var(--dv-tabs-x);top:var(--dv-tabs-y);
-  width:var(--dv-tabs-w);height:var(--dv-tabs-h);
-  padding:0;margin:0;
+  position:absolute;inset:0;width:100%;height:100%;
+  padding:0;margin:0;pointer-events:none;
 }
+body.game-mode #deckview-screen > div[style*="text-align:center;padding:6px"] > *{pointer-events:auto;}
 body.game-mode #deckview-screen > #deck-tab{
   position:absolute;left:var(--dv-grid-x);top:var(--dv-grid-y);
   width:var(--dv-grid-w);height:var(--dv-grid-h);
@@ -376,11 +379,12 @@ body.game-mode #deckview-screen > div[style*="padding:8px;text-align:center"]:la
 /* ═══ CASTLE zones ═══ */
 body.game-mode #castle-screen.active{display:block;flex-direction:unset;align-items:unset;}
 body.game-mode #castle-screen{position:relative;}
+/* Type A 래퍼: 전면. 자식 좌표는 스테이지 절대값. */
 body.game-mode #castle-screen > div[style*="text-align:center;padding:6px"]{
-  position:absolute;left:var(--castle-tabs-x);top:var(--castle-tabs-y);
-  width:var(--castle-tabs-w);height:var(--castle-tabs-h);
-  padding:0;margin:0;
+  position:absolute;inset:0;width:100%;height:100%;
+  padding:0;margin:0;pointer-events:none;
 }
+body.game-mode #castle-screen > div[style*="text-align:center;padding:6px"] > *{pointer-events:auto;}
 body.game-mode #castle-screen > #castle-upgrade-area{
   position:absolute;left:var(--castle-grid-x);top:var(--castle-grid-y);
   width:var(--castle-grid-w);height:var(--castle-grid-h);
@@ -513,6 +517,11 @@ body.game-mode #formation-screen > .form-sub{
   position:absolute;left:var(--form-sub-x);top:var(--form-sub-y);
   width:var(--form-sub-w);height:var(--form-sub-h);
   margin:0;display:flex;align-items:center;justify-content:center;
+}
+body.game-mode #formation-screen > #form-resonance{
+  position:absolute;left:var(--form-reso-x);top:var(--form-reso-y);
+  width:var(--form-reso-w);height:var(--form-reso-h);
+  margin:0;padding:0;
 }
 body.game-mode #formation-screen > #form-diamond{
   position:absolute;left:var(--form-diamond-x);top:var(--form-diamond-y);

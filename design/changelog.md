@@ -8,6 +8,32 @@
 
 ---
 
+## 2026-04-19 ▶ 구조 ▶ Type A 래퍼 CSS 전면 통일 (tavern/deckview/castle)
+- 변경: 3개 Type A 래퍼의 CSS 를 `position:absolute; inset:0; width:100%; height:100%; padding:0; margin:0; pointer-events:none;` + `> *{pointer-events:auto}` 로 통일. 자식 토큰 8건(`tav-tab-unit/hero`, `tav-info`, `dv-tab-deck/codex`, `castle-tab-upgrade/quest`) 의 좌표를 부모 top/left 포함한 스테이지 절대좌표로 재설정 — 예: `tav-tab-unit-y: 600 → 660`, `tav-tab-unit-x: 463 → 483`. 편집기 `screen_editor_zones.html` defaults 동기화. church 는 제목 텍스트가 flow 렌더라 Type B (부분 absolute) 유지. 실측 위치 불변 (offsetTop 검증 완료: tav-tab-unit y=660, tab-deck y=122, castle-tab-upgrade y=111).
+- 이유: 2026-04-19 선술집 탭 잠금 사고의 근본 해결. 당시 부모 래퍼 `top:60` + 자식 `top:659` → 실측 y=719 (뷰포트 720 탈출, 탭 비가시)를 증상 대응(`659→600`)으로 막았지만, 편집기 defaults(스테이지 기준)와 런타임 토큰(상대 기준)이 엇갈리는 구조적 원인이 남아있었음. 다음에 대표님이 편집기에서 좌표 드래그할 때 같은 사고 재발을 막는 예방 리팩터.
+- 영향: 편집기에서 본 좌표와 런타임 좌표가 1:1 대응. `/래퍼분해` 스킬의 Type A 골든 패턴 규정화(`pointer-events:none` 래퍼 + `auto` 자식). `rules/08-garbage-lessons.md` 에 후속 조치 + 골든 패턴 추가. 회귀테스트 9/9 통과.
+- 이전 결정: 2026-04-19 "Type A 래퍼 좌표 중첩 사고" 교훈 증류 후 예고된 "별도 과제".
+
+## 2026-04-19 ▶ 게임 메커닉 ▶ skillIds 명시 액티브 필드 도입
+- 변경: `11_data_units.js` 에 선택 필드 `skillIds?: string[]` 추가. 명시 시 `ACTIVE_BY_ELEM_ROLE` 원소+역할 자동매칭을 대체하며 `12_data_skills.js` 의 passive=false 스킬을 ownerId 스탬프해 유닛에 붙인다. 기본 공격/원소 시그니처 2장은 항상 자동 생성. `buildUnitSkillSet` 분기 구조: `unit.skillIds` 배열 존재 시 → DB 해결, 미지정 시 → 기존 자동매칭 fallback. `Battle.getSkillsOf` 는 STATE.skills filter 만 담당(1순위 중복 분기 제거 — 단일 해석 지점). `legacyCardToV2Unit` 에 skillIds 패스스루. 샘플 유닛 2종(`h_m_fire`/`knight`) 에 `skillIds` 명시 — 둘 다 현행 fallback 결과와 동일 스킬이라 **밸런스 변동 0**.
+- 이유: 액티브 스킬 할당이 원소+역할+등급 규칙에 갇혀 있어 콘텐츠 작가가 "이 유닛에만 이 스킬" 을 표현할 수 없었음. divine 급이나 특이 유닛(예: titan 의 뇌격)이 자동매칭에 의존하면 시그니처 스킬과 겹치거나 공백이 되는 문제가 예상됨. skillIds 필드는 content-as-data 의 기본 — 마이그레이션 안전장치(fallback 유지)를 깔고 점진적 전환 가능.
+- 영향: 향후 신규 유닛/리워드에서 특수 액티브 지정이 한 줄로 가능(`skillIds:['sk_foo','sk_bar']`). test_run.js 에 파이프라인 회귀 추가(h_m_fire pinned / knight pinned / h_m_water fallback). `units_export.txt` 에도 필드 안내 필요(후속). 빈 배열 `[]` = "액티브 없음 의도" 로 명확히 구분.
+- 이전 결정: 2026-04-19 "액티브 스킬 8장 + 원소+역할 자동매칭" — 도입 당시 "추후 skillIds 필드 생기면 fallback" 으로 주석에 예고돼 있었던 계획된 다음 단계.
+
+## 2026-04-19 ▶ UI ▶ 편성 화면 원소 공명 미리보기 배지
+- 변경: 편성 화면(`#formation-screen`) 서브 텍스트 아래에 `#form-resonance` 배지 영역 추가. 현재 슬롯 원소 카운트를 `Battle.computeResonance` 로 실시간 계산 → 2체+ 원소마다 `🔥 ×2 +10%` 형태의 pill 배지. 티어별 시각 차등: `fr-t2`(기본) / `fr-t3`(1.05배 확대) / `fr-t4`(1.10배 + 1.6s 펄스 글로우). 공명 없을 땐 `::before` 로 "동일 원소 2명 이상 편성 시 공명 효과 발동" 안내. 다중 원소 공명 시 카운트 내림차순 정렬. 호버 title 에 피격 저항(3체+ = -10%, 4체+ = -20%) 까지 노출.
+- 이유: 원소 공명은 전투 중에만 배지로 인지되었고(`#battle-hit-react .bhr-reso`) 편성 단계에서는 "이 조합이 공명이 터지는가?" 를 전혀 보여주지 못해 편성 의사결정 레이어가 비어있었음. 공명을 전투의 핵심 결정축으로 설계한 PHASE3_ELEMENT_PLAN 의도상 편성 단계에서 미리 보여주는 게 정본.
+- 영향: 플레이어가 덱 5장을 배치·교체할 때마다 공명 배지가 즉시 업데이트. 공격 +N% / 저항 -N% 수치가 투명하게 보여 편성 실험의 체감 비용이 사라짐. 전투 엔진의 `Battle.computeResonance` 재사용이라 단일 source of truth. 편집기 zones 에도 `form-reso` 추가되어 대표님이 위치 튜닝 가능.
+- 이전 결정: 2026-04-19 "원소 공명 (편성형) 전투 엔진 반영" 및 같은 날 "원소 공명 발동 배지 (데미지 팝업)" 의 편성 단계 확장 — 계획된 다음 단계.
+
+## 2026-04-19 16:02 ▶ 세션 ▶ 핸드오프 저장
+- **변경**: 이번 세션 상태를 `docs/handoff/handoff-2026-04-19-1602.md` 에 저장 + 클립보드 복사.
+- **이유**: 수동 저장 (세션 마무리).
+- **영향**: `docs/handoff/`.
+- **이전 핸드오프**: `handoff-2026-04-19-session-mid.md` (오후 중반).
+
+---
+
 ## 2026-04-19 ▶ 게임 메커닉 ▶ armor/thorns 파서 파라미터화 + infantry 하위 차별
 - **변경**: `55_game_battle.js` 의 armor 감쇄 하드코딩 `-3`, thorns 데미지 하드코딩 `4` 를 각각 `ct.skillArmor ?? 3`, `dbt.value ?? 4` 로 파라미터화.
 - **데이터 적용**: infantry 에 `skillArmor:2`, `bonusTrigger.value:3` 신규 필드 추가. desc 도 `-2 / 3데미지` 로 조정. 기존 영웅(h_m_earth/h_r_earth) 은 필드 없으므로 기본값(3/4) 폴백 — 기존 밸런스 보존.

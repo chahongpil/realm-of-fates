@@ -64,16 +64,8 @@
   };
   Battle.getSkillsOf = function(unit){
     if(!unit) return [];
-    // 1순위: 유닛의 skillIds → SKILLS_DB 조회 + ownerId 스탬프
-    if(Array.isArray(unit.skillIds) && unit.skillIds.length > 0){
-      const db = (RoF.Data && RoF.Data.SKILLS) || [];
-      const resolved = unit.skillIds
-        .map(function(id){ return db.find(function(s){ return s.id === id; }); })
-        .filter(Boolean)
-        .map(function(s){ return Object.assign({}, s, { ownerId: unit.id }); });
-      if(resolved.length > 0) return resolved;
-    }
-    // 2순위: STATE.skills (기본공격+원소 시그니처 — legacyCardToV2Unit 경로 fallback)
+    // STATE.skills 가 정본 (buildUnitSkillSet 이 skillIds/자동매칭 통합 후 ownerId stamp).
+    // getSkillsOf 는 filter 만 담당 — 스킬 해석 로직을 2곳에 두지 않음.
     return Battle.STATE.skills.filter(function(s){ return s.ownerId === unit.id; });
   };
 
@@ -1371,6 +1363,7 @@
       currentHp:   c.currentHp ?? c.hp ?? 10,
       maxHp:       c.maxBHp || c.hp || 10,
       isHero:      !!c.isHero,
+      skillIds:    Array.isArray(c.skillIds) ? c.skillIds.slice() : null,  // 명시 액티브 스킬 (null=자동매칭)
       _legacyRef:  c,                             // 라운드 종료 시 역동기화용
     };
   };
@@ -1472,14 +1465,26 @@
     return null;
   };
 
-  // 유닛 → 스킬 배열 (기본 공격 + 원소 시그니처 + 조건부 액티브 1장)
+  // 유닛 → 스킬 배열 (기본 공격 + 원소 시그니처 + 액티브 N장).
+  // 액티브 해석 순서:
+  //  1순위: unit.skillIds 배열 (데이터에 명시, 빈 배열이면 "의도된 없음")
+  //  2순위: pickActiveSkillIdFor (ACTIVE_BY_ELEM_ROLE 자동매칭 fallback)
   const buildUnitSkillSet = function(unit){
     const set = [ makeBasicAttackFor(unit), makeSignatureSkillFor(unit) ];
-    const activeId = pickActiveSkillIdFor(unit);
-    if(activeId){
-      const db = (RoF.Data && RoF.Data.SKILLS) || [];
-      const src = db.find(function(s){ return s.id === activeId; });
-      if(src) set.push(Object.assign({}, src, { ownerId: unit.id }));
+    const db = (RoF.Data && RoF.Data.SKILLS) || [];
+    if(Array.isArray(unit.skillIds)){
+      unit.skillIds.forEach(function(sid){
+        const src = db.find(function(s){ return s.id === sid; });
+        if(src && src.passive !== true){
+          set.push(Object.assign({}, src, { ownerId: unit.id }));
+        }
+      });
+    } else {
+      const activeId = pickActiveSkillIdFor(unit);
+      if(activeId){
+        const src = db.find(function(s){ return s.id === activeId; });
+        if(src) set.push(Object.assign({}, src, { ownerId: unit.id }));
+      }
     }
     return set;
   };

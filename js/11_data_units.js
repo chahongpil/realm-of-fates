@@ -3,6 +3,9 @@
 // race/element on all cards. Heroes = human only.
 // range='melee'|'ranged', hpReg=체력회복/턴, nrgReg=에너지회복/턴
 // bonusTrigger: {on:'attack'|'hit'|'skill'|'kill', chance:0~1, effect:'...', desc:'...'}
+// skillIds?: 액티브 스킬 ID 배열 (12_data_skills.js 참조). 명시 시 ACTIVE_BY_ELEM_ROLE 자동매칭을 대체.
+//   · 기본 공격 + 원소 시그니처는 항상 자동 생성됨. skillIds 는 추가 액티브.
+//   · 빈 배열 `[]` = "액티브 없음 의도", 필드 미지정 = 자동매칭 fallback.
 // === HERO CARDS: 3 roles × 6 elements = 18 ===
 // Base: 전사(atk2,hp50,def1,spd1,rage5,nrg5,luck1,eva1,meva1,hpReg2,nrgReg1)
 //       원거리(atk3,hp30,def1,spd1,rage1,nrg10,luck1,eva1,meva1,hpReg1,nrgReg1)
@@ -14,7 +17,8 @@ RoF.Data.UNITS = Object.freeze([
   {id:'h_m_fire',name:'근접 전사',icon:'⚔️',type:'전사',role:'attack',range:'melee',race:'human',element:'fire',
     atk:4,hp:50,def:1,spd:1,rage:7,nrg:5,luck:1,eva:1,meva:1,hpReg:2,nrgReg:1,
     skill:'frenzy',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 광기: HP50%↓시 공격2배',
-    bonusTrigger:{on:'attack',chance:.2,effect:'cleave',desc:'20% 공격시: 인접 적에게 50% 추가데미지'},rarity:'bronze'},
+    bonusTrigger:{on:'attack',chance:.2,effect:'cleave',desc:'20% 공격시: 인접 적에게 50% 추가데미지'},rarity:'bronze',
+    skillIds:['sk_flame_arrow']},
   {id:'h_m_water',name:'근접 전사',icon:'⚔️',type:'전사',role:'defense',range:'melee',race:'human',element:'water',
     atk:2,hp:58,def:1,spd:1,rage:5,nrg:5,luck:1,eva:1,meva:1,hpReg:3,nrgReg:1,
     skill:'taunt',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 도발: 적 공격을 대신 받음',
@@ -137,7 +141,8 @@ RoF.Data.UNITS = Object.freeze([
   {id:'knight',name:'기사',icon:'⚜️',type:'전사',role:'defense',range:'melee',race:'human',element:'holy',
     atk:3,hp:18,def:3,spd:1,rage:2,nrg:2,luck:1,eva:1,meva:2,hpReg:1,nrgReg:1,
     skill:'taunt',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 도발: 적 공격을 대신 받음',
-    bonusTrigger:{on:'hit',chance:.25,effect:'counter',desc:'25% 반격: 피격시 공격력50% 반격'},rarity:'silver'},
+    bonusTrigger:{on:'hit',chance:.25,effect:'counter',desc:'25% 반격: 피격시 공격력50% 반격'},rarity:'silver',
+    skillIds:['sk_healing_light']},
   {id:'assassin',name:'암살자',icon:'🗡️',type:'사수',role:'attack',range:'ranged',race:'human',element:'dark',
     atk:5,hp:10,def:0,spd:4,rage:3,nrg:3,luck:5,eva:4,meva:1,hpReg:0,nrgReg:1,
     skill:'crit',skillType:'passive',skillChance:.3,skillNrg:0,skillDesc:'[패시브 30%] 급소: 3배 데미지',

@@ -37,6 +37,32 @@ RoF.Formation ={
     SFX.play('click');this.render();
   },
 
+  // 현재 슬롯의 원소 공명 상태 배지 렌더.
+  // Battle.computeResonance 를 재사용해 전투 계산과 단일 source of truth 유지.
+  _renderResonance(){
+    const host=document.getElementById('form-resonance');
+    if(!host) return;
+    const placed=this.slots.filter(Boolean);
+    const B=(window.RoF&&window.RoF.Battle)||window.Battle;
+    const reso=(B&&B.computeResonance)?B.computeResonance(placed):{};
+    const entries=Object.entries(reso).filter(([_,n])=>n>=2)
+      .sort((a,b)=>b[1]-a[1]);
+    if(!entries.length){host.innerHTML='';return;}
+    const ICON=(window.RoF&&RoF.Data&&RoF.Data.ELEM_ICON)||{};
+    const LABEL=(window.RoF&&RoF.Data&&RoF.Data.ELEM_L)||{};
+    const COLOR=(window.RoF&&RoF.Data&&RoF.Data.ELEM_COLOR)||{};
+    host.innerHTML=entries.map(([el,n])=>{
+      const mult=n>=4?1.35:n>=3?1.20:1.10;
+      const tier=n>=4?'fr-t4':n>=3?'fr-t3':'fr-t2';
+      const pct=Math.round((mult-1)*100);
+      return `<span class="fr-badge ${tier}" style="--fr-col:${COLOR[el]||'#888'};" title="${LABEL[el]||el} 공명: 공격 +${pct}%${n>=3?` · 같은 원소 피격 -${n>=4?20:10}%`:''}">
+        <span class="fr-icon">${ICON[el]||'◆'}</span>
+        <span class="fr-count">×${n}</span>
+        <span class="fr-mult">+${pct}%</span>
+      </span>`;
+    }).join('');
+  },
+
   render(){
     const diamond=document.getElementById('form-diamond');diamond.innerHTML='';
     for(let i=0;i<5;i++){
@@ -75,6 +101,8 @@ RoF.Formation ={
       d.onclick=()=>this.clickBench(c);
       bc.appendChild(d);
     });
+
+    this._renderResonance();
   },
 
   clickSlot(idx){

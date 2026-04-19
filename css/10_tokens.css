@@ -153,7 +153,8 @@
   /* formation zones (진형 배치) */
   --form-title-x: 0px;    --form-title-y: 40px;  --form-title-w: 1280px; --form-title-h: 60px;
   --form-sub-x: 0px;      --form-sub-y: 105px;   --form-sub-w: 1280px;   --form-sub-h: 36px;
-  --form-diamond-x: 140px;--form-diamond-y: 160px;--form-diamond-w: 1000px;--form-diamond-h: 200px;
+  --form-reso-x: 0px;     --form-reso-y: 148px;  --form-reso-w: 1280px;  --form-reso-h: 36px;
+  --form-diamond-x: 140px;--form-diamond-y: 190px;--form-diamond-w: 1000px;--form-diamond-h: 180px;
   --form-bench-label-x: 0px;--form-bench-label-y: 380px;--form-bench-label-w: 1280px;--form-bench-label-h: 30px;
   --form-bench-x: 140px;  --form-bench-y: 420px; --form-bench-w: 1000px; --form-bench-h: 200px;
   --form-buttons-x: 0px; --form-buttons-y: 0px; --form-buttons-w: 1280px; --form-buttons-h: 720px;
@@ -223,15 +224,17 @@
   --prologue-btn-ok-x:   525px; --prologue-btn-ok-y:   344px; --prologue-btn-ok-w:   260px; --prologue-btn-ok-h:   56px;
   --prologue-btn-skip-x: 1127px; --prologue-btn-skip-y: 62px; --prologue-btn-skip-w: 130px; --prologue-btn-skip-h: 44px;
 
-  /* tavern/deckview/castle/church 탭 wrapper 분해 */
-  /* 탭 y: 부모 .tav-tabs 래퍼가 absolute top:60 이므로 자식 y=600 이면 실측 660 (뷰포트 720 안) */
-  --tav-tab-unit-x:   463px; --tav-tab-unit-y:   600px;  --tav-tab-unit-w:   180px;  --tav-tab-unit-h:   44px;
-  --tav-tab-hero-x:   660px; --tav-tab-hero-y:   600px;  --tav-tab-hero-w:   180px;  --tav-tab-hero-h:   44px;
-  --tav-info-x:       20px;  --tav-info-y:       115px; --tav-info-w:       1240px; --tav-info-h:       30px;
-  --dv-tab-deck-x:    144px; --dv-tab-deck-y:    72px;  --dv-tab-deck-w:    180px;  --dv-tab-deck-h:    40px;
-  --dv-tab-codex-x:   144px; --dv-tab-codex-y:   122px;  --dv-tab-codex-w:    180px; --dv-tab-codex-h:   40px;
-  --castle-tab-upgrade-x: 150px; --castle-tab-upgrade-y: 51px; --castle-tab-upgrade-w: 180px; --castle-tab-upgrade-h: 44px;
-  --castle-tab-quest-x:   150px; --castle-tab-quest-y:   106px; --castle-tab-quest-w:   180px; --castle-tab-quest-h:   44px;
+  /* tavern/deckview/castle 탭 wrapper 분해 — Type A 전면화 후 자식은 스테이지 절대좌표.
+     2026-04-19 이전엔 부모 absolute(top:60 등) 때문에 자식 top 이 부모 기준 해석됐음.
+     이번에 래퍼를 inset:0 전면 full-container 로 통일 → 자식 y 는 실측과 동일한 스테이지 절대값. */
+  --tav-tab-unit-x:   483px; --tav-tab-unit-y:   660px;  --tav-tab-unit-w:   180px;  --tav-tab-unit-h:   44px;
+  --tav-tab-hero-x:   680px; --tav-tab-hero-y:   660px;  --tav-tab-hero-w:   180px;  --tav-tab-hero-h:   44px;
+  --tav-info-x:       40px;  --tav-info-y:       175px;  --tav-info-w:       1240px; --tav-info-h:       30px;
+  --dv-tab-deck-x:    164px; --dv-tab-deck-y:    122px;  --dv-tab-deck-w:    180px;  --dv-tab-deck-h:    40px;
+  --dv-tab-codex-x:   164px; --dv-tab-codex-y:   172px;  --dv-tab-codex-w:    180px; --dv-tab-codex-h:   40px;
+  --castle-tab-upgrade-x: 170px; --castle-tab-upgrade-y: 111px; --castle-tab-upgrade-w: 180px; --castle-tab-upgrade-h: 44px;
+  --castle-tab-quest-x:   170px; --castle-tab-quest-y:   166px; --castle-tab-quest-w:   180px; --castle-tab-quest-h:   44px;
+  /* church 는 Type B (부분 absolute) 유지 — #church-info 토큰은 래퍼 기준 상대좌표. */
   --church-info-x:    68px;  --church-info-y:    228px; --church-info-w:    1240px; --church-info-h:    30px;
 }
 /* END_LAYOUT_VARS */

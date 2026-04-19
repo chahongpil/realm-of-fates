@@ -315,9 +315,9 @@ const SCREENS = {
        selector:'#tavern-screen > div[style*="padding:10px"][style*="gap:8px"] > button[data-action="game.showMenu"]'},
     ],
     defaults:{
-      'tav-tab-unit':{x:488, y:128, w:180, h:44},
-      'tav-tab-hero':{x:678, y:128, w:180, h:44},
-      'tav-info':{x:40, y:175, w:1240, h:40},
+      'tav-tab-unit':{x:483, y:660, w:180, h:44},
+      'tav-tab-hero':{x:680, y:660, w:180, h:44},
+      'tav-info':{x:40, y:175, w:1240, h:30},
       'tav-grid':{x:20,y:160,w:1240,h:480},
       'tav-btn-refresh':{x:430,y:650,w:260,h:44},
       'tav-btn-back':{x:700,y:650,w:160,h:44},
@@ -336,8 +336,8 @@ const SCREENS = {
       {key:'dv-codex',     label:'생명의 서 탭',  preview:'코덱스', selector:'#codex-tab'},
     ],
     defaults:{
-      'dv-tab-deck': {x:446, y:52,  w:180, h:40},
-      'dv-tab-codex':{x:646, y:52,  w:180, h:40},
+      'dv-tab-deck': {x:164, y:122, w:180, h:40},
+      'dv-tab-codex':{x:164, y:172, w:180, h:40},
       'dv-back':     {x:1180,y:52,  w:80,  h:40},
       'dv-lib-npc':  {x:160, y:104, w:960, h:76},
       'dv-grid':     {x:20,  y:190, w:1240,h:510},
@@ -356,8 +356,8 @@ const SCREENS = {
        selector:'#castle-screen > div[style*="padding:8px;text-align:center"] > button'},
     ],
     defaults:{
-      'castle-tab-upgrade':{x:486, y:126, w:180, h:44},
-      'castle-tab-quest':  {x:676, y:126, w:180, h:44},
+      'castle-tab-upgrade':{x:170, y:111, w:180, h:44},
+      'castle-tab-quest':  {x:170, y:166, w:180, h:44},
       'castle-grid':{x:20,y:160,w:1240,h:500},
       'castle-back':{x:50, y:678, w:140, h:48},
     }
@@ -595,6 +595,7 @@ const SCREENS = {
     zones: [
       {key:'form-title',      label:'타이틀', preview:'⚔️ 진형 배치', selector:'#formation-screen > .form-title'},
       {key:'form-sub',        label:'서브 텍스트', preview:'슬롯 클릭', selector:'#formation-screen > .form-sub'},
+      {key:'form-reso',       label:'공명 배지', preview:'🔥×3 공명', selector:'#form-resonance'},
       {key:'form-diamond',    label:'5 슬롯 행', preview:'진형 5 슬롯', selector:'#form-diamond'},
       {key:'form-bench-label',label:'대기석 라벨', preview:'대기석', selector:'#formation-screen > .form-bench-label'},
       {key:'form-bench',      label:'대기석', preview:'대기 동료들', selector:'#form-bench'},
@@ -606,7 +607,8 @@ const SCREENS = {
     defaults:{
       'form-title':      {x:0, y:52, w:680, h:60},
       'form-sub':        {x:0,y:105,w:1280,h:36},
-      'form-diamond':    {x:140,y:160,w:1000,h:200},
+      'form-reso':       {x:0,y:148,w:1280,h:36},
+      'form-diamond':    {x:140,y:190,w:1000,h:180},
       'form-bench-label':{x:0,y:380,w:1280,h:30},
       'form-bench':      {x:140,y:420,w:1000,h:200},
       'form-btn-auto':   {x:440,y:640,w:160,h:44},

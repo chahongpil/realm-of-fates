@@ -123,7 +123,7 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
     } catch (e) { fail('tavern', e.message); }
   }
 
-  // ── 6.5 sk_handoff apply ──
+  // ── 6.5 sk_handoff apply (2026-04-19 개편: proc_double_cast 3%) ──
   try {
     pageErrors = [];
     const hf = await page.evaluate(() => {
@@ -131,11 +131,13 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
       if (!sk) return { err: 'sk_handoff not found in SKILLS_DB' };
       const unit = { uid:'t1', atk:5, hp:20, def:0, spd:3, nrg:0 };
       applySkillToUnit(sk, unit);
-      return { handoff: unit._handoff, ef: sk.effect };
+      return { procDouble: unit._procDoubleCast, ef: sk.effect, chance: sk.procChance };
     });
     if (hf.err) fail('sk_handoff', hf.err);
-    else if (hf.handoff !== 0.4) fail('sk_handoff', `expected _handoff=0.4, got ${hf.handoff}`);
-    else pass('sk_handoff', `_handoff=${hf.handoff}`);
+    else if (hf.ef !== 'proc_double_cast') fail('sk_handoff', `expected effect='proc_double_cast', got ${hf.ef}`);
+    else if (hf.chance !== 3) fail('sk_handoff', `expected procChance=3, got ${hf.chance}`);
+    else if (hf.procDouble !== 3) fail('sk_handoff', `expected _procDoubleCast=3, got ${hf.procDouble}`);
+    else pass('sk_handoff', `proc_double_cast ${hf.chance}%`);
   } catch (e) { fail('sk_handoff', e.message); }
 
   // ── 6.7 card-coords (골든: 보석 좌표 정합성) ──

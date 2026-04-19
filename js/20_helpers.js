@@ -37,13 +37,33 @@ RoF.helpers.pickRar = function(bonus=0,mode='battle'){
 };
 
 // ── 스킬/유물 적용 ──
+// effect 마커는 여기서 유닛 런타임 필드로 매핑. 실제 발동은 전투 엔진이 참조.
+// 2026-04-19 개편:
+//   invincibleN      — 정규식으로 N 추출 (기존 invincible3 하드코딩 삭제)
+//   grant_rebirth    — sk.rebirthHp / sk.rebirthNrg 파라미터 보존
+//   hp_mult          — sk.hpMult 로 HP 배율 즉시 적용
+//   proc_double_cast — sk.procChance (%) 를 unit._procDoubleCast 로 스탬프
+//   proc_nullify_hit — sk.procChance (%) 를 unit._procNullifyHit 로 스탬프
 RoF.helpers.applySkillToUnit = function(sk,unit){
   const ef=sk.effect;if(!ef)return;
   if(ef==='berserk'){unit.atk*=2;unit.def=0;return;}
-  if(ef==='grant_rebirth'){unit.skill='rebirth';unit.skillDesc='부활 부여';return;}
-  if(ef==='rarity_up'){const ri=['bronze','silver','gold','legendary'].indexOf(unit.rarity);if(ri<3)unit.rarity=['bronze','silver','gold','legendary'][ri+1];return;}
-  if(ef==='invincible3'){unit._invincible=3;return;}
-  if(ef==='handoff'){unit._handoff=.4;return;}
+  if(ef==='grant_rebirth'){
+    unit.skill='rebirth';
+    unit.skillDesc='부활 부여';
+    if(sk.rebirthHp != null) unit._rebirthHp = sk.rebirthHp;
+    if(sk.rebirthNrg != null) unit._rebirthNrg = sk.rebirthNrg;
+    return;
+  }
+  if(ef==='hp_mult'){
+    const m=sk.hpMult||1;
+    unit.hp=(unit.hp||0)*m;
+    unit.maxHp=(unit.maxHp||unit.hp)*m;
+    return;
+  }
+  if(ef==='proc_double_cast'){unit._procDoubleCast=sk.procChance||0;return;}
+  if(ef==='proc_nullify_hit'){unit._procNullifyHit=sk.procChance||0;return;}
+  const mInv=ef.match(/^invincible(\d+)$/);
+  if(mInv){unit._invincible=parseInt(mInv[1],10);return;}
   ef.split(',').forEach(part=>{const m=part.match(/(\w+)\+(\d+)/);if(m){const stat=m[1],val=parseInt(m[2]);unit[stat]=(unit[stat]||0)+val;if(stat==='hp')unit.maxHp=(unit.maxHp||unit.hp)+val;}});
 };
 

@@ -455,23 +455,6 @@ Object.assign(RoF.Game, {
               if(bt.effect==='frostbite'){ct.spd=Math.max(1,(ct.spd||5)-3);}
               if(bt.effect==='regen_head'){u.currentHp=Math.min(u.currentHp+8,u.maxBHp);this.showHeal(u,8);}
             }
-            // Equip: sk_handoff — 40% chance to grant ally 1 extra basic attack
-            if(u._handoff&&Math.random()<u._handoff){
-              const pool=allies.filter(c=>c.currentHp>0&&c.uid!==u.uid);
-              if(pool.length){
-                const h=pool[Math.floor(Math.random()*pool.length)];
-                this.log(`${u.icon}🤝${h.icon} 핸드오프!`,'ability-log');
-                let tgt=ct.currentHp>0?ct:(foes.filter(c=>c.currentHp>0)[0]);
-                if(tgt){
-                  let hd=Math.max(1,(h.atk||1)-Math.floor((tgt.def||0)*.5));
-                  if((tgt.curShield||0)>0){const ab=Math.min(tgt.curShield,hd);tgt.curShield-=ab;hd-=ab;}
-                  hd=Math.max(0,hd);
-                  tgt.currentHp-=hd;this.showDmg(tgt,hd,false);
-                  this.log(`${h.icon}→${tgt.icon} 추가공격 ${hd}`,'atk-log');
-                  if(tgt.currentHp<=0){tgt.currentHp=0;SFX.play('death');this.log(`${tgt.icon} 쓰러짐!`,'atk-log');}
-                }
-              }
-            }
             // On-hit triggers (defender)
             const dbt=ct.bonusTrigger;
             if(dbt&&dbt.on==='hit'&&Math.random()<dbt.chance&&ct.currentHp>0&&!u._noCounter){

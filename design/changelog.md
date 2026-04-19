@@ -8,6 +8,73 @@
 
 ---
 
+## 2026-04-19 ▶ 팀/협업 ▶ 트랙 규칙 비대칭 전환
+
+**변경**:
+- **메인 세션**: 전 영역 편집 가능. 건드린 트랙 영역은 `tracks/_signals/<track>.md` 에 append 필수 (의무)
+- **트랙 전용 세션**: 자기 `START.md` 의 "수정 허용" 범위만 — "집중 모드"로 표현 변경 (기존 "절대 금지" 문구 완화)
+- **점유 선언**: 트랙이 1시간 이상 작업 시 `🔒 점유 시작 — …` 를 신호에 먼저 쓰고, 메인은 점유 중 영역 건드리기 전 확인
+- 각 트랙 `START.md` 4종에 점유 선언 예시 블록 추가
+
+**이유**:
+메인이 이미 `design/`, `PHASE*.md`, `.claude/rules/` 같은 트랙 영역을 자주 편집하는데 기존 규칙상 "트랙 전용"이라 신호에 안 남음 → 트랙 전용 세션 레이더에서 실종됨. 대칭 규칙은 현실과 맞지 않아 시그널 무결성이 무너짐. 비대칭으로 전환하여 "메인 전권 + append 의무" 로 현실화.
+
+**영향**:
+- `CLAUDE.md` — 병렬 트랙 섹션 재작성
+- `tracks/01-assets/START.md`, `tracks/02-data-balance/START.md`, `tracks/05-docs-lore/START.md`, `tracks/06-backend/START.md` — "절대 금지" → "집중 모드 범위 밖" 표현 + 점유 선언 섹션
+- 향후 메인 세션은 트랙 영역 편집 시 반드시 signals append
+
+**이전 결정 관계**:
+- 2026-04-14 (병렬 트랙 구조 세팅) 의 후속. 대칭 규칙의 현실 괴리를 비대칭으로 보정.
+
+---
+
+## 2026-04-19 ▶ 구조 ▶ 상위 `c:/work/design/` 폐기 — game/design 단일화
+
+**변경**:
+- `c:/work/design/` 전체를 `c:/work/trash/design_root_2026-04-19/` 로 이동 (삭제 아님, 안전망)
+- `c:/work/game/design/` 를 유일한 정본으로 확정
+- `c:/work/.claude/hooks/session_start.py` 의 `ROOT/design/current-focus.md` 경로를 `ROOT/game/design/current-focus.md` 로 수정
+- 상위에만 있던 `frame-prompt-rules.md` 는 하위로 복사 후 이관
+- 상위에만 있던 `game-harness-v1.0 (2)/` 아카이브는 trash 와 함께 이동
+
+**이유**:
+`c:/work/design/` 와 `c:/work/game/design/` 이 평행선으로 공존하며 파일 14개는 같고 1개(`changelog.md`)만 분기되는 일이 반복됨. 4/16 세션에 "design/ 통합" 을 한 번 했으나 수동 복사이라 다시 분기됨. `c:/work` 는 non-git 이고 `c:/work/game` 이 git 정본이므로, 하위로 단일화하고 훅 경로만 맞추는 게 근본 해결.
+
+**영향**:
+- `session_start.py` 1줄 변경 — 이후 세션 `current-focus.md` 를 정본에서 로드
+- 상위 `design/` 참조하던 임시 문서/스크립트는 폴백 실패 시 trash 폴더에서 복구 가능
+- git diff 에는 game repo 내부 영향 없음 (`c:/work/design/` 는 git 밖이었음)
+
+**이전 결정 관계**:
+- 2026-04-16 "design/ 통합 완료" 의 후속. 수동 복사 방식의 결함을 단일화로 해소.
+
+---
+
+## 2026-04-19 ▶ 세션 ▶ 핸드오프 저장 (심야)
+
+**변경**: 세션 상태를 `docs/handoff/handoff-2026-04-19-session-end.md` 에 저장.
+**이유**: 수동 저장. demo/dev 잔재 제거 + 분할 커밋 4건 + 패시브 스킬 전면 개편 완료 후 다음 세션에 "계속 진행" 으로 이어감.
+**영향**: `docs/handoff/`
+
+---
+
+## 2026-04-19 ▶ 밸런스 ▶ 패시브 스킬 전면 개편
+
+**변경**: 패시브 29장 → 28장 (맹독 제거). 전 패시브 `cost:0`. 수치 전반 축소(atk+3→+1, eva+6→+1 등). `role:'crit'` 카테고리 신설(sk_tough). 확률 발동 마커 4종 도입 — `proc_double_cast`/`proc_nullify_hit`/`hp_mult`/`grant_rebirth(params)` + 별도 필드(procChance, hpMult, rebirthHp 등). `invincible3` 하드코딩 → 정규식 `invincible(\d+)`. `sk_handoff` 의미 변경(아군 40% 추가공격권 → 3% 본인 2회 캐스팅).
+**이유**: 대표님이 `c:/tmp/skills_relics_export.txt` 편집으로 직접 재디자인. 장착 가격 제거로 덱 빌딩 자유도 확보, 수치 축소로 단일 스킬 파워 스파이크 완화.
+**영향**: `js/12_data_skills.js`(데이터), `js/20_helpers.js`(파싱), `js/55_game_battle.js`(dead handoff 블록 삭제), `tools/test_run.js`(sk_handoff golden 갱신). 신규 마커 실제 전투 발동 로직은 다음 스프린트.
+
+---
+
+## 2026-04-18 ▶ 게임 메커닉 ▶ demo/dev 잔재 전면 제거
+
+**변경**: 본판 UI 의 "▶ PHASE 3 시네마틱 데모 (DEV)" 타이틀 버튼 + "수직 슬라이스 데모 시작" 전투 idle 버튼 삭제. `Battle.DEMO` → `Battle.STATE` 리네임. 번개 타이탄 5+5 하드코딩 + ally_1 스킬 5장 삭제. `findSkillById`/`getSkillsOf` SKILLS_DB 1순위 반전. `v2.demoStart` 핸들러 / `startDemo` / `playDemoRound` 함수 / `is-real-battle` 클래스 전부 삭제.
+**이유**: 대표님 "본판에 데모(dev)가 있는데 이건 왜 그런거지?" 지적. 수직슬라이스 초기 하드코딩이 본판에 그대로 노출되어 있었음. 실전 경로를 `startFromLegacyBS(bs)` 단일로 정리.
+**영향**: `index.html`, `css/41_battle_v2.css`, `js/60_turnbattle_v2.js`, `js/62_ghost_pvp.js`, `js/config_battle.js`, `tools/_*.js` 5개. 커밋 `3e1018b`.
+
+---
+
 ## 2026-04-16 ▶ 세션 ▶ 핸드오프 저장 (오후)
 
 **변경**: 세션 상태를 `docs/handoff/handoff-2026-04-16-session2.md` 에 저장.

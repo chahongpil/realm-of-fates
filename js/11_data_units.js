@@ -131,8 +131,8 @@ RoF.Data.UNITS = Object.freeze([
     bonusTrigger:{on:'skill',chance:.2,effect:'ignite',desc:'20% 비전 발동 시: 대상 1턴 화상(턴당2)'},rarity:'bronze'},
   {id:'infantry',name:'보병',icon:'🪖',type:'전사',role:'defense',range:'melee',race:'human',element:'earth',
     atk:2,hp:12,def:2,spd:1,rage:2,nrg:1,luck:1,eva:0,meva:1,hpReg:0,nrgReg:0,
-    skill:'armor',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 중장갑: 받는 피해 -3',
-    bonusTrigger:{on:'hit',chance:.2,effect:'thorns',desc:'20% 방패 반사: 피격시 공격자에게 4데미지'},rarity:'bronze'},
+    skill:'armor',skillType:'passive',skillChance:1,skillNrg:0,skillArmor:2,skillDesc:'[패시브] 중장갑: 받는 피해 -2',
+    bonusTrigger:{on:'hit',chance:.2,effect:'thorns',value:3,desc:'20% 방패 반사: 피격시 공격자에게 3데미지'},rarity:'bronze'},
   // ── SILVER (7) ──
   {id:'knight',name:'기사',icon:'⚜️',type:'전사',role:'defense',range:'melee',race:'human',element:'holy',
     atk:3,hp:18,def:3,spd:1,rage:2,nrg:2,luck:1,eva:1,meva:2,hpReg:1,nrgReg:1,

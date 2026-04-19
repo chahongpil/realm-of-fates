@@ -854,6 +854,7 @@
 /* ── battle-hit-react — 데미지 숫자 플로팅 ────────────────── */
 #battle-hit-react{
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   pointer-events: none;
@@ -869,6 +870,26 @@
   color: var(--bv2-crit);
   font-size: 6rem;
   animation: bv2CritPop var(--bv2-dur-crit-pop) ease-out;
+}
+/* 원소 공명 배지 — 발동 시만 표시 (공명 +N% / 저항 -N%) */
+.bhr-reso{
+  font-size: 1.1rem;
+  color: #7dd3fc;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(125,211,252,.8), 0 2px 4px rgba(0,0,0,.95);
+  margin-top: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+.bhr-reso.is-active{
+  animation: bv2ResoFadeUp 900ms ease-out forwards;
+}
+@keyframes bv2ResoFadeUp{
+  0%   { transform: translateY(10px); opacity: 0; }
+  25%  { transform: translateY(0); opacity: 1; }
+  80%  { transform: translateY(-6px); opacity: .9; }
+  100% { transform: translateY(-14px); opacity: 0; }
 }
 
 /* ── battle-death ──────────────────────────────────────────── */

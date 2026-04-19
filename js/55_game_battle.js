@@ -433,7 +433,7 @@ Object.assign(RoF.Game, {
             if(!ct||ct.currentHp<=0){const al=foes.filter(c=>c.currentHp>0);if(!al.length)break;ct=al[0];}
             let dmg=atk;
             const isMagic=u.type==='마법사';
-            if(sk!=='pierce'){const dr=ct.def||0;dmg=ct.skill==='armor'?Math.max(1,dmg-dr-3):Math.max(1,dmg-Math.floor(dr*.5));}
+            if(sk!=='pierce'){const dr=ct.def||0;const armorVal=(ct.skill==='armor')?((ct.skillArmor!=null)?ct.skillArmor:3):0;dmg=(ct.skill==='armor')?Math.max(1,dmg-dr-armorVal):Math.max(1,dmg-Math.floor(dr*.5));}
             const evaC=Math.min(.05+(ct.eva||0)*.02,.6);
             if(!isMagic&&Math.random()<(ct.skill==='dodge'?Math.min(evaC+.3,.7):evaC)){this.log(`${ct.icon} 회피!`,'ability-log');continue;}
             if(isMagic){const mevaC=Math.min(.05+(ct.meva||0)*.025,.5);if(Math.random()<mevaC){this.log(`${ct.icon} 마법회피!`,'ability-log');continue;}}
@@ -467,7 +467,7 @@ Object.assign(RoF.Game, {
             const dbt=ct.bonusTrigger;
             if(dbt&&dbt.on==='hit'&&Math.random()<dbt.chance&&ct.currentHp>0&&!u._noCounter){
               if(dbt.effect==='counter'&&(u.range||'melee')==='melee'&&ct.row==='front'){u._noCounter=true;const cd=Math.floor(ct.atk*.5);u.currentHp-=cd;this.showDmg(u,cd,false);this.log(`${ct.icon} 반격! ${cd}`,'ability-log');u._noCounter=false;}
-              else if(dbt.effect==='thorns'){u.currentHp-=4;this.showDmg(u,4,false);this.log(`${ct.icon} 가시!`,'ability-log');}
+              else if(dbt.effect==='thorns'){const td=(dbt.value!=null)?dbt.value:4;u.currentHp-=td;this.showDmg(u,td,false);this.log(`${ct.icon} 가시!`,'ability-log');}
               else if(dbt.effect==='flame_aura'){u.currentHp-=5;this.showDmg(u,5,false);this.log(`${ct.icon} 화염오라!`,'ability-log');}
               else if(dbt.effect==='mirror_break'){u.def=Math.max(0,(u.def||0)-2);}
               else if(dbt.effect==='energy_burst'){(ct.side==='player'?pCards:eCards).filter(a=>a.currentHp>0).forEach(a=>{a.curNrg=(a.curNrg||0)+2;});}

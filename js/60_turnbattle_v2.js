@@ -621,6 +621,22 @@
     if(!calc) return;
     setText('#battle-hit-react .bhr-dmg', String(calc.dmg));
     setClass('#battle-hit-react .bhr-dmg', 'is-crit', !!calc.isCrit);
+    // 원소 공명 배지 — resoMult>1 또는 resoResist<1 발동 시만
+    const resoEl = document.querySelector('#battle-hit-react .bhr-reso');
+    if(resoEl){
+      const bits = [];
+      if(calc.resoMult   && calc.resoMult   > 1) bits.push('공명 +' + Math.round((calc.resoMult - 1) * 100) + '%');
+      if(calc.resoResist && calc.resoResist < 1) bits.push('저항 -' + Math.round((1 - calc.resoResist) * 100) + '%');
+      const label = bits.join(' · ');
+      resoEl.textContent = label;
+      // 클래스 리셋 → 애니 재시작
+      resoEl.classList.remove('is-active');
+      if(label){
+        // reflow 트릭으로 애니 재시작 보장
+        void resoEl.offsetWidth;
+        resoEl.classList.add('is-active');
+      }
+    }
     // 그리드 타겟 카드 흔들림 클래스
     const t = Battle.state.hoveredTarget;
     const el = stageCardOf(t);

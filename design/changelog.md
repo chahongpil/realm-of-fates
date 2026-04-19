@@ -8,6 +8,23 @@
 
 ---
 
+## 2026-04-19 ▶ 게임 메커닉 ▶ armor/thorns 파서 파라미터화 + infantry 하위 차별
+- **변경**: `55_game_battle.js` 의 armor 감쇄 하드코딩 `-3`, thorns 데미지 하드코딩 `4` 를 각각 `ct.skillArmor ?? 3`, `dbt.value ?? 4` 로 파라미터화.
+- **데이터 적용**: infantry 에 `skillArmor:2`, `bonusTrigger.value:3` 신규 필드 추가. desc 도 `-2 / 3데미지` 로 조정. 기존 영웅(h_m_earth/h_r_earth) 은 필드 없으므로 기본값(3/4) 폴백 — 기존 밸런스 보존.
+- **결과**: 영웅 armor -3 / thorns 4 vs 일반 보병 armor -2 / thorns 3. 일반이 영웅 하위판으로 정상 차등.
+- **이유**: balance-auditor 가 지적한 "armor+thorns 조합이 영웅·일반 중복 설계" 해소 + desc/파서 수치 불일치 해결.
+- **파일**: `js/55_game_battle.js`, `js/11_data_units.js`.
+
+---
+
+## 2026-04-19 ▶ UI ▶ 원소 공명 발동 배지 (데미지 팝업)
+- **변경**: 피격 시 데미지 숫자 아래에 `공명 +N% · 저항 -N%` 배지 900ms 플로팅. `calc.resoMult > 1` 또는 `calc.resoResist < 1` 일 때만 노출.
+- **이유**: 공명 로직이 있어도 체감 경로가 없으면 편성 전략 유도 불가 (검수관 지적).
+- **구현**: `index.html` `#battle-hit-react` 에 `.bhr-reso` slot 추가. `css/41_battle_v2.css` 에 `bv2ResoFadeUp` 키프레임. `js/60_turnbattle_v2.js` `renderHitReact` 에서 배수 라벨 조립.
+- **파일**: `index.html`, `css/41_battle_v2.css`, `js/60_turnbattle_v2.js`.
+
+---
+
 ## 2026-04-19 ▶ 콘텐츠 ▶ 일반 유닛 bronze 추가 — 보병 (infantry)
 - **추가**: `infantry` / 보병 / earth / defense / melee / human / 🪖 아이콘. 스탯 `atk2 hp12 def2 spd1`, skill `armor(피해-3)`, bonusTrigger `thorns 20%(반사4)`.
 - **포지션**: earth 공명 편성의 첫 일반 defense 탱커. 기존 earth bronze 는 `militia/wolf(attack)` + `herbalist(support)` 만 있어 defense 슬롯 공백이었음.

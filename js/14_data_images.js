@@ -34,7 +34,7 @@ RoF.Data.CARD_IMG = Object.freeze({
   sk_swift:__IMG+'sk_swift.png', sk_tough:__IMG+'sk_tough.png', sk_focus:__IMG+'sk_focus.png',
   sk_rage:__IMG+'sk_rage.png', sk_evasion:__IMG+'sk_evasion.png', sk_energize:__IMG+'sk_energize.png',
   sk_cleave:__IMG+'sk_cleave.png', sk_ironwill:__IMG+'sk_ironwill.png', sk_prayer:__IMG+'sk_prayer.png',
-  sk_venom:__IMG+'sk_venom.png', sk_reflex:__IMG+'sk_reflex.png',
+  sk_reflex:__IMG+'sk_reflex.png',
   sk_crit_edge:__IMG+'sk_crit_edge.png', sk_fortress:__IMG+'sk_fortress.png', sk_revive:__IMG+'sk_revive.png',
   sk_bloodlust:__IMG+'sk_bloodlust.png', sk_mirage:__IMG+'sk_mirage.png', sk_warhorn:__IMG+'sk_warhorn.png',
   sk_execute:__IMG+'sk_execute.png', sk_aura:__IMG+'sk_aura.png', sk_handoff:__IMG+'sk_handoff.png',

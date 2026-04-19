@@ -323,27 +323,36 @@
      ─────────────────────────────────────────────
      주의: `--rar-divine`은 유닛 등급 '신'을 가리킨다.
            `--el-holy`(신성 원소)와 무관하며 색/용도가 다르다.
-           03-terminology.md: 등급 = 브론즈/실버/골드/전설/신 */
-  --rar-bronze:    #d4a574;
-  --rar-silver:    #d0d8e6;
-  --rar-gold:      #ffcc44;
-  --rar-legendary: #c66bff;
-  --rar-divine:    #ff5566;   /* = '신' 등급 */
+           03-terminology.md: 등급 = 평범/희귀/고귀/전설/신
+     2026-04-19: 새 팔레트 — 평범=실버 / 희귀=코발트 / 고귀=자수정 / 전설=호박금 / 신=원소가변 */
+  --rar-bronze:    #b8b8c0;   /* 평범 — 실버 */
+  --rar-silver:    #3a7bd5;   /* 희귀 — 코발트 */
+  --rar-gold:      #9b59b6;   /* 고귀 — 자수정 */
+  --rar-legendary: #f39c12;   /* 전설 — 호박금 */
+  --rar-divine:    #ffffff;   /* 신 — 원소 가변 기본 (흰색) */
   --rar-god:       var(--rar-divine);  /* 한국어 네이밍 별칭 */
 
+  /* 신 등급 — 원소별 안쪽 실선 색 (05-design-direction.md 스펙) */
+  --rar-divine-fire:      #e74c3c;
+  --rar-divine-water:     #3498db;
+  --rar-divine-earth:     #8b5a2b;
+  --rar-divine-lightning: #f1c40f;
+  --rar-divine-holy:      #ffd700;
+  --rar-divine-dark:      #8e44ad;
+
   /* 등급 glow (밝은 변형) */
-  --rar-bronze-glow:    #ffcc99;
-  --rar-silver-glow:    #e8eef8;
-  --rar-gold-glow:      #ffdd66;
-  --rar-legendary-glow: #e9a5ff;
-  --rar-divine-glow:    #ff8899;
+  --rar-bronze-glow:    #e8e8f0;
+  --rar-silver-glow:    #7ab0ff;
+  --rar-gold-glow:      #c786d6;
+  --rar-legendary-glow: #ffc857;
+  --rar-divine-glow:    #ffffff;
 
   /* 등급 배경 딥(카드 그라디언트 하단 정지점) */
-  --rar-bronze-deep:    #0d0a04;
-  --rar-silver-mid:     #7a8a9a;
-  --rar-silver-deep:    #0a0d14;
-  --rar-gold-deep:      #1a1200;
-  --rar-legendary-deep: #0f0518;
+  --rar-bronze-deep:    #12121a;
+  --rar-silver-mid:     #1e3a6a;
+  --rar-silver-deep:    #0a1020;
+  --rar-gold-deep:      #1e0d28;
+  --rar-legendary-deep: #2a1600;
 
   /* 앰버/석재 팔레트 — HUD 플레이트, 오라, 양피지 느낌 텍스트 (2026-04-12 P0-3) */
   --amber-bright:   #e8d5a3;   /* 양피지 밝음 (텍스트/라벨 악센트) */

@@ -317,10 +317,47 @@
   box-sizing:border-box;
 }
 /* name/tags/desc 좌표는 11_frame_coords.css 의 --box-*-x/y/w/h 변수 사용 (드래그 편집기로 설정) */
-.card-v2 .cv-name{left:var(--box-name-x);top:var(--box-name-y);width:var(--box-name-w);height:var(--box-name-h);text-align:center;font-size:.74rem;letter-spacing:0;color:#fff4c8;font-weight:800;text-shadow:0 1px 2px var(--gray-9),0 0 5px rgba(0,0,0,.95),0 0 2px rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1;padding:0 4px;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.25));border-radius:3px;position:absolute;z-index:3;pointer-events:none;}
+.card-v2 .cv-name{left:var(--box-name-x);top:var(--box-name-y);width:var(--box-name-w);height:var(--box-name-h);text-align:center;font-size:.74rem;letter-spacing:0;color:var(--rar-color,#fff4c8);font-weight:800;text-shadow:0 1px 2px var(--gray-9),0 0 5px rgba(0,0,0,.95),0 0 2px rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1;padding:0 4px;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.25));border-radius:3px;position:absolute;z-index:3;pointer-events:none;}
+/* ── 등급별 이름 색 (03-terminology.md 새 팔레트, 2026-04-19) ── */
+.card-v2.bronze    { --rar-color: var(--rar-bronze-glow);    }
+.card-v2.silver    { --rar-color: var(--rar-silver-glow);    }
+.card-v2.gold      { --rar-color: var(--rar-gold-glow);      }
+.card-v2.legendary { --rar-color: var(--rar-legendary-glow); }
+.card-v2.divine    { --rar-color: var(--rar-divine-glow);    }
 .card-v2 .cv-tags{left:var(--box-tags-x);top:var(--box-tags-y);width:var(--box-tags-w);height:var(--box-tags-h);display:flex;align-items:center;justify-content:center;gap:4px;font-size:.78rem;color:var(--amber-bright);text-shadow:0 1px 2px var(--gray-9),0 0 4px rgba(0,0,0,.9);line-height:1;pointer-events:none;z-index:3;letter-spacing:1px;position:absolute;}
 .card-v2 .cv-desc{left:var(--box-desc-x);top:var(--box-desc-y);width:var(--box-desc-w);height:var(--box-desc-h);text-align:center;font-size:.72rem;line-height:1.3;color:#f0e8d0;text-shadow:0 1px 2px var(--gray-9),0 0 4px rgba(0,0,0,.9);font-family:var(--font-body);font-weight:500;display:flex;align-items:center;justify-content:center;padding:0 6px;pointer-events:none;z-index:3;position:absolute;}
-.card-v2.divine{filter:drop-shadow(0 0 10px rgba(255,80,80,.5)) drop-shadow(0 6px 12px rgba(0,0,0,.6));animation:divineGlow 2s infinite alternate;}
+/* ── 신(divine) 등급 — 조용한 흰색 글로우 + 간헐 샤인 스윕 (2026-04-19, 05-design-direction.md 스펙) ──
+   원칙: "평상시 조용, 특정 순간만 샤인" — 전투 중 시선 과점유 방지.
+   상시 펄스/무지개/파티클 금지. 원소별 안쪽 실선은 프레임 PNG 가 이미 반영 중이라 CSS 생략. */
+.card-v2.divine{
+  filter:
+    drop-shadow(0 0 6px rgba(255,255,255,.85))
+    drop-shadow(0 0 14px rgba(255,255,255,.45))
+    drop-shadow(0 6px 12px rgba(0,0,0,.6));
+}
+.card-v2.divine::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%);
+  background-size:220% 100%;
+  background-position:-220% 0;
+  animation:divineShine 7s ease-in-out infinite;
+  pointer-events:none;
+  z-index:4;
+  mix-blend-mode:screen;
+  border-radius:inherit;
+}
+/* 여러 신 카드 동시 노출 시 phase 차등 — 동기화 방지 */
+.card-v2.divine:nth-of-type(2n)::after{animation-duration:8s;animation-delay:-2.5s;}
+.card-v2.divine:nth-of-type(3n)::after{animation-duration:9s;animation-delay:-5s;}
+.card-v2.divine:nth-of-type(5n)::after{animation-duration:7.5s;animation-delay:-3.5s;}
+@keyframes divineShine{
+  0%, 85% { background-position:-220% 0; opacity:0; }
+  90%     { opacity:.35; }
+  95%     { background-position:0% 0; opacity:.35; }
+  100%    { background-position:220% 0; opacity:0; }
+}
 
 /* 선택 상태 — 박스섀도 사각 테두리 ❌ / drop-shadow 황금 오라 ✅ (2026-04-12 A안) */
 .card-v2.selected{

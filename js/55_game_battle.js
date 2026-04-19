@@ -439,12 +439,20 @@ Object.assign(RoF.Game, {
             if(isMagic){const mevaC=Math.min(.05+(ct.meva||0)*.025,.5);if(Math.random()<mevaC){this.log(`${ct.icon} 마법회피!`,'ability-log');continue;}}
             if(ct.invincible>0){ct.invincible--;this.log(`${ct.icon} 무적!`,'ability-log');continue;}
             if(ct.divineShield){ct.divineShield=false;this.log(`${ct.icon} 신성방패!`,'ability-log');continue;}
+            // 2026-04-19 P1-A: 반사신경 (proc_nullify_hit) — 확률로 피격 무효
+            if(ct._procNullifyHit && Math.random()*100 < ct._procNullifyHit){this.log(`${ct.icon} 반사신경! 피해 무효`,'ability-log');continue;}
             if((ct.curShield||0)>0){const ab=Math.min(ct.curShield,dmg);ct.curShield-=ab;dmg-=ab;if(ab>0)this.log(`${ct.icon} 보호막-${ab}`,'ability-log');}
             dmg=Math.max(0,dmg);
             ct.currentHp-=dmg;
             this.showAtkEffect(u,ct);SFX.play(isMagic?'magic':'slash');SFX.play('hit');
             this.showDmg(ct,dmg,isCrit);
             this.log(`${u.icon}${u.name}→${ct.icon}${ct.name} ${dmg}${isCrit?' 치명타!':''}`,'atk-log');
+            // 2026-04-19 P1-A: 이중 캐스팅 (proc_double_cast) — 확률로 데미지 한 번 더
+            if(u._procDoubleCast && Math.random()*100 < u._procDoubleCast && ct.currentHp>0){
+              ct.currentHp -= dmg;
+              this.showDmg(ct, dmg, false);
+              this.log(`${u.icon} 이중 캐스팅! 추가 ${dmg}`,'ability-log');
+            }
             // On-attack triggers
             const bt=u.bonusTrigger;
             if(bt&&bt.on==='attack'&&Math.random()<bt.chance){
@@ -470,7 +478,7 @@ Object.assign(RoF.Game, {
             if(sk==='freeze'&&skT==='active'&&u.curNrg>=skNrg&&Math.random()<skCh){ct.frozen=1;u.curNrg-=skNrg;this.log(`${ct.icon} 빙결!`,'ability-log');}
             // Death + kill triggers
             if(ct.currentHp<=0){
-              if(ct.skill==='rebirth'&&!ct.revived){ct.currentHp=Math.floor(ct.maxBHp*.5);ct.revived=true;this.log(`${ct.icon} 부활!`,'ability-log');this.triggerSlowMo(1200,'revive');}
+              if(this._reviveIfCan(ct)){this.triggerSlowMo(1200,'revive');}
               else{
                 ct.currentHp=0;SFX.play('death');this.log(`${ct.icon} 쓰러짐!`,'atk-log');this.triggerSlowMo(800,'kill');
                 const kbt=u.bonusTrigger;
@@ -492,11 +500,11 @@ Object.assign(RoF.Game, {
         if(u._manualUsed){u._manualUsed=false;}
         else{
         if(sk==='aoe'&&skT==='active'&&u.curNrg>=skNrg&&Math.random()<skCh){
-          u.curNrg-=skNrg;const d=3;foes.filter(c=>c.currentHp>0).forEach(e=>{e.currentHp-=d;this.showDmg(e,d,false);if(e.currentHp<=0){if(e.skill==='rebirth'&&!e.revived){e.currentHp=Math.floor(e.maxBHp*.5);e.revived=true;}else e.currentHp=0;}});
+          u.curNrg-=skNrg;const d=3;foes.filter(c=>c.currentHp>0).forEach(e=>{e.currentHp-=d;this.showDmg(e,d,false);if(e.currentHp<=0 && !this._reviveIfCan(e)) e.currentHp=0;});
           this.log(`${u.icon} 화염! 전체${d} (에너지-${skNrg})`,'ability-log');
         }
         if(sk==='breath'&&skT==='active'&&u.curNrg>=skNrg&&Math.random()<skCh){
-          u.curNrg-=skNrg;const d=5;foes.filter(c=>c.currentHp>0).forEach(e=>{e.currentHp-=d;this.showDmg(e,d,false);if(e.currentHp<=0){if(e.skill==='rebirth'&&!e.revived){e.currentHp=Math.floor(e.maxBHp*.5);e.revived=true;}else e.currentHp=0;}});
+          u.curNrg-=skNrg;const d=5;foes.filter(c=>c.currentHp>0).forEach(e=>{e.currentHp-=d;this.showDmg(e,d,false);if(e.currentHp<=0 && !this._reviveIfCan(e)) e.currentHp=0;});
           this.log(`${u.icon} 브레스! 전체${d} (에너지-${skNrg})`,'ability-log');
         }
         if(sk==='heal_self'&&skT==='active'&&u.curNrg>=skNrg&&Math.random()<skCh&&!(u.noHeal>0)){
@@ -721,5 +729,17 @@ Object.assign(RoF.Game, {
       applyRelicBattle(rl,updated);
       return `${rl.icon}${rl.name} 유물 장착`;
     }
+  },
+
+  // ── 부활 공통 헬퍼 (2026-04-19 P1-A) ──
+  // grant_rebirth 패시브로 _rebirthHp/_rebirthNrg 가 스탬프된 유닛을 사망 시 부활.
+  // 기존 하드코딩(HP 50% 복구) 은 폴백으로 유지.
+  _reviveIfCan(u){
+    if(u.skill!=='rebirth' || u.revived) return false;
+    u.currentHp = u._rebirthHp || Math.floor((u.maxBHp||u.hp||1)*.5);
+    if(u._rebirthNrg != null) u.curNrg = Math.max(u.curNrg||0, u._rebirthNrg);
+    u.revived = true;
+    if(this.log) this.log(`${u.icon} 부활!`,'ability-log');
+    return true;
   },
 });

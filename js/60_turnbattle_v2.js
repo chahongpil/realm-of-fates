@@ -256,12 +256,29 @@
     fn(caster, skill);
   };
 
-  Battle.applyDamage = function(target, dmg){
+  Battle.applyDamage = function(target, dmg, attacker){
     if(!target || !dmg) return;
+    // 2026-04-19 P1-A proc_nullify_hit — 확률로 피해 무효
+    if(target._procNullifyHit && Math.random()*100 < target._procNullifyHit){
+      return;
+    }
     target.currentHp = Math.max(0, (target.currentHp ?? 0) - dmg);
+    // 2026-04-19 P1-A proc_double_cast — attacker 확률로 데미지 한 번 더
+    if(attacker && attacker._procDoubleCast && Math.random()*100 < attacker._procDoubleCast && target.currentHp > 0){
+      target.currentHp = Math.max(0, target.currentHp - dmg);
+    }
   };
   Battle.isDead = function(unit){
     return !!unit && (unit.currentHp ?? 0) <= 0;
+  };
+  // 2026-04-19 P1-A grant_rebirth — 사망 시 한 번 부활 (skill==='rebirth' 유닛)
+  Battle._reviveIfCan = function(u){
+    if(!u || u.skill !== 'rebirth' || u.revived) return false;
+    const maxHp = u.maxBHp || u.maxHp || u.hp || 1;
+    u.currentHp = u._rebirthHp || Math.floor(maxHp * .5);
+    if(u._rebirthNrg != null) u.curNrg = Math.max(u.curNrg || 0, u._rebirthNrg);
+    u.revived = true;
+    return true;
   };
 
   // 큐(라운드 단위)와 round 는 보존. 선택/호버 상태만 초기화.
@@ -777,7 +794,7 @@
       // 데미지: 타겟별 calcDamage → applyDamage (AoE 시 전체 반복)
       targets.forEach(function(t){
         const c = (t === primaryTgt) ? calc : Battle.calcDamage(attacker, t, skill);
-        Battle.applyDamage(t, c.dmg);
+        Battle.applyDamage(t, c.dmg, attacker);
         refreshStageCard(t);
       });
     } else if(kind === 'heal'){
@@ -813,6 +830,11 @@
       for(let i = 0; i < targets.length; i++){
         const t = targets[i];
         if(Battle.isDead(t)){
+          // 2026-04-19 P1-A grant_rebirth — 부활 마커 있으면 DEATH 스킵
+          if(Battle._reviveIfCan(t)){
+            refreshStageCard(t);
+            continue;
+          }
           Battle.showScreen(Battle.SCREEN.DEATH, { keepOpen: ['battle-char-focus'] });
           renderDeath(t);
           await Battle.beat(Battle.TIMING.DEATH_OUT);

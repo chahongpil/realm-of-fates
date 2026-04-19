@@ -1301,6 +1301,7 @@
       desc:        c.skillDesc || '',
       imgKey:      c.id,                          // CARD_IMG key = 원본 id
       element:     c.element || 'neutral',
+      role:        c.role || 'attack',            // P1-C: 액티브 스킬 매칭용
       rarity:      c.rarity || 'bronze',
       atk:         c.atk  ?? 0,
       def:         c.def  ?? 0,
@@ -1385,9 +1386,45 @@
     };
   };
 
-  // 유닛 → 스킬 배열 (기본 공격 + 원소 시그니처)
+  // 2026-04-19 P1-C: 액티브 스킬 8장(SKILLS_DB passive:false) 을 원소+역할 기반으로 유닛에 자동 장착.
+  // 추후 skillIds 필드 도입 시 이 맵은 fallback 으로만 사용.
+  const ACTIVE_BY_ELEM_ROLE = {
+    'fire-attack':      { bronze: 'sk_flame_arrow',    gold: 'sk_inferno_blast' },
+    'water-attack':     { silver: 'sk_tidal_crash' },
+    'water-defense':    { silver: 'sk_tidal_crash' },
+    'earth-defense':    { silver: 'sk_earth_bulwark' },
+    'lightning-attack': { silver: 'sk_chain_lightning' },
+    'dark-attack':      { silver: 'sk_dark_curse' },
+    'dark-defense':     { silver: 'sk_dark_curse' },
+    'holy-support':     { bronze: 'sk_healing_light',  gold: 'sk_blessing_light' },
+    'holy-defense':     { bronze: 'sk_healing_light',  gold: 'sk_blessing_light' },
+    'water-support':    { bronze: 'sk_healing_light' },
+    'earth-support':    { bronze: 'sk_healing_light' },
+  };
+  const TIER_ORDER = ['bronze', 'silver', 'gold', 'legendary', 'divine'];
+  const pickActiveSkillIdFor = function(unit){
+    const key = (unit.element || '') + '-' + (unit.role || '');
+    const map = ACTIVE_BY_ELEM_ROLE[key];
+    if(!map) return null;
+    // 유닛 rarity 에서 아래로 내려가며 가장 높은 해당 등급 스킬 선택
+    const unitTierIdx = TIER_ORDER.indexOf(unit.rarity || 'bronze');
+    for(let i = unitTierIdx; i >= 0; i--){
+      const id = map[TIER_ORDER[i]];
+      if(id) return id;
+    }
+    return null;
+  };
+
+  // 유닛 → 스킬 배열 (기본 공격 + 원소 시그니처 + 조건부 액티브 1장)
   const buildUnitSkillSet = function(unit){
-    return [ makeBasicAttackFor(unit), makeSignatureSkillFor(unit) ];
+    const set = [ makeBasicAttackFor(unit), makeSignatureSkillFor(unit) ];
+    const activeId = pickActiveSkillIdFor(unit);
+    if(activeId){
+      const db = (RoF.Data && RoF.Data.SKILLS) || [];
+      const src = db.find(function(s){ return s.id === activeId; });
+      if(src) set.push(Object.assign({}, src, { ownerId: unit.id }));
+    }
+    return set;
   };
 
   Battle.startFromLegacyBS = async function(bs){

@@ -19,11 +19,11 @@
 /* 원소 공명 배지 — 편성 화면 미리보기 */
 .form-resonance{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;min-height:32px;}
 .form-resonance:empty::before{content:'동일 원소 2명 이상 편성 시 공명 효과 발동';color:var(--text-4);font-size:.7rem;font-style:italic;}
-.fr-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;font-size:.72rem;font-weight:600;border:1px solid var(--fr-col,#888);background:rgba(0,0,0,.45);color:var(--fr-col,#eee);box-shadow:0 0 8px color-mix(in srgb,var(--fr-col,#888) 45%,transparent);transition:transform .15s;}
+.fr-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;font-size:.72rem;font-weight:600;border:1px solid var(--fr-col,var(--text-3));background:rgba(0,0,0,.45);color:var(--fr-col,var(--text-1));box-shadow:0 0 8px color-mix(in srgb,var(--fr-col,var(--text-3)) 45%,transparent);transition:transform .15s;}
 .fr-badge.fr-t3{transform:scale(1.05);}
 .fr-badge.fr-t4{transform:scale(1.10);animation:frPulse 1.6s ease-in-out infinite;}
 .fr-badge .fr-icon{font-size:.95rem;}
 .fr-badge .fr-count{opacity:.85;font-variant-numeric:tabular-nums;}
-.fr-badge .fr-mult{opacity:.9;font-size:.68rem;margin-left:2px;padding-left:6px;border-left:1px solid color-mix(in srgb,var(--fr-col,#888) 40%,transparent);}
-@keyframes frPulse{0%,100%{box-shadow:0 0 8px color-mix(in srgb,var(--fr-col,#888) 45%,transparent);}50%{box-shadow:0 0 18px color-mix(in srgb,var(--fr-col,#888) 80%,transparent);}}
+.fr-badge .fr-mult{opacity:.9;font-size:.68rem;margin-left:2px;padding-left:6px;border-left:1px solid color-mix(in srgb,var(--fr-col,var(--text-3)) 40%,transparent);}
+@keyframes frPulse{0%,100%{box-shadow:0 0 8px color-mix(in srgb,var(--fr-col,var(--text-3)) 45%,transparent);}50%{box-shadow:0 0 18px color-mix(in srgb,var(--fr-col,var(--text-3)) 80%,transparent);}}
 .battle-divider{text-align:center;color:var(--text-4);font-size:.75rem;letter-spacing:6px;padding:2px 0;}

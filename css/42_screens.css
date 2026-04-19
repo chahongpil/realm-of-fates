@@ -1,6 +1,6 @@
 /* Non-battle screens: title, auth IDs, char-select, town, upgrade, choice, pick, reward, gameover, upgrade effects, tavern, loot, matchmaking, prologue + responsive @media queries. */
 #title-screen{justify-content:center;background:url('../img/bg_title.png') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);position:relative;overflow:hidden;}
-#title-screen::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.3);pointer-events:none;}
+#title-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.15) 60%,rgba(0,0,0,.4) 100%);pointer-events:none;}
 #title-screen::after{content:'';position:absolute;inset:0;pointer-events:none;animation:titleLightning 4s infinite;opacity:0;}
 .title-fire{position:absolute;bottom:0;left:0;width:100%;height:30%;background:linear-gradient(0deg,rgba(255,60,0,.08),transparent);pointer-events:none;animation:titleFire 3s infinite alternate;}
 #title-screen h1{font-size:var(--title-logo-size);color:var(--curr-gold-pale);text-shadow:0 0 40px rgba(230,204,128,.6),0 0 80px rgba(255,215,0,.3),0 3px 6px rgba(0,0,0,.9);margin-bottom:.5rem;letter-spacing:var(--title-logo-spacing);font-family:var(--font-title);font-weight:700;animation:titleGlow 3s infinite alternate;}
@@ -722,12 +722,12 @@ body.game-mode #battle-screen > .tb-timer-bar{
 .rew-pick-card:nth-child(2){animation-delay:.32s;}
 .rew-pick-card:nth-child(3){animation-delay:.44s;}
 .rew-pick-card:nth-child(4){animation-delay:.56s;}
-.rew-pick-card:hover{transform:translateY(-5px) scale(1.04);border-color:var(--curr-gold);box-shadow:0 0 15px rgba(255,215,0,.3);}
+.rew-pick-card:hover{transform:translateY(-5px) scale(1.04);border-color:var(--curr-gold);box-shadow:0 0 15px color-mix(in srgb,var(--curr-gold) 30%,transparent);}
 .rew-pick-card.bronze{border-color:var(--rar-bronze);}
 .rew-pick-card.silver{border-color:var(--rar-silver);}
 .rew-pick-card.gold{border-color:var(--rar-gold);}
-.rew-pick-card.legendary{border-color:var(--rar-legendary);box-shadow:0 0 12px rgba(243,156,18,.3);}
-.rew-pick-card.picked{border-color:var(--success);box-shadow:0 0 20px rgba(68,255,136,.4);transform:scale(1.06);}
+.rew-pick-card.legendary{border-color:var(--rar-legendary);box-shadow:0 0 12px color-mix(in srgb,var(--rar-legendary) 30%,transparent);}
+.rew-pick-card.picked{border-color:var(--success);box-shadow:0 0 20px color-mix(in srgb,var(--success) 40%,transparent);transform:scale(1.06);}
 .rew-pick-card.dimmed{opacity:.3;pointer-events:none;transform:scale(.95);}
 .rpc-icon{font-size:2rem;margin-bottom:4px;}
 .rpc-cat{font-size:.65rem;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;}

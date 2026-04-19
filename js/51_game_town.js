@@ -222,6 +222,12 @@ Object.assign(RoF.Game, {
         div.innerHTML=`<div class="tb-icon" style="width:100%;height:100%;"><img src="${bImg}" onerror="this.src='${bImgFallback}'" style="${imgStyle}"></div><div class="tb-label" style="${labelPos}">${lvName} <span style="font-size:.5rem;color:#ffd700;">Lv.${lv}</span></div>${canUpgrade?`<div class="tb-upgrade" data-bid="${b.id}" style="${upgPos}">${upgBlocked?`🔒 성 Lv.${lv+1} 필요`:`🔨 증축 (${b.cost[lv]}💰)`}</div>`:`<div class="tb-upgrade" style="${upgPos};color:#44ff88;">✅ 최고 경지</div>`}`;
         div.querySelector('.tb-icon').onclick=(e)=>{
           e.stopPropagation();SFX.play('click');
+          // gate(나무문~천공문) 는 출정 게이트라 한 번 클릭에 바로 편성 진입.
+          // 다른 건물은 첫 클릭 = 선택, 두번째 = action (증축 버튼 노출 의도).
+          if(b.id==='gate'){
+            if(this[b.action])this[b.action]();
+            return;
+          }
           if(div.classList.contains('selected')){
             if(this[b.action])this[b.action]();
           } else {

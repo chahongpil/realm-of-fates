@@ -8,6 +8,18 @@
 
 ---
 
+## 2026-04-19 ▶ 팀/협업 ▶ S2 고스트 PvP 마무리 결정 (봇 시드·패배 정책·UX)
+- 변경: S2 고스트 PvP 99% 구현 완료 상태에서 남은 4건 결정 정리. ① 봇 시드 — `supabase/migrations/003_s2_bot_seed.sql` 5명(유랑검사/잿빛 마법사/강철의 약속/독사의 미소/용맹의 깃발, LP 10/25/50/75/120) + `deck_snapshots.user_id` NULL 허용. ② 패배 정책 — 현행 유지(승리 시만 스냅샷, "최고의 순간 박제" 컨셉). ③ 콜로세움 UX — C안 추천(훈련 화면에 "🏟️ 아레나 도전" 버튼 명시 진입, 별도 작업으로 분리). ④ E2E 체크리스트 8개 정리. 결정 정본은 `design/s2-finalization.md`.
+- 이유: 코드는 4/16~4/19 사이에 구현 완료됐으나 시그널 미반영(트랙6 시그널이 4/15 1줄만)으로 진행 상황이 가려졌음. 후속 운영 결정(봇 / 매칭 정화 / UX 진입점) 이 미정인 상태에서 출시하면 첫 유저가 매칭 0%, 약덱 박제, 훈련/PvP 혼동 등 즉각 블로커. 결정 문서로 매듭짓고 시드 SQL 까지 미리 준비.
+- 영향: 대표님이 Supabase Studio 에서 003 SQL 실행 → E2E 8개 체크 → 출시 준비 완료. 트랙6 시그널 보충 7건 append 로 가시성 회복. 메인 세션이 트랙 영역(supabase/, 35_backend.js) 건드릴 때 시그널 append 의무 재확인.
+- 이전 결정: 2026-04-15 "트랙 6 신설 (경로 C 풀 PvP MMO, 가챠 없음)" — S2 단계 진입.
+
+## 2026-04-19 ▶ UI ▶ 타이틀 배경 + 게이트 1클릭 + 토큰화 위생 + 검수관 검증 룰
+- 변경: ① **타이틀 배경**: 대천사 일러스트(1672×941 → 1280×720 LANCZOS) 로 교체, 단일 `rgba(0,0,0,.3)` 오버레이 → 그라디언트(`.05 → .15 → .4`) 로 신성 톤 살리고 하단 가독성 유지. 기존 PNG 는 `img/_archive/bg_title_pre_2026-04-19.png` 로 백업. ② **게이트 1클릭**: `js/51_game_town.js:223-237` `gate` ID 분기 추가. 나무문~천공문 한 번 클릭 시 즉시 `startBattle` (편성) 진입. 다른 건물(성/대장간/선술집 등) 은 두 번 클릭 패턴 유지(첫 클릭 = 증축 버튼 노출 의도). ③ **토큰화 위생**: `.fr-badge` `#888 → var(--text-3)`, `#eee → var(--text-1)` (4곳, 41_formation.css). `.rew-pick-card` raw `rgba(...)` → `color-mix(in srgb, var(--token) X%, transparent)` (3곳, 42_screens.css). ④ **검수관 검증 룰**: 검수관 P0 2건이 4/15 옛날 스크린샷 기반 false positive 로 판명(HP 위치 / 보상 4지선다 깨짐). 4/19 최신 스크린샷에서 모두 정상.
+- 이유: ① 기존 갈색 배경이 게임 톤(다크 판타지 + 신성)과 부합도 낮았고 신성 일러스트가 P2 컨셉에 맞음. ② 대표님 지적 — 나무문이 게임 진입의 핵심인데 두 번 클릭 패턴이라 마찰. 다른 건물은 증축 결정 단계가 있어 두 번 클릭이 안전. ③ 검수관 P1 토큰 외 raw 색 지적 — `--rar-*`, `--curr-gold`, `--text-*` 토큰 팔레트 외 직접 hex/rgba 가 누적되면 등급 색 일괄 교체가 어려움. ④ 검수관이 본 스크린샷이 코드 변경 후 갱신 안 된 상태였음. 정적 검사 도구가 시각 상태를 표상한다는 가정이 깨질 수 있음 → 타임스탬프 검증 룰 추가.
+- 영향: 회귀테스트 9/9 통과(2회). 시그널 append 5건(main/docs-lore/online-backend/assets). `current-focus.md` 4/16 → 4/19 갱신. 검수관 호출 시 향후 "검수관이 본 스크린샷의 mtime ≥ 마지막 관련 코드 변경 시점" 확인 권장 — `08-garbage-lessons.md` 후속 추가 검토.
+- 이전 결정: 2026-04-13 "타이틀 버튼 나무 배경 사고" — 투명 PNG + 100% 100% 스트레치 트랩 교훈. 2026-04-15 "PHASE 3 사망 애니" — 검수관·플레이 디렉터 교차검증 도입.
+
 ## 2026-04-19 ▶ 구조 ▶ Type A 래퍼 CSS 전면 통일 (tavern/deckview/castle)
 - 변경: 3개 Type A 래퍼의 CSS 를 `position:absolute; inset:0; width:100%; height:100%; padding:0; margin:0; pointer-events:none;` + `> *{pointer-events:auto}` 로 통일. 자식 토큰 8건(`tav-tab-unit/hero`, `tav-info`, `dv-tab-deck/codex`, `castle-tab-upgrade/quest`) 의 좌표를 부모 top/left 포함한 스테이지 절대좌표로 재설정 — 예: `tav-tab-unit-y: 600 → 660`, `tav-tab-unit-x: 463 → 483`. 편집기 `screen_editor_zones.html` defaults 동기화. church 는 제목 텍스트가 flow 렌더라 Type B (부분 absolute) 유지. 실측 위치 불변 (offsetTop 검증 완료: tav-tab-unit y=660, tab-deck y=122, castle-tab-upgrade y=111).
 - 이유: 2026-04-19 선술집 탭 잠금 사고의 근본 해결. 당시 부모 래퍼 `top:60` + 자식 `top:659` → 실측 y=719 (뷰포트 720 탈출, 탭 비가시)를 증상 대응(`659→600`)으로 막았지만, 편집기 defaults(스테이지 기준)와 런타임 토큰(상대 기준)이 엇갈리는 구조적 원인이 남아있었음. 다음에 대표님이 편집기에서 좌표 드래그할 때 같은 사고 재발을 막는 예방 리팩터.

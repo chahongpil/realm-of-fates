@@ -23,7 +23,7 @@ RoF.Data.CARD_IMG = Object.freeze({
   militia:__IMG+'militia.png',hunter:__IMG+'hunter.png',apprentice:__IMG+'apprentice.png',
   wolf:__IMG+'wolf.png',guard:__IMG+'guard.png',rogue:__IMG+'rogue.png',
   herbalist:__IMG+'herbalist.png',lancer:__IMG+'lancer.png',crossbow:__IMG+'crossbow.png',
-  fire_spirit:__IMG+'fire_spirit.png',knight:__IMG+'knight.png',assassin:__IMG+'assassin.png',
+  fire_spirit:__IMG+'fire_spirit.png',infantry:__IMG+'infantry.png',knight:__IMG+'knight.png',assassin:__IMG+'assassin.png',
   pyromancer:__IMG+'pyromancer.png',cryomancer:__IMG+'cryomancer.png',berserker:__IMG+'berserker.png',
   priest:__IMG+'priest.png',thunderbird:__IMG+'thunderbird.png',paladin:__IMG+'paladin.png',
   archmage:__IMG+'archmage.png',death_knight:__IMG+'death_knight.png',sniper:__IMG+'sniper.png',

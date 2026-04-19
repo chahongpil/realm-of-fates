@@ -8,6 +8,45 @@
 
 ---
 
+## 2026-04-19 ▶ 콘텐츠 ▶ 일반 유닛 bronze 추가 — 보병 (infantry)
+- **추가**: `infantry` / 보병 / earth / defense / melee / human / 🪖 아이콘. 스탯 `atk2 hp12 def2 spd1`, skill `armor(피해-3)`, bonusTrigger `thorns 20%(반사4)`.
+- **포지션**: earth 공명 편성의 첫 일반 defense 탱커. 기존 earth bronze 는 `militia/wolf(attack)` + `herbalist(support)` 만 있어 defense 슬롯 공백이었음.
+- **일러스트**: 대표님 `이미지제작_원본/일반유닛_원본/일반_보병_투명.png` 제공 → `img/infantry.png` (400×600, 432KB 리사이즈).
+- **검증 결과**: balance-auditor 1차 블로커(desc vs 파서 수치 불일치) → desc 를 파서 고정값(armor -3, thorns 4) 에 맞춰 수정 후 통과.
+- **잔존 이슈**: `armor`/`thorns` 파서가 55_game_battle.js 에 하드코딩. 유닛별 수치 차등화 불가. 추후 `dbt.value` 파라미터화로 영웅(강)/일반(약) 구분 가능. 현재는 h_m_earth 와 스킬 구성 중복이지만 역할(영웅 vs 소모품)로 차별.
+- **파일**: `js/11_data_units.js`, `js/14_data_images.js`, `img/infantry.png`.
+
+---
+
+## 2026-04-19 ▶ 게임 메커닉 ▶ 원소 공명 (편성형) 전투 엔진 반영
+- **변경**: PHASE3_ELEMENT_PLAN.md 의 편성형 공명 수치를 데미지 계산기에 합성. 전투 시작 시 `Battle.STATE.allyReso`/`enemyReso` 에 원소별 카운트를 stamp.
+- **배수**: 같은 원소 2체 ×1.10 / 3체 ×1.20 / 4체+ ×1.35 (공격 측 `caster.element` 기준).
+- **저항**: 피격자 편이 동일 원소 3체+면 받는 데미지 ×0.90 / 4체+면 ×0.80 (저항 해석은 "같은 원소 공격에 대한 감쇄"로 단순화).
+- **합성 순서**: `base × elementMult × critMult × resonanceBonus × resonanceResist`. 기존 값 보존, 공명이 독립 곱셈으로 추가.
+- **미구현**: 4체 특수 효과(화염폭풍/빙하의축복/번개의각성 등)는 후속 반복에서 진행. 편성 단계 UI 배지(공명 등급 표시)도 미구현.
+- **파일**: `js/60_turnbattle_v2.js`.
+- **이전 결정**: 2026-04-18 "액티브 스킬 확장 → 원소 공명 로직 추가" 핸드오프 메모에서 "편성형 vs 연쇄형" 중 PHASE3 기획서 정본인 **편성형만** 채택.
+
+---
+
+## 2026-04-19 ▶ UI ▶ 선술집 탭 상호 배타 비활성화 (편집기 지시반영)
+- **변경**: 선술집 `용병 모병` / `영웅 모집` 탭 중 **현재 선택된 탭은 짙은 회색으로 잠금**(disabled + `.tav-tab-current`). 반대 탭은 금색(클릭 가능).
+- **이유**: 대표님 편집기 지시 박스 — "같은 탭을 다시 누를 필요가 없으므로 시각적으로 잠그면 명확".
+- **영향**: 진입 시 기본이 "용병 모병" 이므로 그 탭이 회색 잠금, 영웅 모집 클릭 시 반전. 기능 동일.
+- **보조 수정**: `--tav-tab-unit-y` / `--tav-tab-hero-y` 토큰을 `659px → 600px` 로 내림. 부모 `.tav-tabs` 래퍼가 `position:absolute; top:60px` 이어서 자식 `659` 가 실측 `719` 로 뷰포트 720 밖에 탈출하던 레거시 이슈 동시 해결(검수관 블로커 지적).
+- **관련 파일**: `js/52_game_tavern.js`, `css/42_screens.css`, `css/10_tokens.css`.
+- **잔존 이슈**: Type A 래퍼(부모 absolute → 자식 absolute) 는 스테이지 좌표가 부모 오프셋과 중첩되는 구조적 문제 존재. prologue/deckview/castle 등 동일 패턴 래퍼에도 유사 y-drift 가능성. 다음 세션에 일괄 점검 필요.
+
+---
+
+## 2026-04-19 14:10 ▶ 세션 ▶ 핸드오프 저장 (세션 2 중간)
+
+**변경**: 세션 상태를 `docs/handoff/handoff-2026-04-19-session-mid.md` 에 저장.
+**이유**: 수동 저장. P0 3건 + P1 3건 + 가비지 2차 청소 + 구조 단일화까지 9 커밋 완주 후 대표님 이미지·스탯 편집 시간 확보용 체크포인트.
+**영향**: `docs/handoff/`
+
+---
+
 ## 2026-04-19 ▶ 팀/협업 ▶ 트랙 규칙 비대칭 전환
 
 **변경**:

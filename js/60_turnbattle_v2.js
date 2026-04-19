@@ -133,6 +133,42 @@
     return 1.0;
   };
 
+  // ── 원소 공명 (PHASE3_ELEMENT_PLAN.md, 2체/3체/4체+ 편성형) ──
+  // 전투 시작 시점에 아군·적군 각자의 편성 원소 카운트를 STATE 에 stamp 후,
+  // calcDamage 합성 단계에서 배수(공격 측)·저항(피격 측)으로 곱셈 적용.
+  Battle.unitSide = function(unit){
+    if(!unit || !unit.id) return null;
+    return unit.id.charAt(0) === 'a' ? 'ally' : 'enemy';
+  };
+  Battle.computeResonance = function(units){
+    const out = {};
+    (units || []).forEach(function(u){
+      const el = u && u.element;
+      if(!el || el === 'neutral') return;
+      out[el] = (out[el] || 0) + 1;
+    });
+    return out;
+  };
+  Battle.resonanceOf = function(side){
+    if(!Battle.STATE) return {};
+    return (side === 'ally' ? Battle.STATE.allyReso : Battle.STATE.enemyReso) || {};
+  };
+  // 공격 측: caster.element 로 skill 쏠 때 배수 (1.0 / 1.10 / 1.20 / 1.35)
+  Battle.resonanceBonus = function(element, side){
+    const n = (Battle.resonanceOf(side)[element]) || 0;
+    if(n >= 4) return 1.35;
+    if(n >= 3) return 1.20;
+    if(n >= 2) return 1.10;
+    return 1.0;
+  };
+  // 피격 측: 들어오는 공격의 원소(= caster.element) 에 대한 저항. 3체+=10%, 4체+=20% 감쇄.
+  Battle.resonanceResist = function(element, side){
+    const n = (Battle.resonanceOf(side)[element]) || 0;
+    if(n >= 4) return 0.80;
+    if(n >= 3) return 0.90;
+    return 1.0;
+  };
+
   // ── 치명타 판정 ──────────────────────────────────────────────
   // luck, critBonus 모두 % 단위 (luck 10 = 10%). 03-terminology.md 규정.
   Battle.rollCrit = function(caster, skill){
@@ -162,7 +198,7 @@
   };
 
   Battle.calcDamage = function(caster, target, skill){
-    const empty = { dmg: 0, base: 0, elMult: 1, crMult: 1, isCrit: false };
+    const empty = { dmg: 0, base: 0, elMult: 1, crMult: 1, resoMult: 1, resoResist: 1, isCrit: false };
     if(!caster || !target || !skill) return empty;
     const type = skill.attackType || 'weapon';
     const calc = Battle.DAMAGE_CALCULATORS[type];
@@ -171,9 +207,14 @@
     const elMult = Battle.elementMult(caster.element, target.element);
     const isCrit = Battle.rollCrit(caster, skill);
     const crMult = isCrit ? (skill.critMult ?? 1.5) : 1.0;
-    const raw = Math.floor(base * elMult * crMult);
+    // 원소 공명: 공격 측 배수 × 피격 측 저항. caster.element 기준으로 양쪽에 질의.
+    const casterSide = Battle.unitSide(caster);
+    const targetSide = Battle.unitSide(target);
+    const resoMult   = Battle.resonanceBonus(caster.element, casterSide);
+    const resoResist = Battle.resonanceResist(caster.element, targetSide);
+    const raw = Math.floor(base * elMult * crMult * resoMult * resoResist);
     const dmg = Math.max(minFinal, raw);
-    return { dmg: dmg, base: base, elMult: elMult, crMult: crMult, isCrit: isCrit };
+    return { dmg: dmg, base: base, elMult: elMult, crMult: crMult, resoMult: resoMult, resoResist: resoResist, isCrit: isCrit };
   };
 
   // ── 효과 계산기 (heal/buff/debuff) ─────────────────────────
@@ -1442,6 +1483,10 @@
     // 1) 유닛 변환
     Battle.STATE.allies  = bs.pCards.map(function(c,i){ return legacyCardToV2Unit(c, i, 'ally'); });
     Battle.STATE.enemies = bs.eCards.map(function(c,i){ return legacyCardToV2Unit(c, i, 'enemy'); });
+
+    // 1-B) 원소 공명 stamp — 편성 기반 (PHASE3_ELEMENT_PLAN.md). 2/3/4+체 배수 + 저항.
+    Battle.STATE.allyReso  = Battle.computeResonance(Battle.STATE.allies);
+    Battle.STATE.enemyReso = Battle.computeResonance(Battle.STATE.enemies);
 
     // 2) 스킬셋 — 아군/적 모두 기본공격+원소 시그니처 2장씩.
     // 추후 11_data_units.js 의 skillIds 필드가 생기면 fallback 으로만 사용.

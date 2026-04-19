@@ -29,15 +29,21 @@ Object.assign(RoF.Game, {
   },
   showTavernUnit(){
     this._tavTab='unit';
-    document.getElementById('tav-tab-unit').style.cssText='border-color:#ffd700;color:#ffd700;';
-    document.getElementById('tav-tab-hero').style.cssText='';
+    const u=document.getElementById('tav-tab-unit'),h=document.getElementById('tav-tab-hero');
+    u.style.cssText='border-color:#ffd700;color:#ffd700;';
+    h.style.cssText='';
+    u.classList.add('tav-tab-current');    h.classList.remove('tav-tab-current');
+    u.disabled=true;                        h.disabled=false;
     document.getElementById('tav-info').textContent='골드를 지불하고 동료를 영입하세요';
     this.genTavernCards();
   },
   showTavernHero(){
     this._tavTab='hero';
-    document.getElementById('tav-tab-hero').style.cssText='border-color:#ffd700;color:#ffd700;';
-    document.getElementById('tav-tab-unit').style.cssText='';
+    const u=document.getElementById('tav-tab-unit'),h=document.getElementById('tav-tab-hero');
+    h.style.cssText='border-color:#ffd700;color:#ffd700;';
+    u.style.cssText='';
+    h.classList.add('tav-tab-current');    u.classList.remove('tav-tab-current');
+    h.disabled=true;                        u.disabled=false;
     document.getElementById('tav-info').innerHTML=`✨ 신의 축복: <span style="color:#ffd700;">${this.blessings||0}개</span> | 신의 축복 1개로 영웅 동료를 소환합니다`;
     this.genHeroRecruitCards();
   },

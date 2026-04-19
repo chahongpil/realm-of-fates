@@ -224,8 +224,9 @@
   --prologue-btn-skip-x: 1127px; --prologue-btn-skip-y: 62px; --prologue-btn-skip-w: 130px; --prologue-btn-skip-h: 44px;
 
   /* tavern/deckview/castle/church 탭 wrapper 분해 */
-  --tav-tab-unit-x:   463px; --tav-tab-unit-y:   659px;  --tav-tab-unit-w:   180px;  --tav-tab-unit-h:   44px;
-  --tav-tab-hero-x:   660px; --tav-tab-hero-y:   659px;  --tav-tab-hero-w:   180px;  --tav-tab-hero-h:   44px;
+  /* 탭 y: 부모 .tav-tabs 래퍼가 absolute top:60 이므로 자식 y=600 이면 실측 660 (뷰포트 720 안) */
+  --tav-tab-unit-x:   463px; --tav-tab-unit-y:   600px;  --tav-tab-unit-w:   180px;  --tav-tab-unit-h:   44px;
+  --tav-tab-hero-x:   660px; --tav-tab-hero-y:   600px;  --tav-tab-hero-w:   180px;  --tav-tab-hero-h:   44px;
   --tav-info-x:       20px;  --tav-info-y:       115px; --tav-info-w:       1240px; --tav-info-h:       30px;
   --dv-tab-deck-x:    144px; --dv-tab-deck-y:    72px;  --dv-tab-deck-w:    180px;  --dv-tab-deck-h:    40px;
   --dv-tab-codex-x:   144px; --dv-tab-codex-y:   122px;  --dv-tab-codex-w:    180px; --dv-tab-codex-h:   40px;

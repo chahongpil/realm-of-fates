@@ -1308,6 +1308,16 @@ body.game-mode #tav-tab-hero{
   width:var(--tav-tab-hero-w); height:var(--tav-tab-hero-h);
   margin:0 !important;
 }
+/* 현재 선택된 탭은 "재클릭 필요 없음" 신호로 잠금 처리 — 짙은 회색 + 비활성 */
+body.game-mode #tav-tab-unit.tav-tab-current,
+body.game-mode #tav-tab-hero.tav-tab-current{
+  border-color:#3a3a3a !important;
+  color:#777 !important;
+  background:#1a1a1a !important;
+  opacity:.6;
+  cursor:default;
+  pointer-events:none;
+}
 body.game-mode #tav-info{
   position:absolute !important;
   left:var(--tav-info-x); top:var(--tav-info-y);

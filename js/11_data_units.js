@@ -88,7 +88,7 @@ RoF.Data.UNITS = Object.freeze([
   // ══════════════════════════════════
   // ── RECRUITABLE UNITS (선술집/전투 중 획득) ──
   // ══════════════════════════════════
-  // ── BRONZE (10) ──
+  // ── BRONZE (11) ──
   {id:'militia',name:'민병',icon:'🗡️',type:'전사',role:'attack',range:'melee',race:'human',element:'earth',
     atk:2,hp:10,def:1,spd:1,rage:2,nrg:1,luck:1,eva:1,meva:1,hpReg:0,nrgReg:0,
     skill:'none',skillType:'passive',skillChance:0,skillNrg:0,skillDesc:'기본 공격만 수행',
@@ -129,6 +129,10 @@ RoF.Data.UNITS = Object.freeze([
     atk:2,hp:5,def:0,spd:2,rage:1,nrg:6,luck:1,eva:2,meva:1,hpReg:0,nrgReg:2,
     skill:'aoe',skillType:'active',skillChance:.5,skillNrg:3,skillDesc:'[액티브 50%] 불꽃: 적전체 2데미지 (에너지3)',
     bonusTrigger:{on:'skill',chance:.2,effect:'ignite',desc:'20% 비전 발동 시: 대상 1턴 화상(턴당2)'},rarity:'bronze'},
+  {id:'infantry',name:'보병',icon:'🪖',type:'전사',role:'defense',range:'melee',race:'human',element:'earth',
+    atk:2,hp:12,def:2,spd:1,rage:2,nrg:1,luck:1,eva:0,meva:1,hpReg:0,nrgReg:0,
+    skill:'armor',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 중장갑: 받는 피해 -3',
+    bonusTrigger:{on:'hit',chance:.2,effect:'thorns',desc:'20% 방패 반사: 피격시 공격자에게 4데미지'},rarity:'bronze'},
   // ── SILVER (7) ──
   {id:'knight',name:'기사',icon:'⚜️',type:'전사',role:'defense',range:'melee',race:'human',element:'holy',
     atk:3,hp:18,def:3,spd:1,rage:2,nrg:2,luck:1,eva:1,meva:2,hpReg:1,nrgReg:1,

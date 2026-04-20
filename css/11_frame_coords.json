@@ -188,6 +188,7 @@
   "divine": {
     "W": 1024,
     "H": 1536,
+    "_note": "slots/boxes 는 data-element 속성 없을 때의 default (fallback). 원소별 좌표는 elements.{fire,lightning,holy,dark} 에 저장. 편집기에서 drag 하면 elements 쪽에 기록.",
     "slots": {
       "atk": {
         "xPct": 12.58,
@@ -228,6 +229,184 @@
         "yPct": 69.22,
         "wPct": 52.74,
         "hPct": 13.04
+      }
+    },
+    "elements": {
+      "fire": {
+        "slots": {
+          "atk": {
+            "xPct": 12.58,
+            "yPct": 36.98
+          },
+          "def": {
+            "xPct": 12.74,
+            "yPct": 45.28
+          },
+          "spd": {
+            "xPct": 12.89,
+            "yPct": 53.12
+          },
+          "hp": {
+            "xPct": 82.23,
+            "yPct": 26.49
+          },
+          "nrg": {
+            "xPct": 84.43,
+            "yPct": 66.14
+          }
+        },
+        "boxes": {
+          "name": {
+            "xPct": 27.43,
+            "yPct": 12.4,
+            "wPct": 42.07,
+            "hPct": 5.39
+          },
+          "tags": {
+            "xPct": 41.5,
+            "yPct": 86.02,
+            "wPct": 17.92,
+            "hPct": 6.46
+          },
+          "desc": {
+            "xPct": 22.26,
+            "yPct": 69.22,
+            "wPct": 52.74,
+            "hPct": 13.04
+          }
+        }
+      },
+      "lightning": {
+        "slots": {
+          "atk": {
+            "xPct": 12.58,
+            "yPct": 36.98
+          },
+          "def": {
+            "xPct": 12.74,
+            "yPct": 45.28
+          },
+          "spd": {
+            "xPct": 12.89,
+            "yPct": 53.12
+          },
+          "hp": {
+            "xPct": 82.23,
+            "yPct": 26.49
+          },
+          "nrg": {
+            "xPct": 84.43,
+            "yPct": 66.14
+          }
+        },
+        "boxes": {
+          "name": {
+            "xPct": 27.43,
+            "yPct": 12.4,
+            "wPct": 42.07,
+            "hPct": 5.39
+          },
+          "tags": {
+            "xPct": 41.5,
+            "yPct": 86.02,
+            "wPct": 17.92,
+            "hPct": 6.46
+          },
+          "desc": {
+            "xPct": 22.26,
+            "yPct": 69.22,
+            "wPct": 52.74,
+            "hPct": 13.04
+          }
+        }
+      },
+      "holy": {
+        "slots": {
+          "atk": {
+            "xPct": 12.58,
+            "yPct": 36.98
+          },
+          "def": {
+            "xPct": 12.74,
+            "yPct": 45.28
+          },
+          "spd": {
+            "xPct": 12.89,
+            "yPct": 53.12
+          },
+          "hp": {
+            "xPct": 82.23,
+            "yPct": 26.49
+          },
+          "nrg": {
+            "xPct": 84.43,
+            "yPct": 66.14
+          }
+        },
+        "boxes": {
+          "name": {
+            "xPct": 27.43,
+            "yPct": 12.4,
+            "wPct": 42.07,
+            "hPct": 5.39
+          },
+          "tags": {
+            "xPct": 41.5,
+            "yPct": 86.02,
+            "wPct": 17.92,
+            "hPct": 6.46
+          },
+          "desc": {
+            "xPct": 22.26,
+            "yPct": 69.22,
+            "wPct": 52.74,
+            "hPct": 13.04
+          }
+        }
+      },
+      "dark": {
+        "slots": {
+          "atk": {
+            "xPct": 12.58,
+            "yPct": 36.98
+          },
+          "def": {
+            "xPct": 12.74,
+            "yPct": 45.28
+          },
+          "spd": {
+            "xPct": 12.89,
+            "yPct": 53.12
+          },
+          "hp": {
+            "xPct": 82.23,
+            "yPct": 26.49
+          },
+          "nrg": {
+            "xPct": 84.43,
+            "yPct": 66.14
+          }
+        },
+        "boxes": {
+          "name": {
+            "xPct": 27.43,
+            "yPct": 12.4,
+            "wPct": 42.07,
+            "hPct": 5.39
+          },
+          "tags": {
+            "xPct": 41.5,
+            "yPct": 86.02,
+            "wPct": 17.92,
+            "hPct": 6.46
+          },
+          "desc": {
+            "xPct": 22.26,
+            "yPct": 69.22,
+            "wPct": 52.74,
+            "hPct": 13.04
+          }
+        }
       }
     }
   }

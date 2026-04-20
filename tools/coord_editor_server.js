@@ -46,11 +46,25 @@ function handleSave(req, res){
       const data = JSON.parse(body);
       // 안전성: 구조 검증
       const required = ['bronze','silver','gold','legendary','divine'];
+      const SLOT_NAMES = ['atk','def','spd','hp','nrg'];
+      const validateSlots = (where, slots) => {
+        if(!slots) throw new Error('missing slots: '+where);
+        for(const s of SLOT_NAMES){
+          const v = slots[s];
+          if(!v || typeof v.xPct!=='number' || typeof v.yPct!=='number') throw new Error(`bad slot ${where}.${s}`);
+        }
+      };
       for(const r of required){
-        if(!data[r] || !data[r].slots) throw new Error('missing rarity: '+r);
-        for(const s of ['atk','def','spd','hp','nrg']){
-          const v = data[r].slots[s];
-          if(!v || typeof v.xPct!=='number' || typeof v.yPct!=='number') throw new Error(`bad slot ${r}.${s}`);
+        if(!data[r]) throw new Error('missing rarity: '+r);
+        validateSlots(r, data[r].slots);
+      }
+      // divine 원소별 override (Step C, 2026-04-20). 있으면 각 원소도 검증.
+      if(data.divine.elements && typeof data.divine.elements === 'object'){
+        for(const [elem, eData] of Object.entries(data.divine.elements)){
+          if(elem.startsWith('_')) continue;
+          if(!/^[a-z]+$/.test(elem)) throw new Error('bad element name: '+elem);
+          if(!eData || typeof eData !== 'object') throw new Error('bad divine.elements.'+elem);
+          validateSlots('divine.elements.'+elem, eData.slots);
         }
       }
       // 저장

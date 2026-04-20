@@ -225,11 +225,24 @@
 <div class="grid" id="grid"></div>
 
 <script>
-const RARITIES = ['bronze','silver','gold','legendary','divine'];
 const SLOTS = ['atk','def','spd','hp','nrg'];
 const BOXES = ['name','tags','desc'];
 const BOX_LABELS = { name:'NAME', tags:'TAGS', desc:'DESC' };
 let coordData = null;  // 전체 JSON
+
+// 2026-04-20 Step C: 편집 슬롯 8개 = 4등급 + divine 4원소.
+// node.data() 는 JSON 내 슬라이스({slots, boxes}). drag/save 시 이 레퍼런스에 직접 쓰기.
+// divine 은 CSS 상 [data-element="..."] 셀렉터로 원소별 override → 이 편집기의 4장이 곧 4개 블록.
+const SLOT_NODES = [
+  { key:'bronze',    label:'bronze',              bg:'apprentice',     data: () => coordData.bronze },
+  { key:'silver',    label:'silver',              bg:'knight',         data: () => coordData.silver },
+  { key:'gold',      label:'gold',                bg:'phoenix',        data: () => coordData.gold },
+  { key:'legendary', label:'legendary',           bg:'griffin_knight', data: () => coordData.legendary },
+  { key:'divine_fire',      label:'divine · fire',      bg:'dragon',     data: () => coordData.divine.elements.fire },
+  { key:'divine_lightning', label:'divine · lightning', bg:'titan',      data: () => coordData.divine.elements.lightning },
+  { key:'divine_holy',      label:'divine · holy',      bg:'archangel',  data: () => coordData.divine.elements.holy },
+  { key:'divine_dark',      label:'divine · dark',      bg:'archfiend',  data: () => coordData.divine.elements.dark }
+];
 
 // ─ 스냅/정렬 ─
 const SNAP_THRESHOLD = 1.0;      // %, 이 이내면 스냅
@@ -318,31 +331,18 @@ async function loadJSON(){
   }
 }
 
-// 등급별 대표 샘플 카드 (합성 PNG 배경) — 2026-04-20 frame_*.png 폐기 이후
-// 같은 등급의 모든 유닛은 프레임 슬롯 위치가 동일하므로 샘플 1장씩으로 편집 가능.
-// divine 은 현재 titan(lightning) 1장뿐 → 원소별 확장은 해당 원소 PNG 추가 시 별도 작업.
-// 2026-04-20 2차: archangel/dragon 이 divine 으로 승격 → legendary 샘플은
-// griffin_knight 로 교체. divine 은 현재 4원소(fire/lightning/holy/dark) 카드
-// 존재 → 일단 titan 유지, 원소별 4슬롯 확장은 Step C 에서.
-const SAMPLE_BG = {
-  bronze:    'apprentice',     // 견습 마법사
-  silver:    'knight',         // 기사
-  gold:      'phoenix',        // 불사조
-  legendary: 'griffin_knight', // 심홍의 그리핀 기사 (임시, 대표님 새 legendary 카드 제작 시 교체)
-  divine:    'titan'           // 번개 타이탄 (4원소 확장은 Step C)
-};
-
 function renderAll(){
   const grid = $('#grid');
   grid.innerHTML = '';
-  RARITIES.forEach(rarity => {
+  SLOT_NODES.forEach(node => {
+    const d = node.data();
+    if(!d){ console.warn('[editor] missing data for', node.key); return; }
     const card = document.createElement('div');
     card.className = 'frame-card';
-    const bgId = SAMPLE_BG[rarity] || rarity;
     card.innerHTML = `
-      <h3>${rarity} <span class="rarity-tag">img/${bgId}.png (샘플)</span></h3>
-      <div class="stage" data-rarity="${rarity}">
-        <img class="frame" src="../img/${bgId}.png" alt="${rarity}">
+      <h3>${node.label} <span class="rarity-tag">img/${node.bg}.png (샘플)</span></h3>
+      <div class="stage" data-key="${node.key}">
+        <img class="frame" src="../img/${node.bg}.png" alt="${node.label}">
       </div>
       <div class="coord-readout"></div>
     `;
@@ -352,7 +352,7 @@ function renderAll(){
     const readout = $('.coord-readout', card);
 
     SLOTS.forEach(slot => {
-      const coord = coordData[rarity].slots[slot];
+      const coord = d.slots[slot];
       const m = document.createElement('div');
       m.className = 'marker ' + slot;
       m.setAttribute('data-label', slot.toUpperCase());
@@ -360,13 +360,12 @@ function renderAll(){
       m.style.left = coord.xPct + '%';
       m.style.top = coord.yPct + '%';
       stage.appendChild(m);
-      attachDrag(m, stage, rarity, slot, readout);
+      attachDrag(m, stage, node, slot, readout);
     });
 
-    // 박스 마커 (name / tags / desc)
-    if(!coordData[rarity].boxes) coordData[rarity].boxes = {};
+    if(!d.boxes) d.boxes = {};
     BOXES.forEach(boxName => {
-      const b = coordData[rarity].boxes[boxName];
+      const b = d.boxes[boxName];
       if(!b) return;
       const bm = document.createElement('div');
       bm.className = 'box-marker ' + boxName;
@@ -382,14 +381,14 @@ function renderAll(){
       handle.className = 'resize-handle';
       bm.appendChild(handle);
       stage.appendChild(bm);
-      attachBoxDrag(bm, handle, stage, rarity, boxName, readout);
+      attachBoxDrag(bm, handle, stage, node, boxName, readout);
     });
 
-    updateReadout(readout, rarity);
+    updateReadout(readout, node);
   });
 }
 
-function attachDrag(marker, stage, rarity, slot, readout){
+function attachDrag(marker, stage, node, slot, readout){
   let dragging = false;
 
   function moveTo(clientX, clientY, shiftKey){
@@ -401,10 +400,11 @@ function attachDrag(marker, stage, rarity, slot, readout){
     const { x: xC, y: yC } = applySnap(stage, marker, clampedX, clampedY, shiftKey);
     marker.style.left = xC + '%';
     marker.style.top = yC + '%';
-    coordData[rarity].slots[slot].xPct = +xC.toFixed(2);
-    coordData[rarity].slots[slot].yPct = +yC.toFixed(2);
+    const d = node.data();
+    d.slots[slot].xPct = +xC.toFixed(2);
+    d.slots[slot].yPct = +yC.toFixed(2);
     marker.setAttribute('data-coords', xC.toFixed(2) + ',' + yC.toFixed(2));
-    updateReadout(readout, rarity);
+    updateReadout(readout, node);
   }
 
   marker.addEventListener('pointerdown', (e) => {
@@ -423,7 +423,7 @@ function attachDrag(marker, stage, rarity, slot, readout){
   });
 }
 
-function attachBoxDrag(box, handle, stage, rarity, boxName, readout){
+function attachBoxDrag(box, handle, stage, node, boxName, readout){
   // 리사이즈 (우하단 핸들)
   let resizing = false;
   handle.addEventListener('pointerdown', (e) => {
@@ -434,7 +434,7 @@ function attachBoxDrag(box, handle, stage, rarity, boxName, readout){
   handle.addEventListener('pointermove', (e) => {
     if(!resizing) return;
     const rect = stage.getBoundingClientRect();
-    const b = coordData[rarity].boxes[boxName];
+    const b = node.data().boxes[boxName];
     const rightX = ((e.clientX - rect.left) / rect.width) * 100;
     const bottomY = ((e.clientY - rect.top) / rect.height) * 100;
     const newW = Math.max(3, Math.min(100 - b.xPct, rightX - b.xPct));
@@ -443,7 +443,7 @@ function attachBoxDrag(box, handle, stage, rarity, boxName, readout){
     b.hPct = +newH.toFixed(2);
     box.style.width = b.wPct + '%';
     box.style.height = b.hPct + '%';
-    updateReadout(readout, rarity);
+    updateReadout(readout, node);
   });
   handle.addEventListener('pointerup', (e) => {
     resizing = false;
@@ -457,7 +457,7 @@ function attachBoxDrag(box, handle, stage, rarity, boxName, readout){
     if(e.target === handle) return;
     dragging = true;
     box.setPointerCapture(e.pointerId);
-    const b = coordData[rarity].boxes[boxName];
+    const b = node.data().boxes[boxName];
     startClientX = e.clientX;
     startClientY = e.clientY;
     startX = b.xPct;
@@ -469,17 +469,16 @@ function attachBoxDrag(box, handle, stage, rarity, boxName, readout){
     const rect = stage.getBoundingClientRect();
     const dx = ((e.clientX - startClientX) / rect.width) * 100;
     const dy = ((e.clientY - startClientY) / rect.height) * 100;
-    const b = coordData[rarity].boxes[boxName];
+    const b = node.data().boxes[boxName];
     let nx = Math.max(0, Math.min(100 - b.wPct, startX + dx));
     let ny = Math.max(0, Math.min(100 - b.hPct, startY + dy));
-    // 박스 좌상단/우하단/중심 기준 스냅
     const snapped = applySnap(stage, box, nx, ny, e.shiftKey);
     nx = snapped.x; ny = snapped.y;
     b.xPct = +nx.toFixed(2);
     b.yPct = +ny.toFixed(2);
     box.style.left = b.xPct + '%';
     box.style.top = b.yPct + '%';
-    updateReadout(readout, rarity);
+    updateReadout(readout, node);
   });
   box.addEventListener('pointerup', (e) => {
     dragging = false;
@@ -488,9 +487,10 @@ function attachBoxDrag(box, handle, stage, rarity, boxName, readout){
   });
 }
 
-function updateReadout(readout, rarity){
-  const s = coordData[rarity].slots;
-  const b = coordData[rarity].boxes || {};
+function updateReadout(readout, node){
+  const d = node.data();
+  const s = d.slots;
+  const b = d.boxes || {};
   let html =
     `<b>ATK</b> ${s.atk.xPct},${s.atk.yPct}  ` +
     `<b>DEF</b> ${s.def.xPct},${s.def.yPct}  ` +

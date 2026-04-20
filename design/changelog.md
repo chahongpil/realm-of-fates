@@ -13,6 +13,27 @@
 - 이유: 수동 저장 (대표님 지시, 세션 마무리).
 - 영향: 다음 세션 `/clear → Ctrl+V` 로 맥락 즉시 복구.
 
+## 2026-04-21 ▶ 밸런스 ▶ P0 5건 등급 하향 조정
+
+- **변경**:
+  - `dragon`: divine → legendary (atk 10 hp 35 = legendary attack 범위 내)
+  - `archangel`: divine → legendary (atk 6 hp 40 def 5 = legendary 수준)
+  - `lich`: legendary → gold (atk 8 hp 20 def 1 = gold attack 범위 완벽)
+  - `archmage`: gold → silver (atk 6 hp 12 = silver attack 매칭)
+  - `sniper`: gold → silver + atk 7→6 (hp 8 gold 미달, atk 소폭 하향)
+- **이유**: 새 rules/04-balance.md 범위 기준 스탯 대비 등급 초과. 스탯 상향(밸런스 파급 큼) 대신 등급 하향(레이블 변경, 드롭률만 바뀜) 선택.
+- **영향**:
+  - 드롭률 변동: 5장이 더 흔한 등급으로 이동 → 플레이어 입수 난이도 ↓
+  - 명칭/시각 효과 변화: 신 등급 금박·샤인 효과 해제 (dragon/archangel)
+  - P0 7건 중 5건 해결. 남은 2건 (genie_noble gold support atk 5, sea_priest legendary support atk 8) 은 새 규칙 범위 내로 판정되어 변경 없음.
+- **검증**: 회귀 9/9 PASS, units=58/skills=37/relics=12 유지.
+- **이전 결정 관계**: 2026-04-20 night balance-auditor 감사 결과 반영.
+
+## 2026-04-21 ▶ 콘텐츠 ▶ 스킬·유물 이미지 작업 큐 작성
+- **변경**: `docs/art_queue_skills_relics_2026-04-21.md` 신규 — 37 스킬(패시브 29 + 액티브 8) + 12 유물 전체에 대한 비주얼 컨셉·배경·프롬프트 힌트 정리. P0(액티브 스펠 8) / P1(전설 패시브+유물 10) / P2(골드 12) / P3(실버·브론즈 18) 우선순위.
+- **이유**: 대표님 이미지 작업 큐 요청. 유닛 추천(art_queue_2026-04-20.md) 과 동일 형식.
+- **영향**: 대표님 작업 후 img/sk_*.png / img/rl_*.png 로 공급 → 12_data_skills.js 의 imgKey 활용 또는 13_data_relics.js 에 imgKey 필드 추가.
+
 ## 2026-04-21 ▶ 밸런스 ▶ A안 — design/balance.md 폐기 + rules/04-balance.md 정본화
 
 - **변경**:

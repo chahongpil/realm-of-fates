@@ -13,6 +13,30 @@
 - 이유: 수동 저장 (대표님 지시, 세션 마무리).
 - 영향: 다음 세션 `/clear → Ctrl+V` 로 맥락 즉시 복구.
 
+## 2026-04-20 23:04 ▶ 세션 ▶ 핸드오프 저장 (7차 마무리)
+- 변경: 세션 상태를 `docs/handoff/handoff-2026-04-20-2304.md` 에 저장. 클립보드 복사 완료.
+- 이유: 7차 세션 마감 (C 선택). 로컬 2커밋(`fe04820`, `681e102`) 미push 상태.
+- 영향: 다음 세션 `/clear → Ctrl+V` 로 Tavern V4 적용 후속 UI 조정 3건부터 이어감.
+
+## 2026-04-20 (Step 4B) ▶ 디자인 ▶ Tavern V4 5-col grid 전환 + 카드 폭 235
+- 변경:
+  - `css/42_screens.css` `#tav-grid` override 블록에 `display:grid !important; grid-template-columns:repeat(auto-fill, 235px); gap:10px; justify-content:center;` 추가.
+  - `body.game-mode #tav-grid .card-v4 { width:235px !important }` + `.tavern-card-wrap { width:235px }`.
+  - 이전 inline style 의 `display:flex;flex-wrap:wrap` 이 5번째 카드 wrap 원인이었음. grid override 로 해결.
+- 이유: 설계값 260×455 복원은 stage 1240 에서 5-col 불가능(5×260+gap=1300+ > 1240). 235×411 (90% 축소) 로 5장 한 줄 보장.
+- 영향:
+  - Tavern Unit/Hero 탭 모두 5-col grid.
+  - 5 슬롯 동시 표시 시 wrap 없음 (실측 rows=1, 5×235 + 4×10 = 1215 < 1240 usable).
+  - Hero 탭(3장) 은 `auto-fill` 로 중앙 정렬.
+  - 이전 세션 "보병 양피지 배경 충돌" 은 실제 렌더 확인 결과 다른 캐릭터와 톤 유사, 당분간 놔둠.
+- 검증: 회귀 9/9 PASS, Playwright shots `shots/tavern_v4_step4b_5col.png`.
+- 남은 과제: 다른 화면(Collection/Formation/Battle) V4 확장은 Step 5 로 분리. Tavern 내부 카드·버튼 간격 미세 조정은 사용자 피드백 받아 후속.
+
+## 2026-04-20 (art queue) ▶ 콘텐츠 ▶ 이미지 작업 추천 큐 정리
+- 변경: `docs/art_queue_2026-04-20.md` 신규 — 58 유닛 매트릭스 + P0/P1/P2 9장 추천 (해적 수병/수도사 견습/해신 팔라딘/석공 전사/번개 채널러/해파 기사/어둠 주술사/화염 수호자/산악 파괴자).
+- 이유: 대표님 이미지 작업 큐 요청. divine 제외 4등급 × 원소 × 역할 매트릭스에서 공백 셀 우선순위화.
+- 영향: 대표님 이미지 공급 후 `/캐릭터추가` 스킬로 데이터 편입 예정. legendary water/defense = 핵심 시그니처 후보.
+
 ## 2026-04-20 (7차) ▶ 디자인 ▶ Claude Design System 도입 Step 1-3 (토큰 + 폰트 + V4 카드 시안)
 - 변경:
   - Claude Design zip(93파일/21MB) → `c:/work/design-system/` 압축 해제 + git init + GitHub private 레포 `chahongpil/realm-of-fates-design-system` push (커밋 `63d6557`).

@@ -8,6 +8,24 @@
 
 ---
 
+## 2026-04-20 21:44 ▶ 세션 ▶ 핸드오프 저장
+- 변경: 세션 상태를 `docs/handoff/handoff-2026-04-20-2144.md` 에 저장 + `current-focus.md` 4·5·6차 반영 갱신.
+- 이유: 수동 저장 (대표님 지시, 세션 마무리).
+- 영향: 다음 세션 `/clear → Ctrl+V` 로 맥락 즉시 복구.
+
+## 2026-04-20 (7차) ▶ 디자인 ▶ Claude Design System 도입 Step 1-3 (토큰 + 폰트 + V4 카드 시안)
+- 변경:
+  - Claude Design zip(93파일/21MB) → `c:/work/design-system/` 압축 해제 + git init + GitHub private 레포 `chahongpil/realm-of-fates-design-system` push (커밋 `63d6557`).
+  - `game/css/10_tokens.css` **섹션 14 추가** — DS `handoff/DESIGN_TOKENS.md` 반영: parchment-0..3 / ink-0..2 / rubric / lapis / malachite / gilt / r-guardian·melee·ranged·caster-m·caster-r. 사용처 0 무해.
+  - `game/index.html:6` 폰트 로드 확장 — Cinzel 500/900 + Cinzel Decorative 700/900 + Noto Sans KR 400-900 + Noto Serif KR 400-900.
+  - `game/mockup/v4_card/v1~v3.html` — Tavern 6장(등급5 + divine 2원소) V4 프레임 시안 3안:
+    - v1: 순수 DS 톤(가죽 `#1a0f08` + 양피지 `#f1e4c3`)
+    - v2: 현 게임 배경(`#080810`) + V4 양피지 원본(톤 충돌 체감용)
+    - v3: 현 게임 배경 + 양피지 톤다운(`#d4bf88`) 타협안
+  - `game/shots/v4_mockup/v1~v3.png` (gitignore, 로컬 검수용).
+- 이유: 전면 V4 카드 프레임 전환의 출발점. 대표님이 시안 3안 중 선택 → Step 4 (실제 화면 적용) 진행.
+- 영향: 회귀 9/9 PASS. 기존 UI 변경 없음. V4 전환·톤 시프트·역할 5종 분화는 후속 작업.
+
 ## 2026-04-20 (6차) ▶ 콘텐츠 ▶ 신규 6장 추가 (divine 6원소 완성 + legendary 갭 메움 + UI 아이콘 사양서)
 - 변경: ① **신규 유닛 6장 추가** (52 → **58 유닛**):
   - `genie_noble` (고귀한 지니) — gold / lightning / support / ranged. atk:5 hp:22 def:2 spd:4. 액티브 80% arcane_burst "번개 소원" + 30% group_heal 트리거.

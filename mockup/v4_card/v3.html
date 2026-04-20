@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>V4 카드 — v3: 양피지 톤다운 (타협안)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080810; --panel:#1a1a2e; --ink:#e6e6ee; --muted:#aaaab6;
+    --gold:#d4a84a; --gold-lo:#8b6914; --gold-hi:#f1d890; --curr-gold:#ffd700;
+    --border:#9b7a3e; --border-dk:#6e4a2a;
+
+    --rar-bronze:#b8b8c0; --rar-silver:#3a7bd5; --rar-gold:#9b59b6;
+    --rar-legendary:#f39c12; --rar-divine:#ffffff;
+    --rar-silver-glow:#7ab0ff; --rar-gold-glow:#c786d6; --rar-leg-glow:#ffc857;
+    --rar-div-fire:#e74c3c; --rar-div-holy:#ffd700;
+
+    /* v3 차이: 양피지를 2톤 어둡게 */
+    --parch-bg: #d4bf88;         /* DS parchment-2 (원본은 parchment-0 #f1e4c3) */
+    --parch-shadow: rgba(110,74,42,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;}
+  body{padding:40px 48px 72px;min-height:100vh}
+
+  header{max-width:1400px;margin:0 auto 32px}
+  .kicker{font:700 11px/1 'Noto Sans KR';color:var(--muted);letter-spacing:.24em;text-transform:uppercase;margin-bottom:10px}
+  h1{font:900 34px/1.1 'Cinzel Decorative',serif;color:var(--curr-gold);letter-spacing:.04em;margin:0 0 8px;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+  .lead{font:400 15px/1.6 'Noto Serif KR',serif;color:#e6e6ee;max-width:900px;margin:0 0 6px}
+  .spec{display:inline-block;padding:3px 10px;background:#1a1a2e;border:1px solid var(--border-dk);color:var(--curr-gold);font:700 11px/1 'Noto Sans KR';letter-spacing:.12em;margin-top:8px;border-radius:2px}
+
+  .grid{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(240px,260px));gap:32px 28px;justify-content:center}
+  .cell{display:flex;flex-direction:column;gap:10px}
+  .cell-hdr{font:700 11px/1 'Cinzel';color:var(--muted);letter-spacing:.2em;text-transform:uppercase}
+  .cell-hdr b{color:var(--curr-gold)}
+
+  .card{position:relative;aspect-ratio:4/7;background:#000;border-radius:6px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.85)}
+  .card > .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.92) contrast(1.05);display:block}
+
+  .gild{position:absolute;inset:0;border:2px solid var(--gold);border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.7);pointer-events:none;z-index:3}
+
+  .top{position:absolute;top:8px;left:8px;right:8px;padding:7px 10px;background:linear-gradient(180deg,rgba(26,15,8,.94),rgba(26,15,8,.82));border:1px solid var(--border);border-radius:3px;display:flex;justify-content:space-between;align-items:center;z-index:4}
+  .name{font:900 15px/1 'Cinzel Decorative','Noto Serif KR',serif;color:var(--curr-gold);letter-spacing:.04em}
+  .lv{font:900 10px/1 'Cinzel',serif;color:#2a1a08;background:linear-gradient(180deg,var(--gold-hi),var(--gold-lo));padding:3px 6px;border-radius:2px}
+
+  .bars{position:absolute;left:8px;right:8px;top:42px;display:flex;flex-direction:column;gap:3px;z-index:4}
+  .bar{position:relative;height:6px;background:rgba(0,0,0,.85);border:1px solid rgba(0,0,0,.9);border-radius:2px;overflow:hidden}
+  .bar>i{display:block;height:100%}
+  .bar .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 8px/1 ui-monospace,monospace;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.9)}
+  .bar.hp>i{background:linear-gradient(180deg,#44ff88,#1a6633)}
+  .bar.nrg>i{background:linear-gradient(180deg,#66ccff,#1a4a7a)}
+
+  /* ===== v3: 양피지 톤다운 ===== */
+  .parch{position:absolute;left:6px;right:6px;bottom:6px;background:var(--parch-bg);border:1px solid var(--gold);color:#2a1a08;padding:8px 10px;border-radius:2px;box-shadow:inset 0 0 24px var(--parch-shadow);outline:1px solid rgba(212,168,74,.6);outline-offset:2px;display:flex;flex-direction:column;gap:6px;z-index:4}
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding-bottom:6px;border-bottom:1px solid #6e4a2a}
+  .stat{display:flex;flex-direction:column;align-items:center}
+  .stat .l{font:700 8px/1 'Noto Sans KR';color:#5a0e0e;letter-spacing:.1em}
+  .stat .v{font:900 12px/1 'Cinzel';color:#1a0a04;margin-top:2px;font-variant-numeric:tabular-nums}
+  .desc{font:400 10.5px/1.55 'Noto Serif KR',serif;color:#1a0a04;font-style:italic;text-align:left;min-height:calc(1.55em * 3);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .desc::first-letter{font:900 18px/1 'Cinzel Decorative',serif;color:#5a0e0e;float:left;padding:2px 4px 0 0;font-style:normal}
+
+  .rar-bronze .gild{border-color:var(--rar-bronze);border-width:1px}
+  .rar-silver .gild{border-color:var(--rar-silver);border-width:1px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.7),0 0 8px rgba(58,123,213,.4)}
+  .rar-gold .gild{border-color:var(--rar-gold);border-width:1px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.7),0 0 12px rgba(155,89,182,.55)}
+  .rar-legendary .gild{border:2px solid var(--rar-legendary);box-shadow:inset 0 0 0 1px rgba(0,0,0,.7),inset 0 0 0 4px rgba(255,200,87,.5),0 0 18px rgba(243,156,18,.7),0 0 36px rgba(243,156,18,.3)}
+  .rar-divine .gild{border:2px solid var(--rar-divine);box-shadow:inset 0 0 0 1px var(--gold),inset 0 0 0 4px var(--div-inner,#ffd700),0 0 24px rgba(255,255,255,.8),0 0 48px rgba(255,215,0,.5)}
+  .rar-divine.el-fire .gild{--div-inner:var(--rar-div-fire)}
+  .rar-divine.el-holy .gild{--div-inner:var(--rar-div-holy)}
+
+  .rar-silver .name{color:var(--rar-silver-glow)}
+  .rar-gold .name{color:var(--rar-gold-glow)}
+  .rar-legendary .name{color:var(--rar-leg-glow);text-shadow:0 0 8px rgba(255,200,87,.6)}
+  .rar-divine .name{color:#fff;text-shadow:0 0 10px rgba(255,215,0,.8)}
+
+  .rar-legendary .spark{position:absolute;top:4px;width:10px;height:10px;background:radial-gradient(circle,#fff 30%,transparent 70%);animation:sp 1.6s ease-in-out infinite;z-index:5;pointer-events:none}
+  .rar-legendary .spark.s1{left:14px;animation-delay:0s}
+  .rar-legendary .spark.s2{left:50%;margin-left:-5px;animation-delay:.4s}
+  .rar-legendary .spark.s3{right:14px;animation-delay:.8s}
+  @keyframes sp{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}
+
+  .rar-divine .ribbon{position:absolute;top:-2px;left:50%;transform:translateX(-50%);padding:2px 14px;background:linear-gradient(180deg,#8b1a1a,#5a0e0e);border:1px solid var(--gold);color:var(--gold);font:900 9px/1 'Cinzel',serif;letter-spacing:.18em;text-transform:uppercase;z-index:6;border-radius:0 0 3px 3px;box-shadow:0 2px 6px rgba(0,0,0,.7)}
+</style>
+</head>
+<body>
+  <header>
+    <div class="kicker">V4 · Illuminated Manuscript · variant 3</div>
+    <h1>타협안 — 현 게임 배경 + 양피지 톤다운 (#d4bf88)</h1>
+    <p class="lead">배경은 현 게임 톤 유지, 양피지는 DS parchment-2 로 2톤 어둡게. 카드가 배경에서 덜 튀고 어두운 게임 분위기와 자연스럽게 섞이는지 확인.</p>
+    <span class="spec">Tavern 카드 6장 · 260×455 · 5 등급 비교</span>
+  </header>
+
+  <div class="grid">
+
+    <div class="cell">
+      <div class="cell-hdr"><b>01</b> · 평범 — 보병</div>
+      <div class="card rar-bronze">
+        <img class="art" src="../../img/infantry.png" alt="">
+        <div class="gild"></div>
+        <div class="top"><span class="name">보병</span><span class="lv">Lv 3</span></div>
+        <div class="bars">
+          <div class="bar hp"><i style="width:88%"></i><span class="lbl">HP 88 / 100</span></div>
+          <div class="bar nrg"><i style="width:30%"></i><span class="lbl">NRG 6 / 20</span></div>
+        </div>
+        <div class="parch">
+          <div class="stats">
+            <div class="stat"><span class="l">ATK</span><span class="v">3</span></div>
+            <div class="stat"><span class="l">DEF</span><span class="v">2</span></div>
+            <div class="stat"><span class="l">SPD</span><span class="v">4</span></div>
+            <div class="stat"><span class="l">CRIT</span><span class="v">5%</span></div>
+            <div class="stat"><span class="l">EVA</span><span class="v">2%</span></div>
+          </div>
+          <div class="desc">창을 쥔 손은 떨리지만 방패는 흔들리지 않는다. 전열의 이름 없는 용기.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-hdr"><b>02</b> · 희귀 — 빙결술사</div>
+      <div class="card rar-silver">
+        <img class="art" src="../../img/cryomancer_f.png" alt="">
+        <div class="gild"></div>
+        <div class="top"><span class="name">빙결술사</span><span class="lv">Lv 5</span></div>
+        <div class="bars">
+          <div class="bar hp"><i style="width:92%"></i><span class="lbl">HP 138 / 150</span></div>
+          <div class="bar nrg"><i style="width:55%"></i><span class="lbl">NRG 22 / 40</span></div>
+        </div>
+        <div class="parch">
+          <div class="stats">
+            <div class="stat"><span class="l">ATK</span><span class="v">5</span></div>
+            <div class="stat"><span class="l">DEF</span><span class="v">3</span></div>
+            <div class="stat"><span class="l">SPD</span><span class="v">6</span></div>
+            <div class="stat"><span class="l">CRIT</span><span class="v">10%</span></div>
+            <div class="stat"><span class="l">EVA</span><span class="v">8%</span></div>
+          </div>
+          <div class="desc">서리의 숨결로 피의 흐름을 멈춘다. 침묵이 가장 오래된 무기다.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-hdr"><b>03</b> · 고귀 — 중장갑그리핀</div>
+      <div class="card rar-gold">
+        <img class="art" src="../../img/armored_griffin.png" alt="">
+        <div class="gild"></div>
+        <div class="top"><span class="name">중장갑그리핀</span><span class="lv">Lv 8</span></div>
+        <div class="bars">
+          <div class="bar hp"><i style="width:75%"></i><span class="lbl">HP 225 / 300</span></div>
+          <div class="bar nrg"><i style="width:40%"></i><span class="lbl">NRG 20 / 50</span></div>
+        </div>
+        <div class="parch">
+          <div class="stats">
+            <div class="stat"><span class="l">ATK</span><span class="v">6</span></div>
+            <div class="stat"><span class="l">DEF</span><span class="v">8</span></div>
+            <div class="stat"><span class="l">SPD</span><span class="v">5</span></div>
+            <div class="stat"><span class="l">CRIT</span><span class="v">4%</span></div>
+            <div class="stat"><span class="l">EVA</span><span class="v">3%</span></div>
+          </div>
+          <div class="desc">바람을 베는 날개에 철의 서약이 얹혔다. 왕의 문장을 달고 내려온 파수꾼.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-hdr"><b>04</b> · 전설 — 심홍의그리핀기사</div>
+      <div class="card rar-legendary">
+        <img class="art" src="../../img/griffin_knight.png" alt="">
+        <div class="gild"></div>
+        <span class="spark s1"></span><span class="spark s2"></span><span class="spark s3"></span>
+        <div class="top"><span class="name">심홍의그리핀기사</span><span class="lv">Lv 12</span></div>
+        <div class="bars">
+          <div class="bar hp"><i style="width:80%"></i><span class="lbl">HP 480 / 600</span></div>
+          <div class="bar nrg"><i style="width:68%"></i><span class="lbl">NRG 41 / 60</span></div>
+        </div>
+        <div class="parch">
+          <div class="stats">
+            <div class="stat"><span class="l">ATK</span><span class="v">11</span></div>
+            <div class="stat"><span class="l">DEF</span><span class="v">6</span></div>
+            <div class="stat"><span class="l">SPD</span><span class="v">9</span></div>
+            <div class="stat"><span class="l">CRIT</span><span class="v">18%</span></div>
+            <div class="stat"><span class="l">EVA</span><span class="v">15%</span></div>
+          </div>
+          <div class="desc">붉은 깃발이 하늘을 가른다. 전장의 불길을 베어 넘기는 맹세의 창.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-hdr"><b>05</b> · 신(성) — 대천사</div>
+      <div class="card rar-divine el-holy">
+        <img class="art" src="../../img/archangel.png" alt="">
+        <div class="gild"></div>
+        <div class="ribbon">DIVINE</div>
+        <div class="top"><span class="name">세라피엘</span><span class="lv">Lv 20</span></div>
+        <div class="bars">
+          <div class="bar hp"><i style="width:90%"></i><span class="lbl">HP 1,080 / 1,200</span></div>
+          <div class="bar nrg"><i style="width:75%"></i><span class="lbl">NRG 60 / 80</span></div>
+        </div>
+        <div class="parch">
+          <div class="stats">
+            <div class="stat"><span class="l">ATK</span><span class="v">18</span></div>
+            <div class="stat"><span class="l">DEF</span><span class="v">12</span></div>
+            <div class="stat"><span class="l">SPD</span><span class="v">10</span></div>
+            <div class="stat"><span class="l">CRIT</span><span class="v">28%</span></div>
+            <div class="stat"><span class="l">EVA</span><span class="v">20%</span></div>
+          </div>
+          <div class="desc">맹세하라. 네 이름과 영혼을 걸고. 일곱 번째 자리를 향한 빛이 열린다.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-hdr"><b>06</b> · 신(화) — 대악마</div>
+      <div class="card rar-divine el-fire">
+        <img class="art" src="../../img/archfiend.png" alt="">
+        <div class="gild"></div>
+        <div class="ribbon">DIVINE</div>
+        <div class="top"><span class="name">대악마</span><span class="lv">Lv 20</span></div>
+        <div class="bars">
+          <div class="bar hp"><i style="width:85%"></i><span class="lbl">HP 1,020 / 1,200</span></div>
+          <div class="bar nrg"><i style="width:82%"></i><span class="lbl">NRG 66 / 80</span></div>
+        </div>
+        <div class="parch">
+          <div class="stats">
+            <div class="stat"><span class="l">ATK</span><span class="v">20</span></div>
+            <div class="stat"><span class="l">DEF</span><span class="v">8</span></div>
+            <div class="stat"><span class="l">SPD</span><span class="v">11</span></div>
+            <div class="stat"><span class="l">CRIT</span><span class="v">30%</span></div>
+            <div class="stat"><span class="l">EVA</span><span class="v">18%</span></div>
+          </div>
+          <div class="desc">불타는 왕좌는 스스로 불탄다. 자신의 이름을 잊은 자만이 이 자리를 앉는다.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -494,6 +494,47 @@
      13. 레거시 호환 (점진 이주 중)
      ───────────────────────────────────────────── */
   --gold: var(--curr-gold);   /* 기존 코드 호환 */
+
+  /* ─────────────────────────────────────────────
+     14. Design System Layer (Claude Design, 2026-04-20)
+     ─────────────────────────────────────────────
+     출처: design-system/handoff/DESIGN_TOKENS.md (V4 Illuminated Manuscript).
+     이 블록의 토큰은 아직 **사용처 없음** — 새 컴포넌트/화면 도입 시에만 참조.
+     기존 토큰(--primary-bg, --bg-*, --text-* 등) 교체는 별도 톤-시프트 단계.
+     레포: https://github.com/chahongpil/realm-of-fates-design-system */
+
+  /* 14-1. 양피지 (parchment) — 고대비 아일랜드(카드 설명, 스크롤) */
+  --parchment-0: #f1e4c3;   /* 최밝은 벨럼 */
+  --parchment-1: #e8d5a3;   /* 본문 양피지 */
+  --parchment-2: #d4bf88;   /* 음영 양피지 */
+  --parchment-3: #b89968;   /* 오래된 가장자리 */
+
+  /* 14-2. 잉크 (iron-gall) — 양피지 위 텍스트 */
+  --ink-0: #2a1a08;         /* 철몰식 검정 */
+  --ink-1: #3e2818;         /* 세피아 */
+  --ink-2: #6e4a2a;         /* 바랜 세피아 */
+
+  /* 14-3. 루브릭 (주서) — 일루미네이티드 드롭캡, 배너 */
+  --rubric:      #8b1a1a;   /* 주서 / 장식 대문자 */
+  --rubric-red:  #8b1a1a;   /* 별칭 (배너) */
+  --rubric-deep: #5a0e0e;   /* 배너 그림자 */
+
+  /* 14-4. 광물 안료 (illumination accents) */
+  --lapis:        #1e3a6a;  /* 울트라마린 */
+  --lapis-bright: #4a7ea8;  /* 울트라마린 하이라이트 */
+  --malachite:    #2a5a3a;  /* 광물 녹색 */
+  --initial-bg:   #8b1a1a;  /* 대문자 장식 블록 배경 */
+
+  /* 14-5. 길트 (gilt) — 카드 테두리, 금박 스트로크 */
+  --gilt:      #d4a84a;     /* 금박 스트로크 */
+  --gilt-deep: #8b6914;     /* 깊은 금 (curr-gold-dark 와 다른 맥락) */
+
+  /* 14-6. 역할 (role) — 5종 조합 포지션 */
+  --r-guardian: #6ea8d4;    /* 가디언 — 전열 탱커 (하늘빛) */
+  --r-melee:    #c94a3a;    /* 근딜 — 전열 데미지 (크림슨) */
+  --r-ranged:   #4ea060;    /* 원딜 — 후열 데미지 (포레스트 그린) */
+  --r-caster-m: #a36bd6;    /* 근마 — 중열 서포트 (바이올렛) */
+  --r-caster-r: #5fb5c9;    /* 원마 — 후열 서포트 (시안) */
 }
 
 /* ─────────────────────────────────────────────

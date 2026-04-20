@@ -51,7 +51,7 @@ Object.assign(RoF.Game, {
     if(!pool.length){grid.innerHTML='<div style="color:#555;font-size:.85rem;padding:20px;">해당 혈통의 동료가 없습니다</div>';return;}
     pool.forEach(u=>{
       const have=owned.has(u.id);
-      const el=mkCardEl(u);
+      const el=mkCardElV4(u);  // Step 5A-1: V4 프레임 (2026-04-21)
       if(!have){el.style.filter='grayscale(.7) brightness(.5)';el.style.opacity='.6';}
       el.onclick=()=>this.showCodexDetail(u,have);
       grid.appendChild(el);
@@ -118,7 +118,7 @@ Object.assign(RoF.Game, {
     const g=document.getElementById('dv-grid');g.innerHTML='';
     g.insertAdjacentHTML('beforebegin',`<div class="dv-title">👥 동료 (${ownedUnits}/${totalUnits})</div>`);
     this.deck.forEach(c=>{
-      const el=mkCardEl(c);
+      const el=mkCardElV4(c);  // Step 5A-1: V4 프레임 (2026-04-21)
       el.onclick=()=>this.showCardDetail(c);
       g.appendChild(el);
     });

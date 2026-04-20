@@ -13,6 +13,29 @@
 - 이유: 수동 저장 (대표님 지시, 세션 마무리).
 - 영향: 다음 세션 `/clear → Ctrl+V` 로 맥락 즉시 복구.
 
+## 2026-04-21 ▶ 디자인 ▶ Step 5A-1 — Deckview V4 확장 (Deck + Codex 탭)
+
+- **변경**:
+  - `js/53_game_deck.js:54` — Codex 그리드 `mkCardEl(u)` → `mkCardElV4(u)` (혈통 40장)
+  - `js/53_game_deck.js:121` — Deck 그리드 `mkCardEl(c)` → `mkCardElV4(c)` (보유 덱)
+  - `css/42_screens.css` — `#deck-tab / #codex-tab` 에 `--card-v4-w: 235px` + `#dv-grid / #codex-grid` grid 5-col override (`!important` — 인라인 `display:flex` 무효화).
+
+- **이유**: Step 5A-1 — rof-ui-inspector 권장 순서대로 Tavern → Deckview 흐름이 V4 프레임으로 통일됨. "영입 → 내 덱 확인" 체감 격차 제거.
+
+- **영향**:
+  - Deck 탭: 보유 유닛 V4 프레임 (235×411).
+  - Codex 탭: 전체 40 일반 유닛 V4 렌더 (회색 필터 유지 — 미획득 표시).
+  - 회귀 9/9 PASS. V2 호출부 남아있음: castle/battle/round/bootstrap 등 (Step 5B/C/D 에서).
+
+- **검증**:
+  - Playwright: `#dv-grid .card-v4` 7장, `#codex-grid .card-v4` 40장, V2 잔존 0.
+  - `shots/deckview_v4_step5a1.png` — Deck 탭 첫 화면
+  - `shots/deckview_v4_codex_step5a1.png` — Codex 탭
+
+- **남은 과제**:
+  - Step 5A-2 Formation (`js/55_game_battle.js:192`) — 자동 배치 리렌더 버그(ui-inspector 보고) 먼저 점검.
+  - Codex 전체(40장) 에서 grid-template-columns 가 4-col 로 계산되는 이유 조사 (현재 5-col 목표 대비 1 적음). 스크롤 있으니 UX 영향 작음.
+
 ## 2026-04-21 ▶ 리팩터 ▶ B2 mkCardElV4 → CardV4Component setter API 이식
 
 - **변경**:

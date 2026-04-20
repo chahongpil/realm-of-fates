@@ -91,6 +91,10 @@ RoF.CardComponent = (function(){
       currentHP: unit.hp, currentNRG: unit.nrg || 0, shield: 0,
       statMods: { atk:0, def:0, spd:0 }, statuses: {}, selected: false
     };
+    if(RoF.CardSlots && typeof RoF.CardSlots.applyTo === 'function'){
+      RoF.CardSlots.applyTo(el, unit.id);
+    }
+
     const inst = {
       el, unit, _refs: refs, _state: state, _opts: opts,
       setHP(n){ state.currentHP = n; if(refs.hp) refs.hp.textContent = n; },

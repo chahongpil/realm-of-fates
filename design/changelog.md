@@ -8,6 +8,20 @@
 
 ---
 
+## 2026-04-20 (5차) ▶ 콘텐츠·시스템 ▶ 프레임 일체화 폐기 + 순수 캐릭터 일러스트 전환 (Claude Design 프레임 협업)
+- 변경: ① **이미지 파이프라인 전환** — "프레임+유닛 일체화" PNG 방식 폐기, **순수 캐릭터 일러스트만** 받는 방식으로 전환. Claude Design(2026-04-17 출시) 과 협업 확정 — 대표님이 순수 캐릭터 일러스트 제공하면 Claude Design 이 시스템 프레임(등급 테두리/배너/슬롯 박스)을 CSS/코드 레벨로 씌움, 시스템은 그 위에 공격/체력 같은 숫자 데이터만 오버레이. ② **31장 재임포트** — `이미지제작_원본/일반유닛_원본/` 루트에서 대표님이 새로 제공한 순수 캐릭터 일러스트 31장 이식. `tools/import_unified_frames.py` 의 SRC 를 루트 폴더로 변경하고 MAP 을 새 파일명 체계(번호 prefix, 공백 위치 변동)로 전면 재작성. ③ **titan.png APNG 갱신** — 기존 프레임 일체화 8프레임 → 순수 일러스트 8프레임(`titan2/1~8.jpg` 400×600 90ms loop=0, 1.86MB → 3.58MB). ④ **griffin_rider.png APNG 신규** — 전설의 그리핀용사를 애니메이션 카드로 전환(`그리핀용사 프레임/프레임1~8.png` 8프레임 90ms, 4.22MB). ⑤ **build_titans_apng.py 범용화** — 타이탄 전용 → `JOBS` 배열 구조로 타이탄/그리핀용사 둘 다 처리. ⑥ **보류 폴더 trash/ 이동** — `프레임 일체화_보류/` 폴더 전체를 `trash/img_unified_frames_hold_2026-04-20/` 로 이동(구 일체화 PNG 보존). ⑦ **26번 유닛(그리핀 탄 빨강망토기사) 삭제** — 대표님이 원본 폴더에서 이미 삭제, 코드상 존재하지 않던 유닛이라 추가 정리 불필요.
+- 이유: 2026-04-20 1차에 "대표님 통합 PNG 가 프레임/슬롯박스/이름배너까지 다 포함하므로 이중 프레임 해체" 로 결정했으나, Claude Design 과 협업 경로가 확정되면서 방향 재조정 — 대표님은 **캐릭터 일러스트에만 집중**, 프레임/배너/UI 는 Claude Design 이 시스템으로 통일. 이 방식이 ⓐ 이미지 생성 비용 감소 (프레임 매번 합성 불필요), ⓑ 등급/원소 변경 시 프레임만 CSS 갈아끼우면 됨, ⓒ 시각 일관성(같은 등급 카드가 완전 동일한 프레임) 측면에서 우월. griffin_rider 는 "전설의 그리핀용사" 라는 대표 legendary 유닛이므로 titan 과 동일하게 APNG 애니 카드로 격상(정적 카드보다 시각 임팩트 큼).
+- 영향: ① `game/img/` 의 31장이 순수 캐릭터 일러스트로 교체 → 현재 `.cv-frame display:none` + `.cv-illust contain` 설정에서는 프레임 없이 캐릭터만 풀카드 표시 (슬롯 박스 없는 상태). Claude Design 시스템 프레임이 씌워지기 전까지 일시적으로 "숫자 오버레이가 일러스트 위에 직접 뜨는" 상태. ② 런타임 성능: titan.png 1.86MB → 3.58MB, griffin_rider 는 정적 519KB → 애니 4.22MB. divine·legendary 대표 카드 2장 추가 데이터 ~6MB 증가. 전투 중 두 카드 중앙 무대(275×400) 확대 시 시각 임팩트 크게 향상. ③ 좌표 시스템(`css/11_frame_coords.json`, `tools/coord_editor.html`, `tools/json_to_frame_css.js`) 은 **숫자 슬롯 좌표 편집기로 유지** — Claude Design 프레임 스펙 수신 후 재조정 예정. divine.elements 원소별 분기는 현재 상태 유지(나중에 단순화 여부 결정). ④ 회귀 9/9 PASS. ⑤ 다음 작업 대기: 신규 7장 데이터 추가(지니 2장·대지의수호자·심해의대신관·땅의신베히모스·바다의신레비아탄·암흑의저격수), 영어 파일명 rename + 공개 레포 push(대표님 제안).
+- 이전 결정: 2026-04-20 1차 "시스템 카드 프레임 PNG/CSS 전면 해체" → 4차(이번) 에서 "프레임 일체화" 자체를 폐기하고 Claude Design 시스템 프레임으로 이행. 2026-04-17 "Claude Design 협업 탐색" 의 공식화.
+
+---
+
+## 2026-04-20 (4차) ▶ 밸런스 ▶ archfiend 튜닝 + 52유닛 감사 (P0 5건 보고)
+- 변경: ① **archfiend 수치 조정** — luck 8→6, bonusTrigger.chance 0.3→0.25. titan 대비 +60% luck + life_steal 시너지 과잉(balance-auditor P1) 해소. 나머지 스탯(atk:16, hp:55, def:4, spd:3)은 titan 동급 유지. ② **전체 52유닛 감사 보고서** — balance-auditor 에이전트가 `rules/04-balance.md` + `design/balance.md` 대비 검증. P0(범위 이탈) 5건 발견: dragon(divine hp:35 미달) / archangel(divine hp:40 미달) / lich(legendary hp:20 크게 미달) / archmage(gold hp:12 미달) / sniper(gold hp:8 극단 유리대포). 수정은 대표님 결정 대기. ③ 영웅 카드 18장 원소 보너스 일관성 전체 통과. 회귀 9/9 PASS.
+- 이유: 4/20 3차 직후 밸런스 검증 + 회귀. archfiend 초안(titan 기반)이 dark 보너스 luck+3 을 base luck 5 위에 더해 8이 됐는데, titan luck 5 가 이미 lightning 보너스 포함 결과라 일관성 불일치. 동일 논리로 archfiend base luck 3 + dark +3 = 6이 형평. life_steal 30% + critRate 8% 콤보는 지속성 과도 → 25%/6 으로 완화.
+- 영향: archfiend 전투 강도 약 -10% (luck 2↓ + proc 5%p↓). titan 과 실질 전투력 근접. P0 5건 수정 대기 — dragon/archangel 은 4/20 2차 divine 승격 후 스탯 미상향이 원인 가능성(기획 결정 필요), lich/archmage/sniper 는 "유리대포 의도" 여부 확인 필요. luck 시스템 전반 공백(divine 최대 critRate 8%)도 설계 재검토 대상.
+- 이전 결정: 2026-04-20 2차 "divine 원소별 좌표 확장 + archfiend 신규(초안 titan 기반)" 의 튜닝 마무리.
+
 ## 2026-04-20 19:01 ▶ 세션 ▶ 핸드오프 저장
 - 변경: 세션 상태를 `docs/handoff/handoff-2026-04-20-1901.md` (246줄) 에 저장 + 클립보드 복사.
 - 이유: 수동 저장 (대표님 지시, 세션 마무리).

@@ -318,16 +318,28 @@ async function loadJSON(){
   }
 }
 
+// 등급별 대표 샘플 카드 (합성 PNG 배경) — 2026-04-20 frame_*.png 폐기 이후
+// 같은 등급의 모든 유닛은 프레임 슬롯 위치가 동일하므로 샘플 1장씩으로 편집 가능.
+// divine 은 현재 titan(lightning) 1장뿐 → 원소별 확장은 해당 원소 PNG 추가 시 별도 작업.
+const SAMPLE_BG = {
+  bronze:    'apprentice',  // 마법사 일반
+  silver:    'knight',      // 기사 희귀
+  gold:      'phoenix',     // 피닉스 고귀
+  legendary: 'archangel',   // 대천사 전설
+  divine:    'titan'        // 번개 타이탄 신 (현재 divine 유일)
+};
+
 function renderAll(){
   const grid = $('#grid');
   grid.innerHTML = '';
   RARITIES.forEach(rarity => {
     const card = document.createElement('div');
     card.className = 'frame-card';
+    const bgId = SAMPLE_BG[rarity] || rarity;
     card.innerHTML = `
-      <h3>${rarity} <span class="rarity-tag">frame_${rarity}.png</span></h3>
+      <h3>${rarity} <span class="rarity-tag">img/${bgId}.png (샘플)</span></h3>
       <div class="stage" data-rarity="${rarity}">
-        <img class="frame" src="../img/frame_${rarity}.png" alt="${rarity}">
+        <img class="frame" src="../img/${bgId}.png" alt="${rarity}">
       </div>
       <div class="coord-readout"></div>
     `;

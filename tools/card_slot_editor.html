@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>카드별 슬롯 좌표 에디터</title>
+<style>
+  :root{
+    --atk:#ff4422; --def:#4488ff; --spd:#22cc44;
+    --hp:#ff6688;  --nrg:#44aaff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;padding:20px;
+    background:#0d0a14;color:#e6dfc8;
+    font-family:system-ui,sans-serif;
+  }
+  h1{color:#e6b85a;font-size:1.1rem;margin:0 0 6px;}
+  .hint{color:#888;font-size:.8rem;margin-bottom:16px;line-height:1.55;}
+  .hint code{background:#1a1420;padding:1px 5px;border-radius:3px;color:#e6b85a;}
+  .hint b{color:#e6b85a;}
+
+  .toolbar{
+    position:sticky;top:10px;z-index:100;
+    background:#1a1420;border:1px solid #5a4820;border-radius:8px;
+    padding:10px 14px;margin-bottom:16px;
+    display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    box-shadow:0 4px 12px rgba(0,0,0,.6);
+  }
+  .toolbar label{font-size:.78rem;color:#aaa;}
+  .toolbar select, .toolbar input[type=text]{
+    background:#0a0810;border:1px solid #5a4820;color:#e6dfc8;
+    padding:6px 10px;border-radius:4px;font-family:inherit;font-size:.85rem;
+  }
+  .toolbar select{min-width:220px;}
+  .toolbar input[type=text]{width:140px;}
+  .toolbar button{
+    background:#2a1f0f;border:1px solid #5a4820;color:#e6b85a;
+    padding:7px 14px;border-radius:4px;cursor:pointer;font-size:.82rem;
+    font-family:inherit;font-weight:bold;
+  }
+  .toolbar button:hover{background:#3a2f1f;}
+  .toolbar button.save{color:#7aff7a;border-color:#307a30;}
+  .toolbar button.save:hover{background:#1f3a1f;}
+  .toolbar button.reset{color:#ffaa44;border-color:#804422;}
+  .toolbar button.reset:hover{background:#3a1f0a;}
+  .toolbar button.nav{color:#aaa;padding:6px 10px;}
+  #status{font-size:.75rem;color:#888;margin-left:auto;}
+  #status.ok{color:#7aff7a;}
+  #status.err{color:#ff7a7a;}
+  .toolbar .divider{border-left:1px solid #3a2e1a;height:22px;margin:0 4px;}
+
+  .layout{
+    display:grid;
+    grid-template-columns:minmax(320px, 480px) 1fr;
+    gap:20px;
+    align-items:start;
+  }
+
+  .stage-box{
+    background:#15101c;border:1px solid #3a2e1a;border-radius:6px;
+    padding:12px;
+  }
+  .stage-title{
+    margin:0 0 10px;color:#e6b85a;font-size:.9rem;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .stage-title .rarity-tag{font-size:.7rem;color:#888;font-weight:normal;}
+  .stage{
+    position:relative;
+    width:100%;
+    aspect-ratio:2/3;
+    background:#000;
+    border:1px solid #2a2015;
+    user-select:none;
+    touch-action:none;
+    overflow:hidden;
+  }
+  .stage img.bg{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:contain;
+    pointer-events:none;
+    z-index:0;
+  }
+  .stage .placeholder{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    color:#554;font-size:.85rem;
+    pointer-events:none;
+  }
+  .snap-guide{position:absolute;pointer-events:none;z-index:20;display:none;}
+  .snap-guide-x{top:0;bottom:0;width:0;border-left:1px dashed #ffee44;box-shadow:0 0 4px rgba(255,238,68,.6);}
+  .snap-guide-y{left:0;right:0;height:0;border-top:1px dashed #ffee44;box-shadow:0 0 4px rgba(255,238,68,.6);}
+  .snap-guide.visible{display:block;}
+
+  .marker{
+    position:absolute;
+    width:18px;height:18px;
+    margin-left:-9px;margin-top:-9px;
+    border-radius:50%;
+    border:2px solid currentColor;
+    background:transparent;
+    cursor:grab;
+    z-index:10;
+    transition:transform .1s, box-shadow .1s;
+    box-shadow:0 0 0 1px rgba(0,0,0,.9);
+  }
+  .marker::before,.marker::after{
+    content:'';position:absolute;left:50%;top:50%;
+    background:currentColor;box-shadow:0 0 2px #000;
+  }
+  .marker::before{width:10px;height:1.5px;margin-left:-5px;margin-top:-.75px;}
+  .marker::after {width:1.5px;height:10px;margin-left:-.75px;margin-top:-5px;}
+  .marker:hover{transform:scale(1.35);box-shadow:0 0 0 1px rgba(0,0,0,.9), 0 0 10px currentColor;}
+  .marker:active{cursor:grabbing;transform:scale(1.45);}
+  .marker.atk{color:var(--atk);}
+  .marker.def{color:var(--def);}
+  .marker.spd{color:var(--spd);}
+  .marker.hp { color:var(--hp);}
+  .marker.nrg{color:var(--nrg);}
+  .marker[data-label]:hover::after{content:attr(data-label) " " attr(data-coords);
+    position:absolute;left:14px;top:-18px;
+    background:rgba(0,0,0,.9);color:#fff;padding:2px 6px;
+    border-radius:3px;font-size:.65rem;font-weight:700;
+    white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.6);
+    width:auto;height:auto;margin:0;z-index:100;
+  }
+
+  .box-marker{
+    position:absolute;
+    border:2px dashed;
+    cursor:grab;z-index:5;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.6rem;font-weight:900;
+    text-shadow:0 0 3px #000,0 0 2px #000;color:#fff;
+    box-sizing:border-box;user-select:none;
+  }
+  .box-marker:active{cursor:grabbing;}
+  .box-marker.name{border-color:#ffcc44;background:rgba(255,204,68,.12);}
+  .box-marker.tags{border-color:#44ffcc;background:rgba(68,255,204,.10);}
+  .box-marker.desc{border-color:#cc88ff;background:rgba(204,136,255,.12);}
+  .box-marker .box-label{
+    position:absolute;top:-14px;left:0;
+    font-size:.55rem;color:#fff;
+    background:rgba(0,0,0,.8);padding:1px 4px;border-radius:2px;
+    letter-spacing:.5px;pointer-events:none;
+  }
+  .box-marker .resize-handle{
+    position:absolute;right:-5px;bottom:-5px;
+    width:14px;height:14px;
+    background:#fff;border:1px solid #000;
+    cursor:nwse-resize;border-radius:2px;
+    box-shadow:0 0 4px rgba(0,0,0,.9);
+  }
+
+  /* 우측 패널 */
+  .side{display:flex;flex-direction:column;gap:14px;}
+  .panel{
+    background:#15101c;border:1px solid #3a2e1a;border-radius:6px;
+    padding:12px;
+  }
+  .panel h3{
+    margin:0 0 8px;color:#e6b85a;font-size:.85rem;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .panel .note{font-size:.7rem;color:#888;margin-bottom:8px;line-height:1.5;}
+  .coord-readout{
+    font-family:monospace;font-size:.72rem;color:#aaa;
+    background:#0a0810;border:1px solid #2a2015;
+    padding:8px 10px;border-radius:3px;line-height:1.7;
+  }
+  .coord-readout .row{display:flex;justify-content:space-between;}
+  .coord-readout .row b{color:#e6b85a;min-width:48px;display:inline-block;}
+  .coord-readout .sep{color:#555;margin:0 4px;}
+
+  .unit-meta{font-size:.75rem;color:#ccc;line-height:1.7;}
+  .unit-meta b{color:#e6b85a;}
+  .unit-meta .tag{
+    display:inline-block;padding:1px 6px;border-radius:3px;
+    font-size:.68rem;margin-right:4px;background:#2a1f0f;color:#e6b85a;border:1px solid #5a4820;
+  }
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:.7rem;align-items:center;}
+  .legend-item{display:flex;align-items:center;gap:5px;color:#ccc;}
+  .legend-dot{
+    width:12px;height:12px;border-radius:50%;
+    border:2px solid currentColor;background:transparent;
+    position:relative;
+  }
+  .legend-dot::before,.legend-dot::after{
+    content:'';position:absolute;left:50%;top:50%;background:currentColor;
+  }
+  .legend-dot::before{width:6px;height:1.3px;margin-left:-3px;margin-top:-.65px;}
+  .legend-dot::after {width:1.3px;height:6px;margin-left:-.65px;margin-top:-3px;}
+  .legend-item.atk .legend-dot{color:var(--atk);}
+  .legend-item.def .legend-dot{color:var(--def);}
+  .legend-item.spd .legend-dot{color:var(--spd);}
+  .legend-item.hp  .legend-dot{color:var(--hp);}
+  .legend-item.nrg .legend-dot{color:var(--nrg);}
+  .legend-box{width:14px;height:9px;border:1.5px dashed;box-sizing:border-box;}
+  .legend-item.name .legend-box{border-color:#ffcc44;background:rgba(255,204,68,.15);}
+  .legend-item.tags .legend-box{border-color:#44ffcc;background:rgba(68,255,204,.12);}
+  .legend-item.desc .legend-box{border-color:#cc88ff;background:rgba(204,136,255,.15);}
+
+  .override-badge{
+    display:inline-block;padding:2px 7px;border-radius:3px;
+    font-size:.65rem;font-weight:700;letter-spacing:.5px;
+  }
+  .override-badge.active{background:#1f3a1f;color:#7aff7a;border:1px solid #307a30;}
+  .override-badge.none  {background:#2a2015;color:#888;   border:1px solid #3a2e1a;}
+</style>
+</head>
+<body>
+
+<h1>🎯 카드별 슬롯 좌표 에디터</h1>
+<div class="hint">
+  대표님 합성 PNG 는 카드마다 슬롯(HP/NRG/이름표/스탯) 위치가 다릅니다.<br>
+  1. 드롭다운 또는 <b>◀ ▶</b> 로 카드 선택 → 2. 스테이지에서 마커/박스 <b>드래그</b> → 3. <code>저장</code> 버튼.<br>
+  Override 없는 카드는 <b>등급 기본값</b>을 시드로 보여줍니다. 수정 안 하면 저장해도 해당 카드는 override 없이 기본값 사용.<br>
+  <code>등급기본값 리셋</code> → 이 카드의 override 제거. 저장 시 영구 반영.
+</div>
+
+<div class="toolbar">
+  <label>카드:</label>
+  <select id="unit-select"></select>
+  <input type="text" id="unit-filter" placeholder="🔍 이름/ID 검색">
+  <button class="nav" onclick="stepUnit(-1)">◀</button>
+  <button class="nav" onclick="stepUnit(+1)">▶</button>
+  <span class="divider"></span>
+  <button onclick="loadAll()">↻ 다시 불러오기</button>
+  <button class="reset" onclick="resetCurrent()">↺ 등급기본값 리셋</button>
+  <button class="save" onclick="saveAll()">💾 저장 (전체 override)</button>
+  <label style="font-size:.78rem;color:#ccc;display:flex;align-items:center;gap:5px;cursor:pointer;">
+    <input type="checkbox" id="snap-toggle" checked> 정렬 스냅 (Shift=해제)
+  </label>
+  <span id="status">준비</span>
+</div>
+
+<div class="layout">
+  <div class="stage-box">
+    <div class="stage-title">
+      <span id="stage-title-name">— 카드 선택 —</span>
+      <span class="rarity-tag"><span id="stage-title-rarity"></span> <span id="stage-title-override" class="override-badge none">기본값</span></span>
+    </div>
+    <div class="stage" id="stage">
+      <img class="bg" id="stage-bg" alt="">
+      <div class="placeholder" id="stage-placeholder">카드를 선택하세요</div>
+    </div>
+    <div class="legend" style="margin-top:10px;">
+      <span class="legend-item atk"><span class="legend-dot"></span>ATK</span>
+      <span class="legend-item def"><span class="legend-dot"></span>DEF</span>
+      <span class="legend-item spd"><span class="legend-dot"></span>SPD</span>
+      <span class="legend-item hp"><span class="legend-dot"></span>HP</span>
+      <span class="legend-item nrg"><span class="legend-dot"></span>NRG</span>
+      <span style="color:#555;">|</span>
+      <span class="legend-item name"><span class="legend-box"></span>NAME</span>
+      <span class="legend-item tags"><span class="legend-box"></span>TAGS</span>
+      <span class="legend-item desc"><span class="legend-box"></span>DESC</span>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="panel">
+      <h3>선택한 카드</h3>
+      <div class="unit-meta" id="unit-meta">—</div>
+    </div>
+    <div class="panel">
+      <h3>좌표 <span id="coord-count" style="font-size:.65rem;color:#888;font-weight:normal;">—</span></h3>
+      <div class="note">% 기준 (0~100). 마커/박스 드래그로 업데이트. Override 없으면 등급 기본값 표시.</div>
+      <div class="coord-readout" id="coord-readout">—</div>
+    </div>
+    <div class="panel">
+      <h3>전체 Override 상태</h3>
+      <div class="note">저장된 카드 ID 목록 (편집 중 포함). 클릭 → 이동.</div>
+      <div id="overridden-list" style="font-size:.72rem;line-height:1.8;color:#ccc;">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- 카드 메타 + 등급 기본값 로드용 -->
+<script src="../js/00_namespace.js"></script>
+<script src="../js/11_data_units.js"></script>
+
+<script>
+const SLOTS = ['atk','def','spd','hp','nrg'];
+const BOXES = ['name','tags','desc'];
+const BOX_LABELS = { name:'NAME', tags:'TAGS', desc:'DESC' };
+const RARITIES = ['bronze','silver','gold','legendary','divine'];
+const RARITY_LABEL = { bronze:'평범', silver:'희귀', gold:'고귀', legendary:'전설', divine:'신' };
+
+let rarityDefaults = null;   // 등급별 기본 좌표 (11_frame_coords.json)
+let overrides = {};           // 서버에서 로드한 + 편집 중 누적
+let currentId = null;
+let unitsList = [];
+
+function $(sel, root){ return (root||document).querySelector(sel); }
+function setStatus(text, type){
+  const el = $('#status');
+  el.textContent = text;
+  el.className = type || '';
+}
+
+// ───── 스냅 (기존 coord_editor 에서 차용) ─────
+const SNAP_THRESHOLD = 1.0;
+const CENTER_LINES_X = [50], CENTER_LINES_Y = [50];
+function isSnapOn(shiftKey){
+  if(shiftKey) return false;
+  const cb = document.getElementById('snap-toggle');
+  return cb ? cb.checked : true;
+}
+function collectSnapTargets(stage, selfEl){
+  const xs = [...CENTER_LINES_X], ys = [...CENTER_LINES_Y];
+  stage.querySelectorAll('.marker').forEach(m => {
+    if(m === selfEl) return;
+    xs.push(parseFloat(m.style.left));
+    ys.push(parseFloat(m.style.top));
+  });
+  stage.querySelectorAll('.box-marker').forEach(b => {
+    if(b === selfEl) return;
+    const l = parseFloat(b.style.left), t = parseFloat(b.style.top);
+    const w = parseFloat(b.style.width), h = parseFloat(b.style.height);
+    xs.push(l, l + w/2, l + w);
+    ys.push(t, t + h/2, t + h);
+  });
+  return { xs, ys };
+}
+function ensureGuides(stage){
+  let gx = stage.querySelector('.snap-guide-x');
+  let gy = stage.querySelector('.snap-guide-y');
+  if(!gx){ gx = document.createElement('div'); gx.className = 'snap-guide snap-guide-x'; stage.appendChild(gx); }
+  if(!gy){ gy = document.createElement('div'); gy.className = 'snap-guide snap-guide-y'; stage.appendChild(gy); }
+  return { gx, gy };
+}
+function showGuide(stage, axis, pct){
+  const { gx, gy } = ensureGuides(stage);
+  if(axis === 'x'){ gx.style.left = pct + '%'; gx.classList.add('visible'); }
+  if(axis === 'y'){ gy.style.top  = pct + '%'; gy.classList.add('visible'); }
+}
+function hideGuides(stage){
+  stage.querySelectorAll('.snap-guide').forEach(g => g.classList.remove('visible'));
+}
+function applySnap(stage, selfEl, x, y, shiftKey){
+  hideGuides(stage);
+  if(!isSnapOn(shiftKey)) return { x, y };
+  const { xs, ys } = collectSnapTargets(stage, selfEl);
+  let bestX = x, dx = SNAP_THRESHOLD;
+  xs.forEach(tx => { const d = Math.abs(tx - x); if(d < dx){ dx = d; bestX = tx; } });
+  let bestY = y, dy = SNAP_THRESHOLD;
+  ys.forEach(ty => { const d = Math.abs(ty - y); if(d < dy){ dy = d; bestY = ty; } });
+  if(dx < SNAP_THRESHOLD) showGuide(stage, 'x', bestX);
+  if(dy < SNAP_THRESHOLD) showGuide(stage, 'y', bestY);
+  return { x: bestX, y: bestY };
+}
+
+// ───── 데이터 로드 ─────
+async function loadAll(){
+  setStatus('불러오는 중...');
+  try {
+    const [rdef, rov] = await Promise.all([
+      fetch('../css/11_frame_coords.json', { cache: 'no-store' }).then(r => r.json()),
+      fetch('/load-card-slot-overrides', { cache: 'no-store' }).then(r => r.json()),
+    ]);
+    rarityDefaults = rdef;
+    overrides = (rov && rov.ok && rov.overrides) ? rov.overrides : {};
+    buildUnitList();
+    renderOverriddenList();
+    if(!currentId && unitsList.length) currentId = unitsList[0].id;
+    if(currentId) selectUnit(currentId);
+    setStatus('불러옴 ✓ — 카드 ' + unitsList.length + '개, override ' + Object.keys(overrides).length + '개', 'ok');
+  } catch(e){
+    console.error(e);
+    setStatus('로드 실패: ' + e.message, 'err');
+  }
+}
+
+function buildUnitList(){
+  const all = (window.RoF && RoF.Data && RoF.Data.UNITS) || [];
+  const filter = ($('#unit-filter').value || '').toLowerCase().trim();
+  unitsList = all.filter(u => {
+    if(!filter) return true;
+    return (u.id||'').toLowerCase().includes(filter) || (u.name||'').toLowerCase().includes(filter);
+  });
+  const sel = $('#unit-select');
+  sel.innerHTML = '';
+  unitsList.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    const mark = overrides[u.id] ? '● ' : '○ ';
+    opt.textContent = mark + u.id + ' — ' + u.name + ' (' + RARITY_LABEL[u.rarity||'bronze'] + ')';
+    sel.appendChild(opt);
+  });
+  if(currentId && unitsList.find(u => u.id === currentId)){
+    sel.value = currentId;
+  }
+}
+
+// ───── 선택 + 렌더 ─────
+function selectUnit(id){
+  const unit = unitsList.find(u => u.id === id);
+  if(!unit){ return; }
+  currentId = id;
+  $('#unit-select').value = id;
+  renderStage(unit);
+  renderMeta(unit);
+  renderReadout();
+}
+
+function stepUnit(delta){
+  if(!unitsList.length) return;
+  const idx = unitsList.findIndex(u => u.id === currentId);
+  const next = unitsList[(idx + delta + unitsList.length) % unitsList.length];
+  selectUnit(next.id);
+}
+
+function getSeed(unit){
+  // 이 카드의 현재 편집 상태: override 있으면 그대로, 없으면 등급 기본값 복사
+  const rarity = unit.rarity || 'bronze';
+  const base = rarityDefaults && rarityDefaults[rarity] ? rarityDefaults[rarity] : null;
+  const ov = overrides[unit.id] || {};
+  const slots = {}, boxes = {};
+  SLOTS.forEach(k => {
+    if(ov.slots && ov.slots[k]) slots[k] = { ...ov.slots[k] };
+    else if(base && base.slots && base.slots[k]) slots[k] = { ...base.slots[k] };
+    else slots[k] = { xPct: 50, yPct: 50 };
+  });
+  BOXES.forEach(k => {
+    if(ov.boxes && ov.boxes[k]) boxes[k] = { ...ov.boxes[k] };
+    else if(base && base.boxes && base.boxes[k]) boxes[k] = { ...base.boxes[k] };
+    else boxes[k] = { xPct: 20, yPct: 20, wPct: 60, hPct: 10 };
+  });
+  return { slots, boxes };
+}
+
+// 편집 중 상태를 overrides 에 즉시 반영 (명시 override)
+function pushEdit(unit, seed){
+  overrides[unit.id] = { slots: seed.slots, boxes: seed.boxes };
+  // 드롭다운의 ●/○ 배지 갱신
+  const opt = $('#unit-select').querySelector(`option[value="${unit.id}"]`);
+  if(opt) opt.textContent = '● ' + unit.id + ' — ' + unit.name + ' (' + RARITY_LABEL[unit.rarity||'bronze'] + ')';
+  updateOverrideBadge(true);
+  renderReadout();
+  renderOverriddenList();
+}
+
+function renderStage(unit){
+  const stage = $('#stage');
+  stage.querySelectorAll('.marker,.box-marker').forEach(el => el.remove());
+  $('#stage-placeholder').style.display = 'none';
+
+  const img = $('#stage-bg');
+  img.src = '../img/' + unit.id + '.png';
+  img.onerror = () => { img.style.display = 'none'; $('#stage-placeholder').style.display = 'flex'; $('#stage-placeholder').textContent = '이미지 없음: img/' + unit.id + '.png'; };
+  img.onload = () => { img.style.display = 'block'; $('#stage-placeholder').style.display = 'none'; };
+
+  $('#stage-title-name').textContent = unit.name + ' (' + unit.id + ')';
+  $('#stage-title-rarity').textContent = RARITY_LABEL[unit.rarity||'bronze'];
+  updateOverrideBadge(!!overrides[unit.id]);
+
+  const seed = getSeed(unit);
+  SLOTS.forEach(k => {
+    const m = document.createElement('div');
+    m.className = 'marker ' + k;
+    m.dataset.slot = k;
+    m.dataset.label = k.toUpperCase();
+    const v = seed.slots[k];
+    m.style.left = v.xPct + '%';
+    m.style.top  = v.yPct + '%';
+    m.dataset.coords = v.xPct.toFixed(2) + '%, ' + v.yPct.toFixed(2) + '%';
+    attachMarkerDrag(m, unit);
+    stage.appendChild(m);
+  });
+  BOXES.forEach(k => {
+    const b = document.createElement('div');
+    b.className = 'box-marker ' + k;
+    b.dataset.box = k;
+    const v = seed.boxes[k];
+    b.style.left = v.xPct + '%';
+    b.style.top  = v.yPct + '%';
+    b.style.width  = v.wPct + '%';
+    b.style.height = v.hPct + '%';
+    const lbl = document.createElement('div'); lbl.className = 'box-label'; lbl.textContent = BOX_LABELS[k];
+    const rh  = document.createElement('div'); rh.className = 'resize-handle';
+    b.appendChild(lbl); b.appendChild(rh);
+    attachBoxDrag(b, rh, unit);
+    stage.appendChild(b);
+  });
+}
+
+function updateOverrideBadge(hasOv){
+  const badge = $('#stage-title-override');
+  if(hasOv){ badge.className = 'override-badge active'; badge.textContent = 'OVERRIDE'; }
+  else      { badge.className = 'override-badge none';   badge.textContent = '기본값'; }
+}
+
+function renderMeta(unit){
+  const rows = [];
+  rows.push(`<div><span class="tag">${RARITY_LABEL[unit.rarity||'bronze']}</span><span class="tag">${unit.element||''}</span><span class="tag">${unit.role||''}</span></div>`);
+  rows.push(`<div><b>ID:</b> ${unit.id}</div>`);
+  rows.push(`<div><b>이름:</b> ${unit.name}</div>`);
+  if(unit.atk!=null) rows.push(`<div><b>Stats:</b> ATK ${unit.atk} / DEF ${unit.def||0} / SPD ${unit.spd||0} / HP ${unit.hp} / NRG ${unit.nrg||0}</div>`);
+  $('#unit-meta').innerHTML = rows.join('');
+}
+
+function renderReadout(){
+  const stage = $('#stage');
+  if(!currentId){ $('#coord-readout').textContent = '—'; $('#coord-count').textContent = '—'; return; }
+  const lines = [];
+  stage.querySelectorAll('.marker').forEach(m => {
+    const k = m.dataset.slot;
+    const x = parseFloat(m.style.left).toFixed(2);
+    const y = parseFloat(m.style.top).toFixed(2);
+    lines.push(`<div class="row"><b>${k.toUpperCase()}</b><span>x ${x}% <span class="sep">·</span> y ${y}%</span></div>`);
+  });
+  stage.querySelectorAll('.box-marker').forEach(b => {
+    const k = b.dataset.box;
+    const x = parseFloat(b.style.left).toFixed(2);
+    const y = parseFloat(b.style.top).toFixed(2);
+    const w = parseFloat(b.style.width).toFixed(2);
+    const h = parseFloat(b.style.height).toFixed(2);
+    lines.push(`<div class="row"><b>${k.toUpperCase()}</b><span>${x},${y} · ${w}×${h}</span></div>`);
+  });
+  $('#coord-readout').innerHTML = lines.join('');
+  $('#coord-count').textContent = SLOTS.length + '+' + BOXES.length;
+}
+
+function renderOverriddenList(){
+  const ids = Object.keys(overrides).sort();
+  if(!ids.length){ $('#overridden-list').innerHTML = '<span style="color:#555;">아직 override 없음</span>'; return; }
+  $('#overridden-list').innerHTML = ids.map(id => {
+    return `<a href="#" onclick="selectUnit('${id}');return false;" style="color:#7aa8ff;text-decoration:none;margin-right:10px;">${id}</a>`;
+  }).join('');
+}
+
+// ───── 드래그 ─────
+function attachMarkerDrag(marker, unit){
+  let dragging = false;
+  marker.addEventListener('pointerdown', e => {
+    e.preventDefault(); dragging = true;
+    marker.setPointerCapture(e.pointerId);
+  });
+  marker.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    const stage = marker.parentElement;
+    const r = stage.getBoundingClientRect();
+    let x = ((e.clientX - r.left) / r.width) * 100;
+    let y = ((e.clientY - r.top)  / r.height) * 100;
+    x = Math.max(0, Math.min(100, x));
+    y = Math.max(0, Math.min(100, y));
+    const snapped = applySnap(stage, marker, x, y, e.shiftKey);
+    marker.style.left = snapped.x + '%';
+    marker.style.top  = snapped.y + '%';
+    marker.dataset.coords = snapped.x.toFixed(2) + '%, ' + snapped.y.toFixed(2) + '%';
+    pushMarkerEdit(unit, marker);
+  });
+  marker.addEventListener('pointerup', e => { dragging = false; hideGuides(marker.parentElement); });
+  marker.addEventListener('pointercancel', () => { dragging = false; hideGuides(marker.parentElement); });
+}
+
+function pushMarkerEdit(unit, marker){
+  const seed = collectCurrentState();
+  pushEdit(unit, seed);
+}
+
+function attachBoxDrag(box, rh, unit){
+  let dragging = false, resizing = false;
+  let startX=0, startY=0, startL=0, startT=0, startW=0, startH=0;
+
+  box.addEventListener('pointerdown', e => {
+    if(e.target === rh) return;  // 리사이즈는 핸들 전용
+    e.preventDefault(); dragging = true;
+    box.setPointerCapture(e.pointerId);
+    const stage = box.parentElement;
+    const r = stage.getBoundingClientRect();
+    startX = e.clientX; startY = e.clientY;
+    startL = parseFloat(box.style.left);
+    startT = parseFloat(box.style.top);
+  });
+  box.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    const stage = box.parentElement;
+    const r = stage.getBoundingClientRect();
+    const dx = ((e.clientX - startX) / r.width)  * 100;
+    const dy = ((e.clientY - startY) / r.height) * 100;
+    let x = startL + dx, y = startT + dy;
+    const snapped = applySnap(stage, box, x, y, e.shiftKey);
+    box.style.left = snapped.x + '%';
+    box.style.top  = snapped.y + '%';
+    pushEdit(unit, collectCurrentState());
+  });
+  box.addEventListener('pointerup', () => { dragging = false; hideGuides(box.parentElement); });
+  box.addEventListener('pointercancel', () => { dragging = false; hideGuides(box.parentElement); });
+
+  rh.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation(); resizing = true;
+    rh.setPointerCapture(e.pointerId);
+    startX = e.clientX; startY = e.clientY;
+    startW = parseFloat(box.style.width);
+    startH = parseFloat(box.style.height);
+  });
+  rh.addEventListener('pointermove', e => {
+    if(!resizing) return;
+    const stage = box.parentElement;
+    const r = stage.getBoundingClientRect();
+    const dw = ((e.clientX - startX) / r.width)  * 100;
+    const dh = ((e.clientY - startY) / r.height) * 100;
+    const w = Math.max(2, startW + dw);
+    const h = Math.max(2, startH + dh);
+    box.style.width  = w + '%';
+    box.style.height = h + '%';
+    pushEdit(unit, collectCurrentState());
+  });
+  rh.addEventListener('pointerup',   () => { resizing = false; });
+  rh.addEventListener('pointercancel',() => { resizing = false; });
+}
+
+function collectCurrentState(){
+  const stage = $('#stage');
+  const slots = {}, boxes = {};
+  stage.querySelectorAll('.marker').forEach(m => {
+    slots[m.dataset.slot] = {
+      xPct: +parseFloat(m.style.left).toFixed(2),
+      yPct: +parseFloat(m.style.top).toFixed(2),
+    };
+  });
+  stage.querySelectorAll('.box-marker').forEach(b => {
+    boxes[b.dataset.box] = {
+      xPct: +parseFloat(b.style.left).toFixed(2),
+      yPct: +parseFloat(b.style.top).toFixed(2),
+      wPct: +parseFloat(b.style.width).toFixed(2),
+      hPct: +parseFloat(b.style.height).toFixed(2),
+    };
+  });
+  return { slots, boxes };
+}
+
+function resetCurrent(){
+  if(!currentId) return;
+  if(!confirm(currentId + ' 의 override 를 제거하고 등급 기본값으로 리셋?')) return;
+  delete overrides[currentId];
+  const unit = unitsList.find(u => u.id === currentId);
+  renderStage(unit);
+  const opt = $('#unit-select').querySelector(`option[value="${currentId}"]`);
+  if(opt) opt.textContent = '○ ' + unit.id + ' — ' + unit.name + ' (' + RARITY_LABEL[unit.rarity||'bronze'] + ')';
+  updateOverrideBadge(false);
+  renderReadout();
+  renderOverriddenList();
+  setStatus('리셋됨 (저장 전)', 'ok');
+}
+
+async function saveAll(){
+  setStatus('저장 중...');
+  try {
+    const r = await fetch('/save-card-slot-overrides', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(overrides)
+    });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || 'save failed');
+    setStatus('저장 ✓ — ' + j.count + '개 카드 override', 'ok');
+  } catch(e){
+    console.error(e);
+    setStatus('저장 실패: ' + e.message, 'err');
+  }
+}
+
+// ───── 이벤트 ─────
+$('#unit-select').addEventListener('change', e => selectUnit(e.target.value));
+$('#unit-filter').addEventListener('input', () => {
+  buildUnitList();
+  if(!unitsList.find(u => u.id === currentId) && unitsList.length){
+    selectUnit(unitsList[0].id);
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if(e.key === 'ArrowLeft')  stepUnit(-1);
+  if(e.key === 'ArrowRight') stepUnit(+1);
+});
+
+// 부팅
+window.addEventListener('DOMContentLoaded', () => { loadAll(); });
+</script>
+</body>
+</html>

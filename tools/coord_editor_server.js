@@ -253,6 +253,79 @@ function handleHiddenSave(req, res){
   });
 }
 
+// ── Card slot overrides — data/card_slot_overrides.json ──
+// unit ID 별로 5 슬롯(atk/def/spd/hp/nrg) + 3 박스(name/tags/desc) 좌표를
+// 등급 기본값 위에 덮어쓰기. 런타임: js/17_data_card_slots.js
+function handleCardSlotsLoad(req, res){
+  try {
+    const p = path.join(ROOT, 'data/card_slot_overrides.json');
+    if(!fs.existsSync(p)){
+      res.writeHead(200, {'Content-Type':'application/json'});
+      return res.end(JSON.stringify({ok:true, overrides: {}}));
+    }
+    const raw = JSON.parse(fs.readFileSync(p, 'utf8'));
+    const overrides = (raw && typeof raw.overrides === 'object') ? raw.overrides : {};
+    res.writeHead(200, {'Content-Type':'application/json'});
+    res.end(JSON.stringify({ok:true, overrides}));
+  } catch(e){
+    res.writeHead(500, {'Content-Type':'application/json'});
+    res.end(JSON.stringify({ok:false, error:e.message}));
+  }
+}
+function handleCardSlotsSave(req, res){
+  let body = '';
+  req.on('data', chunk => body += chunk);
+  req.on('end', () => {
+    try {
+      const data = JSON.parse(body);
+      if(!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('body must be object');
+      const SLOT_KEYS = ['atk','def','spd','hp','nrg'];
+      const BOX_KEYS  = ['name','tags','desc'];
+      const isPct = v => typeof v === 'number' && v >= -50 && v <= 200;
+      const clean = {};
+      for(const [id, ov] of Object.entries(data)){
+        if(typeof id !== 'string' || id.length > 40 || !/^[a-zA-Z0-9_]+$/.test(id)){
+          throw new Error('bad unit id: ' + id);
+        }
+        if(!ov || typeof ov !== 'object') continue;
+        const entry = {};
+        if(ov.slots && typeof ov.slots === 'object'){
+          const s = {};
+          for(const k of SLOT_KEYS){
+            const v = ov.slots[k];
+            if(!v || typeof v !== 'object') continue;
+            if(!isPct(v.xPct) || !isPct(v.yPct)) throw new Error(`bad slot ${id}.${k}`);
+            s[k] = { xPct: +v.xPct, yPct: +v.yPct };
+          }
+          if(Object.keys(s).length) entry.slots = s;
+        }
+        if(ov.boxes && typeof ov.boxes === 'object'){
+          const b = {};
+          for(const k of BOX_KEYS){
+            const v = ov.boxes[k];
+            if(!v || typeof v !== 'object') continue;
+            if(!isPct(v.xPct) || !isPct(v.yPct) || !isPct(v.wPct) || !isPct(v.hPct)) throw new Error(`bad box ${id}.${k}`);
+            b[k] = { xPct:+v.xPct, yPct:+v.yPct, wPct:+v.wPct, hPct:+v.hPct };
+          }
+          if(Object.keys(b).length) entry.boxes = b;
+        }
+        if(entry.slots || entry.boxes) clean[id] = entry;
+      }
+      const p = path.join(ROOT, 'data/card_slot_overrides.json');
+      const existing = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : {};
+      const out = Object.assign({}, existing, { overrides: clean });
+      fs.writeFileSync(p, JSON.stringify(out, null, 2) + '\n', 'utf8');
+      res.writeHead(200, {'Content-Type':'application/json'});
+      res.end(JSON.stringify({ok:true, count: Object.keys(clean).length}));
+      console.log(`[card-slots] saved ${Object.keys(clean).length} entries`);
+    } catch(e){
+      console.error('[card-slots] error:', e.message);
+      res.writeHead(400, {'Content-Type':'application/json'});
+      res.end(JSON.stringify({ok:false, error:e.message}));
+    }
+  });
+}
+
 // ── Annotations — css/annotations.json (디자인 지시 박스) ──
 function handleAnnotationsLoad(req, res){
   try {
@@ -306,6 +379,8 @@ const server = http.createServer((req, res) => {
   if(req.method === 'GET'  && req.url === '/load-hidden') return handleHiddenLoad(req, res);
   if(req.method === 'POST' && req.url === '/save-annotations') return handleAnnotationsSave(req, res);
   if(req.method === 'GET'  && req.url === '/load-annotations') return handleAnnotationsLoad(req, res);
+  if(req.method === 'POST' && req.url === '/save-card-slot-overrides') return handleCardSlotsSave(req, res);
+  if(req.method === 'GET'  && req.url === '/load-card-slot-overrides') return handleCardSlotsLoad(req, res);
   if(req.method === 'GET') return serveStatic(req, res);
   res.writeHead(405); res.end();
 });
@@ -314,4 +389,5 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`coord editor server: http://127.0.0.1:${PORT}/`);
   console.log(`  - preview:   http://127.0.0.1:${PORT}/card_component_preview.html`);
   console.log(`  - editor:    http://127.0.0.1:${PORT}/tools/coord_editor.html`);
+  console.log(`  - card slots: http://127.0.0.1:${PORT}/tools/card_slot_editor.html`);
 });

@@ -13,6 +13,28 @@
 - 이유: 수동 저장 (대표님 지시, 세션 마무리).
 - 영향: 다음 세션 `/clear → Ctrl+V` 로 맥락 즉시 복구.
 
+## 2026-04-21 ▶ 밸런스 ▶ A안 — design/balance.md 폐기 + rules/04-balance.md 정본화
+
+- **변경**:
+  - `.claude/rules/04-balance.md` 전면 재작성 — 실데이터 기반 역할별(attack/defense/support) 세분화 + 원소 보너스 + 전투 공식 + 스킬 등급 수치 + 레벨링 + 드롭률 + 진화 계수 + 경험치 곡선 + 불문율 + 검증 체크리스트 전부 흡수.
+  - `design/balance.md` → `trash/design_balance_deprecated_2026-04-21.md` 이동.
+  - 참조 업데이트 10+ 건: `CLAUDE.md`, `.claude/rules/00-index.md`, `.claude/agents/balance-auditor.md`, `.claude/agents/content-generator.md`, `.claude/commands/밸런스검증.md`, `.claude/skills/{스킬추가, 유물추가, 캐릭터추가, 밸런스검증, 기획변경}/SKILL.md`, `tracks/02-data-balance/START.md`, `tracks/05-docs-lore/START.md`, `tracks/06-backend/START.md`, `tracks/README.md`.
+  - `game/tools/audit_stats.js` 신규 — 실데이터 기반 범위 추출 재사용 가능.
+
+- **이유**: `rules/04-balance.md` (HP 8-12) vs `design/balance.md` (HP 40-55) 가 4~5배 스케일 차이. 실제 js 데이터는 rules 와 일치. design/balance.md 는 하네스 초기(2026-04-12) 설계로 추정되며 죽은 구버전. balance-auditor / content-generator / 각 스킬이 이 문서 참조 → 감사 결과 무의미. 2026-04-20 night 자율 감사(`autonomous_work_summary`, `balance_docs_sync`, `balance_audit_2026-04-20-night`) 3건에서 교차 확인.
+
+- **영향**:
+  - Source of Truth 단일화: 앞으로 모든 밸런스 참조는 `.claude/rules/04-balance.md` 하나.
+  - js 데이터 수정 0 (문서가 실측에 맞춘 것).
+  - 회귀 9/9 PASS (확인 후 보고).
+  - 핸드오프 22개·자율 리포트 6개에 포함된 `design/balance.md` 언급은 과거 기록이라 수정하지 않음 (append-only 원칙).
+
+- **이전 결정 관계**: **번복**. 2026-04-12 초기 설계의 "design/balance.md 상세 테이블·수식 Source of Truth" 결정을 완전 번복. 해당 내용은 rules/04-balance.md 로 이관.
+
+- **다음 작업**:
+  - P0 7건 튜닝 (dragon/archangel/lich/archmage/sniper/genie_noble/sea_priest) 대표님 결정 필요 (각 유닛마다 "스탯 상향 vs 등급 하향").
+  - balance-auditor 에이전트 재호출해서 새 규칙 잘 읽는지 1회 검증 권장.
+
 ## 2026-04-20 23:04 ▶ 세션 ▶ 핸드오프 저장 (7차 마무리)
 - 변경: 세션 상태를 `docs/handoff/handoff-2026-04-20-2304.md` 에 저장. 클립보드 복사 완료.
 - 이유: 7차 세션 마감 (C 선택). 로컬 2커밋(`fe04820`, `681e102`) 미push 상태.

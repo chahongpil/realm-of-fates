@@ -204,6 +204,10 @@ RoF.Data.UNITS = Object.freeze([
     atk:5,hp:24,def:5,spd:1,rage:2,nrg:4,luck:2,eva:1,meva:2,hpReg:1,nrgReg:1,
     skill:'armor',skillType:'passive',skillChance:1,skillNrg:0,skillArmor:3,skillDesc:'[패시브] 강철 갑주: 받는 피해 -3',
     bonusTrigger:{on:'hit',chance:.25,effect:'thorns',value:4,desc:'25% 갑주 가시: 피격시 공격자에게 4데미지'},rarity:'gold'},
+  {id:'genie_noble',name:'고귀한 지니',icon:'🧞',type:'정령',role:'support',range:'ranged',race:'djinn',element:'lightning',
+    atk:5,hp:22,def:2,spd:4,rage:1,nrg:20,luck:3,eva:3,meva:4,hpReg:1,nrgReg:2,
+    skill:'arcane_burst',skillType:'active',skillChance:.8,skillNrg:5,skillDesc:'[액티브 80%] 번개 소원: 적 전체 3데미지 (에너지5)',
+    bonusTrigger:{on:'skill',chance:.3,effect:'group_heal',desc:'30% 소원 발동 시: 아군 전체 HP+2'},rarity:'gold'},
   // ── LEGENDARY (5) ──
   {id:'dragon',name:'드래곤',icon:'🐉',type:'야수',role:'attack',range:'melee',race:'dragon',element:'fire',
     atk:10,hp:35,def:3,spd:2,rage:8,nrg:6,luck:3,eva:1,meva:2,hpReg:1,nrgReg:1,
@@ -225,7 +229,19 @@ RoF.Data.UNITS = Object.freeze([
     atk:8,hp:35,def:4,spd:3,rage:3,nrg:8,luck:3,eva:2,meva:4,hpReg:2,nrgReg:2,
     skill:'first_strike',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 천공의 선제: 항상 먼저 공격',
     bonusTrigger:{on:'skill',chance:.3,effect:'divine_shield',desc:'30% 비전 발동 시: 다음 피해 1회 무효'},rarity:'legendary'},
-  // ── DIVINE (4) ── fire=dragon (위), holy=archangel (위), lightning=titan, dark=archfiend
+  {id:'earth_guardian',name:'대지의 수호자',icon:'🗿',type:'골렘',role:'defense',range:'melee',race:'golem',element:'earth',
+    atk:8,hp:42,def:10,spd:2,rage:2,nrg:6,luck:2,eva:1,meva:2,hpReg:3,nrgReg:1,
+    skill:'armor',skillType:'passive',skillChance:1,skillNrg:0,skillArmor:5,skillDesc:'[패시브] 대지의 방벽: 받는 피해 -5',
+    bonusTrigger:{on:'hit',chance:.3,effect:'thorns',value:6,desc:'30% 대지의 가시: 피격시 공격자에게 6데미지'},rarity:'legendary'},
+  {id:'sea_priest',name:'심해의 대신관',icon:'🔱',type:'성직자',role:'support',range:'ranged',race:'human',element:'water',
+    atk:8,hp:42,def:3,spd:5,rage:1,nrg:22,luck:3,eva:2,meva:5,hpReg:4,nrgReg:3,
+    skill:'mass_heal',skillType:'active',skillChance:.9,skillNrg:6,skillDesc:'[액티브 90%] 심해의 축복: 아군 전체 HP+8 (에너지6)',
+    bonusTrigger:{on:'skill',chance:.3,effect:'bless',desc:'30% 축복 발동 시: 무작위 아군 보호막+3'},rarity:'legendary'},
+  {id:'genie_legendary',name:'전설의 지니',icon:'🧞‍♂️',type:'정령',role:'attack',range:'melee',race:'djinn',element:'lightning',
+    atk:10,hp:38,def:4,spd:5,rage:6,nrg:10,luck:4,eva:3,meva:4,hpReg:2,nrgReg:2,
+    skill:'first_strike',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 소원의 선제: 항상 먼저 공격',
+    bonusTrigger:{on:'attack',chance:.3,effect:'double_arrow',desc:'30% 공격시: 번개 쌍발 (50% 추가데미지)'},rarity:'legendary'},
+  // ── DIVINE (6) ── fire=dragon, water=leviathan, earth=behemoth, lightning=titan, holy=archangel, dark=archfiend
   {id:'titan',name:'번개 타이탄',icon:'⚡',type:'거인',role:'attack',range:'melee',race:'titan',element:'lightning',
     atk:15,hp:55,def:4,spd:3,rage:10,nrg:10,luck:5,eva:2,meva:4,hpReg:2,nrgReg:2,
     skill:'breath',skillType:'active',skillChance:.8,skillNrg:5,skillDesc:'[액티브 80%] 뇌격: 전체8데미지 (에너지5)',
@@ -235,6 +251,14 @@ RoF.Data.UNITS = Object.freeze([
     atk:16,hp:55,def:4,spd:3,rage:10,nrg:10,luck:6,eva:2,meva:4,hpReg:2,nrgReg:2,
     skill:'breath',skillType:'active',skillChance:.8,skillNrg:5,skillDesc:'[액티브 80%] 지옥창: 전체8데미지 (에너지5)',
     bonusTrigger:{on:'attack',chance:.25,effect:'life_steal',desc:'25% 공격시: 피해의 50%를 HP로 흡수'},rarity:'divine'},
+  {id:'behemoth',name:'땅의 신 베히모스',icon:'🦬',type:'거신',role:'attack',range:'melee',race:'titan',element:'earth',
+    atk:15,hp:65,def:7,spd:2,rage:10,nrg:10,luck:3,eva:1,meva:3,hpReg:3,nrgReg:2,
+    skill:'breath',skillType:'active',skillChance:.8,skillNrg:6,skillDesc:'[액티브 80%] 대지진: 전체8데미지 (에너지6)',
+    bonusTrigger:{on:'attack',chance:.3,effect:'cleave',desc:'30% 진동파: 인접 적에게 50% 추가데미지'},rarity:'divine'},
+  {id:'leviathan',name:'바다의 신 레비아탄',icon:'🌊',type:'거신',role:'attack',range:'ranged',race:'titan',element:'water',
+    atk:15,hp:58,def:3,spd:4,rage:8,nrg:12,luck:4,eva:2,meva:5,hpReg:3,nrgReg:3,
+    skill:'breath',skillType:'active',skillChance:.8,skillNrg:6,skillDesc:'[액티브 80%] 해일: 전체7데미지 (에너지6)',
+    bonusTrigger:{on:'skill',chance:.3,effect:'arcane_burst',desc:'30% 해일 발동 시: 적 전체 추가 2데미지'},rarity:'divine'},
 ]);
 
 // 호환성 레이어

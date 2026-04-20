@@ -30,6 +30,9 @@ RoF.Data.CARD_IMG = Object.freeze({
   phoenix:__IMG+'phoenix.png',armored_griffin:__IMG+'armored_griffin.png',dragon:__IMG+'dragon.png',lich:__IMG+'lich.png',
   archangel:__IMG+'archangel.png',griffin_knight:__IMG+'griffin_knight.png',griffin_rider:__IMG+'griffin_rider.png',titan:__IMG+'titan.png',
   archfiend:__IMG+'archfiend.png',
+  genie_noble:__IMG+'genie_noble.png',genie_legendary:__IMG+'genie_legendary.png',
+  earth_guardian:__IMG+'earth_guardian.png',sea_priest:__IMG+'sea_priest.png',
+  behemoth:__IMG+'behemoth.png',leviathan:__IMG+'leviathan.png',
   // 스킬 — 로컬 PNG 일러스트 (2026-04-12 DreamShaper 생성, 30/30 완료)
   sk_power:__IMG+'sk_power.png', sk_shield:__IMG+'sk_shield.png', sk_heal:__IMG+'sk_heal.png',
   sk_swift:__IMG+'sk_swift.png', sk_tough:__IMG+'sk_tough.png', sk_focus:__IMG+'sk_focus.png',

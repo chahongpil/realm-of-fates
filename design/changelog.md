@@ -13,6 +13,39 @@
 - 이유: 수동 저장 (대표님 지시, 세션 마무리).
 - 영향: 다음 세션 `/clear → Ctrl+V` 로 맥락 즉시 복구.
 
+## 2026-04-21 ▶ 리팩터 ▶ B2 mkCardElV4 → CardV4Component setter API 이식
+
+- **변경**:
+  - `js/40_cards.js` — `RoF.CardV4Component` 신규 (CardComponent V2 미러).
+    create() 이 인스턴스 반환: `{el, unit, _refs, _state, _opts, setHP, setNRG, setShield, setStatModifier, setStatus, setSelected, destroy, _snapshot}`.
+    rebuild() 헬퍼도 추가 (레벨업 재생성).
+    기존 `mkCardElV4(c)` 는 래퍼로 유지 (el 만 반환) → 호환성 0 손실.
+  - `css/32_card_v4.css` — setter 시각 요소 추가:
+    - `.v4-status` + `.v4-status-badge` (상단 중앙, burn/poison/frozen/invincible)
+    - `.shield-badge` (좌상단 오버레이)
+    - `.stat .mod` (+N/-N buff/debuff 배지)
+    - `.card-v4.selected` + `@keyframes v4-selected-pulse` (V2 와 동일 golden 오라)
+  - **ribbon 라벨**: "DIVINE" → "신" (판타지 한국어 규칙 준수, code-review I6).
+
+- **이유**:
+  - code-review BLOCKER B2 해결 — 전투(Battle) 로 V4 확장 시 `setHP/setNRG/setStatus` API 필수.
+  - Step 5B/5C 이식 전제. 지금 없으면 전투 루프가 안 돔.
+  - STATUS_GLYPHS 을 이모지(🔥☠️❄️🛡️)로 단순화 — V2 의 SVG 대신 가벼운 방식.
+
+- **영향**:
+  - 기존 Tavern 호출부 (`mkCardElV4(c)`) **변경 0** — 래퍼가 el 만 반환.
+  - 새 코드는 `RoF.CardV4Component.create(c, {})` 호출하면 setter 활용 가능.
+  - 렌더 결과 동일 (Playwright Tavern 235×411 4장 유지).
+  - 회귀 9/9 PASS.
+
+- **검증**:
+  - `shots/v4_b2_setter_demo.png` — 테스트 카드 직접 생성 + 모든 setter 호출 + 시각 확인.
+    HP 25/100, NRG 12/20, Shield 7, ATK+3, DEF-2, 🔥3 ☠️2, selected 금광 모두 정상.
+
+- **남은 과제**:
+  - Step 5B/5C 에서 실 Battle 호출부가 이 API 사용 시작 시 실전 검증.
+  - rebuild() 는 아직 호출부 없음. 레벨업 이식 시점에 활성화.
+
 ## 2026-04-21 ▶ 리팩터 ▶ B1 매직 넘버 토큰화 + 유물 imgKey + Step 5A 스캔
 
 - **변경**:

@@ -203,117 +203,275 @@ RoF.dom.mkMini = function(c){
 };
 
 /* ============================================================
-   mkCardElV4 — Claude Design System V4 Illuminated Manuscript
+   CardV4Component — Claude Design System V4 Illuminated Manuscript
    ============================================================
-   도입: 2026-04-20 (7차 Step 4). 현재 Tavern 전용.
+   도입: 2026-04-20 (Step 4), 2026-04-21 B2 setter API 이식.
    출처: design-system/handoff/CARD_FRAME_SPEC.md + mockup/v4_card/v3.html.
    스타일: css/32_card_v4.css (모든 선택자 `.card-v4` prefix).
-   기존 mkCardEl (CardComponent) 과 독립 — 호출부에서만 교체.
+
+   원칙 (CardComponent V2 와 동일):
+   1. 생성 시점에 프레임/일러/이름/능력텍스트/스탯 확정 (불변).
+   2. 이후 변경은 setter 로만.
+   3. 레벨업 등 영구 강화는 rebuild() 로 재생성.
 
    스탯 매핑:
-     ATK = unit.atk
-     DEF = unit.def (default 0)
-     SPD = unit.spd (default 0)
-     CRIT = unit.luck  (rules/04-balance: 치명타율 = luck + skill.critBonus)
-     EVA = unit.eva (default 0)
-     HP / HPmax = unit.hp / (unit.maxHp || unit.hp)  — Tavern 은 full
-     NRG current/max = 0 / unit.nrg  — Tavern 영입 전엔 charge 0
-     desc = unit.skillDesc || unit.desc (없으면 빈칸 3줄)
+     ATK = unit.atk / DEF = unit.def / SPD = unit.spd
+     CRIT = unit.luck (04-balance: 치명타율 = luck + skill.critBonus)
+     EVA = unit.eva
+     HP / HPmax = unit.hp / (unit.maxHp || unit.hp)
+     NRG current/max = 0 / unit.nrg (Tavern 은 charge 0)
+     desc = unit.skillDesc || unit.desc
+
+   Setter API:
+     setHP(n) / setNRG(n) / setShield(n)
+     setStatModifier('atk'|'def'|'spd', delta)
+     setStatus(effect, turns)  — burn/poison/frozen/invincible
+     setSelected(bool)
+     destroy() / _snapshot() / rebuild(newUnit)
    ============================================================ */
-RoF.dom.mkCardElV4 = function(c){
-  const rarity = c.rarity || 'bronze';
-  const element = c.element || '';
-  const el = document.createElement('div');
-  el.className = `card-v4 rar-${rarity}${rarity==='divine' && element ? ' el-'+element : ''}`;
-  el.setAttribute('data-uid', c.uid || c.id || '');
-
-  const img = (typeof getCardImg === 'function') ? getCardImg(c) : (CARD_IMG && CARD_IMG[c.id]);
-  const name = (c.isHero ? '⭐ ' : '') + (c.name || '');
-  const lv = c.level || 1;
-  const atk = c.atk != null ? c.atk : 0;
-  const def = c.def != null ? c.def : 0;
-  const spd = c.spd != null ? c.spd : 0;
-  const crit = c.luck != null ? c.luck : 0;
-  const eva = c.eva != null ? c.eva : 0;
-  const hpMax = c.maxHp || c.hp || 1;
-  const hpCur = c.hp != null ? c.hp : hpMax;
-  const nrgMax = c.nrg || 0;
-  const nrgCur = 0;  // Tavern 영입 전 카드는 charge 0
-  const hpPct = Math.max(0, Math.min(100, Math.round(hpCur / hpMax * 100)));
-  const nrgPct = nrgMax > 0 ? Math.max(0, Math.min(100, Math.round(nrgCur / nrgMax * 100))) : 0;
-  const descRaw = c.skillDesc || c.desc || '';
-  const desc = (RoF.CardComponent && RoF.CardComponent.stripSystemTokens)
-    ? RoF.CardComponent.stripSystemTokens(descRaw) : String(descRaw);
-
-  // XSS 방지: textContent 로 주입 (DOM 빌더 사용)
-  const artImg = document.createElement('img');
-  artImg.className = 'art';
-  if(img) artImg.src = img;
-  artImg.alt = '';
-  el.appendChild(artImg);
-
-  const gild = document.createElement('div');
-  gild.className = 'gild';
-  el.appendChild(gild);
-
-  // Legendary sparkles
-  if(rarity === 'legendary'){
-    ['s1','s2','s3'].forEach(s => {
-      const sp = document.createElement('span');
-      sp.className = 'spark ' + s;
-      el.appendChild(sp);
-    });
-  }
-
-  // Divine ribbon
-  if(rarity === 'divine'){
-    const rb = document.createElement('div');
-    rb.className = 'ribbon';
-    rb.textContent = 'DIVINE';
-    el.appendChild(rb);
-  }
-
-  // Top cartouche
-  const top = document.createElement('div');
-  top.className = 'top';
-  const nm = document.createElement('span'); nm.className = 'name'; nm.textContent = name;
-  const lvEl = document.createElement('span'); lvEl.className = 'lv'; lvEl.textContent = 'Lv ' + lv;
-  top.appendChild(nm); top.appendChild(lvEl);
-  el.appendChild(top);
-
-  // Bars
-  const bars = document.createElement('div');
-  bars.className = 'bars';
-  bars.innerHTML = `
-    <div class="bar hp"><i style="width:${hpPct}%"></i><span class="lbl">HP ${hpCur} / ${hpMax}</span></div>
-    <div class="bar nrg"><i style="width:${nrgPct}%"></i><span class="lbl">NRG ${nrgCur} / ${nrgMax}</span></div>
-  `;
-  el.appendChild(bars);
-
-  // Parchment plate
-  const parch = document.createElement('div');
-  parch.className = 'parch';
-  const stats = document.createElement('div');
-  stats.className = 'stats';
-  const mkStat = (label, value) => {
-    const s = document.createElement('div'); s.className = 'stat';
-    const l = document.createElement('span'); l.className = 'l'; l.textContent = label;
-    const v = document.createElement('span'); v.className = 'v'; v.textContent = value;
-    s.appendChild(l); s.appendChild(v); return s;
+RoF.CardV4Component = (function(){
+  const STATUS_GLYPHS = {
+    burn:       '🔥',
+    poison:     '☠️',
+    frozen:     '❄️',
+    invincible: '🛡️'
   };
-  stats.appendChild(mkStat('ATK', atk));
-  stats.appendChild(mkStat('DEF', def));
-  stats.appendChild(mkStat('SPD', spd));
-  stats.appendChild(mkStat('CRIT', crit + '%'));
-  stats.appendChild(mkStat('EVA', eva + '%'));
-  parch.appendChild(stats);
-  const descEl = document.createElement('div');
-  descEl.className = 'desc';
-  descEl.textContent = desc;
-  parch.appendChild(descEl);
-  el.appendChild(parch);
 
-  return el;
+  function stripTokens(desc){
+    if(RoF.CardComponent && RoF.CardComponent.stripSystemTokens)
+      return RoF.CardComponent.stripSystemTokens(desc);
+    return String(desc || '').trim();
+  }
+
+  function create(unit, opts){
+    opts = opts || {};
+    const rarity = unit.rarity || 'bronze';
+    const element = unit.element || '';
+    const el = document.createElement('div');
+    el.className = `card-v4 rar-${rarity}${rarity==='divine' && element ? ' el-'+element : ''}`;
+    el.setAttribute('data-uid', unit.uid || unit.id || '');
+    if(unit.role) el.setAttribute('data-role', unit.role);
+    if(element) el.setAttribute('data-element', element);
+
+    const img = (typeof getCardImg === 'function') ? getCardImg(unit) : (CARD_IMG && CARD_IMG[unit.id]);
+    const name = (unit.isHero ? '⭐ ' : '') + (unit.name || '');
+    const lv = unit.level || 1;
+    const atk = unit.atk != null ? unit.atk : 0;
+    const def = unit.def != null ? unit.def : 0;
+    const spd = unit.spd != null ? unit.spd : 0;
+    const crit = unit.luck != null ? unit.luck : 0;
+    const eva = unit.eva != null ? unit.eva : 0;
+    const hpMax = unit.maxHp || unit.hp || 1;
+    const hpCur = unit.hp != null ? unit.hp : hpMax;
+    const nrgMax = unit.nrg || 0;
+    const nrgCur = 0;  // 영입/생성 시점 charge 0
+    const hpPct = Math.max(0, Math.min(100, Math.round(hpCur / hpMax * 100)));
+    const nrgPct = nrgMax > 0 ? Math.max(0, Math.min(100, Math.round(nrgCur / nrgMax * 100))) : 0;
+    const desc = stripTokens(unit.skillDesc || unit.desc || '');
+
+    // XSS 방지: createElement + textContent
+    const refs = {};
+
+    // Art
+    const artImg = document.createElement('img');
+    artImg.className = 'art';
+    if(img) artImg.src = img;
+    artImg.alt = '';
+    el.appendChild(artImg);
+
+    // Gild (금박 테두리)
+    const gild = document.createElement('div');
+    gild.className = 'gild';
+    el.appendChild(gild);
+
+    // Shield badge (좌상단 — Step 5 B2) — 기본 숨김
+    refs.shield = document.createElement('div');
+    refs.shield.className = 'shield-badge';
+    refs.shield.hidden = true;
+    el.appendChild(refs.shield);
+
+    // Status badges (06-card-ui-principles: 카드 이름 위 정중앙)
+    refs.status = document.createElement('div');
+    refs.status.className = 'v4-status';
+    el.appendChild(refs.status);
+
+    // Legendary sparkles
+    if(rarity === 'legendary'){
+      ['s1','s2','s3'].forEach(s => {
+        const sp = document.createElement('span');
+        sp.className = 'spark ' + s;
+        el.appendChild(sp);
+      });
+    }
+
+    // Divine ribbon
+    if(rarity === 'divine'){
+      const rb = document.createElement('div');
+      rb.className = 'ribbon';
+      rb.textContent = '신';  // 한국어 (05-design rules)
+      el.appendChild(rb);
+    }
+
+    // Top cartouche
+    const top = document.createElement('div');
+    top.className = 'top';
+    const nmEl = document.createElement('span'); nmEl.className = 'name'; nmEl.textContent = name;
+    const lvEl = document.createElement('span'); lvEl.className = 'lv'; lvEl.textContent = 'Lv ' + lv;
+    top.appendChild(nmEl); top.appendChild(lvEl);
+    el.appendChild(top);
+
+    // Bars (HP / NRG)
+    const bars = document.createElement('div');
+    bars.className = 'bars';
+    const mkBar = (cls, pct, labelTxt) => {
+      const bar = document.createElement('div'); bar.className = 'bar ' + cls;
+      const fill = document.createElement('i'); fill.style.width = pct + '%';
+      const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = labelTxt;
+      bar.appendChild(fill); bar.appendChild(lbl);
+      return { bar, fill, lbl };
+    };
+    const hpBar = mkBar('hp', hpPct, 'HP ' + hpCur + ' / ' + hpMax);
+    const nrgBar = mkBar('nrg', nrgPct, 'NRG ' + nrgCur + ' / ' + nrgMax);
+    bars.appendChild(hpBar.bar); bars.appendChild(nrgBar.bar);
+    refs.hpFill = hpBar.fill; refs.hpLbl = hpBar.lbl;
+    refs.nrgFill = nrgBar.fill; refs.nrgLbl = nrgBar.lbl;
+    el.appendChild(bars);
+
+    // Parchment plate
+    const parch = document.createElement('div');
+    parch.className = 'parch';
+    const stats = document.createElement('div');
+    stats.className = 'stats';
+    const statKeys = [
+      ['ATK', atk, 'atk'],
+      ['DEF', def, 'def'],
+      ['SPD', spd, 'spd'],
+      ['CRIT', crit + '%', 'luck'],
+      ['EVA', eva + '%', 'eva'],
+    ];
+    refs.stats = {};
+    statKeys.forEach(([label, value, key]) => {
+      const s = document.createElement('div'); s.className = 'stat';
+      const l = document.createElement('span'); l.className = 'l'; l.textContent = label;
+      const v = document.createElement('span'); v.className = 'v'; v.textContent = value;
+      const mod = document.createElement('span'); mod.className = 'mod'; mod.hidden = true;
+      s.appendChild(l); s.appendChild(v); s.appendChild(mod);
+      stats.appendChild(s);
+      refs.stats[key] = { v: v, mod: mod, base: value };
+    });
+    parch.appendChild(stats);
+    const descEl = document.createElement('div');
+    descEl.className = 'desc';
+    descEl.textContent = desc;
+    parch.appendChild(descEl);
+    el.appendChild(parch);
+
+    // State (setter 로 변경)
+    const state = {
+      currentHP: hpCur, maxHP: hpMax,
+      currentNRG: nrgCur, maxNRG: nrgMax,
+      shield: 0,
+      statMods: { atk: 0, def: 0, spd: 0 },
+      statuses: {},
+      selected: false,
+    };
+
+    const inst = {
+      el, unit, _refs: refs, _state: state, _opts: opts,
+
+      setHP(n){
+        state.currentHP = n;
+        const pct = Math.max(0, Math.min(100, Math.round(n / state.maxHP * 100)));
+        refs.hpFill.style.width = pct + '%';
+        refs.hpLbl.textContent = 'HP ' + n + ' / ' + state.maxHP;
+      },
+      setNRG(n){
+        state.currentNRG = n;
+        const pct = state.maxNRG > 0 ? Math.max(0, Math.min(100, Math.round(n / state.maxNRG * 100))) : 0;
+        refs.nrgFill.style.width = pct + '%';
+        refs.nrgLbl.textContent = 'NRG ' + n + ' / ' + state.maxNRG;
+      },
+      setShield(n){
+        state.shield = n;
+        if(n > 0){
+          refs.shield.textContent = '🛡️' + n;
+          refs.shield.hidden = false;
+        } else {
+          refs.shield.hidden = true;
+          refs.shield.textContent = '';
+        }
+      },
+      setStatModifier(stat, delta){
+        if(!(stat in state.statMods)) return;
+        state.statMods[stat] = delta;
+        const ref = refs.stats[stat];
+        if(!ref) return;
+        if(delta === 0){
+          ref.mod.hidden = true; ref.mod.textContent = '';
+          ref.mod.classList.remove('is-buff', 'is-debuff');
+        } else {
+          ref.mod.hidden = false;
+          ref.mod.textContent = (delta > 0 ? '+' : '') + delta;
+          ref.mod.classList.toggle('is-buff', delta > 0);
+          ref.mod.classList.toggle('is-debuff', delta < 0);
+        }
+      },
+      setStatus(effect, turns){
+        if(turns > 0) state.statuses[effect] = turns;
+        else delete state.statuses[effect];
+        refs.status.innerHTML = '';
+        Object.keys(state.statuses).forEach(k => {
+          const b = document.createElement('span');
+          b.className = 'v4-status-badge v4-status-' + k;
+          const ic = document.createElement('span'); ic.className = 'ic'; ic.textContent = STATUS_GLYPHS[k] || '?';
+          const tn = document.createElement('b'); tn.className = 'tn'; tn.textContent = state.statuses[k];
+          b.appendChild(ic); b.appendChild(tn);
+          refs.status.appendChild(b);
+        });
+      },
+      setSelected(on){
+        state.selected = !!on;
+        el.classList.toggle('selected', !!on);
+      },
+      destroy(){ if(el.parentElement) el.parentElement.removeChild(el); },
+      _snapshot(){
+        return {
+          currentHP: state.currentHP, currentNRG: state.currentNRG,
+          shield: state.shield, statMods: Object.assign({}, state.statMods),
+          statuses: Object.assign({}, state.statuses), selected: state.selected,
+        };
+      },
+    };
+    return inst;
+  }
+
+  function rebuild(oldInstance, newUnit){
+    const parent = oldInstance.el.parentElement;
+    const next = parent ? oldInstance.el.nextSibling : null;
+    const snap = oldInstance._snapshot();
+    const opts = oldInstance._opts;
+    oldInstance.destroy();
+    const fresh = create(newUnit, opts);
+    fresh.setHP(Math.min(snap.currentHP, newUnit.hp));
+    fresh.setNRG(Math.min(snap.currentNRG, newUnit.nrg || 0));
+    fresh.setShield(snap.shield);
+    fresh.setStatModifier('atk', snap.statMods.atk);
+    fresh.setStatModifier('def', snap.statMods.def);
+    fresh.setStatModifier('spd', snap.statMods.spd);
+    Object.keys(snap.statuses).forEach(k => fresh.setStatus(k, snap.statuses[k]));
+    fresh.setSelected(snap.selected);
+    if(parent) parent.insertBefore(fresh.el, next);
+    return fresh;
+  }
+
+  return { create, rebuild, stripTokens, STATUS_GLYPHS };
+})();
+window.CardV4Component = RoF.CardV4Component;
+
+// 호환성 래퍼 — 기존 mkCardElV4(c) 호출부는 el 만 받음.
+// 새 코드는 CardV4Component.create(c, opts) 를 직접 써서 인스턴스로 setter 활용.
+RoF.dom.mkCardElV4 = function(c){
+  return RoF.CardV4Component.create(c, {}).el;
 };
 
 // 호환성 레이어

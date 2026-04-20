@@ -270,24 +270,14 @@
 /* ═══════════════════════════════════════════════════════ */
 .card-v2{position:relative;width:320px;aspect-ratio:1024/1536;user-select:none;cursor:pointer;transition:transform .2s,filter .2s;filter:drop-shadow(0 6px 12px rgba(0,0,0,.6));flex-shrink:0;}
 .card-v2:hover{transform:translateY(-6px) scale(1.03);filter:drop-shadow(0 10px 20px rgba(0,0,0,.85));}
-.card-v2 .cv-illust{position:absolute;left:20%;top:12%;width:60%;height:60%;background-size:cover;background-position:center 20%;background-repeat:no-repeat;}
-.card-v2 .cv-frame{position:absolute;inset:0;background-size:100% 100%;pointer-events:none;}
-/* ── 카드 프레임 매핑 (PHASE 3 방패 프레임, 2026-04-18, 암흑 추가 2026-04-19) ──
-   현재 모든 유닛에 방패(tank) 프레임 적용 — 역할별(dps/support) 프레임은 추후 추가.
-   divine 은 원소별 분기. 6원소 전부 제작 완료.
-*/
-.card-v2.bronze .cv-frame{background-image:url('../img/frame_bronze_tank.png');}
-.card-v2.silver .cv-frame{background-image:url('../img/frame_silver_tank.png');}
-.card-v2.gold .cv-frame{background-image:url('../img/frame_gold_tank.png');}
-.card-v2.legendary .cv-frame{background-image:url('../img/frame_legendary_tank.png');}
-.card-v2.divine[data-element="fire"]      .cv-frame{background-image:url('../img/frame_divine_fire_tank.png');}
-.card-v2.divine[data-element="water"]     .cv-frame{background-image:url('../img/frame_divine_water_tank.png');}
-.card-v2.divine[data-element="earth"]     .cv-frame{background-image:url('../img/frame_divine_earth_tank.png');}
-.card-v2.divine[data-element="lightning"] .cv-frame{background-image:url('../img/frame_divine_lightning_tank.png');}
-.card-v2.divine[data-element="holy"]      .cv-frame{background-image:url('../img/frame_divine_holy_tank.png');}
-.card-v2.divine[data-element="dark"]      .cv-frame{background-image:url('../img/frame_divine_dark_tank.png');}
-/* divine fallback (data-element 미지정 시) — dark 프레임 재사용 */
-.card-v2.divine .cv-frame{background-image:url('../img/frame_divine_dark_tank.png');}
+/* ── 일러스트 풀카드 (2026-04-20) ──
+   대표님이 프레임+유닛 통합 PNG 를 제공. 시스템은 잘림 없이 풀카드 표시.
+   contain 으로 종횡비 유지, 빈 공간은 검정 배경. */
+.card-v2 .cv-illust{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#0a0a0a;}
+/* ── 시스템 외곽 프레임 PNG 제거 (2026-04-20) ──
+   기존 frame_*_tank.png 25장 + card_frame.png 폐기 (trash/img_frames_2026-04-20/).
+   일러스트 자체에 프레임이 통합돼 있어 이중 프레임 해체. */
+.card-v2 .cv-frame{display:none;}
 /* ── 카드 슬롯 — 좌표는 11_frame_coords.css의 --gem-*-x/y 변수 사용 (PNG에서 자동 추출) ── */
 .card-v2 .cv-slot{
   position:absolute;

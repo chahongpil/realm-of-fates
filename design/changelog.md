@@ -13,6 +13,27 @@
 - 이유: 수동 저장 (대표님 지시, 세션 마무리).
 - 영향: 다음 세션 `/clear → Ctrl+V` 로 맥락 즉시 복구.
 
+## 2026-04-21 ▶ 리팩터 ▶ B1 매직 넘버 토큰화 + 유물 imgKey + Step 5A 스캔
+
+- **변경**:
+  - **B1 토큰화**: `css/10_tokens.css` 섹션 14-7 추가 — `--card-v4-w: 260px` (기본값). `css/32_card_v4.css` `.card-v4` width 하드코딩 `260px` → `var(--card-v4-w, 260px)`. `css/42_screens.css` `#tav-grid` 에 `--card-v4-w: 235px` override 주입 (세 곳 중복 → 한 곳으로 통일). `grid-template-columns: repeat(auto-fill, var(--card-v4-w))`.
+  - **B (유물 imgKey)**: `js/13_data_relics.js` 12 유물 전부 `imgKey` 필드 추가 (rl_banner ~ rl_immortal). 이미지 공급 대기.
+  - **C (Step 5A 스캔)**: `design/step5a_scan_2026-04-21.md` 신규 — V4 확장 대상 12 mkCardEl 호출 전수 정리 + 5A/5B/5C/5D 단계 분리 + 공수 추정.
+
+- **이유**:
+  - code-review (`code_review_step4_2026-04-20.md`) BLOCKER B1 해결 — Step 5 (다른 화면 V4 확장) 전 매직 넘버 일원화 필수.
+  - 유물 imgKey 는 art_queue_skills_relics 의 rl_* 이미지 공급 시 즉시 연결 준비.
+  - Step 5A 스캔으로 작업 전 사전 파악.
+
+- **영향**:
+  - 렌더 결과 완전 동일 (Playwright 측정 235×411 유지).
+  - 회귀 9/9 PASS.
+  - 이후 Collection/Formation 확장 시 `#화면-scope { --card-v4-w: 값; }` 한 줄로 해결.
+
+- **남은 과제**:
+  - B3 (`!important` 4개) 는 현 setup 에서 유지 필요 (inline style 제거 부작용 큼). Step 5 진행 중 재평가.
+  - I1 (CRIT/EVA 하드코딩) 는 Step 5 호출부 다양화 시 빌더 옵션화 권장.
+
 ## 2026-04-21 ▶ 밸런스 ▶ P0 5건 등급 하향 조정
 
 - **변경**:

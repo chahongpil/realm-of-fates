@@ -46,7 +46,7 @@ function handleSave(req, res){
       const data = JSON.parse(body);
       // 안전성: 구조 검증
       const required = ['bronze','silver','gold','legendary','divine'];
-      const SLOT_NAMES = ['atk','def','spd','hp','nrg'];
+      const SLOT_NAMES = ['atk','def','spd','luck','hp','nrg'];
       const validateSlots = (where, slots) => {
         if(!slots) throw new Error('missing slots: '+where);
         for(const s of SLOT_NAMES){

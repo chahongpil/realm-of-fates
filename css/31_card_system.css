@@ -299,6 +299,7 @@
 .card-v2 .cv-atk{ left:var(--gem-atk-x); top:var(--gem-atk-y); font-size:1.1rem; width:9%; }
 .card-v2 .cv-def{ left:var(--gem-def-x); top:var(--gem-def-y); font-size:1.1rem; width:9%; }
 .card-v2 .cv-spd{ left:var(--gem-spd-x); top:var(--gem-spd-y); font-size:1.1rem; width:9%; }
+.card-v2 .cv-luck{ left:var(--gem-luck-x); top:var(--gem-luck-y); font-size:1.1rem; width:9%; color:#ffe066; text-shadow:0 1px 3px var(--gray-9),0 0 6px rgba(255,224,102,.5); }
 /* ── 박스 타입 슬롯 공통 — 좌상단 기준, 변환 없음 (숫자 슬롯의 translate 와 다름) ── */
 .card-v2 .cv-box{
   position:absolute;

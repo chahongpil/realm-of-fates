@@ -74,6 +74,7 @@ RoF.CardComponent = (function(){
       refs.atk = mkSlot('cv-atk', unit.atk); el.appendChild(refs.atk);
       refs.def = mkSlot('cv-def', unit.def || 0); el.appendChild(refs.def);
       refs.spd = mkSlot('cv-spd', unit.spd || 0); el.appendChild(refs.spd);
+      refs.luck = mkSlot('cv-luck', unit.luck || 0); el.appendChild(refs.luck);
       refs.atkMod = mkSlot('cv-atk-mod'); refs.atkMod.hidden = true; el.appendChild(refs.atkMod);
       refs.defMod = mkSlot('cv-def-mod'); refs.defMod.hidden = true; el.appendChild(refs.defMod);
       refs.spdMod = mkSlot('cv-spd-mod'); refs.spdMod.hidden = true; el.appendChild(refs.spdMod);

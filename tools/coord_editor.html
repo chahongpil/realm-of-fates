@@ -6,7 +6,7 @@
 <style>
   :root{
     --atk:#ff4422; --def:#4488ff; --spd:#22cc44;
-    --hp:#ff6688;  --nrg:#44aaff;
+    --hp:#ff6688;  --nrg:#44aaff; --luck:#ffcc22;
   }
   *{box-sizing:border-box;}
   body{
@@ -102,6 +102,7 @@
   .marker.atk{color:var(--atk);}
   .marker.def{color:var(--def);}
   .marker.spd{color:var(--spd);}
+  .marker.luck{color:var(--luck);}
   .marker.hp { color:var(--hp);}
   .marker.nrg{color:var(--nrg);}
   /* 마커 호버 시 라벨 툴팁 */
@@ -134,11 +135,12 @@
   }
   .legend-dot::before{width:7px;height:1.5px;margin-left:-3.5px;margin-top:-.75px;}
   .legend-dot::after {width:1.5px;height:7px;margin-left:-.75px;margin-top:-3.5px;}
-  .legend-item.atk .legend-dot{color:var(--atk);}
-  .legend-item.def .legend-dot{color:var(--def);}
-  .legend-item.spd .legend-dot{color:var(--spd);}
-  .legend-item.hp  .legend-dot{color:var(--hp);}
-  .legend-item.nrg .legend-dot{color:var(--nrg);}
+  .legend-item.atk  .legend-dot{color:var(--atk);}
+  .legend-item.def  .legend-dot{color:var(--def);}
+  .legend-item.spd  .legend-dot{color:var(--spd);}
+  .legend-item.luck .legend-dot{color:var(--luck);}
+  .legend-item.hp   .legend-dot{color:var(--hp);}
+  .legend-item.nrg  .legend-dot{color:var(--nrg);}
   .legend-box{width:16px;height:10px;border:1.5px dashed;box-sizing:border-box;}
   .legend-item.name .legend-box{border-color:#ffcc44;background:rgba(255,204,68,.15);}
   .legend-item.tags .legend-box{border-color:#44ffcc;background:rgba(68,255,204,.12);}
@@ -193,7 +195,7 @@
 <h1>🎯 프레임 좌표 에디터</h1>
 <div class="hint">
 각 프레임 위의 <b>5개 컬러 점 + 3개 박스</b>를 실제 위치로 맞추세요.<br>
-  🔴 ATK · 🔵 DEF · 🟢 SPD · 💖 HP · 💎 NRG — 보석 중심으로 <b>드래그</b><br>
+  🔴 ATK · 🔵 DEF · 🟢 SPD · 🟡 LUCK · 💖 HP · 💎 NRG — 보석 중심으로 <b>드래그</b><br>
   🟨 NAME · 🟦 TAGS · 🟪 DESC — 박스 본체로 <b>이동</b>, 우하단 흰 핸들로 <b>리사이즈</b><br>
   <code>저장</code> 버튼 누르면 <code>11_frame_coords.json</code> + CSS 모두 갱신됩니다.
 </div>
@@ -213,6 +215,7 @@
   <span class="legend-item atk"><span class="legend-dot"></span>ATK</span>
   <span class="legend-item def"><span class="legend-dot"></span>DEF</span>
   <span class="legend-item spd"><span class="legend-dot"></span>SPD</span>
+  <span class="legend-item luck"><span class="legend-dot"></span>LUCK</span>
   <span class="legend-item hp"><span class="legend-dot"></span>HP</span>
   <span class="legend-item nrg"><span class="legend-dot"></span>NRG</span>
   <span style="color:#555;">|</span>
@@ -225,7 +228,7 @@
 <div class="grid" id="grid"></div>
 
 <script>
-const SLOTS = ['atk','def','spd','hp','nrg'];
+const SLOTS = ['atk','def','spd','luck','hp','nrg'];  // luck 추가 2026-04-20: 좌측 4번째 노란 슬롯(크리티컬 연동)
 const BOXES = ['name','tags','desc'];
 const BOX_LABELS = { name:'NAME', tags:'TAGS', desc:'DESC' };
 let coordData = null;  // 전체 JSON
@@ -495,6 +498,7 @@ function updateReadout(readout, node){
     `<b>ATK</b> ${s.atk.xPct},${s.atk.yPct}  ` +
     `<b>DEF</b> ${s.def.xPct},${s.def.yPct}  ` +
     `<b>SPD</b> ${s.spd.xPct},${s.spd.yPct}  ` +
+    (s.luck ? `<b>LUCK</b> ${s.luck.xPct},${s.luck.yPct}  ` : '') +
     `<b>HP</b> ${s.hp.xPct},${s.hp.yPct}  ` +
     `<b>NRG</b> ${s.nrg.xPct},${s.nrg.yPct}`;
   if(b.name) html += `<br><b>NAME</b> ${b.name.xPct},${b.name.yPct} ${b.name.wPct}×${b.name.hPct}`;

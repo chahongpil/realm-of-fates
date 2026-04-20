@@ -185,7 +185,7 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
         if (!card) continue;
         const cr = card.getBoundingClientRect();
         const kids = {};
-        for (const k of ['hp','nrg','atk','def','spd']) {
+        for (const k of ['hp','nrg','atk','def','spd','luck']) {
           const el = card.querySelector(`.cv-${k}`);
           if (!el) continue;
           const r = el.getBoundingClientRect();
@@ -216,7 +216,7 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
     }
 
     if (drifts.length) fail('card-coords', drifts.slice(0, 3).join(' | ') + (drifts.length > 3 ? ` +${drifts.length - 3}` : ''));
-    else pass('card-coords', `${Object.keys(measured).length} rarities × 5 slots, all ±1.5%`);
+    else pass('card-coords', `${Object.keys(measured).length} rarities × ${Object.keys(Object.values(measured)[0]||{}).length} slots, all ±1.5%`);
   } catch (e) { fail('card-coords', e.message); }
 
   // ── 7. card-grids (DB 직접 렌더 검증) ──

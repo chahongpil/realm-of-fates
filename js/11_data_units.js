@@ -230,11 +230,11 @@ RoF.Data.UNITS = Object.freeze([
     atk:15,hp:55,def:4,spd:3,rage:10,nrg:10,luck:5,eva:2,meva:4,hpReg:2,nrgReg:2,
     skill:'breath',skillType:'active',skillChance:.8,skillNrg:5,skillDesc:'[액티브 80%] 뇌격: 전체8데미지 (에너지5)',
     bonusTrigger:{on:'attack',chance:.3,effect:'double_arrow',desc:'30% 공격시: 번개 연쇄 2회 타격'},rarity:'divine'},
-  // 2026-04-20 신규. 대표님 튜닝 대기 — 초안은 titan 기반 (dark 특성: atk+1, luck+3 반영).
+  // 2026-04-20 튜닝 — titan 대비 luck 과잉 + life_steal 콤보 조정 (balance-auditor P1).
   {id:'archfiend',name:'대악마',icon:'😈',type:'악마',role:'attack',range:'melee',race:'demon',element:'dark',
-    atk:16,hp:55,def:4,spd:3,rage:10,nrg:10,luck:8,eva:2,meva:4,hpReg:2,nrgReg:2,
+    atk:16,hp:55,def:4,spd:3,rage:10,nrg:10,luck:6,eva:2,meva:4,hpReg:2,nrgReg:2,
     skill:'breath',skillType:'active',skillChance:.8,skillNrg:5,skillDesc:'[액티브 80%] 지옥창: 전체8데미지 (에너지5)',
-    bonusTrigger:{on:'attack',chance:.3,effect:'life_steal',desc:'30% 공격시: 피해의 50%를 HP로 흡수'},rarity:'divine'},
+    bonusTrigger:{on:'attack',chance:.25,effect:'life_steal',desc:'25% 공격시: 피해의 50%를 HP로 흡수'},rarity:'divine'},
 ]);
 
 // 호환성 레이어

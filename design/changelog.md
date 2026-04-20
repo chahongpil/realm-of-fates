@@ -8,6 +8,11 @@
 
 ---
 
+## 2026-04-20 19:01 ▶ 세션 ▶ 핸드오프 저장
+- 변경: 세션 상태를 `docs/handoff/handoff-2026-04-20-1901.md` (246줄) 에 저장 + 클립보드 복사.
+- 이유: 수동 저장 (대표님 지시, 세션 마무리).
+- 영향: 다음 세션에서 `/clear → Ctrl+V` 로 맥락 즉시 복구 가능.
+
 ## 2026-04-20 (3차) ▶ 게임 메커닉 ▶ 좌측 4번째 슬롯 `luck` 추가 (크리티컬 연동) + card_slot_editor 롤백
 - 변경: ① **LUCK 슬롯 추가** — 합성 PNG 의 좌측 4색 슬롯(빨·파·초·노) 중 노란색 4번째 칸에 `luck` 값 매핑. `.cv-luck` DOM + CSS(`#ffe066` 황금톤), `css/11_frame_coords.json` 9 블록(5 등급 + divine 4 원소) 각각 `slots.luck` 시드 추가 (spd 좌표 + y 7% 기준 자동 시드, 대표님 편집기에서 드래그 튜닝). CSS 18 변수(`--gem-luck-x/y`) 자동 생성. `40_cards.js` 의 `create()` 에 `refs.luck = mkSlot('cv-luck', unit.luck||0)` 추가. 편집기(`coord_editor.html`)의 `SLOTS` 배열·범례·마커 색상·readout 모두 6 슬롯으로 확장(`--luck:#ffcc22`). 서버 `handleSave` 의 `SLOT_NAMES` + `test_run.js` card-coords 측정 배열 동기화. 동적 슬롯 카운트로 메시지 `1 rarities × 6 slots` 자동 출력. ② **card_slot_editor 롤백** — 단계 A(`b295bc2`, js/17 로더) + 단계 B(`fadd27d`, 편집기+엔드포인트) revert 후 `data/card_slot_overrides.json` 도 삭제. 롤백 사유: 같은 등급 프레임은 슬롯 위치 공통(대표님 지적) → 카드별 override 과잉 설계.
 - 이유: 대표님 결정. ① "4번째 슬롯에 무엇을 매핑?" → `luck` (크리티컬과 연동되는 기존 스탯) 선택. 기존 유닛 데이터에 `luck` 이 이미 있어 마이그레이션 0. ② card_slot_editor 과잉 설계 → 삭제로 코드 복잡도 감소. no-op 보존보단 명확히 제거가 유지보수 측면 유리.

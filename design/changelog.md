@@ -8,6 +8,23 @@
 
 ---
 
+## 2026-04-20 ▶ 콘텐츠 ▶ 일러스트 일괄 교체 (대표님 프레임 일체화 32장 + 타이탄 8프레임 APNG + 신규 6캐)
+- 변경: 대표님이 합성한 "프레임+유닛 일체화" 한글 PNG 41장 → game/img/ 에 이식. ① 기존 ID 매칭 25장(견습마법사~화염의신드래곤+빙결술사_남자→cryomancer+거인리치→lich) → 400×600 LANCZOS 비율유지 캔버스. ② 신규 6캐: archer(궁병, bronze lightning ranged) / cryomancer_f(빙결술사_여, silver water support) / griffin(silver lightning beast) / griffin_knight(legendary fire human, "심홍의 그리핀 기사") / griffin_rider(legendary holy human, "전설의 그리핀 용사") / armored_griffin(gold earth beast). 11_data_units.js 6항목 추가 + 14_data_images.js 매핑 추가. ③ 타이탄 8장(타이탄1~8.png) → APNG 8프레임 90ms loop=0 합성 → titan.png 1.86MB 갱신. 도구: tools/import_unified_frames.py + tools/build_titans_apng.py.
+- 이유: 대표님이 25장 + 신규 7장 + 타이탄 시퀀스를 프레임 일체화 상태로 일괄 제공. 메인은 합성 안 하고 받은 PNG 그대로 ID 변환·리사이즈·배포만(2026-04-19 결정 재확인). divine 등급 5원소 확장의 첫 단계로 신규 그리핀 시리즈가 legendary 풀 보강.
+- 영향: 유닛 51종(기존 45 + 신규 6). 회귀 9/9 PASS(2회). 한 폴더(`game/이미지제작_원본/일반유닛_원본/프레임 일체화/`) 일괄 임포트 → ID·리사이즈·배포 자동화 도구 정착(`tools/import_unified_frames.py` 재사용 가능).
+- 이전 결정: 2026-04-19 "프레임 합성은 대표님이 직접, 메인은 받은 PNG 적용만" 결정의 첫 대규모 적용.
+
+## 2026-04-20 ▶ 게임 메커닉 ▶ 시스템 카드 프레임 PNG/CSS 전면 해체 (대표님 통합 PNG 풀카드 표시)
+- 변경: 시스템이 카드 위에 씌우던 외곽 프레임 PNG 18장(`card_frame.png` + `frame_*.png` 17장) 전부 폐기 → `trash/img_frames_2026-04-20/` 보존. CSS 정리: ① `css/30_components.css` `.card-inner::before` (card_frame.png 오버레이) 제거 + `.card-icon img` `object-fit:cover → contain`, ② `css/31_card_system.css` `.cv-illust` `left:20% top:12% width:60% height:60% cover → inset:0 + background-size:contain` (풀카드, 잘림 0), `.cv-frame` `display:none` (등급별 frame_*_tank.png 매핑 일괄 폐기). 대표님 통합 PNG 가 프레임/슬롯박스/이름배너까지 다 포함하므로 **이중 프레임 해체**. 시스템은 일러스트 풀카드 표시 + 숫자/이름 오버레이만 담당. 검정 배경 fallback 으로 종횡비 차이 흡수.
+- 이유: 4/19 대표님 프레임 일체화 PNG 25장 + 신규 6캐 적용 후 시각 검증에서 "시스템 프레임 안에 일러스트 프레임이 또 들어간 이중 프레임" 확인. 대표님 결정: "프레임 자체를 날려버려, 앞으로는 프레임+유닛 결합된 카드를 그대로 짤리지 않게 쓰면 된다". 메인은 합성/외곽 프레임 책임에서 손 떼고 풀카드 표시 + 숫자 오버레이만.
+- 영향: card-v2 컴포넌트의 시각 책임이 단순화(외곽/등급 표현 100% 일러스트 위임). 다음 단계로 카드별 슬롯 좌표 매핑(현재 등급별 1세트 → 카드별 override) + 슬롯 편집기 필요 — 대표님 통합 PNG 의 슬롯 위치가 카드마다 다르기 때문(예: knight=상단 작은 배너 / archangel=중앙 큰 배너 / NRG 보석 위치 카드별 상이). `data/card_slot_overrides.json` 스키마 작성까지 진행, 런타임 로더/렌더러 적용 + 편집기 UI 는 다음 세션. 회귀 9/9 PASS, 시각 검증 완료(`shots/2026-04-20-cards-after-frame-removal.png`).
+- 이전 결정: 2026-04-12 "card-v2 다크 석재 고딕 아치 프레임 도입" → 2026-04-18 "PHASE 3 방패 프레임" → 2026-04-19 "암흑 divine 프레임 추가" 의 종결. 이제 시스템 프레임 시대 종료, 대표님 통합 PNG 시대 시작.
+
+## 2026-04-19 23:43 ▶ 세션 ▶ 핸드오프 저장
+- 변경: 세션 상태를 `docs/handoff/handoff-2026-04-19-2343.md` 에 저장 + 클립보드 복사.
+- 이유: 수동 저장 (세션 마무리, 대표님 휴식).
+- 영향: 다음 세션은 이 문서 붙여넣기로 즉시 컨텍스트 복구.
+
 ## 2026-04-19 ▶ 팀/협업 ▶ S2 고스트 PvP 마무리 결정 (봇 시드·패배 정책·UX)
 - 변경: S2 고스트 PvP 99% 구현 완료 상태에서 남은 4건 결정 정리. ① 봇 시드 — `supabase/migrations/003_s2_bot_seed.sql` 5명(유랑검사/잿빛 마법사/강철의 약속/독사의 미소/용맹의 깃발, LP 10/25/50/75/120) + `deck_snapshots.user_id` NULL 허용. ② 패배 정책 — 현행 유지(승리 시만 스냅샷, "최고의 순간 박제" 컨셉). ③ 콜로세움 UX — C안 추천(훈련 화면에 "🏟️ 아레나 도전" 버튼 명시 진입, 별도 작업으로 분리). ④ E2E 체크리스트 8개 정리. 결정 정본은 `design/s2-finalization.md`.
 - 이유: 코드는 4/16~4/19 사이에 구현 완료됐으나 시그널 미반영(트랙6 시그널이 4/15 1줄만)으로 진행 상황이 가려졌음. 후속 운영 결정(봇 / 매칭 정화 / UX 진입점) 이 미정인 상태에서 출시하면 첫 유저가 매칭 0%, 약덱 박제, 훈련/PvP 혼동 등 즉각 블로커. 결정 문서로 매듭짓고 시드 SQL 까지 미리 준비.

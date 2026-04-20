@@ -65,7 +65,7 @@ Object.assign(RoF.Game, {
       const HERO_NAMES=['아리안','칼리스','제논','리아나','볼카르','에리나','다리우스','셀레나','오딘','이솔데','펜릭','모르가나','티리온','루나','갈라드','아스트라'];
       const heroName=HERO_NAMES[Math.floor(Math.random()*HERO_NAMES.length)];
       const c={...b,uid:uid(),name:heroName,heroClass:b.name,level:1,equips:[],maxHp:b.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
-      const el=mkCardEl(c);
+      const el=mkCardElV4(c);  // V4 Illuminated Manuscript (2026-04-20 Step 4)
       const btn=document.createElement('div');btn.style.cssText='text-align:center;margin-top:4px;';
       btn.innerHTML=`<button class="btn btn-s btn-purple" ${(this.blessings||0)<1||this.deck.length>=this.maxDeck?'disabled':''}>✨ 신의 축복 1개</button>`;
       btn.querySelector('button').onclick=(e)=>{e.stopPropagation();
@@ -122,7 +122,7 @@ Object.assign(RoF.Game, {
         return;
       }
       const cost=c.cost||5;
-      const el=mkCardEl(c);
+      const el=mkCardElV4(c);  // V4 Illuminated Manuscript (2026-04-20 Step 4)
       const btn=document.createElement('div');btn.style.cssText='text-align:center;margin-top:4px;';
       btn.innerHTML=`<button class="btn btn-s btn-green" ${this.gold<cost||this.deck.length>=this.maxDeck?'disabled':''}>${cost}💰 영입</button>`;
       btn.querySelector('button').onclick=(e)=>{e.stopPropagation();

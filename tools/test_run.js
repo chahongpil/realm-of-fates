@@ -116,7 +116,7 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
       pageErrors = [];
       await page.evaluate(() => Game.showTavern && Game.showTavern());
       await page.waitForTimeout(500);
-      const cards = await page.evaluate(() => document.querySelectorAll('.card-v2, .tavern-card-wrap').length);
+      const cards = await page.evaluate(() => document.querySelectorAll('.card-v2, .card-v4, .tavern-card-wrap').length);
       if (cards < 3) fail('tavern', `expected 3+ tavern cards, got ${cards}`);
       else if (pageErrors.length) fail('tavern', pageErrors.join('; '));
       else pass('tavern', `cards=${cards}`);

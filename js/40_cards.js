@@ -202,7 +202,122 @@ RoF.dom.mkMini = function(c){
   return d;
 };
 
+/* ============================================================
+   mkCardElV4 — Claude Design System V4 Illuminated Manuscript
+   ============================================================
+   도입: 2026-04-20 (7차 Step 4). 현재 Tavern 전용.
+   출처: design-system/handoff/CARD_FRAME_SPEC.md + mockup/v4_card/v3.html.
+   스타일: css/32_card_v4.css (모든 선택자 `.card-v4` prefix).
+   기존 mkCardEl (CardComponent) 과 독립 — 호출부에서만 교체.
+
+   스탯 매핑:
+     ATK = unit.atk
+     DEF = unit.def (default 0)
+     SPD = unit.spd (default 0)
+     CRIT = unit.luck  (rules/04-balance: 치명타율 = luck + skill.critBonus)
+     EVA = unit.eva (default 0)
+     HP / HPmax = unit.hp / (unit.maxHp || unit.hp)  — Tavern 은 full
+     NRG current/max = 0 / unit.nrg  — Tavern 영입 전엔 charge 0
+     desc = unit.skillDesc || unit.desc (없으면 빈칸 3줄)
+   ============================================================ */
+RoF.dom.mkCardElV4 = function(c){
+  const rarity = c.rarity || 'bronze';
+  const element = c.element || '';
+  const el = document.createElement('div');
+  el.className = `card-v4 rar-${rarity}${rarity==='divine' && element ? ' el-'+element : ''}`;
+  el.setAttribute('data-uid', c.uid || c.id || '');
+
+  const img = (typeof getCardImg === 'function') ? getCardImg(c) : (CARD_IMG && CARD_IMG[c.id]);
+  const name = (c.isHero ? '⭐ ' : '') + (c.name || '');
+  const lv = c.level || 1;
+  const atk = c.atk != null ? c.atk : 0;
+  const def = c.def != null ? c.def : 0;
+  const spd = c.spd != null ? c.spd : 0;
+  const crit = c.luck != null ? c.luck : 0;
+  const eva = c.eva != null ? c.eva : 0;
+  const hpMax = c.maxHp || c.hp || 1;
+  const hpCur = c.hp != null ? c.hp : hpMax;
+  const nrgMax = c.nrg || 0;
+  const nrgCur = 0;  // Tavern 영입 전 카드는 charge 0
+  const hpPct = Math.max(0, Math.min(100, Math.round(hpCur / hpMax * 100)));
+  const nrgPct = nrgMax > 0 ? Math.max(0, Math.min(100, Math.round(nrgCur / nrgMax * 100))) : 0;
+  const descRaw = c.skillDesc || c.desc || '';
+  const desc = (RoF.CardComponent && RoF.CardComponent.stripSystemTokens)
+    ? RoF.CardComponent.stripSystemTokens(descRaw) : String(descRaw);
+
+  // XSS 방지: textContent 로 주입 (DOM 빌더 사용)
+  const artImg = document.createElement('img');
+  artImg.className = 'art';
+  if(img) artImg.src = img;
+  artImg.alt = '';
+  el.appendChild(artImg);
+
+  const gild = document.createElement('div');
+  gild.className = 'gild';
+  el.appendChild(gild);
+
+  // Legendary sparkles
+  if(rarity === 'legendary'){
+    ['s1','s2','s3'].forEach(s => {
+      const sp = document.createElement('span');
+      sp.className = 'spark ' + s;
+      el.appendChild(sp);
+    });
+  }
+
+  // Divine ribbon
+  if(rarity === 'divine'){
+    const rb = document.createElement('div');
+    rb.className = 'ribbon';
+    rb.textContent = 'DIVINE';
+    el.appendChild(rb);
+  }
+
+  // Top cartouche
+  const top = document.createElement('div');
+  top.className = 'top';
+  const nm = document.createElement('span'); nm.className = 'name'; nm.textContent = name;
+  const lvEl = document.createElement('span'); lvEl.className = 'lv'; lvEl.textContent = 'Lv ' + lv;
+  top.appendChild(nm); top.appendChild(lvEl);
+  el.appendChild(top);
+
+  // Bars
+  const bars = document.createElement('div');
+  bars.className = 'bars';
+  bars.innerHTML = `
+    <div class="bar hp"><i style="width:${hpPct}%"></i><span class="lbl">HP ${hpCur} / ${hpMax}</span></div>
+    <div class="bar nrg"><i style="width:${nrgPct}%"></i><span class="lbl">NRG ${nrgCur} / ${nrgMax}</span></div>
+  `;
+  el.appendChild(bars);
+
+  // Parchment plate
+  const parch = document.createElement('div');
+  parch.className = 'parch';
+  const stats = document.createElement('div');
+  stats.className = 'stats';
+  const mkStat = (label, value) => {
+    const s = document.createElement('div'); s.className = 'stat';
+    const l = document.createElement('span'); l.className = 'l'; l.textContent = label;
+    const v = document.createElement('span'); v.className = 'v'; v.textContent = value;
+    s.appendChild(l); s.appendChild(v); return s;
+  };
+  stats.appendChild(mkStat('ATK', atk));
+  stats.appendChild(mkStat('DEF', def));
+  stats.appendChild(mkStat('SPD', spd));
+  stats.appendChild(mkStat('CRIT', crit + '%'));
+  stats.appendChild(mkStat('EVA', eva + '%'));
+  parch.appendChild(stats);
+  const descEl = document.createElement('div');
+  descEl.className = 'desc';
+  descEl.textContent = desc;
+  parch.appendChild(descEl);
+  el.appendChild(parch);
+
+  return el;
+};
+
 // 호환성 레이어
 window.mkCardEl = RoF.dom.mkCardEl;
+window.mkCardElV4 = RoF.dom.mkCardElV4;
 window.mkRelicEl = RoF.dom.mkRelicEl;
 window.mkMini = RoF.dom.mkMini;

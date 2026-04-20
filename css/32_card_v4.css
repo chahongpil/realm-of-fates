@@ -8,7 +8,8 @@
    - **모든 선택자 `.card-v4` 스코프 prefix** — 기존 `.card`, `.card-v2` 와 격리.
    - DS 토큰(--parchment-* / --ink-* / --rubric / --gilt / --rar-*) 참조 (10_tokens.css 섹션 14).
    - 현재 Tavern 전용. 적용 확장 시 해당 화면 렌더에 `card-v4` 클래스 부여.
-   - 260×455 (4:7). 사이즈 조정은 wrapper 의 width 로.
+   - 기본 260×455 (4:7). 사이즈는 CSS 토큰 --card-v4-w 로 override.
+     tavern 235 / battle 172 / 확대 430 등. 10_tokens.css 섹션 14-7 참조.
 
    구조:
      .card-v4 (rar-{bronze..divine}, divine 일 때 el-{fire..dark})
@@ -23,7 +24,7 @@
 
 .card-v4 {
   position: relative;
-  width: 260px;
+  width: var(--card-v4-w, 260px);
   aspect-ratio: 4/7;
   background: #000;
   border-radius: 6px;

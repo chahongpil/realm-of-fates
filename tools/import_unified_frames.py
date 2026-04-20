@@ -48,6 +48,8 @@ MAP = {
     '24. 빨강망토기사.png': 'griffin_knight',
     '24. 전설의 그리핀용사.png': 'griffin_rider',
     '25.중장갑옷그리핀.png': 'armored_griffin',
+    # 신규 divine (2026-04-20 2차)
+    '암흑의신대악마.png': 'archfiend',
 }
 
 def resize_to_card(im):

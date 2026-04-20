@@ -321,12 +321,15 @@ async function loadJSON(){
 // 등급별 대표 샘플 카드 (합성 PNG 배경) — 2026-04-20 frame_*.png 폐기 이후
 // 같은 등급의 모든 유닛은 프레임 슬롯 위치가 동일하므로 샘플 1장씩으로 편집 가능.
 // divine 은 현재 titan(lightning) 1장뿐 → 원소별 확장은 해당 원소 PNG 추가 시 별도 작업.
+// 2026-04-20 2차: archangel/dragon 이 divine 으로 승격 → legendary 샘플은
+// griffin_knight 로 교체. divine 은 현재 4원소(fire/lightning/holy/dark) 카드
+// 존재 → 일단 titan 유지, 원소별 4슬롯 확장은 Step C 에서.
 const SAMPLE_BG = {
-  bronze:    'apprentice',  // 마법사 일반
-  silver:    'knight',      // 기사 희귀
-  gold:      'phoenix',     // 피닉스 고귀
-  legendary: 'archangel',   // 대천사 전설
-  divine:    'titan'        // 번개 타이탄 신 (현재 divine 유일)
+  bronze:    'apprentice',     // 견습 마법사
+  silver:    'knight',         // 기사
+  gold:      'phoenix',        // 불사조
+  legendary: 'griffin_knight', // 심홍의 그리핀 기사 (임시, 대표님 새 legendary 카드 제작 시 교체)
+  divine:    'titan'           // 번개 타이탄 (4원소 확장은 Step C)
 };
 
 function renderAll(){

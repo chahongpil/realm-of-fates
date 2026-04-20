@@ -208,7 +208,7 @@ RoF.Data.UNITS = Object.freeze([
   {id:'dragon',name:'드래곤',icon:'🐉',type:'야수',role:'attack',range:'melee',race:'dragon',element:'fire',
     atk:10,hp:35,def:3,spd:2,rage:8,nrg:6,luck:3,eva:1,meva:2,hpReg:1,nrgReg:1,
     skill:'breath',skillType:'active',skillChance:.7,skillNrg:6,skillDesc:'[액티브 70%] 브레스: 전체6데미지 (에너지6)',
-    bonusTrigger:{on:'skill',chance:.3,effect:'inferno',desc:'30% 비전 발동 시: 전체 화상 2턴(턴당3)'},rarity:'legendary'},
+    bonusTrigger:{on:'skill',chance:.3,effect:'inferno',desc:'30% 비전 발동 시: 전체 화상 2턴(턴당3)'},rarity:'divine'},
   {id:'lich',name:'리치',icon:'👻',type:'마법사',role:'attack',range:'ranged',race:'undead',element:'dark',
     atk:8,hp:20,def:1,spd:2,rage:3,nrg:25,luck:4,eva:2,meva:6,hpReg:0,nrgReg:4,
     skill:'drain',skillType:'passive',skillChance:.8,skillNrg:0,skillDesc:'[패시브 80%] 흡수: 피해50%회복',
@@ -216,7 +216,7 @@ RoF.Data.UNITS = Object.freeze([
   {id:'archangel',name:'대천사',icon:'👼',type:'전사',role:'defense',range:'melee',race:'celestial',element:'holy',
     atk:6,hp:40,def:5,spd:2,rage:2,nrg:15,luck:3,eva:2,meva:6,hpReg:3,nrgReg:3,
     skill:'mass_heal',skillType:'active',skillChance:.9,skillNrg:5,skillDesc:'[액티브 90%] 천상치유: 아군전체 HP5 (에너지5)',
-    bonusTrigger:{on:'skill',chance:.3,effect:'divine_shield',desc:'30% 비전 발동 시: 아군 전체 1회 피해무효'},rarity:'legendary'},
+    bonusTrigger:{on:'skill',chance:.3,effect:'divine_shield',desc:'30% 비전 발동 시: 아군 전체 1회 피해무효'},rarity:'divine'},
   {id:'griffin_knight',name:'심홍의 그리핀 기사',icon:'🗡️',type:'전사',role:'attack',range:'melee',race:'human',element:'fire',
     atk:9,hp:32,def:4,spd:2,rage:6,nrg:5,luck:3,eva:1,meva:2,hpReg:1,nrgReg:1,
     skill:'frenzy',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 광기: HP50%↓시 공격2배',
@@ -225,11 +225,16 @@ RoF.Data.UNITS = Object.freeze([
     atk:8,hp:35,def:4,spd:3,rage:3,nrg:8,luck:3,eva:2,meva:4,hpReg:2,nrgReg:2,
     skill:'first_strike',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 천공의 선제: 항상 먼저 공격',
     bonusTrigger:{on:'skill',chance:.3,effect:'divine_shield',desc:'30% 비전 발동 시: 다음 피해 1회 무효'},rarity:'legendary'},
-  // ── DIVINE (1) ──
+  // ── DIVINE (4) ── fire=dragon (위), holy=archangel (위), lightning=titan, dark=archfiend
   {id:'titan',name:'번개 타이탄',icon:'⚡',type:'거인',role:'attack',range:'melee',race:'titan',element:'lightning',
     atk:15,hp:55,def:4,spd:3,rage:10,nrg:10,luck:5,eva:2,meva:4,hpReg:2,nrgReg:2,
     skill:'breath',skillType:'active',skillChance:.8,skillNrg:5,skillDesc:'[액티브 80%] 뇌격: 전체8데미지 (에너지5)',
     bonusTrigger:{on:'attack',chance:.3,effect:'double_arrow',desc:'30% 공격시: 번개 연쇄 2회 타격'},rarity:'divine'},
+  // 2026-04-20 신규. 대표님 튜닝 대기 — 초안은 titan 기반 (dark 특성: atk+1, luck+3 반영).
+  {id:'archfiend',name:'대악마',icon:'😈',type:'악마',role:'attack',range:'melee',race:'demon',element:'dark',
+    atk:16,hp:55,def:4,spd:3,rage:10,nrg:10,luck:8,eva:2,meva:4,hpReg:2,nrgReg:2,
+    skill:'breath',skillType:'active',skillChance:.8,skillNrg:5,skillDesc:'[액티브 80%] 지옥창: 전체8데미지 (에너지5)',
+    bonusTrigger:{on:'attack',chance:.3,effect:'life_steal',desc:'30% 공격시: 피해의 50%를 HP로 흡수'},rarity:'divine'},
 ]);
 
 // 호환성 레이어

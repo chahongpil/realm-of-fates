@@ -8,7 +8,7 @@ RoF.Data.RELICS = Object.freeze([
   {id:'rl_banner',name:'전쟁의깃발',icon:'🚩',imgKey:'rl_banner',rarity:'bronze',desc:'전체 공격+2',effect:'g_atk+2'},
   {id:'rl_crystal',name:'생명수정',icon:'💎',imgKey:'rl_crystal',rarity:'bronze',desc:'전체 HP+8',effect:'g_hp+8'},
   {id:'rl_wall',name:'강철성벽',icon:'🧱',imgKey:'rl_wall',rarity:'bronze',desc:'전체 방어+2',effect:'g_def+2'},
-  {id:'rl_fury',name:'분노부적',icon:'🔴',imgKey:'rl_fury',rarity:'silver',desc:'전체 분노+5',effect:'g_rage+5'},
+  {id:'rl_fury',name:'투쟁의부적',icon:'🔴',imgKey:'rl_fury',rarity:'silver',desc:'전체 공격+2',effect:'g_atk+2'},
   {id:'rl_boots',name:'신속장화',icon:'👢',imgKey:'rl_boots',rarity:'silver',desc:'전체 스피드+3',effect:'g_spd+3'},
   {id:'rl_cloak',name:'안개망토',icon:'🌫️',imgKey:'rl_cloak',rarity:'silver',desc:'전체 회피+5',effect:'g_eva+5'},
   {id:'rl_doom',name:'파멸의검',icon:'⚔️',imgKey:'rl_doom',rarity:'gold',desc:'전체 공격+5',effect:'g_atk+5'},

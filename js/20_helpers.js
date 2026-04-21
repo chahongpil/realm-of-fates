@@ -9,7 +9,7 @@ RoF.helpers.fuseCard = function(card){
   card.rarity=upgradeRarity(card.rarity);
   card.atk=Math.round(card.atk*1.5);card.hp=Math.round(card.hp*1.5);card.maxHp=Math.round(card.hp);
   card.def=Math.round((card.def||0)*1.5);card.spd=Math.round((card.spd||0)*1.3);
-  card.rage=Math.round((card.rage||0)*1.3);card.nrg=Math.round((card.nrg||0)*1.3);
+  card.nrg=Math.round((card.nrg||0)*1.3);
   card.luck=Math.round((card.luck||0)*1.3);card.eva=Math.round((card.eva||0)*1.3);
 };
 // ── 적/ID ──
@@ -71,7 +71,7 @@ RoF.helpers.applySkillToUnit = function(sk,unit){
 
 RoF.helpers.applyRelic = function(rl,deck){
   const ef=rl.effect;if(!ef)return;
-  if(ef.startsWith('g_all+')){const v=parseInt(ef.split('+')[1]);deck.forEach(u=>{['atk','hp','def','spd','rage','nrg','luck','eva'].forEach(s=>{u[s]=(u[s]||0)+v;});u.maxHp+=v;});return;}
+  if(ef.startsWith('g_all+')){const v=parseInt(ef.split('+')[1]);deck.forEach(u=>{['atk','hp','def','spd','nrg','luck','eva'].forEach(s=>{u[s]=(u[s]||0)+v;});u.maxHp+=v;});return;}
   ef.split(',').forEach(part=>{const m=part.match(/g_(\w+)\+(\d+)/);if(m){const stat=m[1],val=parseInt(m[2]);deck.forEach(u=>{u[stat]=(u[stat]||0)+val;if(stat==='hp')u.maxHp=(u.maxHp||u.hp)+val;});}});
 };
 RoF.helpers.applyRelicBattle = function(rl,cards){applyRelic(rl,cards);};

@@ -14,16 +14,17 @@
 // 원소 보너스 적용 후 (ELEMENT_BONUS) 의 최종 스탯이 구 h_*와 동일하여 밸런스 중립.
 const HERO_BASE = Object.freeze({
   warrior: {role:'attack',  range:'melee',  type:'전사',   icon:'⚔️',
-    atk:2, hp:50, def:1, spd:1, rage:5, nrg:5,  luck:1, eva:1, meva:1, hpReg:2, nrgReg:1},
+    atk:2, hp:50, def:1, spd:1, nrg:5,  luck:1, eva:1, meva:1, hpReg:2, nrgReg:1},
   ranger:  {role:'attack',  range:'ranged', type:'사수',   icon:'🏹',
-    atk:3, hp:30, def:1, spd:1, rage:1, nrg:10, luck:1, eva:1, meva:1, hpReg:1, nrgReg:1},
+    atk:3, hp:30, def:1, spd:1, nrg:10, luck:1, eva:1, meva:1, hpReg:1, nrgReg:1},
   support: {role:'support', range:'ranged', type:'마법사', icon:'🔮',
-    atk:1, hp:25, def:1, spd:1, rage:1, nrg:30, luck:1, eva:1, meva:1, hpReg:1, nrgReg:2},
+    atk:1, hp:25, def:1, spd:1, nrg:30, luck:1, eva:1, meva:1, hpReg:1, nrgReg:2},
 });
 
 // ── 원소 보너스 (rules/04-balance.md 영웅 원소 섹션) ──
+// 2026-04-21: rage 제거 → fire 는 atk 만 +2 (rage+2 흡수 없음, 단순화)
 const ELEMENT_BONUS = Object.freeze({
-  fire:      {atk:+2, rage:+2},
+  fire:      {atk:+2},
   water:     {hp:+8, hpReg:+1},
   lightning: {spd:+3, eva:+2},
   earth:     {hp:+5, def:+2},
@@ -172,7 +173,6 @@ RoF.Data.createHero = function(opts) {
     hp:    base.hp    + (bonus.hp    || 0),
     def:   base.def   + (bonus.def   || 0),
     spd:   base.spd   + (bonus.spd   || 0),
-    rage:  base.rage  + (bonus.rage  || 0),
     nrg:   base.nrg   + (bonus.nrg   || 0),
     luck:  base.luck  + (bonus.luck  || 0),
     eva:   base.eva   + (bonus.eva   || 0),

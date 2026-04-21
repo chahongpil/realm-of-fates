@@ -183,7 +183,6 @@
         nrgReg:    c.nrgReg || base.nrgReg || 1,
         luck:      c.luck || base.luck || 1,
         eva:       c.eva  || base.eva  || 0,
-        rage:      c.rage || base.rage || 0,
         level:     c.level || 1,
         equips:    c.equips || [],
         shield:    c.shield || 0,
@@ -216,7 +215,7 @@
         nrg: c.nrg || 5, currentNrg: c.nrg || 5, nrgReg: c.nrgReg || 1,
         hp: c.hp, currentHp: c.hp, maxHp: c.maxHp || c.hp,
         isHero: !!c.isHero,
-        eva: c.eva || 0, rage: c.rage || 0,
+        eva: c.eva || 0,
         _legacyRef: c,
       };
     });
@@ -233,7 +232,7 @@
         nrg: c.nrg || 5, currentNrg: c.nrg || 5, nrgReg: c.nrgReg || 1,
         hp: c.hp, currentHp: c.currentHp || c.hp, maxHp: c.maxHp || c.hp,
         isHero: !!c.isHero,
-        eva: c.eva || 0, rage: c.rage || 0,
+        eva: c.eva || 0,
       };
     });
 

@@ -422,7 +422,7 @@ Object.assign(RoF.Game, {
         if(sk==='crit'&&Math.random()<skCh){atk*=3;isCrit=true;this.log(`${u.icon} 급소!`,'ability-log');}
         else if(Math.random()<critCh){atk*=2;isCrit=true;}
         if(sk==='frenzy'&&u.currentHp<=u.maxBHp*.5)atk*=2;
-        if((u.rage||0)>0&&u.currentHp<u.maxBHp*.7)atk+=Math.floor((u.rage||0)*.3);
+        // 2026-04-21: rage 스탯 제거 — 분노 시 atk 증폭 로직 삭제.
 
         let strikes=1;
         // Active skill: double_cast / multi_head (check energy)

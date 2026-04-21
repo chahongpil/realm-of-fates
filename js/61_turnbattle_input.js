@@ -159,13 +159,8 @@ Object.assign(RoF.TurnBattle, {
         if(!target)target=taunters[0]||foes.find(c=>c.currentHp>0);
         if(!target)continue;
         await this._showCombatAction(u,'⚔️ 공격!',target);
-        // Damage calc (새 기획 적용: ATK-DEF, 크리×2, EVA캡80%, RAGE, 보호막)
+        // Damage calc (2026-04-21: RAGE 제거. ATK-DEF, 크리×2, EVA캡80%, 보호막)
         let rawAtk=u.atk;
-        // RAGE 보너스 (10/20/30 단계)
-        const rage=u.rage||0;
-        if(rage>=30)rawAtk=Math.floor(rawAtk*1.3);
-        else if(rage>=20)rawAtk=Math.floor(rawAtk*1.2);
-        else if(rage>=10)rawAtk=Math.floor(rawAtk*1.1);
         // 보호막 먼저 흡수 (DEF 무관)
         let shieldAbsorb=0;
         if(target.shield>0){shieldAbsorb=Math.min(target.shield,rawAtk);target.shield-=shieldAbsorb;}
@@ -185,10 +180,6 @@ Object.assign(RoF.TurnBattle, {
         else if(elemAdv[target.element]===u.element)dmg=Math.floor(dmg*0.75);
         // 적용
         target.currentHp-=dmg;
-        // RAGE 축적 (피격자에게 데미지만큼)
-        target.rage=(target.rage||0)+dmg;
-        // RAGE 100 궁극기 체크
-        if(target.rage>=100){target.rage=0;Game.log(`💢 ${target.icon}${target.name} 분노 폭발!`,'ability-log');}
         // 흡혈 체크 (실제 HP 데미지만)
         if(u.skill==='life_steal'&&dmg>0&&Math.random()<(u.skillChance||0.5)){
           const heal=dmg;u.currentHp=Math.min(u.maxBHp||u.currentHp,u.currentHp+heal);

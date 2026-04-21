@@ -162,7 +162,7 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
         if (obj[k] !== want[k]) errs.push(`${label}.${k}: want ${want[k]}, got ${obj[k]}`);
       }
     };
-    must('boil',    spec.boil,    {rarity:'silver', role:'attack',   passive:true,  effect:'atk+2,rage+3'});
+    must('boil',    spec.boil,    {rarity:'silver', role:'attack',   passive:true,  effect:'atk+2,luck+2'});
     must('minor',   spec.minor,   {rarity:'bronze', role:'defense',  passive:false, element:'dark',  attackType:'debuff', stat:'def', amount:-2, duration:1, cost:3, tpCost:1});
     must('spark',   spec.spark,   {rarity:'bronze', role:'attack',   passive:false, element:'fire',  attackType:'spell',  damage:3,  targetType:'all_enemies',  cost:3, tpCost:1});
     must('herb',    spec.herb,    {rarity:'silver', role:'support',  passive:false, element:'holy',  attackType:'heal',   heal:20,   targetType:'single_ally',  cost:5, tpCost:1});
@@ -171,20 +171,21 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
     else pass('skill-spec-0421', '4 new + inferno silver');
   } catch (e) { fail('skill-spec-0421', e.message); }
 
-  // ── 6.5c 신규 패시브 sk_boil 실제 적용 효과 검증 (applySkillToUnit) ──
+  // ── 6.5c 신규 패시브 sk_boil 실제 적용 효과 검증 (applySkillToUnit)
+  //    2026-04-21: rage 스탯 제거 → luck 보정으로 변경 (atk+2,luck+2) ──
   try {
     pageErrors = [];
     const applied = await page.evaluate(() => {
       const sk = SKILLS_DB.find(s => s.id === 'sk_boil');
       if (!sk) return { err: 'sk_boil not found' };
-      const unit = { uid:'t_boil', atk:5, hp:20, def:1, spd:3, nrg:0, rage:2 };
+      const unit = { uid:'t_boil', atk:5, hp:20, def:1, spd:3, nrg:0, luck:1 };
       applySkillToUnit(sk, unit);
-      return { atk: unit.atk, rage: unit.rage };
+      return { atk: unit.atk, luck: unit.luck };
     });
     if (applied.err) fail('sk_boil-apply', applied.err);
     else if (applied.atk !== 7) fail('sk_boil-apply', `expected atk=7 (5+2), got ${applied.atk}`);
-    else if (applied.rage !== 5) fail('sk_boil-apply', `expected rage=5 (2+3), got ${applied.rage}`);
-    else pass('sk_boil-apply', `atk 5→${applied.atk}, rage 2→${applied.rage}`);
+    else if (applied.luck !== 3) fail('sk_boil-apply', `expected luck=3 (1+2), got ${applied.luck}`);
+    else pass('sk_boil-apply', `atk 5→${applied.atk}, luck 1→${applied.luck}`);
   } catch (e) { fail('sk_boil-apply', e.message); }
 
   // ── 6.6 skillIds 필드 파이프라인 (명시 액티브 vs 자동매칭 fallback) ──

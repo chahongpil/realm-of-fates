@@ -100,7 +100,7 @@ RoF.SFX={
   _drone(ty,f,v){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(this.master);o.start();this.bgmNodes.push(o);},
 
   // MP3 BGM tracks
-  _titleTracks:['snd/title1.mp3','snd/title2.mp3'],
+  _titleTracks:['snd/title1.mp3','snd/title2.mp3','snd/title3.mp3'],
   _townTracks:['snd/town1.mp3','snd/town2.mp3','snd/town3.mp3','snd/town4.mp3','snd/town5.mp3'],
   _battleTracks:['snd/battle1.mp3','snd/battle2.mp3','snd/battle3.mp3','snd/battle4.mp3','snd/battle5.mp3','snd/battle6.mp3'],
 
@@ -112,10 +112,22 @@ RoF.SFX={
     this._bgmTimers.forEach(t=>clearInterval(t));this._bgmTimers=[];
   },
 
-  _playMp3(tracks,volOverride){
-    const src=tracks[Math.floor(Math.random()*tracks.length)];
+  _playMp3(tracks,volOverride,avoidIdx){
+    // 트랙 1개면 무한 루프(audio.loop=true 이음매 없음), 2개 이상이면 셔플 플레이리스트.
+    let idx=Math.floor(Math.random()*tracks.length);
+    if(tracks.length>1&&idx===avoidIdx){idx=(idx+1)%tracks.length;}
+    const src=tracks[idx];
     const audio=new Audio(src);
-    audio.loop=true;audio.volume=volOverride||this.vol||0.4;
+    audio.volume=volOverride||this.vol||0.4;
+    if(tracks.length<=1){
+      audio.loop=true;
+    } else {
+      audio.loop=false;
+      audio.onended=()=>{
+        // 현재 _bgmAudio 가 자신일 때만 다음 곡 (타입 전환 중이면 멈춤)
+        if(this._bgmAudio===audio&&this.on){this._playMp3(tracks,volOverride,idx);}
+      };
+    }
     audio.play().catch(()=>{});
     this._bgmAudio=audio;
   },

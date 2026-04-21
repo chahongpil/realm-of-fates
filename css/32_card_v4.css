@@ -55,6 +55,9 @@
   object-fit: cover;
   pointer-events: none;
   z-index: 2;
+  /* 2026-04-21: 대표님 공급 PNG 가 검은 배경 + 밝은 원소 효과여도 가산 혼합으로 자연스럽게
+     카드 아트에 녹아들도록. StS2/LoR 스타일. mockup/protagonist_create/v2.html 참조. */
+  mix-blend-mode: screen;
 }
 
 /* Gild — 기본 금박 테두리 (등급에서 override) */

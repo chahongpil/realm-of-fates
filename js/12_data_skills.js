@@ -62,7 +62,7 @@ RoF.Data.SKILLS = Object.freeze([
   //   element: 공명 시스템 데이터(현재 로직 미적용, 필드만 예약)
   // ─────────────────────────────────────────────────────────────
 
-  // BRONZE ACTIVE (2장)
+  // BRONZE ACTIVE (5장)
   {id:'sk_flame_arrow',name:'불꽃 화살',icon:'🔥',imgKey:'sk_flame_arrow',role:'attack',rarity:'bronze',
     element:'fire',attackType:'spell',damage:8,critBonus:0,critMult:1.5,
     cost:3,costType:'nrg',tpCost:1,targetType:'single_enemy',
@@ -71,6 +71,19 @@ RoF.Data.SKILLS = Object.freeze([
     element:'holy',attackType:'heal',heal:15,
     cost:3,costType:'nrg',tpCost:1,targetType:'single_ally',
     desc:'아군 1체 HP +15',passive:false},
+  // 2026-04-21 신규 bronze 3종 (_일반 파일 → bronze 채택)
+  {id:'sk_thunder_arrow',name:'번개',icon:'⚡',imgKey:'sk_thunder_arrow',role:'attack',rarity:'bronze',
+    element:'lightning',attackType:'spell',damage:8,critBonus:0,critMult:1.5,
+    cost:3,costType:'nrg',tpCost:1,targetType:'single_enemy',
+    desc:'적 1체에게 전기 피해 8',passive:false},
+  {id:'sk_hex',name:'저주',icon:'🌑',imgKey:'sk_hex',role:'defense',rarity:'bronze',
+    element:'dark',attackType:'debuff',stat:'atk',amount:-2,duration:1,
+    cost:3,costType:'nrg',tpCost:1,targetType:'single_enemy',
+    desc:'적 1체 공격 -2 (1턴)',passive:false},
+  {id:'sk_ember',name:'잉걸',icon:'🔥',imgKey:'sk_ember',role:'attack',rarity:'bronze',
+    element:'fire',attackType:'spell',damage:8,critBonus:0,critMult:1.5,
+    cost:3,costType:'nrg',tpCost:1,targetType:'single_enemy',
+    desc:'적 1체에게 불 피해 8',passive:false},
 
   // SILVER ACTIVE (4장 — 4원소 기본 커버)
   {id:'sk_tidal_crash',name:'파도 강타',icon:'🌊',imgKey:'sk_tidal_crash',role:'attack',rarity:'silver',

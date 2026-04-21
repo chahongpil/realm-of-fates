@@ -8,6 +8,23 @@
 
 ---
 
+## 2026-04-21 저녁(2차) ▶ 콘텐츠 ▶ 스펠 26장 + 유물 6장 이식
+- 변경:
+  1. **스펠 26장** (21 교체 + 2 패시브 교체 + 3 신규 bronze):
+     - 신규 bronze 3종 (대표님 "_일반 = bronze" 결정):
+       - `sk_thunder_arrow` 번개 (lightning, damage 8)
+       - `sk_hex` 저주 (dark, debuff atk-2 1턴)
+       - `sk_ember` 잉걸 (fire, damage 8)
+     - 기존 이미지 교체: 21 액티브 스펠 + 2 패시브(sk_evasion 잔상, sk_warhorn 뿔피리)
+     - tools/import_skills_0421.py
+  2. **유물 6장** (SVG → PNG 전환):
+     - rl_immortal 불멸갑옷, rl_guard 수호방패, rl_wrath 신의분노, rl_eternal 영원의성배, rl_doom 파멸의검, rl_luck 행운부적
+     - 14_data_images.js 에서 6개 유물 `__GI+*.svg` → `__IMG+*.png` 교체
+     - tools/import_relics_0421.py
+- 이유: 대표님 2026-04-21 공급 일러스트 (32장 중 이 32장. 유닛 14장은 이전 커밋에서 처리). 스펠은 bronze 계층 강화, 유물은 전 등급 실사 아트로 업그레이드.
+- 영향: SKILLS 37 → 40 (bronze 3종 추가). 유물 수 변동 없음(12종). 회귀 9/9 PASS.
+- 관계: 신규 bronze 스펠 3종은 선택 풀 다양화에 기여. 유물 SVG 제거 → PNG 로 일관성. 다음: 등급 한국어 통일 + P6.
+
 ## 2026-04-21 저녁 ▶ 콘텐츠 ▶ 신규 유닛 14장 이식 (11종 신규 + 3종 이미지 교체)
 - 변경:
   1. **신규 유닛 11종** (51 유닛, +11):

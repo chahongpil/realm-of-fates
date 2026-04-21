@@ -57,6 +57,8 @@ RoF.Data.CARD_IMG = Object.freeze({
   sk_berserk:__IMG+'sk_berserk.png', sk_transcend:__IMG+'sk_transcend.png', sk_invincible:__IMG+'sk_invincible.png',
   sk_godslayer:__IMG+'sk_godslayer.png', sk_resurrection:__IMG+'sk_resurrection.png',
   sk_shadowstep:__IMG+'sk_shadowstep.png', sk_dragonheart:__IMG+'sk_dragonheart.png',
+  // 2026-04-21 신규 bronze 스펠 3종
+  sk_thunder_arrow:__IMG+'sk_thunder_arrow.png', sk_hex:__IMG+'sk_hex.png', sk_ember:__IMG+'sk_ember.png',
   // 유물
   // 유물 — 2026-04-12 픽스: 4개 404 URL을 검증된 대체로 교체
   rl_banner:__GI+'lorc/rally-the-troops.svg',
@@ -65,12 +67,13 @@ RoF.Data.CARD_IMG = Object.freeze({
   rl_fury:__GI+'lorc/burning-passion.svg',     // was: lorc/enrage (404)
   rl_boots:__GI+'delapouite/walk.svg',         // was: delapouite/boots (404)
   rl_cloak:__GI+'lorc/hood.svg',                // was: lorc/hooded-figure (404)
-  rl_doom:__GI+'lorc/bloody-sword.svg',
-  rl_luck:__GI+'lorc/clover.svg',
-  rl_guard:__GI+'lorc/edged-shield.svg',       // was: lorc/shield (404)
-  rl_wrath:__GI+'lorc/lightning-storm.svg',
-  rl_eternal:__GI+'lorc/holy-grail.svg',
-  rl_immortal:__GI+'lorc/aura.svg',
+  // 2026-04-21 신규 PNG (대표님 공급) — 6장 SVG → PNG 전환
+  rl_doom:__IMG+'rl_doom.png',
+  rl_luck:__IMG+'rl_luck.png',
+  rl_guard:__IMG+'rl_guard.png',
+  rl_wrath:__IMG+'rl_wrath.png',
+  rl_eternal:__IMG+'rl_eternal.png',
+  rl_immortal:__IMG+'rl_immortal.png',
 });
 
 // getCardImg 는 순수 함수이므로 RoF 직접 아래에 둠

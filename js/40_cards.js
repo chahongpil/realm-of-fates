@@ -331,15 +331,7 @@ RoF.CardV4Component = (function(){
       el.appendChild(rb);
     }
 
-    // Top cartouche
-    const top = document.createElement('div');
-    top.className = 'top';
-    const nmEl = document.createElement('span'); nmEl.className = 'name'; nmEl.textContent = name;
-    const lvEl = document.createElement('span'); lvEl.className = 'lv'; lvEl.textContent = 'Lv ' + lv;
-    top.appendChild(nmEl); top.appendChild(lvEl);
-    el.appendChild(top);
-
-    // Bars (HP / NRG)
+    // Bars (HP / NRG) — 2026-04-21 redesign: 최상단 배치 (CSS top:8px)
     const bars = document.createElement('div');
     bars.className = 'bars';
     const mkBar = (cls, pct, labelTxt) => {
@@ -355,6 +347,31 @@ RoF.CardV4Component = (function(){
     refs.hpFill = hpBar.fill; refs.hpLbl = hpBar.lbl;
     refs.nrgFill = nrgBar.fill; refs.nrgLbl = nrgBar.lbl;
     el.appendChild(bars);
+
+    // Top row — 이름 박스 + Lv 박스 (2026-04-21 redesign)
+    const topRow = document.createElement('div');
+    topRow.className = 'top-row';
+
+    const nameBox = document.createElement('div');
+    nameBox.className = 'name-box';
+    const nmEl = document.createElement('div'); nmEl.className = 'name'; nmEl.textContent = name;
+    const hpNum = document.createElement('div'); hpNum.className = 'hp-num'; hpNum.textContent = '♥ ' + hpCur;
+    nameBox.appendChild(nmEl);
+    nameBox.appendChild(hpNum);
+
+    const lvBox = document.createElement('div');
+    lvBox.className = 'lv-box';
+    const lvEl = document.createElement('div'); lvEl.className = 'lv'; lvEl.textContent = 'Lv ' + lv;
+    const nrgNum = document.createElement('div'); nrgNum.className = 'nrg-num'; nrgNum.textContent = '◆ ' + nrgCur;
+    lvBox.appendChild(lvEl);
+    lvBox.appendChild(nrgNum);
+
+    topRow.appendChild(nameBox);
+    topRow.appendChild(lvBox);
+    el.appendChild(topRow);
+
+    refs.hpNum = hpNum;
+    refs.nrgNum = nrgNum;
 
     // Parchment plate
     const parch = document.createElement('div');
@@ -403,12 +420,14 @@ RoF.CardV4Component = (function(){
         const pct = Math.max(0, Math.min(100, Math.round(n / state.maxHP * 100)));
         refs.hpFill.style.width = pct + '%';
         refs.hpLbl.textContent = 'HP ' + n + ' / ' + state.maxHP;
+        refs.hpNum.textContent = '♥ ' + n;   // 이름박스 안 숫자 동기화
       },
       setNRG(n){
         state.currentNRG = n;
         const pct = state.maxNRG > 0 ? Math.max(0, Math.min(100, Math.round(n / state.maxNRG * 100))) : 0;
         refs.nrgFill.style.width = pct + '%';
         refs.nrgLbl.textContent = 'NRG ' + n + ' / ' + state.maxNRG;
+        refs.nrgNum.textContent = '◆ ' + n;   // Lv박스 안 숫자 동기화
       },
       setShield(n){
         state.shield = n;

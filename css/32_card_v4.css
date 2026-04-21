@@ -11,12 +11,16 @@
    - 기본 260×455 (4:7). 사이즈는 CSS 토큰 --card-v4-w 로 override.
      tavern 235 / battle 172 / 확대 430 등. 10_tokens.css 섹션 14-7 참조.
 
-   구조:
+   구조 (2026-04-21 redesign — bars 상단 + 이름/Lv 박스 분리):
      .card-v4 (rar-{bronze..divine}, divine 일 때 el-{fire..dark})
        └─ img.art              전체 일러스트
        └─ .gild                금박 테두리 + 등급별 glow/spark
-       └─ .top                 상단 카르투슈 (이름 + Lv)
-       └─ .bars                HP/NRG 바
+       └─ .bars                HP/NRG 바 (최상단, 얼굴 가림 방지)
+       └─ .top-row             이름 박스 + Lv 박스 나란히
+       │  └─ .name-box         이름 + HP 숫자 (반응형 100~160px)
+       │  │  └─ .name / .hp-num
+       │  └─ .lv-box           Lv badge + NRG 숫자 (fit-content 최소)
+       │     └─ .lv / .nrg-num
        └─ .parch               하단 양피지 (5스탯 + 3줄 설명)
        └─ .ribbon (divine only)
        └─ .spark (legendary only, 3개)
@@ -71,46 +75,93 @@
   z-index: 3;
 }
 
-/* Top cartouche — 이름 + Lv */
-.card-v4 .top {
+/* Top row — 이름 박스 + Lv 박스. 바 유무에 따라 top 위치 변화. */
+.card-v4 .top-row {
   position: absolute;
-  top: 8px; left: 8px; right: 8px;
-  padding: 7px 10px;
+  top: 8px; left: 8px; right: 8px;  /* 기본: 바 없음 → 최상단 */
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  z-index: 4;
+  pointer-events: none;
+}
+.card-v4.with-bars .top-row,
+.card-v4.card-v4-compact .top-row { top: 28px; }  /* 전투 중: 바 아래로 이동 */
+
+/* Name box — 이름 + HP 숫자 (반응형) */
+.card-v4 .name-box {
+  width: fit-content;
+  max-width: 160px;
+  padding: 3px 4px 2px;
   background: linear-gradient(180deg, rgba(26,15,8,.94), rgba(26,15,8,.82));
   border: 1px solid var(--border-3, #9b7a3e);
   border-radius: 3px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 4;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
 }
 .card-v4 .name {
-  font: 900 15px/1 'Cinzel Decorative', 'Noto Serif KR', serif;
+  font: 900 14px/1.1 'Cinzel Decorative', 'Noto Serif KR', serif;
   color: var(--curr-gold);
   letter-spacing: .04em;
+  text-shadow: 0 1px 2px rgba(0,0,0,.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.card-v4 .lv {
-  font: 900 10px/1 'Cinzel', serif;
-  color: #2a1a08;
-  background: linear-gradient(180deg, var(--curr-gold-pale, #f1d890), var(--gilt-deep, #8b6914));
-  padding: 3px 6px;
-  border-radius: 2px;
-  letter-spacing: .04em;
+.card-v4 .hp-num {
+  font: 700 10px/1 ui-monospace, monospace;
+  color: #9fe38a;
+  padding-top: 2px;
+  border-top: 1px solid rgba(232,189,74,.25);
+  font-variant-numeric: tabular-nums;
 }
 
-/* HP / NRG bars */
+/* Lv box — Lv badge + NRG 숫자 (fit-content 최소) */
+.card-v4 .lv-box {
+  width: fit-content;
+  padding: 2px 3px;
+  background: linear-gradient(180deg, rgba(26,15,8,.94), rgba(26,15,8,.82));
+  border: 1px solid var(--border-3, #9b7a3e);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  align-items: flex-end;
+}
+.card-v4 .lv {
+  font: 900 11px/1 'Cinzel', serif;
+  color: #2a1a08;
+  background: linear-gradient(180deg, var(--curr-gold-pale, #f1d890), var(--gilt-deep, #8b6914));
+  padding: 2px 5px;
+  border-radius: 2px;
+  letter-spacing: .02em;
+}
+.card-v4 .nrg-num {
+  font: 700 9px/1 ui-monospace, monospace;
+  color: #9cd0f0;
+  text-align: right;
+  padding-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* HP / NRG bars — 2026-04-21 redesign: 기본 숨김, 전투 중만 표시.
+   발동 조건: .with-bars 명시 OR .card-v4-compact (전투 스테이지 타일 자동) */
 .card-v4 .bars {
   position: absolute;
-  left: 8px; right: 8px; top: 42px;
-  display: flex;
+  left: 8px; right: 8px; top: 8px;
+  display: none;
   flex-direction: column;
   gap: 3px;
   z-index: 4;
 }
+.card-v4.with-bars .bars,
+.card-v4.card-v4-compact .bars { display: flex; }
 .card-v4 .bar {
   position: relative;
-  height: 6px;
-  background: rgba(0,0,0,.85);
+  height: 8px;
+  background: rgba(0,0,0,.88);
   border: 1px solid rgba(0,0,0,.9);
   border-radius: 2px;
   overflow: hidden;

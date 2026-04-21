@@ -89,9 +89,9 @@ RoF.Data.SKILLS = Object.freeze([
     cost:3,costType:'nrg',tpCost:1,targetType:'single_enemy',
     desc:'적 1체 방어 -2 (1턴)',passive:false},
   {id:'sk_spark_blast',name:'불똥 폭발',icon:'💥',imgKey:'sk_spark_blast',role:'attack',rarity:'bronze',
-    element:'fire',attackType:'spell',damage:6,critBonus:0,critMult:1.5,
+    element:'fire',attackType:'spell',damage:3,critBonus:0,critMult:1.5,
     cost:3,costType:'nrg',tpCost:1,targetType:'all_enemies',
-    desc:'적 전체에게 불 피해 6',passive:false},
+    desc:'적 전체에게 불 피해 3',passive:false},
 
   // SILVER ACTIVE (6장 — 2026-04-21 sk_inferno_blast 강등 + sk_herb_pack 추가)
   {id:'sk_tidal_crash',name:'파도 강타',icon:'🌊',imgKey:'sk_tidal_crash',role:'attack',rarity:'silver',
@@ -115,9 +115,9 @@ RoF.Data.SKILLS = Object.freeze([
     cost:5,costType:'nrg',tpCost:1,targetType:'single_enemy',
     desc:'적 1체에게 불 피해 15',passive:false},
   {id:'sk_herb_pack',name:'약초 꾸러미',icon:'🌿',imgKey:'sk_herb_pack',role:'support',rarity:'silver',
-    element:'holy',attackType:'heal',heal:25,
+    element:'holy',attackType:'heal',heal:20,
     cost:5,costType:'nrg',tpCost:1,targetType:'single_ally',
-    desc:'아군 1체 HP +25',passive:false},
+    desc:'아군 1체 HP +20',passive:false},
 
   // GOLD ACTIVE (1장 — sk_inferno_blast silver 강등 후, gold 화염 스펠은 추후 신규 제작)
   {id:'sk_blessing_light',name:'축복의 빛',icon:'🌟',imgKey:'sk_blessing_light',role:'support',rarity:'gold',

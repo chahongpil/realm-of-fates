@@ -140,6 +140,53 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
     else pass('sk_handoff', `proc_double_cast ${hf.chance}%`);
   } catch (e) { fail('sk_handoff', e.message); }
 
+  // ── 6.5b 신규 스펠 4종 + sk_inferno_blast silver 강등 스펙 검증 (2026-04-21 심야) ──
+  // 밸런스 감사 후 하향된 수치(sk_spark_blast dmg6→3, sk_herb_pack heal25→20) 및
+  // 신규 스킬의 핵심 필드 정합성을 고정. 누군가 이 값을 건드리면 바로 실패.
+  try {
+    pageErrors = [];
+    const spec = await page.evaluate(() => {
+      const find = id => SKILLS_DB.find(s => s.id === id);
+      return {
+        boil:    find('sk_boil'),
+        minor:   find('sk_minor_curse'),
+        spark:   find('sk_spark_blast'),
+        herb:    find('sk_herb_pack'),
+        inferno: find('sk_inferno_blast'),
+      };
+    });
+    const errs = [];
+    const must = (label, obj, want) => {
+      if (!obj) { errs.push(`${label}: not found in SKILLS_DB`); return; }
+      for (const k in want) {
+        if (obj[k] !== want[k]) errs.push(`${label}.${k}: want ${want[k]}, got ${obj[k]}`);
+      }
+    };
+    must('boil',    spec.boil,    {rarity:'silver', role:'attack',   passive:true,  effect:'atk+2,rage+3'});
+    must('minor',   spec.minor,   {rarity:'bronze', role:'defense',  passive:false, element:'dark',  attackType:'debuff', stat:'def', amount:-2, duration:1, cost:3, tpCost:1});
+    must('spark',   spec.spark,   {rarity:'bronze', role:'attack',   passive:false, element:'fire',  attackType:'spell',  damage:3,  targetType:'all_enemies',  cost:3, tpCost:1});
+    must('herb',    spec.herb,    {rarity:'silver', role:'support',  passive:false, element:'holy',  attackType:'heal',   heal:20,   targetType:'single_ally',  cost:5, tpCost:1});
+    must('inferno', spec.inferno, {rarity:'silver', role:'attack',   passive:false, element:'fire',  attackType:'spell',  damage:15, cost:5, tpCost:1});
+    if (errs.length) fail('skill-spec-0421', errs.slice(0,5).join(' | '));
+    else pass('skill-spec-0421', '4 new + inferno silver');
+  } catch (e) { fail('skill-spec-0421', e.message); }
+
+  // ── 6.5c 신규 패시브 sk_boil 실제 적용 효과 검증 (applySkillToUnit) ──
+  try {
+    pageErrors = [];
+    const applied = await page.evaluate(() => {
+      const sk = SKILLS_DB.find(s => s.id === 'sk_boil');
+      if (!sk) return { err: 'sk_boil not found' };
+      const unit = { uid:'t_boil', atk:5, hp:20, def:1, spd:3, nrg:0, rage:2 };
+      applySkillToUnit(sk, unit);
+      return { atk: unit.atk, rage: unit.rage };
+    });
+    if (applied.err) fail('sk_boil-apply', applied.err);
+    else if (applied.atk !== 7) fail('sk_boil-apply', `expected atk=7 (5+2), got ${applied.atk}`);
+    else if (applied.rage !== 5) fail('sk_boil-apply', `expected rage=5 (2+3), got ${applied.rage}`);
+    else pass('sk_boil-apply', `atk 5→${applied.atk}, rage 2→${applied.rage}`);
+  } catch (e) { fail('sk_boil-apply', e.message); }
+
   // ── 6.6 skillIds 필드 파이프라인 (명시 액티브 vs 자동매칭 fallback) ──
   // 2026-04-21: 영웅 시스템 리뉴얼 후 h_*18종 → createHero() 동적 생성으로 변경.
   try {

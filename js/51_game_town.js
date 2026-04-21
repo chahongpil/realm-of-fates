@@ -56,56 +56,64 @@ Object.assign(RoF.Game, {
   // ── BUILDING NPCs (level 1~5) ──
   NPCS:{
     castle:[
-      {icon:'👴',name:'늙은 조언자',greet:'영웅이여... 동료를 단련시키시오.',noGold:'골드가 부족하오. 전투에서 벌어오시오.',upgrade:'성이 더 웅장해졌소!'},
+      {icon:'👴',name:'늙은 조언자',greet:'영웅이여... 동료를 단련시키시오.',noGold:'골드가 부족하오. 전투에서 벌어오시오.',upgrade:'성이 더 웅장해졌소!',
+        scenes:['영웅이여... 오셨구먼.','이 성은 동료를 단련시키는 곳이오. 퀘스트도 여기서 받을 수 있지.','누굴 단련시키시겠소?']},
       {icon:'🧙',name:'궁정마법사',greet:'오셨군요. 누구를 단련시킬까요?',noGold:'금고가 텅 비었습니다.',upgrade:'마법의 기운이 성에 깃들었습니다.'},
       {icon:'📜',name:'재상',greet:'영웅이시여, 오늘의 전략을 논하시죠.',noGold:'국고가 바닥이옵니다, 전하.',upgrade:'석조 성채의 위엄이 느껴지는군요.'},
       {icon:'rand',pool:[{icon:'🤴',name:'왕자'},{icon:'👸',name:'공주'}],greet:['아버지를 대신하여 환영합니다.','왕녀로서 환영합니다, 영웅이여.'],noGold:'왕실 금고도 한계가 있습니다.',upgrade:'왕의 성에 걸맞은 힘이 깃들었소.'},
       {icon:'rand',pool:[{icon:'👑',name:'왕'},{icon:'👑',name:'여왕'}],greet:['운명의 영웅이여, 왕궁에 오셨소.','운명의 영웅이여, 여왕이 맞이합니다.'],noGold:'왕국의 재정을 먼저 살피시오.',upgrade:'왕궁의 영광이 온 대륙에 퍼지리라.'},
     ],
     gate:[
-      {icon:'👦',name:'소년 파수꾼',greet:'어... 안녕하세요! 밖에 무서운 것들이 많아요!',noGold:'',upgrade:'문이 튼튼해졌어요!'},
+      {icon:'👦',name:'소년 파수꾼',greet:'어... 안녕하세요! 밖에 무서운 것들이 많아요!',noGold:'',upgrade:'문이 튼튼해졌어요!',
+        scenes:['헉! 영웅님이세요?','문 밖엔 괴물들이 있어요... 리그 전투가 벌어지는 곳이죠.','싸우러 나가실 건가요?']},
       {icon:'💂',name:'문지기',greet:'오늘은 누구를 쓰러뜨릴 건가!',noGold:'',upgrade:'철문의 위엄! 적도 함부로 못 오겠지.'},
       {icon:'⚔️',name:'근위대장',greet:'성문을 열겠습니다. 무운을 빕니다!',noGold:'',upgrade:'성문이 한층 견고해졌습니다.'},
       {icon:'🛡️',name:'성문장',greet:'영웅이시여, 출전 준비가 되셨습니까?',noGold:'',upgrade:'요새문의 위엄에 적이 떨고 있습니다.'},
       {icon:'🦅',name:'수호기사단장',greet:'천공문이 열립니다. 영광을 안고 돌아오십시오!',noGold:'',upgrade:'천공문... 신의 영역이 가까워지고 있군요.'},
     ],
     forge:[
-      {icon:'👦',name:'견습공',greet:'아직 서툴지만... 뭐 만들어 드릴까요?',noGold:'재료 살 골드가 없어요...',upgrade:'드디어 진짜 모루가 생겼어요!'},
+      {icon:'👦',name:'견습공',greet:'아직 서툴지만... 뭐 만들어 드릴까요?',noGold:'재료 살 골드가 없어요...',upgrade:'드디어 진짜 모루가 생겼어요!',
+        scenes:['어... 어서 오세요!','여긴 대장간이에요. 장비를 만들거나 분해할 수 있죠.','뭐... 뭐 만들어 드릴까요?']},
       {icon:'🔨',name:'대장장이',greet:'...뭘 만들어야 하지?',noGold:'쇠도 없이 뭘 만들라는 거야.',upgrade:'용광로의 불길이 활활 타오르는군.'},
       {icon:'🔥',name:'화로장인',greet:'좋은 쇠가 필요하군. 뭘 만들까?',noGold:'좋은 재료엔 골드가 필요하지.',upgrade:'마법대장간의 불꽃은 다르지!'},
       {icon:'⚒️',name:'마법대장장이',greet:'마력이 깃든 장비를 만들 수 있소.',noGold:'마법 재료는 공짜가 아니오.',upgrade:'신의 불꽃이 대장간에 내려왔소!'},
       {icon:'🌟',name:'신의대장장이',greet:'신의 불꽃으로 무엇이든 만들어 보이리다.',noGold:'신의 재료조차 골드가 필요하다오.',upgrade:'전설의 대장간이 완성되었소!'},
     ],
     shop:[
-      {icon:'👵',name:'행상인',greet:'어머, 손님! 좋은 물건 많아요~',noGold:'에고... 돈이 없으시구먼.',upgrade:'드디어 가게를 차렸어요!'},
+      {icon:'👵',name:'행상인',greet:'어머, 손님! 좋은 물건 많아요~',noGold:'에고... 돈이 없으시구먼.',upgrade:'드디어 가게를 차렸어요!',
+        scenes:['어머나~ 손님!','비전과 유물을 파는 가게라우. 살펴보고 가시구려.','뭘 보고 싶으신가요?']},
       {icon:'🧑',name:'잡화상인',greet:'어서 오세요! 오늘의 추천 상품이 있습니다.',noGold:'외상은 안 됩니다~',upgrade:'상점이 넓어져서 물건이 더 많아졌죠!'},
       {icon:'💰',name:'무역상',greet:'호호, 좋은 눈을 가지셨군요.',noGold:'신용이 필요합니다. 골드로 보여주시죠.',upgrade:'교역로가 열려서 희귀한 물건도 들어옵니다.'},
       {icon:'🎩',name:'대상인',greet:'귀한 분이시군요. 특별한 물건을 보여드리죠.',noGold:'대상인도 외상은 곤란합니다.',upgrade:'대륙 최고의 교역소입니다!'},
       {icon:'👑',name:'왕실상인',greet:'왕실이 보증하는 최상급 물품입니다.',noGold:'왕실에서도 대금은 필요합니다.',upgrade:'대상회의 명성이 대륙을 뒤흔듭니다!'},
     ],
     tavern:[
-      {icon:'🧑',name:'주막주인',greet:'어서 와! 마실 것부터 줄까?',noGold:'돈 없으면 물이라도 마셔.',upgrade:'선술집으로 키웠지!'},
+      {icon:'🧑',name:'주막주인',greet:'어서 와! 마실 것부터 줄까?',noGold:'돈 없으면 물이라도 마셔.',upgrade:'선술집으로 키웠지!',
+        scenes:['어서 와! 한 잔 할래?','여긴 용병들이 모이는 주막이지. 동료를 고용할 수 있어.','누굴 데려갈 생각이야?']},
       {icon:'🍺',name:'주모',greet:'새 동료를 찾고 있나? 여기 좀 봐!',noGold:'골드가 없으면 구경만 하게.',upgrade:'더 많은 용병들이 모이기 시작했어!'},
       {icon:'🎭',name:'정보상',greet:'쉿... 특별한 용병 정보가 있어.',noGold:'정보도, 용병도 공짜는 없지.',upgrade:'소문이 퍼져서 실력자들이 모여들고 있어.'},
       {icon:'👑',name:'용병단장',greet:'내 수하 중 최정예를 보내주지.',noGold:'최정예에겐 그에 걸맞은 대가가 필요하지.',upgrade:'영웅급 전사들까지 찾아오는군!'},
       {icon:'⚔️',name:'영웅의전당 관리자',greet:'전설의 영웅들이 당신의 부름을 기다립니다.',noGold:'영웅에게도 예우가 필요합니다.',upgrade:'이곳은 이제 대륙 최고의 영웅 집결지입니다.'},
     ],
     training:[
-      {icon:'👦',name:'허수아비',greet:'...저를 때려도 됩니다.',noGold:'',upgrade:'드디어 진짜 교관이 왔어요!'},
+      {icon:'👦',name:'허수아비',greet:'...저를 때려도 됩니다.',noGold:'',upgrade:'드디어 진짜 교관이 왔어요!',
+        scenes:['...안녕하세요.','여긴 훈련장이에요. 동료를 단련시키면 경험치가 오르죠.','누굴 수련시키실 건가요?']},
       {icon:'🗡️',name:'검술교관',greet:'자세가 흐트러졌다! 다시!',noGold:'훈련 장비를 살 골드가 없군.',upgrade:'훈련 시설이 좋아졌군!'},
       {icon:'⚔️',name:'전투사범',greet:'실전처럼 훈련해야 살아남는다.',noGold:'좋은 훈련엔 투자가 필요하다.',upgrade:'검투장이라니... 제대로 단련시키겠다!'},
       {icon:'🛡️',name:'장군',greet:'영웅이여, 오늘의 훈련 메뉴를 정하겠소.',noGold:'군사 훈련에도 예산이 필요하오.',upgrade:'투기장의 함성이 들린다!'},
       {icon:'👑',name:'대원수',greet:'콜로세움에서 최강의 전사를 만들어 보이겠소.',noGold:'최고의 훈련엔 최고의 투자가 필요하오.',upgrade:'전설의 콜로세움이 완성되었소!'},
     ],
     library:[
-      {icon:'📖',name:'서생',greet:'아... 조용히 해주세요, 읽는 중이에요.',noGold:'',upgrade:'책이 많아졌어요!'},
+      {icon:'📖',name:'서생',greet:'아... 조용히 해주세요, 읽는 중이에요.',noGold:'',upgrade:'책이 많아졌어요!',
+        scenes:['아... 오셨나요?','여긴 도서관이에요. 전력을 편성하거나 생명의 서를 볼 수 있어요.','조용히 살펴보시면 됩니다.']},
       {icon:'🧓',name:'학자',greet:'무엇이 궁금한가? 기록을 찾아보지.',noGold:'',upgrade:'더 많은 지식이 모였군.'},
       {icon:'📚',name:'현자',greet:'지식은 가장 강력한 무기라네.',noGold:'',upgrade:'이 서고의 지식은 대단하군!'},
       {icon:'🔮',name:'대현자',greet:'과거와 미래의 기록이 여기 있다네.',noGold:'',upgrade:'도서관의 마법 기록이 완성되었네!'},
       {icon:'🌟',name:'전지전능의 눈',greet:'모든 것이 보인다... 모든 진실이.',noGold:'',upgrade:'대도서관에 세상의 모든 지식이 담겼도다.'},
     ],
     church:[
-      {icon:'🙏',name:'수녀',greet:'신의 축복이 함께하길... 다친 동료가 있나요?',noGold:'기도는 무료입니다... 하지만 치료는...',upgrade:'예배당이 생겼어요!'},
+      {icon:'🙏',name:'수녀',greet:'신의 축복이 함께하길... 다친 동료가 있나요?',noGold:'기도는 무료입니다... 하지만 치료는...',upgrade:'예배당이 생겼어요!',
+        scenes:['신의 축복이 함께하시길...','이곳은 성당이에요. 다친 동료를 치료하거나 잃은 동료를 기릴 수 있답니다.','어떤 도움이 필요하신가요?']},
       {icon:'⛪',name:'사제',greet:'신의 은총으로 상처를 치유하겠습니다.',noGold:'헌금이 부족합니다만...',upgrade:'교회의 신성한 힘이 강해졌습니다.'},
       {icon:'📿',name:'주교',greet:'영웅이시여, 동료들의 상처를 보여주십시오.',noGold:'교회도 운영 자금이 필요합니다.',upgrade:'성당의 축복이 온 마을에 퍼집니다.'},
       {icon:'✝️',name:'대주교',greet:'신의 기적으로 어떤 상처도 치유하리다.',noGold:'기적에도 신의 뜻에 맞는 헌금이 필요합니다.',upgrade:'대성당의 빛이 어둠을 물리칩니다!'},
@@ -225,17 +233,20 @@ Object.assign(RoF.Game, {
           // gate(나무문~천공문) 는 출정 게이트라 한 번 클릭에 바로 편성 진입.
           // 다른 건물은 첫 클릭 = 선택, 두번째 = action (증축 버튼 노출 의도).
           if(b.id==='gate'){
-            if(this[b.action])this[b.action]();
+            this.showBuildingDialog(b.id, ()=>{ if(this[b.action])this[b.action](); });
             return;
           }
           if(div.classList.contains('selected')){
-            if(this[b.action])this[b.action]();
+            this.showBuildingDialog(b.id, ()=>{ if(this[b.action])this[b.action](); });
           } else {
             document.querySelectorAll('.town-building.selected').forEach(el=>el.classList.remove('selected'));
             div.classList.add('selected');
           }
         };
-        div.querySelector('.tb-label').onclick=(e)=>{e.stopPropagation();SFX.play('click');if(this[b.action])this[b.action]();};
+        div.querySelector('.tb-label').onclick=(e)=>{
+          e.stopPropagation();SFX.play('click');
+          this.showBuildingDialog(b.id, ()=>{ if(this[b.action])this[b.action](); });
+        };
         const upgEl=div.querySelector('.tb-upgrade');
         if(upgEl&&canUpgrade&&!upgBlocked){
           upgEl.onclick=(e)=>{e.stopPropagation();this.upgradeBuilding(b);};
@@ -363,6 +374,112 @@ Object.assign(RoF.Game, {
     this.tutStep=99;this.persist();
   },
   showUpgrade(){this.showCastle();},
+
+  // ═════════════════════════════════════════════════════════════
+  // NPC DIALOG (2026-04-21) — 건물 첫 방문 시 일러스트 + 대화 시퀀스
+  // 원리: BUILDINGS.action 호출 전에 showBuildingDialog(id, done) 으로 감싸고,
+  //       localStorage 'rof8_npc_seen_{id}' 플래그로 재방문 시 자동 스킵.
+  //       ESC 또는 건너뛰기 버튼으로 즉시 스킵 가능.
+  // ═════════════════════════════════════════════════════════════
+  _npcDialogState: null,   // {buildingId, sceneIdx, scenes, npc, onDone}
+  _npcEscHandler: null,
+
+  hasSeenBuildingNpc(buildingId){
+    try { return localStorage.getItem('rof8_npc_seen_' + buildingId) === '1'; }
+    catch(e){ return false; }
+  },
+  markBuildingNpcSeen(buildingId){
+    try { localStorage.setItem('rof8_npc_seen_' + buildingId, '1'); } catch(e){}
+  },
+
+  /**
+   * 건물 진입 대화 재생. 첫 방문이면 대화, 두번째부터는 바로 onDone.
+   * @param {string} buildingId - BUILDINGS.id
+   * @param {function} onDone - 대화 끝난 후 호출 (실제 기능 화면 진입)
+   */
+  showBuildingDialog(buildingId, onDone){
+    const npc = this.getNpc(buildingId);
+    const scenes = (npc && Array.isArray(npc.scenes) && npc.scenes.length)
+      ? npc.scenes
+      : (npc && npc.greet ? [npc.greet] : null);
+    // scenes 없거나 이미 본 건물이면 즉시 진입
+    if(!scenes || this.hasSeenBuildingNpc(buildingId)){
+      if(onDone) onDone();
+      return;
+    }
+    this._npcDialogState = { buildingId, sceneIdx:0, scenes, npc, onDone };
+    this._openNpcDialogOverlay();
+    this._renderNpcDialogScene();
+  },
+
+  _openNpcDialogOverlay(){
+    const ov = document.getElementById('npc-dialog-overlay');
+    if(!ov) return;
+    ov.classList.add('active');
+    // ESC 바인딩
+    if(this._npcEscHandler) document.removeEventListener('keydown', this._npcEscHandler, true);
+    this._npcEscHandler = (e) => {
+      if(e.key === 'Escape'){ e.preventDefault(); this.skipBuildingDialog(); }
+    };
+    document.addEventListener('keydown', this._npcEscHandler, true);
+  },
+
+  _closeNpcDialogOverlay(){
+    const ov = document.getElementById('npc-dialog-overlay');
+    if(ov) ov.classList.remove('active');
+    if(this._npcEscHandler){
+      document.removeEventListener('keydown', this._npcEscHandler, true);
+      this._npcEscHandler = null;
+    }
+  },
+
+  _renderNpcDialogScene(){
+    const st = this._npcDialogState;
+    if(!st) return;
+    const { npc, scenes, sceneIdx } = st;
+    const artEl = document.getElementById('npc-dialog-art');
+    const nameEl = document.getElementById('npc-dialog-name');
+    const textEl = document.getElementById('npc-dialog-text');
+    const nextBtn = document.getElementById('npc-dialog-next');
+    if(artEl){
+      if(npc.img){
+        artEl.src = npc.img;
+        artEl.classList.remove('hidden');
+        artEl.onerror = function(){ this.classList.add('hidden'); };
+      } else {
+        artEl.classList.add('hidden');
+      }
+    }
+    if(nameEl) nameEl.textContent = (npc.icon && typeof npc.icon === 'string' && npc.icon.length <= 4 ? npc.icon + ' ' : '') + (npc.name || '');
+    if(textEl) textEl.textContent = scenes[sceneIdx] || '';
+    if(nextBtn) nextBtn.textContent = (sceneIdx < scenes.length - 1) ? '다음 →' : '시작 ✓';
+  },
+
+  nextBuildingDialog(){
+    const st = this._npcDialogState;
+    if(!st) return;
+    if(typeof SFX !== 'undefined' && SFX.play) SFX.play('click');
+    if(st.sceneIdx < st.scenes.length - 1){
+      st.sceneIdx++;
+      this._renderNpcDialogScene();
+    } else {
+      this._finishBuildingDialog();
+    }
+  },
+
+  skipBuildingDialog(){
+    this._finishBuildingDialog();
+  },
+
+  _finishBuildingDialog(){
+    const st = this._npcDialogState;
+    if(!st) return;
+    this.markBuildingNpcSeen(st.buildingId);
+    this._closeNpcDialogOverlay();
+    const done = st.onDone;
+    this._npcDialogState = null;
+    if(done) done();
+  },
 
   // ---- DECK VIEW (상태확인) ----
   getRelicSlots(){return Math.max(1,Math.floor(this.getHeroLevel()/2));},

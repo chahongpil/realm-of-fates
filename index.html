@@ -433,6 +433,19 @@
   </div>
 </div>
 
+<!-- NPC DIALOG OVERLAY (2026-04-21 — 건물 첫 방문 시 NPC 일러스트 + 대화) -->
+<div class="npc-dialog-overlay" id="npc-dialog-overlay">
+  <img class="npc-dialog-art" id="npc-dialog-art" src="" alt="">
+  <div class="npc-dialog-box">
+    <div class="npc-dialog-name" id="npc-dialog-name"></div>
+    <div class="npc-dialog-text" id="npc-dialog-text"></div>
+    <div class="npc-dialog-foot">
+      <button class="btn btn-s" id="npc-dialog-skip" data-action="game.skipBuildingDialog">ESC · 건너뛰기</button>
+      <button class="btn" id="npc-dialog-next" data-action="game.nextBuildingDialog">다음 →</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-box"><h3 id="modal-title"></h3><p id="modal-msg"></p>

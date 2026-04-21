@@ -19,7 +19,33 @@ RoF.UI={
     document.getElementById('modal-overlay').classList.add('active');
   },
   closeModal(){document.getElementById('modal-overlay').classList.remove('active');},
+
+  // 2026-04-21: 전체화면 토글 (F 키 또는 ⛶ 버튼)
+  // Fullscreen API — 진입 시 주소창/탭바 사라지고 창 꽉 사용 → fitViewport 가 자동 재계산.
+  toggleFullscreen(){
+    try {
+      if (!document.fullscreenElement) {
+        (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)
+          .call(document.documentElement).catch(()=>{});
+      } else {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document).catch(()=>{});
+      }
+    } catch(e){}
+  },
 };
+
+// 전체화면 상태 → 버튼 아이콘 반영 + F 키 단축키 (에디터/iframe 에서는 비활성)
+document.addEventListener('fullscreenchange', () => {
+  const btn = document.getElementById('fullscreen-toggle');
+  if (btn) btn.textContent = document.fullscreenElement ? '⛷' : '⛶';
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'f' && e.key !== 'F') return;
+  const t = e.target; if (t && /INPUT|TEXTAREA|SELECT/.test(t.tagName)) return;
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  e.preventDefault();
+  RoF.UI.toggleFullscreen();
+});
 
 // 호환성 레이어
 window.UI = RoF.UI;

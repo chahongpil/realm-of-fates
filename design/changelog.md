@@ -8,6 +8,39 @@
 
 ---
 
+## 2026-04-21 심야 ▶ 세션 ▶ 스펠 추가 이식 + UI 차등화 + 성별 토글 + 전체화면
+- 변경 (커밋 `e1c4db5` 푸시 완료):
+  1. **스펠 이미지 35장 교체 + 신규 4종 추가**
+     - 한국어 파일명 → `sk_*` 영어 ID 매핑 이식 (`Downloads/0421스펠작업/normalized` → `img/`)
+     - 신규 4종:
+       - `sk_boil` 끓어오름 (silver attack 패시브, atk+2 rage+3)
+       - `sk_minor_curse` 작은 저주 (bronze defense spell, 적 def-2 1턴)
+       - `sk_spark_blast` 불똥 폭발 (bronze fire AOE, damage 6)
+       - `sk_herb_pack` 약초 꾸러미 (silver support heal, HP+25)
+     - `sk_inferno_blast` gold → **silver 강등** (damage 25→15, cost 10→5, cooldown 제거). gold 화염 스펠은 추후 신규 제작.
+  2. **유물 2장 신규**: `rl_fury` (분노부적), `rl_boots` (신속장화) — SVG → PNG
+  3. **카드 테두리 등급별 차등화** (05-design-direction.md B-2 규칙)
+     - bronze 2px / silver 3px / gold 3px / legendary 4px / divine 4px + 이중 글로우
+     - `.card-v4.rar-*` 적용, 갤러리(`tools/preview_gallery.html`) 동일 적용
+  4. **P6 주인공 생성 화면** — Cockpit(1화면 통합) 시도 후 롤백
+     - 이유: 1280×720 뷰포트에 맞지 않아 원소 3개 잘림, 카드 크기 폭주
+     - 대안: 기존 2단계(원소→역할) 유지 + 역할 화면에 🧔/👩 성별 토글 2버튼 추가
+     - `_renderGenderToggle()` 신규, 토글 클릭 시 카드 이미지 즉시 갱신
+  5. **편집기·테스트 SFX 자동 mute**
+     - iframe / `navigator.webdriver` / `?mute=1` / `localStorage.rof8_mute` / UA 5중 감지
+     - `navigator.webdriver` 만으로는 Playwright MCP 감지 실패 → URL 쿼리 필수 확인
+     - `tools/test_run.js` → `FILE_URL + '?mute=1'` 고정
+  6. **전체화면 모드 추가** (HTML Fullscreen API)
+     - sound-panel 에 ⛶ 버튼 + F 키 단축키 + `fullscreenchange` 이벤트로 아이콘 갱신
+     - `RoF.UI.toggleFullscreen()` 신규
+  7. **배경 확장 CSS 사전 연결**
+     - `body.game-mode:has(#title-screen.active)` + `bg_title_wide.png` 레이어
+     - 대표님 공급 대기 (권장 사이즈 2560×720, 32:9 파노라마, 중앙 1280×720 safe zone)
+  8. **검수 갤러리**: `tools/preview_gallery.html` 신규 (스펠 40 + 유물 12 전체, NEW/OK/SVG/MISS 배지)
+- 이유: 대표님 공급 2차 스펠 이식 + UI 품질 강화 (테두리 가시성·편집기 UX). Cockpit 은 시각 검수 결과 파손 확인 후 되돌림.
+- 영향: SKILLS 40 → 44 (신규 4종), 유물 12 유지. 회귀 9/9 PASS. GitHub 푸시 완료.
+- 이전 결정 관계: 2026-04-21 저녁 2차 스펠 26장 + 유물 6장 이식 연장선. 2026-04-15 divine 이중테두리 스펙은 그대로 유지하면서 두께 규칙만 추가.
+
 ## 2026-04-21 20:30 ▶ 세션 ▶ 핸드오프 저장
 - 변경: 세션 상태를 `docs/handoff/handoff-2026-04-21-2030.md` 에 저장.
 - 이유: 수동 저장 (대표님 지시 "세션 마감하고 다음에 가자"). 5 커밋 누적 후 P6(주인공 UI 이식) 직전에 안전 지점 확보.

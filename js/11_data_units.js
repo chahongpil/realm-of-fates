@@ -12,7 +12,7 @@
 // 일반유닛: 브론즈(HP8~12) 실버(HP12~18) 골드(HP18~25) 전설(HP30~40) 신(HP55)
 // 영웅은 createHero() 로 런타임 생성하여 UNITS 배열과 독립. 아래는 선술집/전투 획득 유닛만.
 RoF.Data.UNITS = Object.freeze([
-  // ── BRONZE (11) ──
+  // ── BRONZE (13) ──
   {id:'militia',name:'민병',icon:'🗡️',type:'전사',role:'attack',range:'melee',race:'human',element:'earth',
     atk:2,hp:10,def:1,spd:1,rage:2,nrg:1,luck:1,eva:1,meva:1,hpReg:0,nrgReg:0,
     skill:'none',skillType:'passive',skillChance:0,skillNrg:0,skillDesc:'기본 공격만 수행',
@@ -61,7 +61,7 @@ RoF.Data.UNITS = Object.freeze([
     atk:3,hp:9,def:1,spd:2,rage:1,nrg:2,luck:2,eva:2,meva:1,hpReg:0,nrgReg:1,
     skill:'none',skillType:'passive',skillChance:0,skillNrg:0,skillDesc:'기본 공격만 수행',
     bonusTrigger:{on:'attack',chance:.2,effect:'cleave',desc:'20% 관통 사격: 뒤열 적에게 50% 추가데미지'},rarity:'bronze'},
-  // ── SILVER (9) ──
+  // ── SILVER (15) ──
   {id:'knight',name:'기사',icon:'⚜️',type:'전사',role:'defense',range:'melee',race:'human',element:'holy',
     atk:3,hp:18,def:3,spd:1,rage:2,nrg:2,luck:1,eva:1,meva:2,hpReg:1,nrgReg:1,
     skill:'taunt',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 도발: 적 공격을 대신 받음',
@@ -116,7 +116,7 @@ RoF.Data.UNITS = Object.freeze([
     atk:4,hp:16,def:1,spd:3,rage:3,nrg:5,luck:1,eva:1,meva:1,hpReg:1,nrgReg:0,
     skill:'freeze',skillType:'active',skillChance:.4,skillNrg:5,skillDesc:'[액티브 40%] 파도 빙결: 1턴 행동불가 (에너지5)',
     bonusTrigger:{on:'attack',chance:.2,effect:'frostbite',desc:'20% 공격시: 대상 스피드 -3'},rarity:'silver'},
-  // ── GOLD (6) ──
+  // ── GOLD (9) ──
   {id:'paladin',name:'성기사',icon:'⚜️',type:'전사',role:'defense',range:'melee',race:'human',element:'holy',
     atk:4,hp:25,def:4,spd:1,rage:2,nrg:5,luck:2,eva:1,meva:4,hpReg:2,nrgReg:2,
     skill:'heal_self',skillType:'active',skillChance:.9,skillNrg:2,skillDesc:'[액티브 90%] 신성: HP6회복 (에너지2)',
@@ -162,7 +162,7 @@ RoF.Data.UNITS = Object.freeze([
     atk:8,hp:20,def:2,spd:3,rage:5,nrg:4,luck:2,eva:1,meva:1,hpReg:0,nrgReg:1,
     skill:'frenzy',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 광기: HP 50% ↓ 시 공격 2배',
     bonusTrigger:{on:'attack',chance:.25,effect:'ignite',desc:'25% 공격시: 대상 2턴 화상 (턴당 3)'},rarity:'gold'},
-  // ── LEGENDARY (5) ──
+  // ── LEGENDARY (10) ──
   {id:'dragon',name:'드래곤',icon:'🐉',type:'야수',role:'attack',range:'melee',race:'dragon',element:'fire',
     atk:10,hp:35,def:3,spd:2,rage:8,nrg:6,luck:3,eva:1,meva:2,hpReg:1,nrgReg:1,
     skill:'breath',skillType:'active',skillChance:.7,skillNrg:6,skillDesc:'[액티브 70%] 브레스: 전체6데미지 (에너지6)',
@@ -208,7 +208,7 @@ RoF.Data.UNITS = Object.freeze([
     atk:9,hp:42,def:9,spd:2,rage:4,nrg:6,luck:2,eva:1,meva:2,hpReg:1,nrgReg:2,
     skill:'taunt',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 용암 도발: 적 공격을 대신 받음',
     bonusTrigger:{on:'hit',chance:.3,effect:'flame_aura',desc:'30% 피격시: 공격자에게 5데미지'},rarity:'legendary'},
-  // ── DIVINE (6) ── fire=dragon, water=leviathan, earth=behemoth, lightning=titan, holy=archangel, dark=archfiend
+  // ── DIVINE (4) ── fire=dragon, water=leviathan, earth=behemoth, lightning=titan (holy/dark 는 legendary 로 재분류 2026-04-21)
   {id:'titan',name:'번개 타이탄',icon:'⚡',type:'거인',role:'attack',range:'melee',race:'titan',element:'lightning',
     atk:15,hp:55,def:4,spd:3,rage:10,nrg:10,luck:5,eva:2,meva:4,hpReg:2,nrgReg:2,
     skill:'breath',skillType:'active',skillChance:.8,skillNrg:5,skillDesc:'[액티브 80%] 뇌격: 전체8데미지 (에너지5)',

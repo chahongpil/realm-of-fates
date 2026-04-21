@@ -1,5 +1,88 @@
 # Realm of Fates — 핸드오프 문서
-> 마지막 업데이트: 2026-04-13 심야 2차 — 래퍼 7화면 일괄 분해 + 하네스 업그레이드 (훅/스킬 3종/메모리 3종)
+> 마지막 업데이트: **2026-04-21 심야 2차** — 카드 V4 redesign + rage 완전 제거 + 타이틀·BGM 대개편 (11 커밋)
+
+## 🟣 2026-04-21 심야 — 대규모 세션 (커밋 11개)
+
+### 한 줄 요약
+**"시각·음악·리소스 3축 대개편"** — 타이틀 배경 QHD + angel/demon 랜덤, BGM 전 영역 셔플, 카드 V4 top 리디자인(전투 한정 바), rage 스탯 완전 제거, NPC 대화 오버레이 인프라. **코드·데이터·문서 동시 정합성**.
+
+### 커밋 목록
+| 커밋 | 내용 |
+|---|---|
+| `d34b64f` | 타이틀 angel/demon 랜덤 + 3771×1684 QHD |
+| `37a9eea` | BGM 셔플 + title3 추가 + SOURCES.md |
+| `8df3455` | 건물 첫 방문 NPC 대화 오버레이 |
+| `59c4cfd` | 감사 리포트 + V4 mockup |
+| `fa5197b` | card-v4 top redesign + 바 전투 한정 |
+| `192d0ad` | **rage 스탯 완전 제거** (9파일) |
+| `68f6a23` | title1 제거 (반복 재생 피로) |
+| `a4553f7` | 타이틀 3곡 셔플 복귀 |
+| `f7c7545` | 30분 무인 세션 리포트 3건 + current-focus |
+| (+2 이후) | 자잘 버그 진단 + 추가 리포트 |
+
+### 핵심 변경 5가지
+
+**1. 타이틀 배경 3771×1684 (21:9) + angel/demon 랜덤**
+- `body.game-mode:has(#title-screen.active.bg-demon)` 분기
+- 페이지 로드마다 `Math.random() < 0.5` 로 클래스 부여
+- 테스트 환경(webdriver/iframe) 은 angel 고정 (결정론)
+
+**2. BGM 셔플 플레이리스트**
+- `_playMp3(tracks,vol,avoidIdx)` — tracks.length 에 따라 자동 분기
+- 1개: `audio.loop=true` 이음매 없음 / 2개+: onended → 다음 곡 (직전 회피)
+- title 2곡, town 5곡, battle 6곡 전부 동일 로직
+
+**3. 카드 V4 top area redesign**
+- 바 `top:42px` → `top:8px` (얼굴 가림 해결)
+- 바 **기본 숨김**, `.with-bars` 또는 `.card-v4-compact` 에서만 표시
+- `.top` cartouche 분해 → `.top-row + .name-box + .lv-box`
+- name-box 반응형 (fit-content, 100~160px), lv-box 최소 (fit-content)
+- setHP/setNRG 이 바 + 이름박스 숫자 동시 갱신
+
+**4. rage(분노) 스탯 완전 제거**
+- 51 유닛 + 6 영웅 템플릿 rage 필드 삭제
+- fuseCard 진화 계수 / 55_battle HP<70% 부스트 / 61_turnbattle 분노 폭발 로그 / Ghost PvP 스냅샷 모두 정리
+- sk_rage/sk_boil/sk_warhorn/rl_fury effect 재설계
+- 영웅 불 원소 보너스: `atk+2, rage+2` → `atk+2`
+- 이름 2건 변경: 분노폭발→광전사의외침, 분노부적→투쟁의부적
+- **04-19 effect 마커 드리프트 교훈 3회차 재발** → 08-garbage-lessons.md 강화
+
+**5. 건물 첫 방문 NPC 대화 오버레이**
+- `#npc-dialog-overlay` DOM + CSS (좌측 하프바디 + 우측 대사창)
+- 8 건물 × lv1 NPC 씬 3개씩 스크립트
+- localStorage `rof8_npc_seen_{id}` 플래그로 재방문 자동 스킵
+- ESC 키 + 건너뛰기 버튼으로 스킵 가능
+- **대기**: NPC 하프바디 일러스트 4장 (NPC_REQUEST.md 스펙)
+
+### 생성 리포트 (design/ 내부, 이번 세션)
+1. [balance_audit_2026-04-21.md](design/balance_audit_2026-04-21.md) — P0 밸런스 실패 3건
+2. [play_director_report_2026-04-21.md](design/play_director_report_2026-04-21.md) — 전투 P0 블로커 3건
+3. [v4_audit_2026-04-21.md](design/v4_audit_2026-04-21.md) — V4 redesign 시각 검수
+4. [worldbuilding_audit_2026-04-21.md](design/worldbuilding_audit_2026-04-21.md) — 세계관 35% 채움도
+5. [minor_bugs_2026-04-21.md](design/minor_bugs_2026-04-21.md) — 404/radial/성별토글 진단
+
+### 다음 세션 시작 시 확인 우선순위
+
+**🔴 P0 블로커**: [js/55_game_battle.js:145](js/55_game_battle.js#L145) `pCards:null → []` 1줄
+- 현재 "⚔️ 전투 개시!" 클릭 시 PAGEERROR → 실제 전투 진입 불가
+- 수정은 1줄, 회귀 영향 거의 0
+- 승인 대기 중 (대표님이 직접 검토)
+
+**🟡 세계관 보강**:
+- concept.md / lore-bible.md 용어 정정 5곳 (15분)
+- 51 유닛 신 계열 매핑 + flavor (2~4시간, 트랙5 전용)
+
+**🟡 밸런스 P0**:
+- archmage/sniper/lich rarity 레이블 3건 (balance_audit 참조)
+
+### 교훈 축적
+- **08-garbage-lessons.md** 에 2026-04-21 rage 제거 → effect 드리프트 3회차 재발 섹션 append
+- 원칙: **effect/stat 필드 Edit 전에 의존성 grep 자동 루틴** 으로 격상
+- 스탯 "완전 제거" 6단계 체크리스트: 데이터/파서/테스트/문서/관련스킬유물/UI
+
+---
+
+## 🟣 2026-04-13 심야 2차 — 래퍼 일괄 분해 + 하네스 업그레이드
 
 ## 🟣 2026-04-13 심야 2차 — 래퍼 일괄 분해 + 하네스 업그레이드
 

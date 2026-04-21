@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>V4 Top — Live Box Editor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cinzel+Decorative:wght@700;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap">
+<style>
+  :root{
+    --bg:#1a0f08; --panel:#2b1c13; --ink:#f1e4c3; --muted:#b89968;
+    --gold:#e8bd4a; --gold-lo:#8b6914; --gold-hi:#f1d890;
+    --red:#c83838; --blue:#4a7ea8; --green:#6ab04c;
+    --border:#9b7a3e; --border-dk:#6e4a2a;
+
+    /* Live editor CSS variables — sliders modify these */
+    --name-pad-x: 4px;
+    --name-pad-y-top: 3px;
+    --name-pad-y-bot: 2px;
+    --name-font: 15px;
+    --name-max: 160px;
+
+    --lv-pad-x: 3px;
+    --lv-pad-y: 2px;
+    --lv-font: 12px;
+    --lv-badge-pad-x: 5px;
+    --lv-badge-pad-y: 2px;
+    --nrg-font: 10px;
+  }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;}
+  body{padding:24px;display:grid;grid-template-columns:360px 1fr;gap:30px;align-items:flex-start}
+
+  /* ────── CONTROL PANEL ────── */
+  .ctrl{background:#120a05;border:1px solid var(--border-dk);border-radius:8px;padding:20px;position:sticky;top:20px;max-height:calc(100vh - 40px);overflow-y:auto}
+  .ctrl h2{font:900 18px/1.2 'Cinzel Decorative',serif;color:var(--gold);margin:0 0 4px}
+  .ctrl .sub{font-size:11px;color:var(--muted);margin-bottom:18px;letter-spacing:.04em}
+  .grp{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-dk)}
+  .grp:last-child{border-bottom:none}
+  .grp h3{font:700 13px/1.2 'Noto Sans KR',sans-serif;color:var(--gold);margin:0 0 10px;letter-spacing:.08em;text-transform:uppercase}
+  .row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
+  .row label{flex:0 0 96px;color:#d8c59a}
+  .row input[type=range]{flex:1;accent-color:var(--gold)}
+  .row .v{flex:0 0 42px;text-align:right;font:700 11px ui-monospace,monospace;color:var(--gold);font-variant-numeric:tabular-nums}
+  .measure{background:#0a0503;padding:10px 12px;border:1px solid var(--border-dk);border-radius:4px;font:400 11px/1.55 ui-monospace,monospace;color:#d8c59a;margin-top:12px}
+  .measure b{color:var(--gold)}
+  .reset-btn{display:block;width:100%;padding:8px;margin-top:14px;background:#2b1c13;border:1px solid var(--border);color:var(--ink);border-radius:3px;cursor:pointer;font:700 12px 'Noto Sans KR',sans-serif;letter-spacing:.08em}
+  .reset-btn:hover{background:#3a2510;color:var(--gold)}
+  .export{background:#0a0503;padding:10px;border-radius:4px;margin-top:10px;font:400 10px/1.4 ui-monospace,monospace;color:#9fe38a;white-space:pre-wrap;word-break:break-all;max-height:120px;overflow-y:auto}
+
+  /* ────── CARDS AREA ────── */
+  .cards{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+  .case-label{font:700 11px/1 'Noto Sans KR',sans-serif;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;text-align:center}
+  .card{
+    width:280px;aspect-ratio:4/7;position:relative;
+    background:#000;border-radius:6px;overflow:hidden;
+    box-shadow:0 12px 32px rgba(0,0,0,.85);
+  }
+  .card > .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.92) contrast(1.05);display:block}
+  .gild{position:absolute;inset:0;border:3px solid var(--gold);border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.7), 0 0 18px rgba(232,189,74,.45);pointer-events:none}
+
+  .bars{position:absolute;left:8px;right:8px;top:8px;display:flex;flex-direction:column;gap:3px}
+  .bar{position:relative;height:8px;background:rgba(0,0,0,.88);border:1px solid rgba(0,0,0,.9);border-radius:2px;overflow:hidden}
+  .bar > i{display:block;height:100%}
+  .bar.hp  > i{background:linear-gradient(180deg,#7dd867,#3a8a2c)}
+  .bar.nrg > i{background:linear-gradient(180deg,#6bb8e0,#2e5e85)}
+  .bar .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 8px/1 ui-monospace,monospace;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.9);letter-spacing:.05em}
+
+  .top-row{position:absolute;left:8px;right:8px;top:36px;display:flex;justify-content:space-between;gap:6px}
+
+  .name-box{
+    width:fit-content;max-width:var(--name-max);
+    padding:var(--name-pad-y-top) var(--name-pad-x) var(--name-pad-y-bot);
+    background:linear-gradient(180deg,rgba(26,15,8,.94),rgba(26,15,8,.82));
+    border:1px solid var(--border);border-radius:3px;
+    display:flex;flex-direction:column;gap:2px;overflow:hidden;
+    outline:2px dashed rgba(255,100,100,.0);  /* hidden by default */
+    transition:outline-color .15s;
+  }
+  .name-box.hilight{outline-color:rgba(255,100,100,.7)}
+  .name-box .name{
+    font:900 var(--name-font)/1.1 'Cinzel Decorative','Noto Serif KR',serif;
+    color:var(--gold);letter-spacing:.04em;
+    text-shadow:0 1px 2px rgba(0,0,0,.9);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .hp-num{font:700 11px/1 ui-monospace,monospace;color:#9fe38a;padding-top:3px;border-top:1px solid rgba(232,189,74,.25);font-variant-numeric:tabular-nums}
+
+  .lv-box{
+    width:fit-content;
+    padding:var(--lv-pad-y) var(--lv-pad-x);
+    background:linear-gradient(180deg,rgba(26,15,8,.94),rgba(26,15,8,.82));
+    border:1px solid var(--border);border-radius:3px;
+    display:flex;flex-direction:column;gap:1px;align-items:flex-end;
+    outline:2px dashed rgba(100,200,255,.0);
+    transition:outline-color .15s;
+  }
+  .lv-box.hilight{outline-color:rgba(100,200,255,.7)}
+  .lv-box .lv{
+    font:900 var(--lv-font)/1 'Cinzel',serif;color:#2a1a08;
+    background:linear-gradient(180deg,var(--gold-hi),var(--gold-lo));
+    padding:var(--lv-badge-pad-y) var(--lv-badge-pad-x);border-radius:2px;
+    letter-spacing:.02em;align-self:flex-end;
+  }
+  .lv-box .nrg-num{
+    font:700 var(--nrg-font)/1 ui-monospace,monospace;color:#9cd0f0;
+    text-align:right;padding-top:1px;font-variant-numeric:tabular-nums;
+  }
+
+  .parch{position:absolute;left:8px;right:8px;bottom:8px;padding:10px 12px 9px;background:linear-gradient(180deg,#f1e4c3,#e4d39e);color:#2a1a08;border:1px solid #9b7a3e;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(139,105,20,.15)}
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding-bottom:6px;border-bottom:1px solid rgba(139,105,20,.3)}
+  .stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .stat .l{font:700 9px/1 'Noto Sans KR',sans-serif;color:#8b6914;letter-spacing:.12em}
+  .stat .v{font:900 14px/1 'Cinzel',serif;color:#2a1a08;font-variant-numeric:tabular-nums}
+  .desc{display:flex;gap:6px;padding-top:6px;font:400 11px/1.45 'Noto Serif KR',serif;color:#3a2510}
+  .drop{font:900 22px/.9 'Cinzel Decorative',serif;color:#8b1a1a;flex:0 0 auto}
+</style>
+</head>
+<body>
+
+<!-- ────────── CONTROL PANEL ────────── -->
+<div class="ctrl">
+  <h2>박스 라이브 편집기</h2>
+  <div class="sub">슬라이더 드래그 → 실시간 반영. 우측 카드 하이라이트로 확인.</div>
+
+  <div class="grp">
+    <h3>🔴 이름 박스</h3>
+    <div class="row"><label>가로 padding</label><input type="range" id="name-pad-x" min="0" max="16" value="4"><span class="v" id="name-pad-x-v">4px</span></div>
+    <div class="row"><label>위쪽 padding</label><input type="range" id="name-pad-y-top" min="0" max="12" value="3"><span class="v" id="name-pad-y-top-v">3px</span></div>
+    <div class="row"><label>아래쪽 padding</label><input type="range" id="name-pad-y-bot" min="0" max="12" value="2"><span class="v" id="name-pad-y-bot-v">2px</span></div>
+    <div class="row"><label>이름 글자크기</label><input type="range" id="name-font" min="10" max="20" value="15"><span class="v" id="name-font-v">15px</span></div>
+    <div class="row"><label>최대 너비</label><input type="range" id="name-max" min="80" max="220" value="160"><span class="v" id="name-max-v">160px</span></div>
+  </div>
+
+  <div class="grp">
+    <h3>🔵 Lv 박스 (검은 박스)</h3>
+    <div class="row"><label>가로 padding</label><input type="range" id="lv-pad-x" min="0" max="12" value="3"><span class="v" id="lv-pad-x-v">3px</span></div>
+    <div class="row"><label>세로 padding</label><input type="range" id="lv-pad-y" min="0" max="10" value="2"><span class="v" id="lv-pad-y-v">2px</span></div>
+    <div class="row"><label>Lv 글자크기</label><input type="range" id="lv-font" min="9" max="16" value="12"><span class="v" id="lv-font-v">12px</span></div>
+    <div class="row"><label>Lv badge pad-x</label><input type="range" id="lv-badge-pad-x" min="0" max="10" value="5"><span class="v" id="lv-badge-pad-x-v">5px</span></div>
+    <div class="row"><label>Lv badge pad-y</label><input type="range" id="lv-badge-pad-y" min="0" max="6" value="2"><span class="v" id="lv-badge-pad-y-v">2px</span></div>
+    <div class="row"><label>NRG 글자크기</label><input type="range" id="nrg-font" min="8" max="14" value="10"><span class="v" id="nrg-font-v">10px</span></div>
+  </div>
+
+  <div class="grp">
+    <h3>📐 실측 크기</h3>
+    <div class="measure" id="measure">측정 중...</div>
+  </div>
+
+  <button class="reset-btn" onclick="resetAll()">↺ 초기값으로 리셋</button>
+
+  <div class="grp" style="margin-top:16px">
+    <h3>💾 CSS 출력</h3>
+    <div class="export" id="export"></div>
+  </div>
+</div>
+
+<!-- ────────── CARD PREVIEWS ────────── -->
+<div class="cards">
+
+  <div>
+    <div class="case-label">4자 — 세라피엘 / Lv 15</div>
+    <div class="card">
+      <img class="art" src="../../img/archangel.png" alt="">
+      <div class="gild"></div>
+      <div class="bars">
+        <div class="bar hp"><i style="width:82%"></i><span class="lbl">HP 1,476</span></div>
+        <div class="bar nrg"><i style="width:0%"></i><span class="lbl">NRG 0</span></div>
+      </div>
+      <div class="top-row">
+        <div class="name-box" data-box="name"><div class="name">세라피엘</div><div class="hp-num">♥ 1,476</div></div>
+        <div class="lv-box"   data-box="lv"><div class="lv">Lv 15</div><div class="nrg-num">◆ 0</div></div>
+      </div>
+      <div class="parch">
+        <div class="stats">
+          <div class="stat"><span class="l">ATK</span><span class="v">248</span></div>
+          <div class="stat"><span class="l">DEF</span><span class="v">186</span></div>
+          <div class="stat"><span class="l">SPD</span><span class="v">82</span></div>
+          <div class="stat"><span class="l">CRIT</span><span class="v">24%</span></div>
+          <div class="stat"><span class="l">EVA</span><span class="v">12%</span></div>
+        </div>
+        <div class="desc"><span class="drop">맹</span><span>세하라. 네 이름과 영혼을 걸고, 일곱 번째 자리는 피의 대가로만 얻어진다.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="case-label">7자 — 바람의검술사 / Lv 8</div>
+    <div class="card">
+      <img class="art" src="../../img/archangel.png" alt="">
+      <div class="gild"></div>
+      <div class="bars">
+        <div class="bar hp"><i style="width:65%"></i><span class="lbl">HP 845</span></div>
+        <div class="bar nrg"><i style="width:40%"></i><span class="lbl">NRG 40</span></div>
+      </div>
+      <div class="top-row">
+        <div class="name-box" data-box="name"><div class="name">바람의검술사</div><div class="hp-num">♥ 845</div></div>
+        <div class="lv-box"   data-box="lv"><div class="lv">Lv 8</div><div class="nrg-num">◆ 40</div></div>
+      </div>
+      <div class="parch">
+        <div class="stats">
+          <div class="stat"><span class="l">ATK</span><span class="v">142</span></div>
+          <div class="stat"><span class="l">DEF</span><span class="v">88</span></div>
+          <div class="stat"><span class="l">SPD</span><span class="v">120</span></div>
+          <div class="stat"><span class="l">CRIT</span><span class="v">18%</span></div>
+          <div class="stat"><span class="l">EVA</span><span class="v">22%</span></div>
+        </div>
+        <div class="desc"><span class="drop">바</span><span>람처럼 달려 적의 목을 베는 검사. 속도와 회피로 살아남는다.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="case-label">10자 — 황금빛대마법사왕 / Lv 100</div>
+    <div class="card">
+      <img class="art" src="../../img/archangel.png" alt="">
+      <div class="gild"></div>
+      <div class="bars">
+        <div class="bar hp"><i style="width:100%"></i><span class="lbl">HP 2,400</span></div>
+        <div class="bar nrg"><i style="width:80%"></i><span class="lbl">NRG 80</span></div>
+      </div>
+      <div class="top-row">
+        <div class="name-box" data-box="name"><div class="name">황금빛대마법사왕</div><div class="hp-num">♥ 2,400</div></div>
+        <div class="lv-box"   data-box="lv"><div class="lv">Lv 100</div><div class="nrg-num">◆ 100</div></div>
+      </div>
+      <div class="parch">
+        <div class="stats">
+          <div class="stat"><span class="l">ATK</span><span class="v">310</span></div>
+          <div class="stat"><span class="l">DEF</span><span class="v">145</span></div>
+          <div class="stat"><span class="l">SPD</span><span class="v">68</span></div>
+          <div class="stat"><span class="l">CRIT</span><span class="v">32%</span></div>
+          <div class="stat"><span class="l">EVA</span><span class="v">14%</span></div>
+        </div>
+        <div class="desc"><span class="drop">황</span><span>금빛 옷을 두른 대마법사. 왕관 아래 모든 원소가 그의 것.</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const defaults = {
+    'name-pad-x':4, 'name-pad-y-top':3, 'name-pad-y-bot':2, 'name-font':15, 'name-max':160,
+    'lv-pad-x':3, 'lv-pad-y':2, 'lv-font':12, 'lv-badge-pad-x':5, 'lv-badge-pad-y':2, 'nrg-font':10
+  };
+  const cssVars = {
+    'name-pad-x':'--name-pad-x', 'name-pad-y-top':'--name-pad-y-top', 'name-pad-y-bot':'--name-pad-y-bot',
+    'name-font':'--name-font', 'name-max':'--name-max',
+    'lv-pad-x':'--lv-pad-x', 'lv-pad-y':'--lv-pad-y', 'lv-font':'--lv-font',
+    'lv-badge-pad-x':'--lv-badge-pad-x', 'lv-badge-pad-y':'--lv-badge-pad-y', 'nrg-font':'--nrg-font'
+  };
+
+  function updateAll(){
+    Object.keys(defaults).forEach(id => {
+      const input = document.getElementById(id);
+      const val = input.value;
+      document.documentElement.style.setProperty(cssVars[id], val + 'px');
+      document.getElementById(id+'-v').textContent = val + 'px';
+    });
+    measureBoxes();
+    exportCSS();
+  }
+
+  function measureBoxes(){
+    const name = document.querySelector('.name-box');
+    const lv = document.querySelector('.lv-box');
+    const nr = name.getBoundingClientRect();
+    const lr = lv.getBoundingClientRect();
+    document.getElementById('measure').innerHTML =
+      `🔴 <b>이름박스</b>: ${nr.width.toFixed(1)} × ${nr.height.toFixed(1)} px<br>` +
+      `🔵 <b>Lv박스</b>: ${lr.width.toFixed(1)} × ${lr.height.toFixed(1)} px`;
+  }
+
+  function exportCSS(){
+    const g = id => document.getElementById(id).value;
+    const out =
+      `.name-box{padding:${g('name-pad-y-top')}px ${g('name-pad-x')}px ${g('name-pad-y-bot')}px;max-width:${g('name-max')}px}\n` +
+      `.name-box .name{font-size:${g('name-font')}px}\n` +
+      `.lv-box{padding:${g('lv-pad-y')}px ${g('lv-pad-x')}px}\n` +
+      `.lv-box .lv{font-size:${g('lv-font')}px;padding:${g('lv-badge-pad-y')}px ${g('lv-badge-pad-x')}px}\n` +
+      `.lv-box .nrg-num{font-size:${g('nrg-font')}px}`;
+    document.getElementById('export').textContent = out;
+  }
+
+  function resetAll(){
+    Object.keys(defaults).forEach(id => {
+      document.getElementById(id).value = defaults[id];
+    });
+    updateAll();
+  }
+
+  // Hover highlight: name input hover → red outline, lv input hover → blue outline
+  Object.keys(defaults).forEach(id => {
+    const input = document.getElementById(id);
+    input.addEventListener('input', updateAll);
+    input.addEventListener('mouseenter', () => {
+      const cls = id.startsWith('name') ? 'name-box' : 'lv-box';
+      document.querySelectorAll('.' + cls).forEach(el => el.classList.add('hilight'));
+    });
+    input.addEventListener('mouseleave', () => {
+      document.querySelectorAll('.name-box, .lv-box').forEach(el => el.classList.remove('hilight'));
+    });
+  });
+
+  updateAll();
+</script>
+
+</body>
+</html>

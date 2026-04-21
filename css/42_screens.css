@@ -398,7 +398,10 @@ body.game-mode #deckview-screen > #lib-npc .npc-bar{
 body.game-mode #deckview-screen > #codex-tab{
   position:absolute;left:var(--dv-codex-x);top:var(--dv-codex-y);
   width:var(--dv-codex-w);height:var(--dv-codex-h);
-  overflow-y:auto;padding:8px;box-sizing:border-box;
+  /* 2026-04-21 Step 5C 후속: 40장 로드 시 세로 스크롤바(16px)가 4-col 로 깎던 이슈.
+     padding 0 + scrollbar-gutter stable. 1240-16=1224 여유 → 5×235+4×10=1215 수용. */
+  overflow-y:auto;padding:0;box-sizing:border-box;
+  scrollbar-gutter:stable;
 }
 body.game-mode #deckview-screen > div[style*="padding:8px;text-align:center"]:last-child{
   position:absolute;left:var(--dv-back-x);top:var(--dv-back-y);
@@ -423,6 +426,12 @@ body.game-mode #castle-screen > #castle-upgrade-area{
 body.game-mode #castle-screen > #castle-upgrade-area #castle-upgrade-grid{padding:8px;}
 body.game-mode #castle-screen #castle-upgrade-grid{--card-v4-w:235px;}
 body.game-mode #church-screen > #church-grid{--card-v4-w:235px;}
+
+/* Church NPC 대화 바 — V4 카드(church-grid) 위로 노출 (2026-04-21 Step 5C 후속).
+   npc-bar 는 church-info div 의 afterend 로 삽입되어 title 박스 안 flow 에 있는데,
+   형제인 church-grid(absolute, document order 뒤)가 기본 stacking 에서 위에 떠서
+   부상자 카드 상단과 겹칠 때 npc 박스가 뒤로 묻혔다. position:relative + z-index 로 승격. */
+body.game-mode #church-npc { position: relative; z-index: 20; }
 body.game-mode #castle-screen > #castle-quest-area{
   position:absolute;left:var(--castle-grid-x);top:var(--castle-grid-y);
   width:var(--castle-grid-w);height:var(--castle-grid-h);

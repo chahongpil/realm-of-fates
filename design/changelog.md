@@ -14,6 +14,14 @@
 - 영향: 코드 수정 0. 대표님 승인 후 실행. 뷰포트 1280×720 고정 준수(옵션 C 배제). V4 setter API(setHP/setNRG/setStatus/setShield/setStatModifier) 실전 검증 기회.
 - 관계: handoff-2026-04-21-1115.md "P0 Step 5C Battle 이식" 구체화.
 
+## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C 후속 정리 (Church z-index + Codex 5-col)
+- 변경:
+  1. **Church NPC z-index** (`css/42_screens.css`) — `#church-npc { position:relative; z-index:20 }`. V4 카드(church-grid)가 document order 상 뒤에 있어 stacking 위로 떠서 npc 대화 바 상단을 가리던 이슈 해결. 부상자 카드 많을 때 첫 행이 npc 영역 침범하면 가렸던 상황.
+  2. **Codex 5-col grid 복구** (`css/42_screens.css`) — `#codex-tab` 에 `padding:0` + `scrollbar-gutter:stable`. 40장 로드 시 세로 스크롤바가 16px 잡아먹어 유효 폭 1208 → 5×235+4×10=1215 초과로 4-col 로 떨어지던 이슈. padding 제거 + gutter 예약으로 1224 여유 확보.
+- 이유: 핸드오프 4/21 11:15 이월 P1 2건 정리. 실제 플레이 시각 품질 개선.
+- 영향: 회귀 9/9 PASS. Tavern 은 영향 없음 (8장이라 스크롤 안 남). Castle/Church 양식 동일하지만 church-grid 만 npc 바 있어서 church-grid 는 건드리지 않고 npc 바만 z-index 승격.
+- 관계: handoff-2026-04-21-1115.md "P1 Church z-index 정리 / Codex 5-col 조사" 클리어.
+
 ## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C Battle V4 이식 실행 (A1~A4 전부)
 - 변경: 대표님 결정 반영 (옵션 A / A3 포함 / 9px 너판단 / parch.desc 완전숨김).
   1. **A1 CSS Compact Variant** — `css/32_card_v4.css` 에 `.card-v4-compact` modifier (172×248, aspect:auto, parch.desc 숨김, 스탯 9px). `css/41_battle_v2.css` 에 상태 블록 (`.card-v4-compact` × is-selected/is-target-valid/is-target-hover/is-hit/is-dead/is-dying-melt|crush/is-acted/is-queued/is-dimmed).

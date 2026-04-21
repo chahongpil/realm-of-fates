@@ -100,7 +100,7 @@ RoF.SFX={
   _drone(ty,f,v){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(this.master);o.start();this.bgmNodes.push(o);},
 
   // MP3 BGM tracks
-  _titleTracks:['snd/title1.mp3','snd/title2.mp3','snd/title3.mp3'],
+  _titleTracks:['snd/title2.mp3','snd/title3.mp3'],
   _townTracks:['snd/town1.mp3','snd/town2.mp3','snd/town3.mp3','snd/town4.mp3','snd/town5.mp3'],
   _battleTracks:['snd/battle1.mp3','snd/battle2.mp3','snd/battle3.mp3','snd/battle4.mp3','snd/battle5.mp3','snd/battle6.mp3'],
 

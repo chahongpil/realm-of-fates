@@ -1,5 +1,37 @@
 # Realm of Fates — 핸드오프 문서
-> 마지막 업데이트: **2026-04-21 심야 2차** — 카드 V4 redesign + rage 완전 제거 + 타이틀·BGM 대개편 (11 커밋)
+> 마지막 업데이트: **2026-04-22 새벽** — P0~P4 일괄 정리 마무리 (총 13 커밋)
+
+## 🟣 2026-04-22 새벽 추가 — P0~P4 일괄 정리 (커밋 2개 추가)
+
+**`09d1187`** P0 블로커 해결 — updateSkillBar pCards null 가드 (1파일 4줄)
+- "⚔️ 전투 개시!" 클릭 시 PAGEERROR 2회 → 0회
+- 초기 제안(pCards:null → []) 폐기, 방어 가드가 정답 (launchBattle 의 `if(!bs.pCards)` 초기화 분기 유지)
+
+**`fc51ba2`** P1~P4 일괄 (13파일, 34MB 절감)
+- **P1-a** rage 기획 문서 3건 (BATTLE_FORMULA/BUGFIX_EDGE_CASES/BATTLE_KEYWORD_ORDER) DEPRECATED 배너
+- **P1-b** CSS `--stat-rage` → `--stat-burn` rename (burn 상태 색 네이밍 충돌 해결)
+- **P1-c** `bg_title.png` / `bg_title_wide.png` 삭제 (angel 과 MD5 일치, 3중 중복 34MB)
+- **P2-a** archmage/sniper `silver→gold`, lich `gold→legendary` rarity 레이블 수정
+- **P2-b** `img/town/gate.png` 404 코드 1줄로 제거
+- **P3** concept/lore-bible 용어 5곳 정정 (평범/고귀/전설 → 일반/고귀한/전설의) + 분노 참조 1곳
+- **P4-light** fuseCard 진화계수 `EVOLVE_COEF` 상수 테이블화
+
+### 오늘 총 성과
+- **커밋 13개** (`d34b64f` ~ `fc51ba2`)
+- **리포트 8건** (balance/play/v4/world/minor/code/garbage + 이전 lore-research)
+- **용량 절감** 34MB (bg_title 3중 중복 해결). _archive trash 이동 시 추가 17MB 가능.
+- **회귀 11/11 PASS** (전 단계)
+- **세션 탈출 지점**: D (세션 종료 + 정리) 만 수행
+
+### 다음 세션 최우선 (대표님 결정 대기)
+1. **8번** 51유닛 신 계열 매핑 — 대표님 직접 (2~4시간)
+2. **P4 큰 리팩터 2건** (별도 세션 권장, 위험도 중간)
+   - CardV4Component.create() 400줄 쪼개기
+   - BUILDINGS.action 문자열 → 함수 참조
+3. **A안 (배틀 플로우 완주 검수)** — 오늘 미수행, 다음 세션 오프닝으로 적합
+4. **B안 (가비지 5건 trash 이동)** — 17MB 추가 절감
+
+---
 
 ## 🟣 2026-04-21 심야 — 대규모 세션 (커밋 11개)
 

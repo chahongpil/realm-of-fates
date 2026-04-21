@@ -212,7 +212,8 @@ Object.assign(RoF.Game, {
       const lvName=(b.lvNames&&lv>0)?b.lvNames[lv-1]:b.name;
       const castleLv=this.getBuildingLv('castle');
       // 2026-04-12 밤: 새 마을 맵 — img/town/*.png (성벽 내부 cutout) 우선 사용
-      const bImg=`img/town/${b.id}.png`;
+      // 2026-04-22: gate 는 img/town/gate.png 미공급 상태라 처음부터 building_ 로 (404 회피)
+      const bImg = b.id === 'gate' ? `img/building_${b.id}.png` : `img/town/${b.id}.png`;
       const bImgFallback=`img/building_${b.id}.png`;
       if(built){
         const canUpgrade=lv<b.cost.length;

@@ -5,12 +5,20 @@ RoF.helpers = RoF.helpers || {};
 
 // ── 등급/카드 합성 ──
 RoF.helpers.upgradeRarity = function(r){const i=R_ORDER.indexOf(r);return i<R_ORDER.length-1?R_ORDER[i+1]:r;};
+
+// 진화 계수 — rules/04-balance.md "⚡ 진화 계수 (fuseCard 합성 시)" 정본과 1:1 매핑.
+// 2026-04-22 테이블화: 코드 수정 없이 balance.md 만 참고해서 수치 조정 가능.
+// 스탯 추가/제거 시 이 테이블만 업데이트하면 됨 (rage 제거 때 이 패턴이었으면 한 줄로 끝났을 것).
+RoF.helpers.EVOLVE_COEF = Object.freeze({
+  atk: 1.5, hp: 1.5, def: 1.5,   // "주 능력치" 계열: 1.5배
+  spd: 1.3, nrg: 1.3, luck: 1.3, eva: 1.3,   // "보조 능력치" 계열: 1.3배
+});
 RoF.helpers.fuseCard = function(card){
   card.rarity=upgradeRarity(card.rarity);
-  card.atk=Math.round(card.atk*1.5);card.hp=Math.round(card.hp*1.5);card.maxHp=Math.round(card.hp);
-  card.def=Math.round((card.def||0)*1.5);card.spd=Math.round((card.spd||0)*1.3);
-  card.nrg=Math.round((card.nrg||0)*1.3);
-  card.luck=Math.round((card.luck||0)*1.3);card.eva=Math.round((card.eva||0)*1.3);
+  for(const stat in RoF.helpers.EVOLVE_COEF){
+    card[stat] = Math.round((card[stat]||0) * RoF.helpers.EVOLVE_COEF[stat]);
+  }
+  card.maxHp = Math.round(card.hp);  // maxHp 는 hp 와 동기화 (별도 스케일 X)
 };
 // ── 적/ID ──
 RoF.helpers.enemyName = function(){return ENEMY_NAMES[Math.floor(Math.random()*ENEMY_NAMES.length)];};

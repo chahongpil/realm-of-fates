@@ -119,7 +119,7 @@
 .battle-card .bc-stt-ic{display:inline-flex;align-items:center;}
 .battle-card .bc-stt-ic svg{display:block;filter:drop-shadow(0 0 2px currentColor);}
 .battle-card .bc-stt-n{color:var(--text-0);font-weight:800;min-width:.6rem;text-align:center;}
-.battle-card .bc-stt.burn  {border-color:var(--stat-rage);color:var(--stat-rage);box-shadow:0 0 4px rgba(255,136,68,.6);}
+.battle-card .bc-stt.burn  {border-color:var(--stat-burn);color:var(--stat-burn);box-shadow:0 0 4px rgba(255,136,68,.6);}
 .battle-card .bc-stt.poison{border-color:var(--success);  color:var(--success);  box-shadow:0 0 4px rgba(68,255,136,.6);}
 .battle-card .bc-stt.frozen{border-color:var(--stat-nrg); color:var(--stat-nrg); box-shadow:0 0 4px rgba(102,204,255,.6);}
 .battle-card .bc-stt.invinc{border-color:var(--curr-gold);color:var(--curr-gold);box-shadow:0 0 4px rgba(255,215,0,.6);}

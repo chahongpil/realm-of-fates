@@ -155,7 +155,8 @@
 .card-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;font-size:.6rem;margin-top:auto;padding:3px;background:rgba(0,0,0,.3);border-radius:4px;border:1px solid rgba(255,255,255,.05);}
 .card-stats .st{padding:2px 4px;border-radius:2px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.05);}
 .st-atk{color:#ff4422;}.st-hp{color:#22cc44;}.st-def{color:var(--el-water);}.st-spd{color:#22aaff;}
-.st-rage{color:#ff2266;}.st-nrg{color:#ffaa00;}.st-luk{color:#ffdd22;}.st-eva{color:#66ddff;}
+/* .st-rage 2026-04-22 제거 (rage 스탯 폐기). */
+.st-nrg{color:#ffaa00;}.st-luk{color:#ffdd22;}.st-eva{color:#66ddff;}
 .card-ability{text-align:center;font-size:.55rem;color:#bbb;background:rgba(0,0,0,.4);padding:3px 5px;border-radius:3px;margin-top:3px;border:1px solid rgba(255,255,255,.05);font-style:italic;}
 .card-skill-icons{position:absolute;top:6px;left:34px;display:flex;gap:1px;z-index:2;}
 .deck-mini{width:56px;height:72px;border-radius:5px;padding:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;font-size:.5rem;position:relative;cursor:pointer;transition:all .2s;}

@@ -61,7 +61,7 @@ RoF.Data.UNITS = Object.freeze([
     atk:3,hp:9,def:1,spd:2,nrg:2,luck:2,eva:2,meva:1,hpReg:0,nrgReg:1,
     skill:'none',skillType:'passive',skillChance:0,skillNrg:0,skillDesc:'기본 공격만 수행',
     bonusTrigger:{on:'attack',chance:.2,effect:'cleave',desc:'20% 관통 사격: 뒤열 적에게 50% 추가데미지'},rarity:'bronze'},
-  // ── SILVER (15) ──
+  // ── SILVER (13) ──
   {id:'knight',name:'기사',icon:'⚜️',type:'전사',role:'defense',range:'melee',race:'human',element:'holy',
     atk:3,hp:18,def:3,spd:1,nrg:2,luck:1,eva:1,meva:2,hpReg:1,nrgReg:1,
     skill:'taunt',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 도발: 적 공격을 대신 받음',
@@ -116,7 +116,7 @@ RoF.Data.UNITS = Object.freeze([
     atk:4,hp:16,def:1,spd:3,nrg:5,luck:1,eva:1,meva:1,hpReg:1,nrgReg:0,
     skill:'freeze',skillType:'active',skillChance:.4,skillNrg:5,skillDesc:'[액티브 40%] 파도 빙결: 1턴 행동불가 (에너지5)',
     bonusTrigger:{on:'attack',chance:.2,effect:'frostbite',desc:'20% 공격시: 대상 스피드 -3'},rarity:'silver'},
-  // ── GOLD (9) ──
+  // ── GOLD (10) ──
   {id:'paladin',name:'성기사',icon:'⚜️',type:'전사',role:'defense',range:'melee',race:'human',element:'holy',
     atk:4,hp:25,def:4,spd:1,nrg:5,luck:2,eva:1,meva:4,hpReg:2,nrgReg:2,
     skill:'heal_self',skillType:'active',skillChance:.9,skillNrg:2,skillDesc:'[액티브 90%] 신성: HP6회복 (에너지2)',
@@ -124,7 +124,7 @@ RoF.Data.UNITS = Object.freeze([
   {id:'archmage',name:'대마법사',icon:'🌟',type:'마법사',role:'attack',range:'ranged',race:'human',element:'lightning',
     atk:6,hp:12,def:0,spd:3,nrg:20,luck:3,eva:2,meva:5,hpReg:0,nrgReg:3,
     skill:'double_cast',skillType:'active',skillChance:.5,skillNrg:6,skillDesc:'[액티브 50%] 더블캐스트: 2회공격 (에너지6)',
-    bonusTrigger:{on:'skill',chance:.25,effect:'arcane_burst',desc:'25% 비전 발동 시: 적전체 3추가데미지'},rarity:'silver'},
+    bonusTrigger:{on:'skill',chance:.25,effect:'arcane_burst',desc:'25% 비전 발동 시: 적전체 3추가데미지'},rarity:'gold'},
   {id:'death_knight',name:'죽음의기사',icon:'💀',type:'전사',role:'attack',range:'melee',race:'undead',element:'dark',
     atk:7,hp:22,def:3,spd:1,nrg:3,luck:3,eva:1,meva:2,hpReg:0,nrgReg:1,
     skill:'life_steal',skillType:'passive',skillChance:.6,skillNrg:0,skillDesc:'[패시브 60%] 생명흡수: 피해100%회복',
@@ -132,7 +132,7 @@ RoF.Data.UNITS = Object.freeze([
   {id:'sniper',name:'저격수',icon:'🎯',type:'사수',role:'attack',range:'ranged',race:'human',element:'lightning',
     atk:6,hp:10,def:0,spd:4,nrg:5,luck:5,eva:3,meva:1,hpReg:0,nrgReg:1,
     skill:'pierce',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 관통: 방어무시',
-    bonusTrigger:{on:'attack',chance:.25,effect:'headshot',desc:'25% 공격시: 대상 HP 10% 즉사'},rarity:'silver'},
+    bonusTrigger:{on:'attack',chance:.25,effect:'headshot',desc:'25% 공격시: 대상 HP 10% 즉사'},rarity:'gold'},
   {id:'phoenix',name:'불사조',icon:'🔶',type:'야수',role:'support',range:'melee',race:'spirit',element:'fire',
     atk:4,hp:18,def:1,spd:2,nrg:6,luck:3,eva:2,meva:3,hpReg:2,nrgReg:2,
     skill:'rebirth',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 부활: 첫사망시 HP50%부활',
@@ -162,7 +162,7 @@ RoF.Data.UNITS = Object.freeze([
     atk:8,hp:20,def:2,spd:3,nrg:4,luck:2,eva:1,meva:1,hpReg:0,nrgReg:1,
     skill:'frenzy',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 광기: HP 50% ↓ 시 공격 2배',
     bonusTrigger:{on:'attack',chance:.25,effect:'ignite',desc:'25% 공격시: 대상 2턴 화상 (턴당 3)'},rarity:'gold'},
-  // ── LEGENDARY (10) ──
+  // ── LEGENDARY (11) ──
   {id:'dragon',name:'드래곤',icon:'🐉',type:'야수',role:'attack',range:'melee',race:'dragon',element:'fire',
     atk:10,hp:35,def:3,spd:2,nrg:6,luck:3,eva:1,meva:2,hpReg:1,nrgReg:1,
     skill:'breath',skillType:'active',skillChance:.7,skillNrg:6,skillDesc:'[액티브 70%] 브레스: 전체6데미지 (에너지6)',
@@ -170,7 +170,7 @@ RoF.Data.UNITS = Object.freeze([
   {id:'lich',name:'리치',icon:'👻',type:'마법사',role:'attack',range:'ranged',race:'undead',element:'dark',
     atk:8,hp:20,def:1,spd:2,nrg:25,luck:4,eva:2,meva:6,hpReg:0,nrgReg:4,
     skill:'drain',skillType:'passive',skillChance:.8,skillNrg:0,skillDesc:'[패시브 80%] 흡수: 피해50%회복',
-    bonusTrigger:{on:'kill',chance:.5,effect:'raise_dead',desc:'50% 처치시: 적을 아군 해골로 소환'},rarity:'gold'},
+    bonusTrigger:{on:'kill',chance:.5,effect:'raise_dead',desc:'50% 처치시: 적을 아군 해골로 소환'},rarity:'legendary'},
   {id:'archangel',name:'대천사',icon:'👼',type:'전사',role:'defense',range:'melee',race:'celestial',element:'holy',
     atk:7,hp:40,def:8,spd:2,nrg:15,luck:3,eva:2,meva:6,hpReg:3,nrgReg:3,
     skill:'mass_heal',skillType:'active',skillChance:.9,skillNrg:5,skillDesc:'[액티브 90%] 천상치유: 아군전체 HP5 (에너지5)',

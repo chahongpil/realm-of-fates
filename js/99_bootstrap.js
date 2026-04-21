@@ -106,6 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
     else RoF.FX.destroy();
   };
 
+  // ── 3.5. 타이틀 배경 랜덤 (angel/demon) — 페이지 로드 1회만 ──
+  (function randomizeTitleBg(){
+    const ts = document.getElementById('title-screen');
+    if(!ts) return;
+    // test 환경(?mute=1 + webdriver/iframe)이 아닌 경우만 랜덤. 테스트 결정론 유지.
+    const isTest = navigator.webdriver || window !== window.top;
+    if(isTest){ ts.classList.add('bg-angel'); return; }
+    ts.classList.add(Math.random() < 0.5 ? 'bg-angel' : 'bg-demon');
+  })();
+
   // ── 4. 초기 FX 시작 ──
   setTimeout(() => RoF.FX.initTitle(), 500);
 

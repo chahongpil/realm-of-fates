@@ -1,15 +1,16 @@
 /* Non-battle screens: title, auth IDs, char-select, town, upgrade, choice, pick, reward, gameover, upgrade effects, tavern, loot, matchmaking, prologue + responsive @media queries. */
 
-/* 2026-04-21: 타이틀 화면 배경 확장 (pillarbox 여백 영역까지)
-   body 전체에 wide 이미지를 깔아 game-root 외곽 여백까지 연속 풍경.
-   :has() 미지원 브라우저(구 Safari/Firefox)에서는 단순 #000 으로 폴백.
-   이미지 미공급 상태: wide 레이어 404 → 두번째 레이어 #000 폴백 (깨짐 없음). */
+/* 2026-04-21: 타이틀 화면 배경 — angel/demon 랜덤 분기 (JS 에서 클래스 부여)
+   #title-screen 은 default 로 angel, .bg-demon 클래스 시 demon.
+   body:has() 는 game-root 외곽 pillarbox 영역까지 동일 이미지 연속. */
 body.game-mode:has(#title-screen.active){
-  background:
-    url('../img/bg_title_wide.png') center/cover no-repeat,
-    #000;
+  background:url('../img/bg_title_angel.png') center/cover no-repeat, #000;
 }
-#title-screen{justify-content:center;background:url('../img/bg_title.png') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);position:relative;overflow:hidden;}
+body.game-mode:has(#title-screen.active.bg-demon){
+  background:url('../img/bg_title_demon.png') center/cover no-repeat, #000;
+}
+#title-screen{justify-content:center;background:url('../img/bg_title_angel.png') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);position:relative;overflow:hidden;}
+#title-screen.bg-demon{background:url('../img/bg_title_demon.png') center/cover no-repeat,radial-gradient(ellipse at center,#251525 0%,#0a0510 60%,#080408 100%);}
 #title-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.15) 60%,rgba(0,0,0,.4) 100%);pointer-events:none;}
 #title-screen::after{content:'';position:absolute;inset:0;pointer-events:none;animation:titleLightning 4s infinite;opacity:0;}
 .title-fire{position:absolute;bottom:0;left:0;width:100%;height:30%;background:linear-gradient(0deg,rgba(255,60,0,.08),transparent);pointer-events:none;animation:titleFire 3s infinite alternate;}

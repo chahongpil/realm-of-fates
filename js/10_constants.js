@@ -1,7 +1,8 @@
 'use strict';
 
 // ============ 기본 상수 ============
-RoF.Data.R_LABEL = Object.freeze({bronze:'브론즈',silver:'실버',gold:'골드',legendary:'전설',divine:'신'});
+// 2026-04-21 등급 명칭 통일 (대표님 확정): 일반/희귀/고귀한/전설의/신
+RoF.Data.R_LABEL = Object.freeze({bronze:'일반',silver:'희귀',gold:'고귀한',legendary:'전설의',divine:'신'});
 RoF.Data.R_ORDER = Object.freeze(['bronze','silver','gold','legendary','divine']);
 
 RoF.Data.ROLE_L = Object.freeze({attack:'공격',support:'지원',defense:'방어'});

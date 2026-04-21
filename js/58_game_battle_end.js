@@ -103,7 +103,7 @@ Object.assign(RoF.Game, {
     let picked=false;
     const self=this;
 
-    const RARE_LABEL={bronze:'평범',silver:'희귀',gold:'고귀',legendary:'전설',divine:'신'};
+    const RARE_LABEL={bronze:'일반',silver:'희귀',gold:'고귀한',legendary:'전설의',divine:'신'};
     const RARE_COLOR={bronze:'var(--rar-bronze)',silver:'var(--rar-silver)',gold:'var(--rar-gold)',legendary:'var(--rar-legendary)',divine:'var(--curr-gold)'};
 
     // 선택지 4개 정의

@@ -36,7 +36,7 @@ Object.assign(RoF.Game, {
     const f=this._codexFilter;
     // Filters
     const fd=document.getElementById('codex-filters');fd.innerHTML='';
-    const filters=[{id:'all',label:'전체'},{id:'bronze',label:'브론즈'},{id:'silver',label:'실버'},{id:'gold',label:'골드'},{id:'legendary',label:'전설'},{id:'divine',label:'신'}];
+    const filters=[{id:'all',label:'전체'},{id:'bronze',label:'일반'},{id:'silver',label:'희귀'},{id:'gold',label:'고귀한'},{id:'legendary',label:'전설의'},{id:'divine',label:'신'}];
     filters.forEach(ft=>{
       const btn=document.createElement('button');btn.className='btn btn-s';
       btn.style.cssText=`padding:3px 10px;font-size:.7rem;${f===ft.id?'border-color:#ffd700;color:#ffd700;':''}`;

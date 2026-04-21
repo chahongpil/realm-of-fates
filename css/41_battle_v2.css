@@ -71,6 +71,12 @@
   z-index: 50;
   overflow: hidden;
   color: #fff;
+  /* Step 5C: V4 카드 토큰 override — 기본 172px stage / focus 는 별도 스코프 */
+  --card-v4-w: 172px;
+}
+#battle-v2-container .bcf-main-card{
+  /* Focus 확대 카드 — bv2 기준 172 × 1.8 = 310px */
+  --card-v4-w: 310px;
 }
 
 /* ── 스테이지 (배경 + 2×5 그리드, 항상 보임) ───────────────── */
@@ -928,3 +934,166 @@
   font-size: .75rem;
 }
 .bv2-close-btn:hover{ background: rgba(60,20,20,.95); }
+
+/* ===================================================================
+   Step 5C — Battle V4 Compact Variant 상태 클래스 (2026-04-21)
+   ===================================================================
+   bv2 의 .bv2-card 상태(is-selected/is-target-valid/is-hit/is-dead 등)를
+   .card-v4.card-v4-compact 위에도 복제. 프레임 셀렉터는 .bv2c-frame → .gild.
+   키프레임(bv2CardShake/Melt/Crush) 은 공용, 재활용.
+   근거: design/step5c_battle_v4_plan.md 옵션 A (Compact Variant).
+   =================================================================== */
+
+/* 사이드 marker — hero 강조 (gild glow 차등) */
+.card-v4-compact.bv2-card-hero .gild {
+  box-shadow: inset 0 0 0 1px var(--bv2-accent, #ffd700),
+              0 0 14px rgba(255, 180, 0, .4);
+}
+.card-v4-compact.bv2-card-enemy .gild {
+  filter: hue-rotate(-10deg) saturate(.9);
+}
+
+/* hover lift — bv2-card 기본 translateY(-8) 축소 */
+.card-v4-compact {
+  cursor: pointer;
+  transition: transform var(--bv2-dur-hover, 180ms) ease-out,
+              filter var(--bv2-dur-border, 150ms);
+}
+.card-v4-compact:hover {
+  transform: translateY(-6px) scale(var(--bv2-card-hover-scale, 1.15));
+  z-index: 5;
+}
+
+/* 선택 — focus 오버레이로 이동한 상태, stage 카드는 숨김 */
+.card-v4-compact.is-selected {
+  visibility: hidden;
+}
+
+/* 타겟 유효 (공격 가능) — 빨강 펄스 */
+.card-v4-compact.is-target-valid .gild {
+  border-color: var(--bv2-danger, #ff4422);
+  box-shadow: 0 0 12px rgba(255, 68, 34, .6);
+  animation: bv2TargetPulse 1.5s ease-in-out infinite;
+}
+
+/* 타겟 호버 (현재 조준) — 주황 */
+.card-v4-compact.is-target-hover .gild {
+  border-color: #ffaa00;
+  box-shadow: 0 0 24px rgba(255, 170, 0, .9);
+}
+
+/* 피격 — shake 키프레임 재사용 */
+.card-v4-compact.is-hit {
+  animation: bv2CardShake var(--bv2-dur-shake, 350ms) ease-out;
+}
+
+/* 사망 최종 — opacity 0 + visibility hidden (잔상 방지) */
+.card-v4-compact.is-dead {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 원소별 사망 연출 — melt / crush 키프레임 재사용 */
+.card-v4-compact.is-dying-melt {
+  animation: bv2CardMelt var(--bv2-dur-death, 700ms) ease-out forwards;
+  pointer-events: none;
+  z-index: 6;
+}
+.card-v4-compact.is-dying-crush {
+  animation: bv2CardCrush var(--bv2-dur-death, 700ms) ease-in forwards;
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* 행동 완료 — 회색 + ✓ */
+.card-v4-compact.is-acted {
+  filter: grayscale(1) brightness(.6);
+  opacity: .6;
+  pointer-events: none;
+}
+.card-v4-compact.is-acted .gild {
+  border-color: #555;
+  box-shadow: inset 0 0 0 2px rgba(120,120,120,.5),
+              inset 0 0 14px rgba(0,0,0,.7);
+}
+.card-v4-compact.is-acted::after {
+  content: '✓';
+  position: absolute;
+  top: 4px; left: 4px;
+  width: 22px; height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(60,60,60,.9);
+  color: #ccc;
+  font-size: .95rem;
+  font-weight: bold;
+  border-radius: 50%;
+  border: 2px solid #888;
+  z-index: 6;
+}
+
+/* 큐잉 완료 아군 — 초록 ✓ */
+.card-v4-compact.is-queued {
+  pointer-events: none;
+}
+.card-v4-compact.is-queued .gild {
+  border-color: #66dd88;
+  box-shadow: inset 0 0 0 2px rgba(120, 240, 150, .7),
+              0 4px 14px rgba(0, 80, 30, .7),
+              0 0 18px rgba(100, 230, 130, .5);
+}
+.card-v4-compact.is-queued::after {
+  content: '✓';
+  position: absolute;
+  top: 4px; left: 4px;
+  width: 22px; height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40, 100, 60, .95);
+  color: #fff;
+  font-size: .95rem;
+  font-weight: bold;
+  border-radius: 50%;
+  border: 2px solid #66dd88;
+  box-shadow: 0 0 10px rgba(100, 230, 130, .8);
+  z-index: 6;
+}
+
+/* dim (비유효 타겟) — 회색 */
+.card-v4-compact.is-dimmed {
+  filter: grayscale(1) brightness(.45);
+  pointer-events: none;
+  transition: filter 220ms ease-out;
+}
+
+/* ===================================================================
+   Step 5C-A3 — Focus (확대) 카드 V4 Wrapper (2026-04-21)
+   ===================================================================
+   .bcf-main-card 는 위치/FLIP animation wrapper 로 남기고,
+   내부 시각은 V4 카드 인스턴스가 전담. bcf-card-img/bcf-hp/bcf-name/bcf-stat-col
+   등 자식 요소는 JS 가 innerHTML='' 로 제거.
+   크기: 172 × focus-scale(1.8) = 310 × 446 유지 (4:7 무시, aspect:auto).
+   근거: design/step5c_battle_v4_plan.md A3.
+   =================================================================== */
+#battle-char-focus .bcf-main-card {
+  /* 시각 요소 제거 — V4 카드가 전담 */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+  padding: 0;
+}
+#battle-char-focus .bcf-main-card > .card-v4 {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+/* focus V4 카드 스탯 폰트 — compact 아니라 표준 V4 사용 (310×446 에 3줄 desc 읽기 가능) */
+#battle-char-focus .bcf-main-card > .card-v4 .stat .v { font-size: 14px; }
+#battle-char-focus .bcf-main-card > .card-v4 .stat .l { font-size: 9px; }
+#battle-char-focus .bcf-main-card > .card-v4 .name   { font-size: 17px; }

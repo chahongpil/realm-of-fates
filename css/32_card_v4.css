@@ -360,3 +360,54 @@
 @media (prefers-reduced-motion: reduce) {
   .card-v4.selected { animation: none; }
 }
+
+/* ===================================================================
+   Battle Compact Variant (Step 5C, 2026-04-21)
+   ===================================================================
+   bv2 stage 규격 172×248 에 V4 톤 이식. 4:7 aspect 해제, height 강제.
+   parch.desc 숨김, stats 5칸 9px 압축. 상태 클래스는 41_battle_v2.css 에서 처리.
+   근거: design/step5c_battle_v4_plan.md 옵션 A.
+   =================================================================== */
+.card-v4.card-v4-compact {
+  width: var(--card-v4-w, 172px);
+  height: 248px;
+  aspect-ratio: auto;
+}
+
+/* Top cartouche 축소 */
+.card-v4-compact > .top {
+  top: 6px; left: 6px; right: 6px;
+  padding: 3px 6px;
+}
+.card-v4-compact .name { font-size: 11px; letter-spacing: .02em; }
+.card-v4-compact .lv   { font-size: 8px; padding: 2px 4px; }
+
+/* Bars 압축 */
+.card-v4-compact .bars { left: 6px; right: 6px; top: 30px; gap: 2px; }
+.card-v4-compact .bar  { height: 5px; }
+.card-v4-compact .bar .lbl { font-size: 7px; }
+
+/* Parchment 압축 — desc 숨김, stats 만 유지 */
+.card-v4-compact .parch {
+  left: 4px; right: 4px; bottom: 4px;
+  padding: 4px 5px;
+  gap: 0;
+  box-shadow: inset 0 0 14px rgba(110,74,42,.38);
+}
+.card-v4-compact .stats {
+  gap: 2px;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.card-v4-compact .stat .l { font-size: 7px; letter-spacing: .06em; }
+.card-v4-compact .stat .v { font-size: 9px; margin-top: 1px; }
+.card-v4-compact .stat .mod { font-size: 7px; padding: 1px 2px; }
+.card-v4-compact .parch .desc { display: none; }
+
+/* 상태이상 배지 — 이름 위 정중앙은 동일, 크기만 소폭 축소 */
+.card-v4-compact .v4-status-badge { padding: 1px 4px; font-size: 9px; }
+.card-v4-compact .v4-status-badge .ic,
+.card-v4-compact .v4-status-badge .tn { font-size: 9px; }
+
+/* Shield badge 위치/크기 축소 */
+.card-v4-compact .shield-badge { top: 26px; left: 6px; font-size: 9px; padding: 2px 4px; }

@@ -5,27 +5,23 @@
 
 ## 진행 중 작업
 
-**Phase**: Phase 3 (시네마틱 전투 리뉴얼) + Phase 2 콘텐츠 + **Design System V4 도입**
-**최근 세션**: 2026-04-20 (7·8차 — 8차 = DS Step 4A/4B Tavern V4 적용 + 5-col grid 완료)
-**마지막 커밋**: `8094996` feat(tavern): V4 5-col grid + 카드 폭 235 (Step 4B)
+**Phase**: Phase 3 (시네마틱 전투 리뉴얼) + Phase 2 콘텐츠 + **Design System V4 확장 (Step 5)**
+**최근 세션**: 2026-04-21 (오전 Step 5 V4 확장 4커밋 + 오후 Step 5C Battle 기획서 작성)
+**마지막 커밋**: `4c04731` docs: 핸드오프 저장 — 2026-04-21 11:15 (Step 5 V4 확장 4커밋 마감)
 **유닛 수**: 58 유닛 / 회귀 9/9 PASS
 **DS 레포**: https://github.com/chahongpil/realm-of-fates-design-system (private)
 
-### 이번 세션(4/20 8차) 완료 — 3커밋 push
-- [x] `fe04820` DS Step 1-3: 토큰 19종 + 폰트 확장 + V4 시안 3안 + infantry 교체
-- [x] `681e102` Step 4A: Tavern V4 적용 (`.card-v4` + `mkCardElV4()`, Playwright v4=5/v2=0)
-- [x] `8094996` **Step 4B**: 5-col grid + 카드 폭 235 (5번째 wrap 해소, 실측 rows=1)
-- [x] `docs/art_queue_2026-04-20.md` — 58 유닛 매트릭스 + P0/P1/P2 9장 이미지 작업 추천
-- [x] 보병 "양피지 배경" 건 확인 — 실측 톤 유사, 놔둠
+### V4 확장 진행도 (9/9 완결)
+- [x] Tavern / Deckview / Formation / Cardselect / Castle / Church / Matching / Pick
+- [x] **Battle** — Step 5C 완료. Stage 10장 V4 compact(172×248) + Focus V4 (310×446). setter API 전면 활용. 2026-04-21 오후
 
 ### 다음 작업 (우선순위)
-- [ ] 🔴 **P0 5건 결정** — dragon/archangel/lich/archmage/sniper 스탯 방향 (balance-auditor 재감사 예정)
-- [ ] 🔴 **이미지 작업 P0 3장** (대표님) — 해적 수병 / 수도사 견습 / 해신 팔라딘
-- [ ] 🟡 **V4 확장 화면 결정** — Collection / Deckview / Formation 중 어디 먼저?
-- [ ] 🟡 **암흑의저격수 데이터 추가** — rarity 확정 후 (`source_art/units/암흑의저격수.png` 대기)
+- [ ] 🔴 **Step 5C Battle 옵션 확정** — A(Compact Variant) vs B(확대만 V4), A3(Focus) 포함 여부, 9px 스탯 허용선, parch.desc 처리 (4건)
+- [ ] 🔴 **이미지 작업 반영** (대표님 공급 시) — 유닛 P0 4장 / 스킬 B 10장 / effect 아이콘 14종
+- [ ] 🟡 **암흑의저격수 데이터 추가** — rarity 확정 후
+- [ ] 🟡 **Church z-index / Codex 5-col / B3 `!important` 정리** — 자투리
 - [ ] 🟡 **역할 5종 분화 결정** — 현 3종 → DS 5종 전환 여부 (58 유닛 재분류 영향)
-- [ ] 🟡 **effect 마커 재설계** — 대표님 작업 완료 시 파서/전투/데이터 3지점 동기
-- [x] ~~`rules/04-balance.md` vs `design/balance.md` 수치 동기화~~ **2026-04-21 A안 완료**: design/balance.md 폐기, rules 정본화
+- [x] ~~`rules/04-balance.md` vs `design/balance.md` 수치 동기화~~ **2026-04-21 A안 완료**
 
 ## 막혀있는 것
 - 📌 **암흑의저격수 rarity** — 일러스트는 공급됐으나 rarity/id 확정 대기

@@ -331,44 +331,31 @@
   };
 
   // ── 2×5 그리드 빌드 (한번만 — 상시 보임) ─────────────────────
-  // 카드 DOM 은 직접 생성하지만 이건 "사전 선언된 슬롯" 의 반복 렌더 버전.
-  // 이후 각 카드 내부는 slot selector 로 갱신 가능.
+  // Step 5C (2026-04-21): Legacy bv2c-frame 구조 → CardV4Component.compact variant.
+  // CardV4Component 인스턴스는 Battle._stageInstances[unit.id] 에 저장 →
+  // refreshStageCard() 에서 setter API (setHP/setNRG/setStatus) 로 호출.
+  // 근거: design/step5c_battle_v4_plan.md
+  Battle._stageInstances = Battle._stageInstances || {};
+
   const buildCardEl = function(unit, side){
-    const el = document.createElement('div');
-    el.className = 'bv2-card bv2-card-' + side + (unit.isHero ? ' bv2-card-hero' : '');
+    // unit 객체는 전투용 복사본 (currentHp/currentNrg 포함). V4 컴포넌트는 unit.hp 를 기준으로
+    // HP 바를 초기화하므로, 전투 상태값(currentHp) 을 setter 로 별도 주입한다.
+    const inst = RoF.CardV4Component.create(unit, {});
+    const el = inst.el;
+    el.classList.add('card-v4-compact', 'bv2-card-' + side);
+    if(unit.isHero) el.classList.add('bv2-card-hero');
+    // 하위호환 — 기존 코드가 .bv2-card 셀렉터로 조회하는 경우 대비
+    el.classList.add('bv2-card');
+    // data-unit-id 병행 (V4 기본은 data-uid). 전투 엔진은 unit-id 로 조회.
     el.setAttribute('data-unit-id', unit.id);
     el.setAttribute('data-action', side === 'ally' ? 'v2.charClick' : 'v2.targetClick');
     el.setAttribute('data-hover', side === 'ally' ? '' : 'v2.targetHover');
 
-    const img = Battle.resolveImg(unit.imgKey);
-    const imgHTML = img
-      ? '<img class="bv2c-img" src="' + img + '" alt="">'
-      : '<div class="bv2c-icon">⚔️</div>';
+    // 현재 전투 상태값으로 동기화
+    inst.setHP(unit.currentHp != null ? unit.currentHp : (unit.hp || 0));
+    inst.setNRG(unit.currentNrg != null ? unit.currentNrg : 0);
 
-    el.innerHTML =
-      '<div class="bv2c-frame">' +
-        imgHTML +
-        '<div class="bv2c-frame-overlay"></div>' +
-        '<div class="bv2c-status-row"></div>' +    // 상태이상 배지 슬롯 (이름 위)
-        '<div class="bv2c-name"></div>' +          // 상단 중앙 금색 밴드
-        '<div class="bv2c-hp">♥<span class="bv2c-hp-val"></span></div>' +
-        '<div class="bv2c-stats">' +
-          '<span class="bv2c-atk">⚔<span class="bv2c-atk-val"></span></span>' +
-          '<span class="bv2c-def">🛡<span class="bv2c-def-val"></span></span>' +
-          '<span class="bv2c-spd">💨<span class="bv2c-spd-val"></span></span>' +
-        '</div>' +
-        '<div class="bv2c-desc"></div>' +           // 하단 설명 밴드
-        '<div class="bv2c-nrg">⚡<span class="bv2c-nrg-val"></span></div>' +
-      '</div>';
-
-    // 슬롯 갱신
-    el.querySelector('.bv2c-hp-val').textContent  = unit.currentHp;
-    el.querySelector('.bv2c-atk-val').textContent = unit.atk ?? 0;
-    el.querySelector('.bv2c-def-val').textContent = unit.def ?? 0;
-    el.querySelector('.bv2c-spd-val').textContent = unit.spd ?? 0;
-    el.querySelector('.bv2c-nrg-val').textContent = unit.currentNrg ?? 0;
-    el.querySelector('.bv2c-name').textContent    = (unit.isHero ? '⭐ ' : '') + (unit.name || '');
-    el.querySelector('.bv2c-desc').textContent    = unit.desc || '';
+    Battle._stageInstances[unit.id] = inst;
     return el;
   };
 
@@ -378,28 +365,43 @@
     if(!enemyRow || !allyRow) return;
     enemyRow.innerHTML = '';
     allyRow.innerHTML  = '';
+    // 이전 라운드 인스턴스 드롭 (새 유닛 구성으로 재빌드)
+    Battle._stageInstances = {};
     Battle.STATE.enemies.forEach(function(u){ enemyRow.appendChild(buildCardEl(u, 'enemy')); });
     Battle.STATE.allies.forEach(function(u){ allyRow.appendChild(buildCardEl(u, 'ally')); });
   };
 
-  // 스테이지 그리드 내 특정 카드 element 조회
+  // 스테이지 그리드 내 특정 카드 element 조회 (Step 5C: .card-v4 하위호환 .bv2-card)
   const stageCardOf = function(unit){
     if(!unit) return null;
-    return document.querySelector('.battle-stage-grid .bv2-card[data-unit-id="' + unit.id + '"]');
+    const inst = (Battle._stageInstances || {})[unit.id];
+    if(inst && inst.el && inst.el.isConnected) return inst.el;
+    // fallback: DOM 조회
+    return document.querySelector('.battle-stage-grid [data-unit-id="' + unit.id + '"]');
   };
 
-  // 카드의 HP/NRG 만 갱신 (피격 후)
+  // 카드의 HP/NRG/상태이상 갱신 (피격 후)
+  // Step 5C: setter API 로 일원화. 기존 DOM 직접 querySelector 는 V4 구조와 맞지 않음.
   // NOTE: is-dead 토글은 여기서 하지 않는다 — 사망 연출이 renderDeath 에서 is-dying-* 애니 후
-  // is-dead 를 붙여야 함. 여기서 즉시 grayscale 을 씌우면 melt/crush 키프레임이 묻혀버림.
-  // 생존 유닛의 is-dead 해제(부활 등)만 안전하게 유지.
+  // is-dead 를 붙여야 함. 생존 유닛의 is-dead 해제(부활 등)만 안전하게 유지.
   const refreshStageCard = function(unit){
-    const el = stageCardOf(unit);
-    if(!el) return;
-    const hpEl  = el.querySelector('.bv2c-hp-val');
-    const nrgEl = el.querySelector('.bv2c-nrg-val');
-    if(hpEl)  hpEl.textContent  = unit.currentHp;
-    if(nrgEl) nrgEl.textContent = unit.currentNrg ?? 0;
-    if(!Battle.isDead(unit)) el.classList.remove('is-dead');
+    const inst = (Battle._stageInstances || {})[unit.id];
+    if(!inst){
+      // Fallback: 혹시 인스턴스가 없으면 옛 DOM 라우팅 (legacy guard)
+      const el = stageCardOf(unit);
+      if(el && !Battle.isDead(unit)) el.classList.remove('is-dead');
+      return;
+    }
+    inst.setHP(unit.currentHp != null ? unit.currentHp : 0);
+    inst.setNRG(unit.currentNrg != null ? unit.currentNrg : 0);
+    // 상태이상 동기화 — unit.statuses 가 있으면 4종 마커 반영
+    if(unit.statuses){
+      ['burn', 'poison', 'frozen', 'invincible'].forEach(function(k){
+        inst.setStatus(k, unit.statuses[k] || 0);
+      });
+    }
+    if(unit.shield != null) inst.setShield(unit.shield);
+    if(!Battle.isDead(unit)) inst.el.classList.remove('is-dead');
   };
 
   // ── 슬롯 원자 조작 ──────────────────────────────────────────
@@ -460,18 +462,24 @@
       cfScreenReset.classList.remove('is-returning');
     }
     const suppressSkillRow = !!(opts && opts.suppressSkillRow);
-    const img = Battle.resolveImg(c.imgKey);
-    const bcfImg = document.querySelector('#battle-char-focus .bcf-card-img');
-    if(bcfImg){
-      bcfImg.innerHTML = img ? '<img src="' + img + '" alt="">' : '';
+
+    // Step 5C-A3: bcf-main-card 를 V4 카드로 렌더. 기존 bcf-card-img/bcf-name 등 자식은 제거.
+    const bcfMain = document.querySelector('#battle-char-focus .bcf-main-card');
+    if(bcfMain){
+      bcfMain.innerHTML = '';
+      const inst = RoF.CardV4Component.create(c, {});
+      // 전투 상태 동기화 — unit.hp 가 아니라 currentHp/currentNrg 기준
+      inst.setHP(c.currentHp != null ? c.currentHp : (c.hp || 0));
+      inst.setNRG(c.currentNrg != null ? c.currentNrg : 0);
+      if(c.statuses){
+        ['burn', 'poison', 'frozen', 'invincible'].forEach(function(k){
+          inst.setStatus(k, c.statuses[k] || 0);
+        });
+      }
+      if(c.shield != null) inst.setShield(c.shield);
+      bcfMain.appendChild(inst.el);
+      Battle._focusInstance = inst;
     }
-    setText('#battle-char-focus .bcf-name', (c.isHero ? '⭐ ' : '') + (c.name || ''));
-    setText('#battle-char-focus .bcf-hp',   '♥' + (c.currentHp ?? 0));
-    setText('#battle-char-focus .bcf-atk',  (c.atk ?? 0));
-    setText('#battle-char-focus .bcf-def',  (c.def ?? 0));
-    setText('#battle-char-focus .bcf-spd',  (c.spd ?? 0));
-    setText('#battle-char-focus .bcf-nrg',  '⚡' + (c.currentNrg ?? 0));
-    setText('#battle-char-focus .bcf-desc', (c.name || '') + ' · ' + (c.element || ''));
 
     // 스킬 row — 5 슬롯 사전 선언됨. 각 슬롯에 스킬 1장씩 주입.
     // suppressSkillRow: enemy counter-attack 에서는 스킬 선택 UI 불필요.
@@ -565,11 +573,10 @@
   const clearHpPreview = function(){
     const prev = Battle.state.previewTarget;
     if(!prev) return;
-    const el = stageCardOf(prev);
-    if(el){
-      const hpEl = el.querySelector('.bv2c-hp-val');
-      if(hpEl) hpEl.textContent = prev.currentHp;
-      const f = el.querySelector('.bv2c-hp-delta-floating');
+    const inst = (Battle._stageInstances || {})[prev.id];
+    if(inst){
+      inst.setHP(prev.currentHp);
+      const f = inst.el.querySelector('.bv2c-hp-delta-floating');
       if(f) f.remove();
     }
     Battle.state.previewTarget = null;
@@ -585,19 +592,19 @@
     const after = Math.max(0, (t.currentHp ?? 0) - calc.dmg);
     // 하단 박스는 비활성 (폐기 방향, 호환 차원 텍스트만 비워둠)
     setText('#battle-target-preview .btp-hp-delta', '');
-    // 타겟 카드 내부 HP 숫자 덮어쓰기 + 델타 플로팅
-    const tgtEl = stageCardOf(t);
+    // 타겟 카드 HP 프리뷰 — setter 로 바 + 라벨 동시 갱신
+    const tgtInst = (Battle._stageInstances || {})[t.id];
+    const tgtEl = tgtInst ? tgtInst.el : stageCardOf(t);
+    if(tgtInst) tgtInst.setHP(after);
     if(tgtEl){
-      const hpEl = tgtEl.querySelector('.bv2c-hp-val');
-      if(hpEl) hpEl.textContent = after;
       if(!tgtEl.querySelector('.bv2c-hp-delta-floating')){
         const f = document.createElement('div');
         f.className = 'bv2c-hp-delta-floating';
         f.textContent = (calc.dmg >= 0 ? '−' : '+') + Math.abs(calc.dmg);
         tgtEl.appendChild(f);
       }
-      // 그리드 하이라이트 갱신
-      document.querySelectorAll('.battle-stage-grid .bv2-card.is-target-hover')
+      // 그리드 하이라이트 갱신 (.bv2-card 와 .card-v4-compact 모두 커버)
+      document.querySelectorAll('.battle-stage-grid .is-target-hover')
         .forEach(function(el){ el.classList.remove('is-target-hover'); });
       tgtEl.classList.add('is-target-hover');
     }

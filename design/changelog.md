@@ -8,6 +8,22 @@
 
 ---
 
+## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C Battle V4 이식 기획서 작성
+- 변경: `design/step5c_battle_v4_plan.md` 신규. Phase 3 시네마틱 전투 `.bv2-card` → `.card-v4.card-v4-compact` 이식 플랜. 옵션 A(Compact Variant, 권장) · B(확대만 V4) · C(row 확장) 3안 비교. 권장 A 의 4단계 분해(A1 CSS ~45분 / A2 Stage 렌더 ~60분 / A3 Focus 카드 ~90분 / A4 검증 ~30분, 총 3:45).
+- 이유: Step 5 V4 확장 8화면 완결 후 남은 유일 화면 = 전투. 별도 규격(172×248 기본 / 430×620 확대)이라 Step 5A~5D 와 분리된 기획 필요. 대표님 결정 대기 항목 4건 (옵션 A 채택 / A3 포함 / 9px 스탯 허용선 / parch.desc 처리).
+- 영향: 코드 수정 0. 대표님 승인 후 실행. 뷰포트 1280×720 고정 준수(옵션 C 배제). V4 setter API(setHP/setNRG/setStatus/setShield/setStatModifier) 실전 검증 기회.
+- 관계: handoff-2026-04-21-1115.md "P0 Step 5C Battle 이식" 구체화.
+
+## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C Battle V4 이식 실행 (A1~A4 전부)
+- 변경: 대표님 결정 반영 (옵션 A / A3 포함 / 9px 너판단 / parch.desc 완전숨김).
+  1. **A1 CSS Compact Variant** — `css/32_card_v4.css` 에 `.card-v4-compact` modifier (172×248, aspect:auto, parch.desc 숨김, 스탯 9px). `css/41_battle_v2.css` 에 상태 블록 (`.card-v4-compact` × is-selected/is-target-valid/is-target-hover/is-hit/is-dead/is-dying-melt|crush/is-acted/is-queued/is-dimmed).
+  2. **A2 Stage 렌더 교체** — `js/60_turnbattle_v2.js` `buildCardEl` → `CardV4Component.create()` + `.card-v4-compact` + 인스턴스 맵 `Battle._stageInstances[id]`. `refreshStageCard` setter 기반(setHP/setNRG/setStatus/setShield). `stageCardOf` 인스턴스 우선 조회. HP 프리뷰(clearHpPreview/renderTargetPreview) 도 setter 이식.
+  3. **A3 Focus 카드 V4** — `renderCharFocus` 에서 `#bcf-main-card` innerHTML 비우고 `CardV4Component.create()` appendChild, `Battle._focusInstance` 저장. CSS `.bcf-main-card` 투명화(background/border/box-shadow 제거) 후 V4 가 전담. focus 카드는 compact 아닌 표준 V4 (310×446, 3줄 desc 유지, 스탯 14px).
+  4. **A4 검증** — 회귀 9/9 PASS. Playwright 전투 진입 10장 V4 compact 렌더 확인(bv2c-frame 0), Focus 카드 310×446 정확. 9px 가독성 OK (상향 불필요).
+- 이유: V4 확장 9화면 중 마지막 전투 완결. 세계관 톤 통일.
+- 영향: `.bv2-card` / `.bv2c-*` 자식 셀렉터 CSS 규칙은 legacy 로 잔존 (dom 에서 참조 없음, 무해). index.html 의 `bcf-main-card` 자식 마크업도 잔존(런타임 `innerHTML=''` 로 제거). 차후 정리 기회.
+- 관계: step5c_battle_v4_plan.md 실행. V4 확장 9/9 완결.
+
 ## 2026-04-21 11:15 ▶ 세션 ▶ 핸드오프 저장
 - 변경: 세션 상태를 `docs/handoff/handoff-2026-04-21-1115.md` 에 저장 + 푸시 완료 (`3952096..8334bbc`).
 - 이유: 수동 저장 (대표님 지시 "푸시하고 핸드오프하자"). 오늘 4커밋 Step 5 V4 확장 마무리 정리.

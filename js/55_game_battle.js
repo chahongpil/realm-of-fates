@@ -63,7 +63,7 @@ Object.assign(RoF.Game, {
       <div class="match-search" style="font-size:1.2rem;">⚔️ 도전자를 찾는 중<span class="dots">...</span></div>
       <div class="match-row" style="display:flex;align-items:center;justify-content:center;gap:40px;width:100%;margin-top:20px;">
         <div class="match-side match-enemy" style="text-align:center;">
-          <div class="match-placeholder" style="width:280px;height:420px;border-radius:15px;border:3px dashed #444;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+          <div class="match-placeholder" style="width:280px;height:490px;border-radius:15px;border:3px dashed #444;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin:0 auto;">
             <div style="font-size:4rem;opacity:.3;animation:dotPulse 1s infinite;">❓</div>
           </div>
           <div style="color:#555;font-size:1.1rem;font-weight:bold;margin-top:8px;">검색중...</div>
@@ -71,9 +71,9 @@ Object.assign(RoF.Game, {
         <div class="match-vs" style="opacity:.3;font-size:2.4rem;font-weight:bold;">VS</div>
         <div class="match-side match-player" style="text-align:center;" id="match-player-side"></div>
       </div>`;
-    // card-v2 삽입 (내 영웅)
+    // V4 카드 삽입 (내 영웅)
     if(hero){
-      const myCard=mkCardEl(hero);myCard.classList.add('match-card');
+      const myCard=mkCardElV4(hero);myCard.classList.add('match-card');
       const side=document.getElementById('match-player-side');
       side.appendChild(myCard);
       const cap=document.createElement('div');cap.style.cssText='margin-top:8px;';
@@ -99,19 +99,19 @@ Object.assign(RoF.Game, {
           <button class="btn" onclick="Game._matchCDClear&&Game._matchCDClear();Game.startBattleFromMatch()" style="font-size:1.2rem;">⚔️ 출전!</button>
           <button class="btn btn-s btn-red" onclick="Game._matchCDClear&&Game._matchCDClear();Game.showMenu()">철수</button>
         </div>`;
-      // 상대 card-v2
+      // 상대 V4 카드
       const enemySide=document.getElementById('match-enemy-side');
-      const botCard=mkCardEl(bot.heroBase);botCard.classList.add('match-card');
+      const botCard=mkCardElV4(bot.heroBase);botCard.classList.add('match-card');
       enemySide.appendChild(botCard);
       const ecap=document.createElement('div');ecap.style.cssText='margin-top:8px;';
       ecap.innerHTML=`<div style="color:#fff;font-size:1.3rem;font-weight:bold;font-family:'Cinzel','Georgia',serif;">${bot.name}</div>
         <div style="color:${bot.league.color};font-size:.9rem;">${bot.league.icon} ${bot.league.name} Lv.${bot.level}</div>
         <div style="color:#aaa;font-size:.8rem;">${bot.roleName||bot.role} · ${ELEM_ICON[bot.element]} ${ELEM_L[bot.element]}</div>`;
       enemySide.appendChild(ecap);
-      // 내 card-v2
+      // 내 V4 카드
       if(hero){
         const mySide=document.getElementById('match-player-side');
-        const myCard=mkCardEl(hero);myCard.classList.add('match-card');
+        const myCard=mkCardElV4(hero);myCard.classList.add('match-card');
         mySide.appendChild(myCard);
         const pcap=document.createElement('div');pcap.style.cssText='margin-top:8px;';
         pcap.innerHTML=`<div style="color:#fff;font-size:1.3rem;font-weight:bold;font-family:'Cinzel','Georgia',serif;">${Auth.user}</div>

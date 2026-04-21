@@ -8,6 +8,18 @@
 
 ---
 
+## 2026-04-21 (8차-C) ▶ 콘텐츠 ▶ Step 5B Castle + Church + Matching V4 이식
+- 변경:
+  1. **Castle Upgrade** (`js/54_game_castle.js:40`) — 단련 대상 카드 grid, `mkCardEl → mkCardElV4`. 기존 wrapper 패턴 유지.
+  2. **Church** (`js/54_game_castle.js:95`) — 부상자 치유/장례 grid, `mkCardEl → mkCardElV4`. grayscale/brightness 필터 유지.
+  3. **Matching Phase 1** (`js/55_game_battle.js:76`) — "검색 중" 내 영웅 카드 V4.
+  4. **Matching Phase 2** (`js/55_game_battle.js:104, 114`) — "도전자 발견" 상대/내 카드 양쪽 V4, 카운트다운+자동출전 그대로.
+  5. **Match placeholder** — `width:280px;height:420→490px` (V4 4:7 비율 맞춤).
+  6. **CSS 스코프** — `#castle-upgrade-grid { --card-v4-w:235px }`, `#church-grid { --card-v4-w:235px }`, `#match-screen { --card-v4-w:280px }` 추가.
+- 이유: 매칭 → 출전편성 → 배틀 플로우에서 Tavern/Deckview/Formation/Cardselect 와 톤 통일. 유닛 단련/치유 화면도 V4 로.
+- 영향: Castle 4장 / Church 1장 (데모) / Matching 양측 280×490 검증. 회귀 9/9 PASS. 스크린샷 `shots/castle_v4_step5b.png`, `church_v4_step5b.png`, `match_v4_step5b_phase1.png`.
+- 이전 결정 관계: (8차-B) 연속. 5B 완결 (Castle+Church+Matching). 남은 Step 5C (Battle bv2-card) 는 별도 규격, 5D (Onboarding) 는 경량.
+
 ## 2026-04-21 (8차-B) ▶ 콘텐츠 ▶ Step 5A-2 cardselect-screen V4 이식
 - 변경: `js/55_game_battle.js:192` `renderCardSelect()` 의 `mkCardEl(c)` → `mkCardElV4(c)`. V4 는 overflow:hidden 이라 "지휘권 소비/자동 출전/부상" badge 를 카드 밖에 두기 위해 `.cs-card-wrap` 으로 감쌈 (flex column). `css/42_screens.css` `#cs-grid` 스코프에 `--card-v4-w:160px` + `.cs-card-wrap{display:flex;flex-direction:column;align-items:center}` 추가.
 - 이유: step5a_scan 의 Step 5A-2 는 2부분으로 나뉘어 있었음 — (A) formation-screen (앞 커밋), (B) cardselect-screen (이 커밋). 출전 편성 플로우 양쪽 V4 톤 통일.

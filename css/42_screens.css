@@ -421,6 +421,8 @@ body.game-mode #castle-screen > #castle-upgrade-area{
   overflow-y:auto;
 }
 body.game-mode #castle-screen > #castle-upgrade-area #castle-upgrade-grid{padding:8px;}
+body.game-mode #castle-screen #castle-upgrade-grid{--card-v4-w:235px;}
+body.game-mode #church-screen > #church-grid{--card-v4-w:235px;}
 body.game-mode #castle-screen > #castle-quest-area{
   position:absolute;left:var(--castle-grid-x);top:var(--castle-grid-y);
   width:var(--castle-grid-w);height:var(--castle-grid-h);
@@ -517,8 +519,9 @@ body.game-mode #choice-screen #ch-title{
   width:var(--ch-title-w);height:var(--ch-title-h);
   margin:0;display:flex;align-items:center;justify-content:center;
 }
-/* 매치메이킹 card-v2 사이즈 — 프레임 카드 280px 고정 */
+/* 매치메이킹 카드 사이즈 — 프레임 카드 280px 고정 (V4 4:7 → 490 높이) */
 body.game-mode #match-screen .match-card{width:280px;max-width:280px;}
+body.game-mode #match-screen{--card-v4-w:280px;}
 body.game-mode #choice-screen #ch-sub{
   position:absolute;left:var(--ch-sub-x);top:var(--ch-sub-y);
   width:var(--ch-sub-w);height:var(--ch-sub-h);

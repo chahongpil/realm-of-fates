@@ -37,7 +37,7 @@ Object.assign(RoF.Game, {
     const g=document.getElementById('castle-upgrade-grid');g.innerHTML='';
     this.deck.forEach(c=>{
       const cost=(c.level||1)*3;
-      const el=mkCardEl(c);
+      const el=mkCardElV4(c);
       const btn=document.createElement('div');btn.style.cssText='text-align:center;margin-top:4px;';
       btn.innerHTML=`<button class="btn btn-s btn-green" ${this.gold<cost?'disabled':''}>${cost}💰 단련</button>`;
       btn.querySelector('button').onclick=(e)=>{e.stopPropagation();
@@ -92,7 +92,7 @@ Object.assign(RoF.Game, {
     injured.forEach(c=>{
       const cost=Math.max(1,Math.floor((c.level||1)*2*(1-discount)));
       const honorGain=Math.floor(((c.level||1)*3+(c.honor||0)*0.1)*honorBonus);
-      const el=mkCardEl(c);
+      const el=mkCardElV4(c);
       el.style.filter='grayscale(.5) brightness(.7)';
       const wrap=document.createElement('div');wrap.style.textAlign='center';
       wrap.appendChild(el);

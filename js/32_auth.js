@@ -128,8 +128,8 @@ RoF.Auth={
     confirmBtn.disabled=!this._selRole;
     const instances=[];
     HERO_ROLES.forEach(r=>{
-      const heroId=getHeroId(this._selElement,r.id);
-      const u=UNITS.find(x=>x.id===heroId);
+      const gender = this._selGender || 'm';
+      const u=RoF.Data.createHero({gender, role:r.id, element:this._selElement, skinIndex:0});
       if(!u)return;
       const wrap=document.createElement('div');
       wrap.className='char-option-v2' + (this._selRole===r.id?' selected':'');
@@ -157,11 +157,14 @@ RoF.Auth={
   confirmHero(){
     if(!this._selRole||!this._selElement)return;
     SFX.init();
-    const heroId=getHeroId(this._selElement,this._selRole);
-    const u=UNITS.find(x=>x.id===heroId);
-    if(!u){alert('영웅을 찾을 수 없습니다!');return;}
-    const hero={...u,uid:uid(),name:this.user,heroClass:u.name,isHero:true,rarity:'bronze',level:1,equips:[],maxHp:u.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
-    const companionMap={melee:'herbalist',ranged:'guard',support:'militia'};
+    const gender = this._selGender || 'm';  // 성별 선택 UI 이식 전 임시 기본값
+    const heroBase = RoF.Data.createHero({gender, role:this._selRole, element:this._selElement});
+    const hero = Object.assign(heroBase, {
+      uid:uid(), name:this.user, heroClass:heroBase.name, isHero:true,
+      level:1, equips:[], maxHp:heroBase.hp, xp:0, honor:0, freePoints:0,
+      growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0},
+    });
+    const companionMap={melee:'herbalist',warrior:'herbalist',ranged:'guard',ranger:'guard',support:'militia'};
     const compId=companionMap[this._selRole]||'militia';
     const compBase=UNITS.find(x=>x.id===compId);
     const COMP_NAMES=['릴리아','카엘','모르간','세피라','톰린','에이다','피오나','가렛','에밀','소린','미라','덱스터','엘라','브룩','다미안','하젤'];
@@ -169,7 +172,9 @@ RoF.Auth={
     const companion={...compBase,uid:uid(),name:compName,isCompanion:true,level:1,equips:[],maxHp:compBase.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
     const titanBase=UNITS.find(x=>x.id==='titan');
     const titan={...titanBase,uid:uid(),isCompanion:true,isTitan:true,level:1,equips:[],maxHp:titanBase.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
-    const sv={round:0,hp:3,maxHp:3,gold:20,xp:0,level:1,honor:0,deck:[hero,companion,titan],relics:[],heroBaseId:u.id,bestRound:0,totalWins:0,totalGames:0,leaguePoints:0,buildings:{},tutStep:0,companionName:compName};
+    const sv={round:0,hp:3,maxHp:3,gold:20,xp:0,level:1,honor:0,deck:[hero,companion,titan],relics:[],
+      hero:{gender:hero.gender, role:hero._heroRole, element:hero.element, skinIndex:hero.skinIndex},
+      bestRound:0,totalWins:0,totalGames:0,leaguePoints:0,buildings:{},tutStep:0,companionName:compName};
     const db=this.db();db[this.user]={pw:this.pendingPw,save:sv};this.save(db);this.pendingPw=null;Game.load(sv);
   },
 

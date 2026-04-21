@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>주인공 생성 — v2: Live Preview Cockpit</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a0f08; --panel:#2b1c13; --panel-hi:#3a2818;
+    --ink:#f1e4c3; --muted:#b89968; --dim:#6e4a2a;
+    --gold:#d4a84a; --gold-lo:#8b6914; --gold-hi:#f1d890; --curr-gold:#e8bd4a;
+    --border:#9b7a3e; --border-dk:#6e4a2a;
+    --el-fire:#e74c3c; --el-water:#3498db; --el-lightning:#f1c40f;
+    --el-earth:#8b5a2b; --el-dark:#8e44ad; --el-holy:#ffd700;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;}
+  body{width:1280px;height:720px;overflow:hidden;position:relative}
+  body::before{content:'';position:absolute;inset:0;background:
+    radial-gradient(70% 90% at 50% 40%, rgba(212,168,74,.07), transparent 70%);pointer-events:none}
+
+  header{position:absolute;top:20px;left:48px;right:48px;display:flex;justify-content:space-between;align-items:center}
+  h1{font:900 22px/1.1 'Cinzel Decorative',serif;color:var(--curr-gold);letter-spacing:.05em;margin:0;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+  header .kicker{font:700 10px/1 'Cinzel';color:var(--muted);letter-spacing:.24em;text-transform:uppercase}
+
+  /* ── 3-column cockpit ── */
+  .cockpit{position:absolute;top:78px;left:48px;right:48px;bottom:80px;display:grid;grid-template-columns:280px 1fr 280px;gap:28px}
+
+  .panel{background:linear-gradient(180deg,var(--panel),#1f1610);border:1.5px solid var(--border-dk);border-radius:4px;padding:20px;display:flex;flex-direction:column;gap:14px}
+  .panel h2{margin:0 0 4px;font:900 13px/1 'Cinzel';color:var(--curr-gold);letter-spacing:.18em;text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border-dk)}
+
+  /* ── Left: gender + role ── */
+  .gender-row{display:flex;gap:10px}
+  .gender{flex:1;padding:18px 8px;background:var(--panel);border:1.5px solid var(--border-dk);border-radius:3px;cursor:pointer;text-align:center;transition:all .2s}
+  .gender:hover{border-color:var(--gold)}
+  .gender.sel{border-color:var(--gold-hi);background:linear-gradient(180deg,rgba(212,168,74,.18),rgba(212,168,74,.04));box-shadow:inset 0 0 0 1px rgba(241,216,144,.3)}
+  .gender .ic{font-size:36px;line-height:1;margin-bottom:6px}
+  .gender .lbl{font:900 12px/1 'Cinzel';color:var(--curr-gold);letter-spacing:.12em}
+
+  .role-list{display:flex;flex-direction:column;gap:8px}
+  .role{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--panel);border:1.5px solid var(--border-dk);border-radius:3px;cursor:pointer;transition:all .2s}
+  .role:hover{border-color:var(--gold)}
+  .role.sel{border-color:var(--gold-hi);background:linear-gradient(180deg,rgba(212,168,74,.18),rgba(212,168,74,.04))}
+  .role .ic{font-size:22px;width:30px;text-align:center}
+  .role .txt{flex:1}
+  .role .nm{font:900 13px/1 'Cinzel';color:var(--curr-gold);letter-spacing:.04em}
+  .role .dc{font:400 10.5px/1.3 'Noto Serif KR';color:#c8b285;font-style:italic;margin-top:3px}
+
+  /* ── Center: preview card ── */
+  .preview{position:relative;display:grid;place-items:center}
+  .card{position:relative;width:320px;aspect-ratio:4/7;background:#000;border-radius:8px;overflow:hidden;box-shadow:0 14px 36px rgba(0,0,0,.8),0 0 0 2px var(--gold),inset 0 0 0 1px rgba(0,0,0,.7)}
+  .card .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .card .elem-fx{position:absolute;inset:0;background:radial-gradient(50% 55% at 50% 42%, rgba(241,196,15,.35), transparent 60%);mix-blend-mode:screen;pointer-events:none}
+  .card .top{position:absolute;top:10px;left:10px;right:10px;padding:8px 12px;background:linear-gradient(180deg,rgba(26,15,8,.94),rgba(26,15,8,.82));border:1px solid var(--border);border-radius:3px;display:flex;justify-content:space-between;align-items:center}
+  .card .nm{font:900 16px/1 'Cinzel Decorative','Noto Serif KR';color:var(--curr-gold);letter-spacing:.04em}
+  .card .lv{font:900 11px/1 'Cinzel';color:#2a1a08;background:linear-gradient(180deg,var(--gold-hi),var(--gold-lo));padding:4px 7px;border-radius:2px}
+  .card .parch{position:absolute;left:8px;right:8px;bottom:8px;background:#f1e4c3;border:1px solid var(--border);color:#2a1a08;padding:10px 12px;border-radius:2px;outline:1px solid rgba(212,168,74,.5);outline-offset:2px}
+  .card .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding-bottom:8px;border-bottom:1px solid #9b7a3e}
+  .card .st{display:flex;flex-direction:column;align-items:center}
+  .card .st .l{font:700 8.5px/1;color:#8b1a1a;letter-spacing:.1em}
+  .card .st .v{font:900 13px/1 'Cinzel';color:#2a1a08;margin-top:3px}
+  .card .desc{font:400 10.5px/1.5 'Noto Serif KR';color:#2a1a08;font-style:italic;margin-top:8px}
+
+  .preview .hint{position:absolute;top:10px;left:50%;transform:translateX(-50%);font:400 11px/1.4 'Noto Serif KR';color:var(--muted);font-style:italic;white-space:nowrap}
+
+  /* ── Right: element ── */
+  .elem-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .elem{padding:14px 6px;background:var(--panel);border:1.5px solid var(--border-dk);border-radius:3px;cursor:pointer;text-align:center;transition:all .2s}
+  .elem:hover{border-color:var(--gold)}
+  .elem.sel{border-color:var(--gold-hi);box-shadow:0 0 0 1px var(--gold-hi)}
+  .elem.sel.e-lightning{background:radial-gradient(80% 80% at 50% 40%, rgba(241,196,15,.28), transparent 70%)}
+  .elem .ic{font-size:22px;line-height:1;margin-bottom:4px}
+  .elem .nm{font:900 11px/1 'Cinzel';color:var(--curr-gold);letter-spacing:.08em}
+  .elem .bn{font:400 9px/1.3 'Noto Sans KR';color:#c8b285;margin-top:4px}
+
+  /* ── Footer ── */
+  .foot{position:absolute;bottom:22px;left:48px;right:48px;display:flex;justify-content:space-between;align-items:center}
+  .summary{font:400 12px/1.4 'Noto Serif KR';color:var(--muted);font-style:italic}
+  .summary b{color:var(--curr-gold);font-weight:900;font-style:normal}
+  .btn{font:900 13px/1 'Cinzel';letter-spacing:.12em;text-transform:uppercase;padding:14px 28px;background:linear-gradient(180deg,var(--gold-hi),var(--gold-lo));color:#2a1a08;border:1.5px solid var(--gold-hi);cursor:pointer;border-radius:3px;transition:all .2s}
+  .btn:hover{box-shadow:0 6px 20px rgba(212,168,74,.4)}
+  .btn:disabled{background:var(--panel);color:var(--dim);border-color:var(--border-dk);cursor:not-allowed;box-shadow:none}
+</style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <div class="kicker">운명의 왕좌 — Protagonist Forging</div>
+      <h1>나의 주인공을 벼려낸다</h1>
+    </div>
+  </header>
+
+  <div class="cockpit">
+    <!-- LEFT -->
+    <div class="panel">
+      <h2>01 · 성별</h2>
+      <div class="gender-row">
+        <div class="gender sel"><div class="ic">🧔</div><div class="lbl">남성</div></div>
+        <div class="gender"><div class="ic">👩</div><div class="lbl">여성</div></div>
+      </div>
+      <h2 style="margin-top:8px">02 · 역할</h2>
+      <div class="role-list">
+        <div class="role sel"><div class="ic">⚔️</div><div class="txt"><div class="nm">근접 전사</div><div class="dc">hp 54 · atk 3 · def 2</div></div></div>
+        <div class="role"><div class="ic">🏹</div><div class="txt"><div class="nm">원거리 궁수</div><div class="dc">hp 32 · atk 4 · spd 1</div></div></div>
+        <div class="role"><div class="ic">🔮</div><div class="txt"><div class="nm">지원 마법사</div><div class="dc">hp 27 · nrg 30 · support</div></div></div>
+      </div>
+    </div>
+
+    <!-- CENTER: live preview -->
+    <div class="preview">
+      <div class="hint">← 선택에 따라 실시간 변화 →</div>
+      <div class="card">
+        <img class="art" src="../../img/protagonist_m_warrior_1.png" alt="">
+        <div class="elem-fx"></div>
+        <div class="top"><div class="nm">근접 전사</div><div class="lv">Lv 1</div></div>
+        <div class="parch">
+          <div class="stats">
+            <div class="st"><div class="l">ATK</div><div class="v">3</div></div>
+            <div class="st"><div class="l">HP</div><div class="v">54</div></div>
+            <div class="st"><div class="l">DEF</div><div class="v">2</div></div>
+            <div class="st"><div class="l">SPD</div><div class="v">4</div></div>
+            <div class="st"><div class="l">NRG</div><div class="v">5</div></div>
+          </div>
+          <div class="desc">번개가 그의 검을 휘감는다. 선제의 일격이 폭풍보다 빠르다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="panel">
+      <h2>03 · 원소</h2>
+      <div class="elem-grid">
+        <div class="elem"><div class="ic">🔥</div><div class="nm">불</div><div class="bn">atk +2</div></div>
+        <div class="elem"><div class="ic">💧</div><div class="nm">물</div><div class="bn">hp +8</div></div>
+        <div class="elem sel e-lightning"><div class="ic">⚡</div><div class="nm">전기</div><div class="bn">spd +3</div></div>
+        <div class="elem"><div class="ic">🌿</div><div class="nm">땅</div><div class="bn">hp +5</div></div>
+        <div class="elem"><div class="ic">🌑</div><div class="nm">암흑</div><div class="bn">atk +1</div></div>
+        <div class="elem"><div class="ic">✨</div><div class="nm">신성</div><div class="bn">nrg +3</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="summary">남성 <b>·</b> 근접 전사 <b>·</b> 전기 — <b>번개의 검사</b></div>
+    <button class="btn">운명을 맺는다 →</button>
+  </div>
+
+</body>
+</html>

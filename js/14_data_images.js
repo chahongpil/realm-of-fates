@@ -10,15 +10,15 @@ const __GI = RoF.Data.GI;
 const __IMG = RoF.Data.IMG;
 
 RoF.Data.CARD_IMG = Object.freeze({
-  // 근접 전사 (AI generated)
-  h_m_fire:__IMG+'h_m_fire.png',h_m_water:__IMG+'h_m_water.png',h_m_lightning:__IMG+'h_m_lightning.png',
-  h_m_earth:__IMG+'h_m_earth.png',h_m_dark:__IMG+'h_m_dark.png',h_m_holy:__IMG+'h_m_holy.png',
-  // 원거리 궁수
-  h_r_fire:__IMG+'h_r_fire.png',h_r_water:__IMG+'h_r_water.png',h_r_lightning:__IMG+'h_r_lightning.png',
-  h_r_earth:__IMG+'h_r_earth.png',h_r_dark:__IMG+'h_r_dark.png',h_r_holy:__IMG+'h_r_holy.png',
-  // 지원 마법사
-  h_s_fire:__IMG+'h_s_fire.png',h_s_water:__IMG+'h_s_water.png',h_s_lightning:__IMG+'h_s_lightning.png',
-  h_s_earth:__IMG+'h_s_earth.png',h_s_dark:__IMG+'h_s_dark.png',h_s_holy:__IMG+'h_s_holy.png',
+  // 주인공 — 2026-04-21 리뉴얼, 성별×역할 스킨 (원소는 오버레이 레이어로 합성)
+  protagonist_m_warrior_1:__IMG+'protagonist_m_warrior_1.png',
+  protagonist_m_warrior_2:__IMG+'protagonist_m_warrior_2.png',
+  protagonist_m_warrior_3:__IMG+'protagonist_m_warrior_3.png',
+  protagonist_m_ranger:   __IMG+'protagonist_m_ranger.png',
+  protagonist_m_support:  __IMG+'protagonist_m_support.png',
+  protagonist_f_warrior:  __IMG+'protagonist_f_warrior.png',
+  protagonist_f_ranger:   __IMG+'protagonist_f_ranger.png',
+  protagonist_f_support:  __IMG+'protagonist_f_support.png',
   // 모집 유닛
   militia:__IMG+'militia.png',hunter:__IMG+'hunter.png',apprentice:__IMG+'apprentice.png',
   wolf:__IMG+'wolf.png',guard:__IMG+'guard.png',rogue:__IMG+'rogue.png',
@@ -62,7 +62,12 @@ RoF.Data.CARD_IMG = Object.freeze({
 });
 
 // getCardImg 는 순수 함수이므로 RoF 직접 아래에 둠
-RoF.getCardImg = function(c){ return RoF.Data.CARD_IMG[c.id] || null; };
+// 주인공(_isHero) 은 id 대신 skinKey 로 매핑 — 원소는 id 에 들어있지만 이미지는 스킨 단위로 공유.
+RoF.getCardImg = function(c){
+  if(!c) return null;
+  if(c._isHero && c.skinKey) return RoF.Data.CARD_IMG[c.skinKey] || null;
+  return RoF.Data.CARD_IMG[c.id] || null;
+};
 
 // 호환성 레이어
 window.GI = RoF.Data.GI;

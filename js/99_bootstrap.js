@@ -117,14 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       try {
         const UNITS = RoF.Data.UNITS || [];
-        const hero = UNITS.find(u => u.id === 'h_m_holy') || UNITS[0];
-        if(!hero){ console.warn('[preview] no units data'); return; }
+        const hero = RoF.Data.createHero({gender:'m', role:'warrior', element:'holy'});
+        if(!hero){ console.warn('[preview] createHero failed'); return; }
         const mk = (base, uid, name) => ({
           ...base, uid, name,
           level:1, equips:[], maxHp:base.hp, xp:0, honor:0, freePoints:0,
           growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0},
         });
-        const heroInst = { ...mk(hero, '_h', '미리보기'), isHero:true, heroClass:hero.name, rarity:'bronze' };
+        const heroInst = { ...mk(hero, '_h', '미리보기'), isHero:true, heroClass:hero.name };
         const comps = [];
         ['herbalist','guard','militia','archer','apprentice','berserker']
           .forEach((id,i) => {
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         const sv = {
           round:0, hp:3, maxHp:3, gold:500, xp:0, level:1, honor:10,
-          deck:[heroInst, ...comps], relics:[], heroBaseId:hero.id,
+          deck:[heroInst, ...comps], relics:[], hero:{gender:hero.gender,role:hero._heroRole,element:hero.element,skinIndex:hero.skinIndex},
           bestRound:0, totalWins:0, totalGames:0, leaguePoints:0,
           buildings:{castle:1,gate:1,forge:1,shop:1,tavern:1,training:1,library:1,church:1},
           tutStep:99, companionName:'동료1'
@@ -258,13 +258,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const db = RoF.Auth.db();
         if (!db[TEST_USER]) {
           // 회원가입 플로우 우회 — 직접 저장 데이터 생성
-          const u = RoF.Data.UNITS.find(x => x.id === 'h_m_holy') || RoF.Data.UNITS[0];
-          const hero = {...u, uid: Date.now(), name: TEST_USER, heroClass: u.name, isHero: true, rarity: 'bronze', level: 1, equips: [], maxHp: u.hp, xp: 0, honor: 0, freePoints: 0, growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
+          const u = RoF.Data.createHero({gender:'m', role:'warrior', element:'holy'});
+          const hero = Object.assign(u, {uid: Date.now(), name: TEST_USER, heroClass: u.name, isHero: true, level: 1, equips: [], maxHp: u.hp, xp: 0, honor: 0, freePoints: 0, growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}});
           const comp = RoF.Data.UNITS.find(x => x.id === 'herbalist') || RoF.Data.UNITS[1];
           const companion = {...comp, uid: Date.now()+1, name: '릴리아', isCompanion: true, level: 1, equips: [], maxHp: comp.hp, xp: 0, honor: 0, freePoints: 0, growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
           const titanBase = RoF.Data.UNITS.find(x => x.id === 'titan');
           const titan = {...titanBase, uid: Date.now()+2, isCompanion: true, isTitan: true, level: 1, equips: [], maxHp: titanBase.hp, xp: 0, honor: 0, freePoints: 0, growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
-          const sv = {round: 0, hp: 3, maxHp: 3, gold: 100, xp: 0, level: 1, honor: 0, deck: [hero, companion, titan], relics: [], heroBaseId: u.id, bestRound: 0, totalWins: 0, totalGames: 0, leaguePoints: 0, buildings: {castle: 2, gate: 1, forge: 1, shop: 1, tavern: 1, training: 1, library: 1, church: 1}, tutStep: 99, companionName: '릴리아'};
+          const sv = {round: 0, hp: 3, maxHp: 3, gold: 100, xp: 0, level: 1, honor: 0, deck: [hero, companion, titan], relics: [], hero: {gender:hero.gender,role:hero._heroRole,element:hero.element,skinIndex:hero.skinIndex}, bestRound: 0, totalWins: 0, totalGames: 0, leaguePoints: 0, buildings: {castle: 2, gate: 1, forge: 1, shop: 1, tavern: 1, training: 1, library: 1, church: 1}, tutStep: 99, companionName: '릴리아'};
           db[TEST_USER] = {pw: TEST_PW, save: sv};
           RoF.Auth.save(db);
         }
@@ -312,9 +312,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const db = RoF.Auth.db();
           if (!db[TEST_ID]) {
             // 임시 유저 생성 — 덱 2개 (영웅 + 동료), 골드 충분
-            const hero = Object.assign({}, RoF.Data.UNITS.find(x => x.id === 'h_m_holy'), {
-              uid: 'editor_hero', name: TEST_ID, heroClass: '근접 전사', isHero: true,
-              rarity: 'bronze', level: 1, equips: [], maxHp: 50, xp: 0, honor: 0,
+            const heroBase = RoF.Data.createHero({gender:'m', role:'warrior', element:'holy'});
+            const hero = Object.assign(heroBase, {
+              uid: 'editor_hero', name: TEST_ID, heroClass: heroBase.name, isHero: true,
+              level: 1, equips: [], maxHp: heroBase.hp, xp: 0, honor: 0,
               freePoints: 0, growthPts: {atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}
             });
             const comp = Object.assign({}, RoF.Data.UNITS.find(x => x.id === 'militia') || RoF.Data.UNITS[1], {
@@ -332,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
               pw: TEST_PW,
               save: {
                 round: 0, hp: 3, maxHp: 3, gold: 999, xp: 0, level: 1, honor: 0,
-                deck: [hero, comp, titan2], relics: [], heroBaseId: 'h_m_holy',
+                deck: [hero, comp, titan2], relics: [], hero: {gender:hero.gender, role:hero._heroRole, element:hero.element, skinIndex:hero.skinIndex},
                 bestRound: 0, totalWins: 0, totalGames: 0, leaguePoints: 0,
                 buildings: {castle:1, gate:1, forge:1, shop:1, tavern:1, training:1, library:1, church:1},
                 tutStep: 99, companionName: '에디터'

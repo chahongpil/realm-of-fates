@@ -278,8 +278,9 @@ Object.assign(RoF.Game, {
 
   // ---- GAMEOVER ----
   newRun(){
-    const u=UNITS.find(x=>x.id===this.heroBaseId)||UNITS[0];
-    const hero={...u,uid:uid(),name:Auth.user,heroClass:u.name,isHero:true,rarity:'bronze',level:1,equips:[],maxHp:u.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
+    const h=this.hero||{gender:'m',role:'warrior',element:'fire'};
+    const heroBase=RoF.Data.createHero({gender:h.gender,role:h.role,element:h.element,skinIndex:h.skinIndex});
+    const hero=Object.assign(heroBase,{uid:uid(),name:Auth.user,heroClass:heroBase.name,isHero:true,level:1,equips:[],maxHp:heroBase.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}});
     this.round=0;this.hp=3;this.maxHp=3;this.gold=2;
     this.deck=[hero];this.relics=[];this.ownedRelics=[];this.ownedSkills=[];this.totalGames++;this.persist();this.showMenu();
   },

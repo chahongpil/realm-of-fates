@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>주인공 생성 — v1: 3-Step Sequential</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a0f08; --panel:#2b1c13; --panel-hi:#3a2818;
+    --ink:#f1e4c3; --muted:#b89968; --dim:#6e4a2a;
+    --gold:#d4a84a; --gold-lo:#8b6914; --gold-hi:#f1d890; --curr-gold:#e8bd4a;
+    --border:#9b7a3e; --border-dk:#6e4a2a;
+    --el-fire:#e74c3c; --el-water:#3498db; --el-lightning:#f1c40f;
+    --el-earth:#8b5a2b; --el-dark:#8e44ad; --el-holy:#ffd700;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',sans-serif;}
+  body{width:1280px;height:720px;overflow:hidden;position:relative}
+
+  /* ── 배경 비네트 ── */
+  body::before{content:'';position:absolute;inset:0;background:
+    radial-gradient(60% 80% at 50% 30%, rgba(212,168,74,.08), transparent 70%),
+    radial-gradient(100% 60% at 50% 100%, rgba(0,0,0,.65), transparent);pointer-events:none}
+
+  /* ── 상단 진행 인디케이터 ── */
+  .steps{position:absolute;top:28px;left:50%;transform:translateX(-50%);display:flex;gap:40px;z-index:2}
+  .step{display:flex;align-items:center;gap:12px;color:var(--dim)}
+  .step.done, .step.cur{color:var(--curr-gold)}
+  .step .n{width:28px;height:28px;border-radius:50%;background:var(--panel);border:1.5px solid currentColor;display:grid;place-items:center;font:900 13px/1 'Cinzel'}
+  .step.cur .n{background:linear-gradient(180deg,var(--gold-hi),var(--gold-lo));color:#2a1a08;border-color:var(--gold-hi)}
+  .step .lbl{font:700 11px/1 'Cinzel';letter-spacing:.18em;text-transform:uppercase}
+  .step+.step::before{content:'';position:absolute;width:40px;height:1px;background:var(--dim);transform:translateX(-60px) translateY(14px)}
+
+  /* ── 스테이지 ── */
+  .stage{position:absolute;inset:90px 48px 96px;display:flex;flex-direction:column;align-items:center}
+  .title{font:900 30px/1.1 'Cinzel Decorative',serif;color:var(--curr-gold);letter-spacing:.04em;text-shadow:0 3px 8px rgba(0,0,0,.8);margin:0 0 6px}
+  .sub{font:400 14px/1.5 'Noto Serif KR',serif;color:#d8c48a;font-style:italic;margin:0 0 32px}
+
+  /* ── Step 3: 원소 선택 (현재 단계 active) ── */
+  .grid-6{display:grid;grid-template-columns:repeat(6,160px);gap:18px}
+  .opt{position:relative;width:160px;height:380px;background:linear-gradient(180deg,var(--panel),var(--panel-hi));border:1.5px solid var(--border-dk);border-radius:6px;cursor:pointer;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s}
+  .opt:hover{transform:translateY(-6px);border-color:var(--gold);box-shadow:0 10px 24px rgba(0,0,0,.6),0 0 0 1px rgba(212,168,74,.5)}
+  .opt.sel{border-color:var(--gold-hi);box-shadow:0 0 0 2px var(--gold-hi),0 10px 24px rgba(0,0,0,.7);transform:translateY(-6px)}
+  .opt .art{position:absolute;inset:0;display:grid;place-items:center;font-size:96px;opacity:.9}
+  .opt .art.el-fire{background:radial-gradient(60% 60% at 50% 45%, rgba(231,76,60,.55), transparent 65%)}
+  .opt .art.el-water{background:radial-gradient(60% 60% at 50% 45%, rgba(52,152,219,.55), transparent 65%)}
+  .opt .art.el-lightning{background:radial-gradient(60% 60% at 50% 45%, rgba(241,196,15,.55), transparent 65%)}
+  .opt .art.el-earth{background:radial-gradient(60% 60% at 50% 45%, rgba(139,90,43,.55), transparent 65%)}
+  .opt .art.el-dark{background:radial-gradient(60% 60% at 50% 45%, rgba(142,68,173,.55), transparent 65%)}
+  .opt .art.el-holy{background:radial-gradient(60% 60% at 50% 45%, rgba(255,215,0,.55), transparent 65%)}
+  .opt .lbl-box{position:absolute;left:8px;right:8px;bottom:8px;background:rgba(26,15,8,.88);border:1px solid var(--border);border-radius:3px;padding:8px 10px;text-align:center}
+  .opt .lbl-box .el{font:900 14px/1.1 'Cinzel Decorative',serif;color:var(--curr-gold);letter-spacing:.04em}
+  .opt .lbl-box .bn{font:400 10.5px/1.4 'Noto Serif KR';color:#d8c48a;font-style:italic;margin-top:4px}
+
+  /* ── 하단 네비게이션 ── */
+  .nav{position:absolute;bottom:28px;left:0;right:0;display:flex;justify-content:center;gap:14px}
+  .btn{font:900 13px/1 'Cinzel';letter-spacing:.12em;text-transform:uppercase;padding:14px 28px;background:var(--panel);border:1.5px solid var(--border);color:var(--ink);cursor:pointer;border-radius:3px;transition:all .2s}
+  .btn:hover{border-color:var(--gold);color:var(--curr-gold)}
+  .btn.primary{background:linear-gradient(180deg,var(--gold-hi),var(--gold-lo));color:#2a1a08;border-color:var(--gold-hi)}
+  .btn.primary:hover{box-shadow:0 6px 18px rgba(212,168,74,.4)}
+
+  /* ── 하단 Step1/2 미니 프리뷰 ── */
+  .recap{position:absolute;top:94px;left:48px;display:flex;flex-direction:column;gap:8px}
+  .recap .tag{padding:5px 12px;background:var(--panel);border:1px solid var(--dim);border-radius:3px;font:700 10px/1 'Noto Sans KR';color:var(--muted);letter-spacing:.12em}
+  .recap .tag b{color:var(--curr-gold);margin-left:6px}
+</style>
+</head>
+<body>
+
+  <div class="steps">
+    <div class="step done"><div class="n">✓</div><div class="lbl">성별</div></div>
+    <div class="step done"><div class="n">✓</div><div class="lbl">역할</div></div>
+    <div class="step cur"><div class="n">3</div><div class="lbl">원소</div></div>
+  </div>
+
+  <div class="recap">
+    <div class="tag">성별 <b>남성</b></div>
+    <div class="tag">역할 <b>근접 전사</b></div>
+  </div>
+
+  <div class="stage">
+    <h1 class="title">원소의 부름</h1>
+    <p class="sub">여섯 원소 중 당신의 영혼을 태울 힘을 택하라.</p>
+
+    <div class="grid-6">
+      <div class="opt"><div class="art el-fire">🔥</div><div class="lbl-box"><div class="el">불</div><div class="bn">atk +2 · rage +2</div></div></div>
+      <div class="opt"><div class="art el-water">💧</div><div class="lbl-box"><div class="el">물</div><div class="bn">hp +8 · hpReg +1</div></div></div>
+      <div class="opt sel"><div class="art el-lightning">⚡</div><div class="lbl-box"><div class="el">전기</div><div class="bn">spd +3 · eva +2</div></div></div>
+      <div class="opt"><div class="art el-earth">🌿</div><div class="lbl-box"><div class="el">땅</div><div class="bn">hp +5 · def +2</div></div></div>
+      <div class="opt"><div class="art el-dark">🌑</div><div class="lbl-box"><div class="el">암흑</div><div class="bn">atk +1 · luck +3</div></div></div>
+      <div class="opt"><div class="art el-holy">✨</div><div class="lbl-box"><div class="el">신성</div><div class="bn">nrg +3 · meva +2</div></div></div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="btn">← 역할 다시</button>
+    <button class="btn primary">운명을 맺는다 →</button>
+  </div>
+
+</body>
+</html>

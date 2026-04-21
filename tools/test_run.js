@@ -141,27 +141,28 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
   } catch (e) { fail('sk_handoff', e.message); }
 
   // ── 6.6 skillIds 필드 파이프라인 (명시 액티브 vs 자동매칭 fallback) ──
+  // 2026-04-21: 영웅 시스템 리뉴얼 후 h_*18종 → createHero() 동적 생성으로 변경.
   try {
     pageErrors = [];
     const si = await page.evaluate(() => {
-      const hmFire = RoF.Data.UNITS.find(u => u.id === 'h_m_fire');
-      const knight = RoF.Data.UNITS.find(u => u.id === 'knight');
-      const hmWater = RoF.Data.UNITS.find(u => u.id === 'h_m_water');
+      const heroFire  = RoF.Data.createHero({gender:'m', role:'warrior', element:'fire',  skinIndex:0});
+      const heroWater = RoF.Data.createHero({gender:'m', role:'warrior', element:'water', skinIndex:0});
+      const knight    = RoF.Data.UNITS.find(u => u.id === 'knight');
       return {
-        hmFire: hmFire && hmFire.skillIds,
-        knight: knight && knight.skillIds,
-        hmWater: hmWater && hmWater.skillIds,
+        heroFire:  heroFire && heroFire.skillIds,
+        heroWater: heroWater && heroWater.skillIds,
+        knight:    knight && knight.skillIds,
       };
     });
     const expect = (label, got, want) => JSON.stringify(got) === JSON.stringify(want)
       ? null : `${label}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`;
     const errs = [
-      expect('h_m_fire', si.hmFire, ['sk_flame_arrow']),
-      expect('knight',   si.knight, ['sk_healing_light']),
-      expect('h_m_water', si.hmWater, undefined),
+      expect('hero_m_warrior_fire',  si.heroFire,  ['sk_flame_arrow']),
+      expect('knight',               si.knight,    ['sk_healing_light']),
+      expect('hero_m_warrior_water', si.heroWater, undefined),
     ].filter(Boolean);
     if (errs.length) fail('skillIds', errs.join('; '));
-    else pass('skillIds', 'h_m_fire/knight pinned; h_m_water uses fallback');
+    else pass('skillIds', 'hero fire pinned; hero water uses fallback');
   } catch (e) { fail('skillIds', e.message); }
 
   // ── 6.7 card-coords (골든: 보석 좌표 정합성) ──

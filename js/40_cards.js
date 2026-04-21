@@ -279,6 +279,25 @@ RoF.CardV4Component = (function(){
     artImg.alt = '';
     el.appendChild(artImg);
 
+    // 원소 이펙트 오버레이 (P5, 2026-04-21) — 대표님 공급 이미지 대기 슬롯.
+    // 경로는 리터럴 매핑으로 고정 — 정적 자산 게이트가 concat 표현을 broken 으로 판정하므로.
+    const elemFxSrc = {
+      fire:      'img/elem_fx_fire.png',
+      water:     'img/elem_fx_water.png',
+      lightning: 'img/elem_fx_lightning.png',
+      earth:     'img/elem_fx_earth.png',
+      dark:      'img/elem_fx_dark.png',
+      holy:      'img/elem_fx_holy.png',
+    };
+    if(element && elemFxSrc[element]){
+      const fx = document.createElement('img');
+      fx.className = 'card-v4-elem-fx';
+      fx.src = elemFxSrc[element];
+      fx.alt = '';
+      fx.onerror = function(){ this.style.display = 'none'; };
+      el.appendChild(fx);
+    }
+
     // Gild (금박 테두리)
     const gild = document.createElement('div');
     gild.className = 'gild';

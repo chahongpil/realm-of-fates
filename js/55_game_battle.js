@@ -40,12 +40,12 @@ Object.assign(RoF.Game, {
     const botLgIdx=Math.max(0,Math.min(this.LEAGUES.length-1,lgIdx+Math.floor(Math.random()*3)-1));
     const botLg=this.LEAGUES[botLgIdx];
     const botName=enemyName();
-    // Pick random hero element + role
+    // Pick random hero gender + element + role
     const el=ELEMENTS[Math.floor(Math.random()*ELEMENTS.length)];
     const roles=['melee','ranged','support'];
     const role=roles[Math.floor(Math.random()*roles.length)];
-    const heroId=getHeroId(el,role);
-    const heroBase=UNITS.find(u=>u.id===heroId)||UNITS[0];
+    const gender=Math.random()<0.5?'m':'f';
+    const heroBase=RoF.Data.createHero({gender, role, element:el});
     const roleName=HERO_ROLES.find(r=>r.id===role)?.name||'전사';
     return{name:botName,league:botLg,element:el,role:roleName,heroBase,
       heroIcon:heroBase.icon,level:Math.max(1,this.getHeroLevel()+Math.floor(Math.random()*3)-1)};

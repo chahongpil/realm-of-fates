@@ -15,7 +15,9 @@ RoF.helpers.fuseCard = function(card){
 // ── 적/ID ──
 RoF.helpers.enemyName = function(){return ENEMY_NAMES[Math.floor(Math.random()*ENEMY_NAMES.length)];};
 RoF.helpers.uid = function(){return Math.random().toString(36).substr(2,9);};
-RoF.helpers.getHeroId = function(element,roleId){return `h_${roleId==='melee'?'m':roleId==='ranged'?'r':'s'}_${element}`;};
+// DEPRECATED (2026-04-21): 기존 18종 h_* 영웅 시스템 폐기. createHero() 사용.
+// 남아있는 이유: 레거시 호출부 방어 (null 이 아닌 값 반환). 신규 호출 금지.
+RoF.helpers.getHeroId = function(element,roleId){return `hero_m_${roleId==='melee'?'warrior':roleId==='ranged'?'ranger':'support'}_${element}`;};
 // ── 비동기/픽 ──
 RoF.helpers.wait = function(ms){return new Promise(r=>setTimeout(r,ms));};
 // Rarity pick: mode='tavern'|'battle'|'reward', bonus=scaling factor

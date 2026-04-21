@@ -8,6 +8,29 @@
 
 ---
 
+## 2026-04-21 오후(3차) ▶ 콘텐츠 ▶ 주인공 시스템 리뉴얼 (P1~P5)
+- 변경:
+  1. **기존 18종 영웅 폐기** — `h_m/r/s_*` × 6원소 = 18 (`js/11_data_units.js` 에서 삭제, `img/h_*.png` 18장 → `trash/img_heroes_legacy_2026-04-21/`).
+  2. **신 구조**: `js/11_data_heroes.js` 신규. 성별(m/f) × 역할(warrior/ranger/support) = 6 템플릿 + `ELEMENT_BONUS` 런타임 주입 + `HERO_SKILL_TABLE` (원소×역할 시그니처 스킬/보너스). `RoF.Data.createHero({gender, role, element, skinIndex})` 이 유닛 객체 반환.
+  3. **이미지**: `protagonist_m/f_{warrior_1..3,ranger,support}.png` 8장 공급 (400×600, 비율 유지 투명 캔버스). `tools/import_protagonists.py` 스크립트. 남자 전사 3장은 스킨 랜덤(skinIndex), 나머지 1장씩.
+  4. **state 구조**: `state.heroBaseId` 폐기 → `state.hero = {gender, role, element, skinIndex}` 로 전환. `50_game_core.load/persist`, `32_auth.confirmHero`, `57_game_battle_ui.newRun`, `99_bootstrap.js` 3군데 전환.
+  5. **라우팅 참조**: `32_auth._showHeroScreen` + `55_game_battle` 봇 생성 둘 다 `createHero()` 로 교체. `20_helpers.getHeroId` deprecated 처리 (hero_* 포맷 반환).
+  6. **원소 이펙트 오버레이**: `.card-v4-elem-fx` 빈 레이어 추가 (`css/32_card_v4.css`, `40_cards.js`). 대표님 공급 대기 중이라 placeholder 1×1 투명 PNG 6장 선제 생성(`img/elem_fx_{원소}.png`). 공급 시 파일만 교체.
+  7. **mockup 3안** — `game/mockup/protagonist_create/v1~v3.html` (3-Step / Cockpit / Radial). 대표님 v2(Cockpit) 선택 → P6 이식 예정.
+  8. **test_run.js**: `h_m_fire` skillIds 테스트 → `createHero({gender:'m',role:'warrior',element:'fire'})` 기반으로 갱신. **회귀 9/9 PASS**.
+- 이유: 기존 18종은 "선택지 중복"(성별 없음) + "이미지 1:1 강제"라 확장성 부재. Q2 "외형 바리에이션만" 결정으로 스탯·스킬은 원소별 차별(기존 계승) + 이미지는 성별×역할 슬롯 + 랜덤 스킨 구조로 분리.
+- 영향: **balance-auditor PASS** (기존 h_m_fire 와 신 createHero 산출 스탯 100% 일치 — base(2,50,1,1,5,5,1,1,1,2,1) + fire bonus(atk+2, rage+2) = atk4/hp50/def1/spd1/rage7/nrg5. 18칸 전부 `04-balance.md` 영웅 범위 내). UNITS 수 58→40 (영웅 18 소멸). 경고 2건 기록: ① 경계값 집중 (원소 보너스 1 더 올리면 범위 초과), ② ranger/support non-lightning spd 1 (기존 18종부터 있던 이슈). 
+- 관계: Q1(역할 A) / Q2(외형 바리에이션만) / Q5(mockup 3안) / Q6(skinIndex 고정) / Q7(이펙트 빈 레이어) / Q8(B 코스메틱만) 대표님 결정 반영. 다음: **P6 — v2 mockup → `char-create-screen` 실 이식 + 성별 선택 단계 추가**, P7 — 최종 회귀·커밋.
+
+## 2026-04-21 오후(2차) ▶ 밸런스 ▶ P0 5건 SoT 재판정 + archangel/sniper 상향
+- 변경:
+  1. **archangel** (legendary melee defense): atk 6→7, def 5→8. SoT(rules/04-balance.md) legendary defense 범위 atk7~10/def8~14 하한 맞춤.
+  2. **sniper** (silver ranged attack): hp 8→10. SoT silver attack 범위 hp10~18 하한 맞춤.
+  3. **dragon/lich/archmage 는 수정 없음** — 기존 rarity 하향 조치(legendary/gold/silver)가 이미 신 SoT 범위 안이라 재판정 결과 PASS.
+- 이유: 2026-04-21 A안 확정으로 구 `design/balance.md` 폐기 후 `rules/04-balance.md` 가 단일 SoT. 구 감사 리포트(`balance_audit_2026-04-20-night.md`)는 폐기된 스케일 기준이라 scope 10배 과장되어 있었음. 신 SoT 로 재판정하니 P0 5건 → 실 수정 2건.
+- 영향: 58 유닛, 회귀 9/9 PASS, balance-auditor 재검증 PASS. 코드·데이터 정합성 복구.
+- 관계: current-focus.md "P0 5건 대기" 해소. "암흑의저격수 대기" 항목은 대표님 지시로 제거(데이터 추가 취소).
+
 ## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C Battle V4 이식 기획서 작성
 - 변경: `design/step5c_battle_v4_plan.md` 신규. Phase 3 시네마틱 전투 `.bv2-card` → `.card-v4.card-v4-compact` 이식 플랜. 옵션 A(Compact Variant, 권장) · B(확대만 V4) · C(row 확장) 3안 비교. 권장 A 의 4단계 분해(A1 CSS ~45분 / A2 Stage 렌더 ~60분 / A3 Focus 카드 ~90분 / A4 검증 ~30분, 총 3:45).
 - 이유: Step 5 V4 확장 8화면 완결 후 남은 유일 화면 = 전투. 별도 규격(172×248 기본 / 430×620 확대)이라 Step 5A~5D 와 분리된 기획 필요. 대표님 결정 대기 항목 4건 (옵션 A 채택 / A3 포함 / 9px 스탯 허용선 / parch.desc 처리).

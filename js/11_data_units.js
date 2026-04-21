@@ -6,92 +6,12 @@
 // skillIds?: 액티브 스킬 ID 배열 (12_data_skills.js 참조). 명시 시 ACTIVE_BY_ELEM_ROLE 자동매칭을 대체.
 //   · 기본 공격 + 원소 시그니처는 항상 자동 생성됨. skillIds 는 추가 액티브.
 //   · 빈 배열 `[]` = "액티브 없음 의도", 필드 미지정 = 자동매칭 fallback.
-// === HERO CARDS: 3 roles × 6 elements = 18 ===
-// Base: 전사(atk2,hp50,def1,spd1,rage5,nrg5,luck1,eva1,meva1,hpReg2,nrgReg1)
-//       원거리(atk3,hp30,def1,spd1,rage1,nrg10,luck1,eva1,meva1,hpReg1,nrgReg1)
-//       지원(atk1,hp25,def1,spd1,rage1,nrg30,luck1,eva1,meva1,hpReg1,nrgReg2)
+// === HERO CARDS ===
+// 2026-04-21 리뉴얼: 기존 18종(h_m/r/s_*) 폐기 → 11_data_heroes.js 의 createHero() 가 동적 생성.
+// 성별(m/f) × 역할(warrior/ranger/support) × 원소(6종) 조합. `hero_m_warrior_fire` 같은 id 로 런타임 생성.
 // 일반유닛: 브론즈(HP8~12) 실버(HP12~18) 골드(HP18~25) 전설(HP30~40) 신(HP55)
-// Element bonus: 불(atk+2,rage+2) 물(hp+8,hpReg+1) 전기(spd+3,eva+2) 땅(hp+5,def+2) 암흑(atk+1,luck+3) 신성(nrg+3,meva+2)
+// 영웅은 createHero() 로 런타임 생성하여 UNITS 배열과 독립. 아래는 선술집/전투 획득 유닛만.
 RoF.Data.UNITS = Object.freeze([
-  // ── 근접 전사 ──
-  {id:'h_m_fire',name:'근접 전사',icon:'⚔️',type:'전사',role:'attack',range:'melee',race:'human',element:'fire',
-    atk:4,hp:50,def:1,spd:1,rage:7,nrg:5,luck:1,eva:1,meva:1,hpReg:2,nrgReg:1,
-    skill:'frenzy',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 광기: HP50%↓시 공격2배',
-    bonusTrigger:{on:'attack',chance:.2,effect:'cleave',desc:'20% 공격시: 인접 적에게 50% 추가데미지'},rarity:'bronze',
-    skillIds:['sk_flame_arrow']},
-  {id:'h_m_water',name:'근접 전사',icon:'⚔️',type:'전사',role:'defense',range:'melee',race:'human',element:'water',
-    atk:2,hp:58,def:1,spd:1,rage:5,nrg:5,luck:1,eva:1,meva:1,hpReg:3,nrgReg:1,
-    skill:'taunt',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 도발: 적 공격을 대신 받음',
-    bonusTrigger:{on:'hit',chance:.2,effect:'counter',desc:'20% 반격: 피격시 공격력50% 반격'},rarity:'bronze'},
-  {id:'h_m_lightning',name:'근접 전사',icon:'⚔️',type:'전사',role:'attack',range:'melee',race:'human',element:'lightning',
-    atk:2,hp:50,def:1,spd:4,rage:5,nrg:5,luck:1,eva:3,meva:1,hpReg:2,nrgReg:1,
-    skill:'first_strike',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 선제: 항상 먼저 공격',
-    bonusTrigger:{on:'attack',chance:.25,effect:'double_arrow',desc:'25% 연격: 공격시 2회 타격'},rarity:'bronze'},
-  {id:'h_m_earth',name:'근접 전사',icon:'⚔️',type:'전사',role:'defense',range:'melee',race:'human',element:'earth',
-    atk:2,hp:55,def:3,spd:1,rage:5,nrg:5,luck:1,eva:1,meva:1,hpReg:2,nrgReg:1,
-    skill:'armor',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 방어: 받는 피해 -3',
-    bonusTrigger:{on:'hit',chance:.2,effect:'thorns',desc:'20% 가시: 피격시 공격자에게 3데미지'},rarity:'bronze'},
-  {id:'h_m_dark',name:'근접 전사',icon:'⚔️',type:'전사',role:'attack',range:'melee',race:'human',element:'dark',
-    atk:3,hp:50,def:1,spd:1,rage:5,nrg:5,luck:4,eva:1,meva:1,hpReg:2,nrgReg:1,
-    skill:'life_steal',skillType:'passive',skillChance:.5,skillNrg:0,skillDesc:'[패시브 50%] 생명흡수: 피해100%회복',
-    bonusTrigger:{on:'kill',chance:.4,effect:'soul_harvest',desc:'40% 처치시: 공격력+3 영구'},rarity:'bronze'},
-  {id:'h_m_holy',name:'근접 전사',icon:'⚔️',type:'전사',role:'defense',range:'melee',race:'human',element:'holy',
-    atk:2,hp:50,def:1,spd:1,rage:5,nrg:8,luck:1,eva:1,meva:3,hpReg:2,nrgReg:1,
-    skill:'heal_self',skillType:'active',skillChance:.9,skillNrg:2,skillDesc:'[액티브 90%] 신성: HP4회복 (에너지2)',
-    bonusTrigger:{on:'skill',chance:.2,effect:'divine_shield',desc:'20% 비전 발동 시: 다음 피해 1회 무효'},rarity:'bronze'},
-  // ── 원거리 궁수 ──
-  {id:'h_r_fire',name:'원거리 궁수',icon:'🏹',type:'사수',role:'attack',range:'ranged',race:'human',element:'fire',
-    atk:5,hp:30,def:1,spd:1,rage:3,nrg:10,luck:1,eva:1,meva:1,hpReg:1,nrgReg:1,
-    skill:'aoe',skillType:'active',skillChance:.6,skillNrg:4,skillDesc:'[액티브 60%] 화살비: 적전체 3데미지 (에너지4)',
-    bonusTrigger:{on:'skill',chance:.25,effect:'ignite',desc:'25% 비전 발동 시: 대상 2턴 화상(턴당3)'},rarity:'bronze'},
-  {id:'h_r_water',name:'원거리 궁수',icon:'🏹',type:'사수',role:'defense',range:'ranged',race:'human',element:'water',
-    atk:3,hp:38,def:1,spd:1,rage:1,nrg:10,luck:1,eva:1,meva:1,hpReg:2,nrgReg:1,
-    skill:'freeze',skillType:'active',skillChance:.5,skillNrg:5,skillDesc:'[액티브 50%] 빙결: 1턴 행동불가 (에너지5)',
-    bonusTrigger:{on:'attack',chance:.15,effect:'frostbite',desc:'15% 공격시: 대상 스피드-3'},rarity:'bronze'},
-  {id:'h_r_lightning',name:'원거리 궁수',icon:'🏹',type:'사수',role:'attack',range:'ranged',race:'human',element:'lightning',
-    atk:3,hp:30,def:1,spd:4,rage:1,nrg:10,luck:1,eva:3,meva:1,hpReg:1,nrgReg:1,
-    skill:'pierce',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 관통: 방어무시',
-    bonusTrigger:{on:'attack',chance:.2,effect:'headshot',desc:'20% 공격시: 대상 HP 10% 즉사'},rarity:'bronze'},
-  {id:'h_r_earth',name:'원거리 궁수',icon:'🏹',type:'사수',role:'defense',range:'ranged',race:'human',element:'earth',
-    atk:3,hp:35,def:3,spd:1,rage:1,nrg:10,luck:1,eva:1,meva:1,hpReg:1,nrgReg:1,
-    skill:'armor',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 위장: 받는 피해 -3',
-    bonusTrigger:{on:'hit',chance:.2,effect:'thorns',desc:'20% 반격: 피격시 독가시 3데미지'},rarity:'bronze'},
-  {id:'h_r_dark',name:'원거리 궁수',icon:'🏹',type:'사수',role:'attack',range:'ranged',race:'human',element:'dark',
-    atk:4,hp:30,def:1,spd:1,rage:1,nrg:10,luck:4,eva:1,meva:1,hpReg:1,nrgReg:1,
-    skill:'crit',skillType:'passive',skillChance:.3,skillNrg:0,skillDesc:'[패시브 30%] 급소: 3배 데미지',
-    bonusTrigger:{on:'kill',chance:.4,effect:'stealth',desc:'40% 처치시: 다음턴 회피 100%'},rarity:'bronze'},
-  {id:'h_r_holy',name:'원거리 궁수',icon:'🏹',type:'사수',role:'attack',range:'ranged',race:'human',element:'holy',
-    atk:3,hp:30,def:1,spd:1,rage:1,nrg:13,luck:1,eva:1,meva:3,hpReg:1,nrgReg:1,
-    skill:'first_strike',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 선제: 항상 먼저 공격',
-    bonusTrigger:{on:'attack',chance:.2,effect:'double_arrow',desc:'20% 쌍발: 공격시 2회 타격'},rarity:'bronze'},
-  // ── 지원 마법사 ──
-  {id:'h_s_fire',name:'지원 마법사',icon:'🔮',type:'마법사',role:'support',range:'ranged',race:'human',element:'fire',
-    atk:3,hp:25,def:1,spd:1,rage:3,nrg:30,luck:1,eva:1,meva:1,hpReg:1,nrgReg:2,
-    skill:'aoe',skillType:'active',skillChance:.7,skillNrg:4,skillDesc:'[액티브 70%] 화염: 적전체 3데미지 (에너지4)',
-    bonusTrigger:{on:'skill',chance:.25,effect:'ignite',desc:'25% 비전 발동 시: 대상 2턴 화상(턴당3)'},rarity:'bronze'},
-  {id:'h_s_water',name:'지원 마법사',icon:'🔮',type:'마법사',role:'support',range:'ranged',race:'human',element:'water',
-    atk:1,hp:33,def:1,spd:1,rage:1,nrg:30,luck:1,eva:1,meva:1,hpReg:2,nrgReg:2,
-    skill:'heal_ally',skillType:'active',skillChance:.8,skillNrg:3,skillDesc:'[액티브 80%] 치유: 아군 HP5 회복 (에너지3)',
-    bonusTrigger:{on:'skill',chance:.3,effect:'group_heal',desc:'30% 비전 발동 시: 아군 전체 HP2 회복'},rarity:'bronze'},
-  {id:'h_s_lightning',name:'지원 마법사',icon:'🔮',type:'마법사',role:'support',range:'ranged',race:'human',element:'lightning',
-    atk:1,hp:25,def:1,spd:4,rage:1,nrg:30,luck:1,eva:3,meva:1,hpReg:1,nrgReg:2,
-    skill:'inspire',skillType:'active',skillChance:.7,skillNrg:4,skillDesc:'[액티브 70%] 전기충전: 아군 전체 공격+2 (에너지4)',
-    bonusTrigger:{on:'skill',chance:.25,effect:'arcane_burst',desc:'25% 비전 발동 시: 적전체 2추가데미지'},rarity:'bronze'},
-  {id:'h_s_earth',name:'지원 마법사',icon:'🔮',type:'마법사',role:'support',range:'ranged',race:'human',element:'earth',
-    atk:1,hp:30,def:3,spd:1,rage:1,nrg:30,luck:1,eva:1,meva:1,hpReg:1,nrgReg:2,
-    skill:'mass_heal',skillType:'active',skillChance:.8,skillNrg:4,skillDesc:'[액티브 80%] 대치유: 아군전체 HP3 (에너지4)',
-    bonusTrigger:{on:'skill',chance:.2,effect:'bless',desc:'20% 비전 발동 시: 랜덤 아군 보호막+3'},rarity:'bronze'},
-  {id:'h_s_dark',name:'지원 마법사',icon:'🔮',type:'마법사',role:'support',range:'ranged',race:'human',element:'dark',
-    atk:2,hp:25,def:1,spd:1,rage:1,nrg:30,luck:4,eva:1,meva:1,hpReg:1,nrgReg:2,
-    skill:'drain',skillType:'passive',skillChance:.7,skillNrg:0,skillDesc:'[패시브 70%] 흡수: 피해50%회복',
-    bonusTrigger:{on:'kill',chance:.35,effect:'soul_harvest',desc:'35% 처치시: 공격력+3 영구'},rarity:'bronze'},
-  {id:'h_s_holy',name:'지원 마법사',icon:'🔮',type:'마법사',role:'support',range:'ranged',race:'human',element:'holy',
-    atk:1,hp:25,def:1,spd:1,rage:1,nrg:33,luck:1,eva:1,meva:3,hpReg:1,nrgReg:2,
-    skill:'heal_ally',skillType:'active',skillChance:.9,skillNrg:3,skillDesc:'[액티브 90%] 신성치유: 아군 HP6 회복 (에너지3)',
-    bonusTrigger:{on:'skill',chance:.25,effect:'group_heal',desc:'25% 비전 발동 시: 아군 전체 HP3 회복'},rarity:'bronze'},
-  // ══════════════════════════════════
-  // ── RECRUITABLE UNITS (선술집/전투 중 획득) ──
-  // ══════════════════════════════════
   // ── BRONZE (11) ──
   {id:'militia',name:'민병',icon:'🗡️',type:'전사',role:'attack',range:'melee',race:'human',element:'earth',
     atk:2,hp:10,def:1,spd:1,rage:2,nrg:1,luck:1,eva:1,meva:1,hpReg:0,nrgReg:0,
@@ -193,7 +113,7 @@ RoF.Data.UNITS = Object.freeze([
     skill:'life_steal',skillType:'passive',skillChance:.6,skillNrg:0,skillDesc:'[패시브 60%] 생명흡수: 피해100%회복',
     bonusTrigger:{on:'kill',chance:.5,effect:'raise_dead',desc:'50% 처치시: 적을 아군 좀비로 소환'},rarity:'gold'},
   {id:'sniper',name:'저격수',icon:'🎯',type:'사수',role:'attack',range:'ranged',race:'human',element:'lightning',
-    atk:6,hp:8,def:0,spd:4,rage:1,nrg:5,luck:5,eva:3,meva:1,hpReg:0,nrgReg:1,
+    atk:6,hp:10,def:0,spd:4,rage:1,nrg:5,luck:5,eva:3,meva:1,hpReg:0,nrgReg:1,
     skill:'pierce',skillType:'passive',skillChance:1,skillNrg:0,skillDesc:'[패시브] 관통: 방어무시',
     bonusTrigger:{on:'attack',chance:.25,effect:'headshot',desc:'25% 공격시: 대상 HP 10% 즉사'},rarity:'silver'},
   {id:'phoenix',name:'불사조',icon:'🔶',type:'야수',role:'support',range:'melee',race:'spirit',element:'fire',
@@ -218,7 +138,7 @@ RoF.Data.UNITS = Object.freeze([
     skill:'drain',skillType:'passive',skillChance:.8,skillNrg:0,skillDesc:'[패시브 80%] 흡수: 피해50%회복',
     bonusTrigger:{on:'kill',chance:.5,effect:'raise_dead',desc:'50% 처치시: 적을 아군 해골로 소환'},rarity:'gold'},
   {id:'archangel',name:'대천사',icon:'👼',type:'전사',role:'defense',range:'melee',race:'celestial',element:'holy',
-    atk:6,hp:40,def:5,spd:2,rage:2,nrg:15,luck:3,eva:2,meva:6,hpReg:3,nrgReg:3,
+    atk:7,hp:40,def:8,spd:2,rage:2,nrg:15,luck:3,eva:2,meva:6,hpReg:3,nrgReg:3,
     skill:'mass_heal',skillType:'active',skillChance:.9,skillNrg:5,skillDesc:'[액티브 90%] 천상치유: 아군전체 HP5 (에너지5)',
     bonusTrigger:{on:'skill',chance:.3,effect:'divine_shield',desc:'30% 비전 발동 시: 아군 전체 1회 피해무효'},rarity:'legendary'},
   {id:'griffin_knight',name:'심홍의 그리핀 기사',icon:'🗡️',type:'전사',role:'attack',range:'melee',race:'human',element:'fire',

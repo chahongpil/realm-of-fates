@@ -503,7 +503,9 @@ body.game-mode #pick-screen #pick-grid{
   position:absolute;left:var(--pick-grid-x);top:var(--pick-grid-y);
   width:var(--pick-grid-w);height:var(--pick-grid-h);
   padding:8px;margin:0;overflow-y:auto;
+  --card-v4-w:260px;
 }
+body.game-mode #pick-screen #pick-grid .pick-card-wrap{display:flex;flex-direction:column;align-items:center;}
 body.game-mode #pick-screen .pick-area > div[style*="margin-top:12px"]{
   position:absolute;left:var(--pick-btns-x);top:var(--pick-btns-y);
   width:var(--pick-btns-w);height:var(--pick-btns-h);

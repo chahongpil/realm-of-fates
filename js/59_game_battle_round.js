@@ -160,8 +160,12 @@ Object.assign(RoF.Game, {
         const b=pool[Math.floor(Math.random()*pool.length)];const scale=1+(bs.currentRound-1)*.05;
         const c={...b,uid:uid(),level:1,equips:[],atk:Math.round(b.atk*scale),hp:Math.round(b.hp*scale),maxHp:Math.round(b.hp*scale),def:Math.round(b.def*scale)};
         const dup=checkDupUnit(c);
-        const el=mkCardEl(c);
-        if(dup){const tag=document.createElement('div');tag.style.cssText='text-align:center;font-size:.7rem;color:#ff66ff;margin-top:2px;';tag.textContent=`🔀 합성 가능! → ${R_LABEL[upgradeRarity(dup.rarity)]}`;el.appendChild(tag);}
+        const el=mkCardElV4(c);
+        // V4 overflow:hidden 이라 dup badge 는 카드 밖에 두기 위해 wrapper 사용
+        const wrap=document.createElement('div');
+        wrap.className='pick-card-wrap';
+        wrap.appendChild(el);
+        if(dup){const tag=document.createElement('div');tag.style.cssText='text-align:center;font-size:.7rem;color:#ff66ff;margin-top:2px;';tag.textContent=`🔀 합성 가능! → ${R_LABEL[upgradeRarity(dup.rarity)]}`;wrap.appendChild(tag);}
         let addedUnit=null;
         el.onclick=()=>{
           if(picked&&addedUnit){
@@ -169,7 +173,7 @@ Object.assign(RoF.Game, {
             bs.pCards=bs.pCards.filter(p=>p.uid!==addedUnit.uid);
             addedUnit=null;picked=false;SFX.play('click');
             el.style.opacity='1';el.style.border='';
-            grid.querySelectorAll('.card').forEach(x=>{x.style.pointerEvents='';x.style.opacity='1';});
+            grid.querySelectorAll('.card-v4').forEach(x=>{x.style.pointerEvents='';x.style.opacity='1';});
             sub.textContent='동료를 다시 선택하세요.';
             document.getElementById('pick-confirm-btn').disabled=true;
             return;
@@ -179,7 +183,7 @@ Object.assign(RoF.Game, {
             UI.modal('합성 확인',`${dup.icon}${dup.name}(${R_LABEL[dup.rarity]})과 합성하여\n${R_LABEL[upgradeRarity(dup.rarity)]}로 강화하시겠습니까?\n(기존 동료의 힘을 흡수합니다)`,()=>{
               fuseCard(dup);dup.currentHp=dup.maxBHp=dup.hp;
               picked=true;SFX.play('magic');
-              grid.querySelectorAll('.card').forEach(x=>{x.style.pointerEvents='none';x.style.opacity='.4';});
+              grid.querySelectorAll('.card-v4').forEach(x=>{x.style.pointerEvents='none';x.style.opacity='.4';});
               sub.textContent=`🔀 합성! ${dup.name} → ${R_LABEL[dup.rarity]}!`;onPick();
             });
           } else {
@@ -188,12 +192,12 @@ Object.assign(RoF.Game, {
             addedUnit={...c,currentHp:c.hp,maxBHp:c.maxHp,side:'player',row:'back',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:0,curShield:c.shield||0,burn:0};
             bs.pCards.push(addedUnit);
             SFX.play('click');
-            grid.querySelectorAll('.card').forEach(x=>{if(x!==el){x.style.pointerEvents='none';x.style.opacity='.4';}});
+            grid.querySelectorAll('.card-v4').forEach(x=>{if(x!==el){x.style.pointerEvents='none';x.style.opacity='.4';}});
             el.style.opacity='.6';el.style.border='2px solid #44ff88';
             sub.textContent=`✅ ${c.name} 합류! (다시 클릭하면 취소)`;onPick();
           }
         };
-        grid.appendChild(el);
+        grid.appendChild(wrap);
       }
     } else if(action==='pick_skill'){
       title.textContent='⚡ 비전 선택 (이번 전투)';sub.textContent='동료에게 전수! 중복 시 합성 강화';

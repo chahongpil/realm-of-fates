@@ -204,11 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const title=document.getElementById('pick-title'); if(title)title.textContent='🃏 동료 선택 (이번 전투)';
             const sub=document.getElementById('pick-sub'); if(sub)sub.textContent='중복 시 합성하여 등급 상승!';
             const grid=document.getElementById('pick-grid');
-            if(grid && !grid.children.length && typeof mkCardEl==='function'){
+            if(grid && !grid.children.length && typeof mkCardElV4==='function'){
               const UNITS=RoF.Data.UNITS||[];
               for(let i=0;i<3;i++){
                 const u=UNITS.filter(x=>!x.id.startsWith('h_'))[i];
-                if(u) grid.appendChild(mkCardEl({...u,uid:'_p'+i}));
+                if(u) grid.appendChild(mkCardElV4({...u,uid:'_p'+i}));
               }
             }
           },

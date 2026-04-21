@@ -8,6 +8,16 @@
 
 ---
 
+## 2026-04-21 (8차-D) ▶ 콘텐츠 ▶ Step 5D pick-screen V4 이식 + .card 셀렉터 버그 수정
+- 변경:
+  1. **Preview 경로** (`js/99_bootstrap.js:211`) `mkCardEl → mkCardElV4`.
+  2. **실전 로직** (`js/59_game_battle_round.js:163`) 라운드 끝 "동료 추가" 3지선다. `mkCardEl → mkCardElV4`. V4 overflow:hidden 이라 중복 합성 badge (`🔀 합성 가능!`) 를 카드 밖에 두기 위해 `.pick-card-wrap` 으로 감쌈 (flex column).
+  3. **기존 버그 부수적 수정** — `grid.querySelectorAll('.card')` → `.card-v4` (2곳). V2 시대에도 `.card-v2` 를 써야 했는데 `.card` 로 조회되어 dim 처리가 작동 안 했을 가능성. V4 전환 김에 셀렉터 정상화.
+  4. **CSS** — `#pick-grid { --card-v4-w:260px }` + `.pick-card-wrap{display:flex;flex-direction:column;align-items:center}` 추가.
+- 이유: Step 5 의 마지막 경량 작업. Tavern 초반 영입부터 라운드 중간 뽑기까지 V4 통일 마감. scan doc 의 "Step 5C Round Reward" 는 실제로는 pick-screen (Battle 별도 화면) 이었음.
+- 영향: 3 V4 카드 / 0 V2, 버튼 정상 작동. 회귀 9/9 PASS. 스크린샷 `shots/pick_v4_step5d.png`.
+- 이전 결정 관계: (8차-C) 연속. Step 5 A/B/D 완결. Step 5C (실제 Battle bv2-card 별도 규격) 만 남음 — 반나절 규모이므로 별도 기획.
+
 ## 2026-04-21 (8차-C) ▶ 콘텐츠 ▶ Step 5B Castle + Church + Matching V4 이식
 - 변경:
   1. **Castle Upgrade** (`js/54_game_castle.js:40`) — 단련 대상 카드 grid, `mkCardEl → mkCardElV4`. 기존 wrapper 패턴 유지.

@@ -14,6 +14,11 @@
 - 영향: 코드 수정 0. 대표님 승인 후 실행. 뷰포트 1280×720 고정 준수(옵션 C 배제). V4 setter API(setHP/setNRG/setStatus/setShield/setStatModifier) 실전 검증 기회.
 - 관계: handoff-2026-04-21-1115.md "P0 Step 5C Battle 이식" 구체화.
 
+## 2026-04-21 오후 ▶ 세션 ▶ 핸드오프 저장
+- 변경: 세션 상태를 `docs/handoff/handoff-2026-04-21-1500.md` 에 저장.
+- 이유: 수동 저장 (대표님 지시 "마무리하자"). 오후 4커밋 Step 5C 완결 + 정리 마감.
+- 영향: 다음 세션 `/clear → Ctrl+V` 로 맥락 복구.
+
 ## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C 후속 3건 (v2.* console noise 제거 + is-action-mode 진단)
 - 변경:
   1. **99_bindings v2.* silent skip** (`js/99_bindings.js`) — `data-action="v2.charClick"` 등은 `Battle._installDelegatedListeners` 가 자체 처리. 99_bindings 는 "v2" 모듈 몰라서 매 클릭마다 `[bindings] 알 수 없는 모듈: v2` 에러 찍던 noise. `resolveAction` 에서 `moduleName==='v2'` 조기 return null.

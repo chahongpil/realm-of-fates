@@ -18,9 +18,15 @@
 
 ## Title BGM
 
-### ~~title1.mp3~~ (2026-04-21 폐기)
-- **상태**: 배열에서 제거. `snd/_archive/title1_original_2026-04-11.mp3` 로 보존.
-- 폐기 이유: 반복 재생으로 대표님 피로도 극상, 출처 불명으로 증빙도 대기였음.
+### title1.mp3 (2026-04-21 교체)
+- 다운로드 URL: Pixabay (추정, Nick Panek AI Assets 업로더)
+- 업로더/아티스트: **Nick Panek AI Assets** (추정)
+- 트랙명: Angel of God (추정, 원본 파일명 `nickpanekaiassets-angel-of-god-247262.mp3`)
+- 라이선스: Pixabay Content License
+- 다운로드 날짜: 2026-04-21
+- 원본 파일명: 타이틀1.mp3 (Downloads 저장 시 rename)
+- 용도: title (약 45초, 0.68 MB)
+- 이전 title1.mp3 (2026-04-11, 3.55 MB) 는 `_archive/title1_original_2026-04-11.mp3` 로 보존.
 
 ### title2.mp3
 - 다운로드 URL: **(증빙 대기 — 2026-04-21 타이틀2.mp3 로 공급받음)**

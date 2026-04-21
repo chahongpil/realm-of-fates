@@ -8,6 +8,12 @@
 
 ---
 
+## 2026-04-21 (8차-B) ▶ 콘텐츠 ▶ Step 5A-2 cardselect-screen V4 이식
+- 변경: `js/55_game_battle.js:192` `renderCardSelect()` 의 `mkCardEl(c)` → `mkCardElV4(c)`. V4 는 overflow:hidden 이라 "지휘권 소비/자동 출전/부상" badge 를 카드 밖에 두기 위해 `.cs-card-wrap` 으로 감쌈 (flex column). `css/42_screens.css` `#cs-grid` 스코프에 `--card-v4-w:160px` + `.cs-card-wrap{display:flex;flex-direction:column;align-items:center}` 추가.
+- 이유: step5a_scan 의 Step 5A-2 는 2부분으로 나뉘어 있었음 — (A) formation-screen (앞 커밋), (B) cardselect-screen (이 커밋). 출전 편성 플로우 양쪽 V4 톤 통일.
+- 영향: 8 V4 카드 + 8 wrapper, 카드 폭 160×280. hero .selected / injured .opacity/.filter / 선택시 .selected 토글 전부 V4 에 그대로 동작. 회귀 9/9 PASS. 스크린샷 `shots/cardselect_v4_step5a2.png`.
+- 이전 결정 관계: 2026-04-21 (8차) 바로 뒤 연속.
+
 ## 2026-04-21 (8차) ▶ 콘텐츠 ▶ Step 5A-2 Formation V4 이식 + 자동 배치 버그 수정
 - 변경:
   1. **자동 배치 리렌더 버그 fix** — `js/99_bootstrap.js:192` preview 네비게이터가 `UI.show('formation-screen')` 만 호출하고 `Formation.show()` 를 안 불러 `_cards` 가 비어 있던 문제. `RoF.Formation.show()` 로 교체 (fallback 유지).

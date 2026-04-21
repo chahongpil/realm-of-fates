@@ -189,7 +189,7 @@ Object.assign(RoF.Game, {
       const cardCost=c.isHero?0:(c.level||1);
       const selUnitCount=this.selectedForBattle.filter(uid=>uid!==(hero?hero.uid:'')).length;
       const canAdd=!isSel&&!c.isHero&&!isInjured&&(usedSlots+cardCost<=maxSlots)&&selUnitCount<4;
-      const el=mkCardEl(c);
+      const el=mkCardElV4(c);
       if(c.isHero){
         el.style.opacity='1';
         el.classList.add('selected');
@@ -204,7 +204,11 @@ Object.assign(RoF.Game, {
       if(c.isHero){badge.style.color='#ffd700';badge.textContent='⭐ 자동 출전';}
       else if(isInjured){badge.style.color='#ff4444';badge.textContent='🩹 부상 — 교회에서 치유 필요';}
       else{badge.style.color=isSel?'#44ff88':'#ffaa44';badge.textContent=isSel?'✅ 출전 중':`지휘권 ${cardCost} 소비`;}
-      el.appendChild(badge);
+      // V4 카드는 overflow:hidden 이라 badge 를 카드 밖에 두기 위해 wrapper 로 감쌈
+      const wrap=document.createElement('div');
+      wrap.className='cs-card-wrap';
+      wrap.appendChild(el);
+      wrap.appendChild(badge);
       if(!c.isHero&&!isInjured){
         el.onclick=()=>{
           if(isSel){this.selectedForBattle=this.selectedForBattle.filter(u=>u!==c.uid);}
@@ -216,7 +220,7 @@ Object.assign(RoF.Game, {
           SFX.play('click');this.renderCardSelect();
         };
       }
-      grid.appendChild(el);
+      grid.appendChild(wrap);
     });
 
     // Show selected in top area

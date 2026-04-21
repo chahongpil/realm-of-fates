@@ -307,8 +307,10 @@ body.game-mode #cardselect-screen > #cs-grid{
   overflow-y:auto;overflow-x:hidden;
   align-content:flex-start;
 }
-/* cs-grid 카드 축소 — 기본 320×480 → 160×240 로 4×2 = 8장 가시 */
+/* cs-grid 카드 축소 — 기본 320×480 → 160×280 로 4×2 가시 (V4는 4:7) */
 body.game-mode #cardselect-screen > #cs-grid .card-v2{width:160px;}
+body.game-mode #cardselect-screen > #cs-grid{--card-v4-w:160px;}
+body.game-mode #cardselect-screen > #cs-grid .cs-card-wrap{display:flex;flex-direction:column;align-items:center;}
 /* zone 6: 보유 유물 그리드 */
 body.game-mode #cardselect-screen > #cs-relics-grid{
   position:absolute;

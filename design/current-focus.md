@@ -25,7 +25,9 @@
 ### 다음 작업 (우선순위)
 - [ ] 🔴 **Step 5C Battle 옵션 확정** — A(Compact Variant) vs B(확대만 V4), A3(Focus), 9px 스탯 허용선, parch.desc (4건)
 - [ ] 🔴 **이미지 작업 반영** (공급 시) — 유닛 P0 4장 / 스킬 B 10장 / effect 아이콘 14종 / gold 화염 스펠 신규
-- [ ] 🟡 **Church z-index / Codex 5-col / B3 `!important` 정리** — 자투리
+- [x] ~~Church z-index~~ — 이미 `#church-npc z-index:20` 설정 (css/42_screens.css:452). 2026-04-21 확인.
+- [x] ~~Codex 5-col~~ — 이미 `#codex-tab --card-v4-w:235px` + `repeat(auto-fill,235px)` + `scrollbar-gutter:stable` (css/42_screens.css:395-422). 2026-04-21 확인.
+- [ ] 🟡 **B3 `!important` 정리** — index.html 6곳 인라인 `style="display:flex..."` → CSS 이관. 구조 변경 수준 낮지만 **대표님 동의 필요** (동시 변경 시 카드 그리드 리스크).
 - [ ] 🟡 **역할 5종 분화 결정** — 현 3종 → DS 5종 전환 (58 유닛 재분류 영향)
 - [ ] 🟡 **11_data_units.js 주석 카운트 정정** — `// GOLD (6)` / `// LEGENDARY (5)` 재분류 반영 (자투리)
 

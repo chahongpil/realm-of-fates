@@ -8,6 +8,19 @@
 
 ---
 
+## 2026-04-21 저녁 ▶ 콘텐츠 ▶ 신규 유닛 14장 이식 (11종 신규 + 3종 이미지 교체)
+- 변경:
+  1. **신규 유닛 11종** (51 유닛, +11):
+     - bronze(1): pirate
+     - silver(4): stormcaller / stonemason / tidal_knight / dark_shaman
+     - gold(3): stonemason_noble / tidal_knight_noble / flame_warrior
+     - legendary(3): mountain_breaker / sea_paladin / flame_guardian
+  2. **이미지 교체 3장** (기존 유닛 유지): infantry / lancer / priest
+  3. 스크립트 `tools/import_units_0421.py` (normalized/ → game/img/ 매핑 14장 한국어→영문 ID).
+- 이유: 대표님 2026-04-21 공급 일러스트 14장. 원소 균형(fire/water/earth/dark 보강) + 역할 균형(defense 탱커 4종 보강).
+- 영향: 회귀 9/9 PASS (UNITS 40→51). 등급 조정 2회 (1회차 내가 이미지만 보고 추정 → 2회차 대표님 확정 등급 반영). 최종 confirmed: pirate=bronze, dark_shaman=silver, flame_warrior=gold, flame_guardian=legendary, mountain_breaker=legendary.
+- 관계: 주인공 시스템 리뉴얼과 독립. P6 UI 이식 + 스펠/유물 이식은 별도 커밋.
+
 ## 2026-04-21 오후(3차) ▶ 콘텐츠 ▶ 주인공 시스템 리뉴얼 (P1~P5)
 - 변경:
   1. **기존 18종 영웅 폐기** — `h_m/r/s_*` × 6원소 = 18 (`js/11_data_units.js` 에서 삭제, `img/h_*.png` 18장 → `trash/img_heroes_legacy_2026-04-21/`).

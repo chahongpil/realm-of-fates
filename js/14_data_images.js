@@ -33,6 +33,18 @@ RoF.Data.CARD_IMG = Object.freeze({
   genie_noble:__IMG+'genie_noble.png',genie_legendary:__IMG+'genie_legendary.png',
   earth_guardian:__IMG+'earth_guardian.png',sea_priest:__IMG+'sea_priest.png',
   behemoth:__IMG+'behemoth.png',leviathan:__IMG+'leviathan.png',
+  // 2026-04-21 신규 유닛 11종
+  stormcaller:__IMG+'stormcaller.png',
+  mountain_breaker:__IMG+'mountain_breaker.png',
+  stonemason:__IMG+'stonemason.png',
+  stonemason_noble:__IMG+'stonemason_noble.png',
+  dark_shaman:__IMG+'dark_shaman.png',
+  sea_paladin:__IMG+'sea_paladin.png',
+  pirate:__IMG+'pirate.png',
+  tidal_knight:__IMG+'tidal_knight.png',
+  tidal_knight_noble:__IMG+'tidal_knight_noble.png',
+  flame_guardian:__IMG+'flame_guardian.png',
+  flame_warrior:__IMG+'flame_warrior.png',
   // 스킬 — 로컬 PNG 일러스트 (2026-04-12 DreamShaper 생성, 30/30 완료)
   sk_power:__IMG+'sk_power.png', sk_shield:__IMG+'sk_shield.png', sk_heal:__IMG+'sk_heal.png',
   sk_swift:__IMG+'sk_swift.png', sk_tough:__IMG+'sk_tough.png', sk_focus:__IMG+'sk_focus.png',

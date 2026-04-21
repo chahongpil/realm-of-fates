@@ -8,6 +8,17 @@
 
 ---
 
+## 2026-04-21 (8차) ▶ 콘텐츠 ▶ Step 5A-2 Formation V4 이식 + 자동 배치 버그 수정
+- 변경:
+  1. **자동 배치 리렌더 버그 fix** — `js/99_bootstrap.js:192` preview 네비게이터가 `UI.show('formation-screen')` 만 호출하고 `Formation.show()` 를 안 불러 `_cards` 가 비어 있던 문제. `RoF.Formation.show()` 로 교체 (fallback 유지).
+  2. **Formation V4 이식** — `js/70_formation.js` render() 에 `RoF.CardV4Component.create(c,{}).el` 적용. 슬롯 선택 시 `setSelected(true)` 로 V4 황금 오라 사용. 빈 슬롯은 `.form-slot-empty` (dashed + ➕ 글리프).
+  3. **레이아웃 토큰 조정** — `--form-diamond-h: 180→335`, `--form-bench-label-y: 380→535`, `--form-bench-y: 420→565`, `--form-bench-h: 200→70` (V4 카드 높이 333 수용).
+  4. **CSS 스코프** — `css/42_screens.css` `#form-diamond` 에 `--card-v4-w: 190px` + flex + gap 8 + center 주입. `css/41_formation.css` `.form-slot` 는 wrapper, `.form-slot-empty` 는 독립 스타일.
+  5. **index.html** — `#form-diamond` 인라인 `flex-wrap:wrap` + `padding:15px 10px` 제거 (기존 레거시 레이아웃 잔재).
+- 이유: ui-inspector 2026-04-20 보고의 "F1_formation_auto 에서 + 더미 유지" 버그 + Tavern/Deckview V4 톤 통일 확장.
+- 영향: 진입 → `_cards=Game.deck` 주입 → render 시 V4 카드 5장, 공명 배지, bench 3장. Playwright 검증 완료 (`shots/formation_v4_step5a2_1600.png`, `shots/formation_v4_step5a2_selected.png`). 회귀 9/9 PASS.
+- 이전 결정 관계: 2026-04-20 Step 4A/4B Tavern V4 → Step 5A-1 Deckview V4 → 이번 Step 5A-2 Formation V4. 다음: Step 5C Battle.
+
 ## 2026-04-20 21:44 ▶ 세션 ▶ 핸드오프 저장
 - 변경: 세션 상태를 `docs/handoff/handoff-2026-04-20-2144.md` 에 저장 + `current-focus.md` 4·5·6차 반영 갱신.
 - 이유: 수동 저장 (대표님 지시, 세션 마무리).

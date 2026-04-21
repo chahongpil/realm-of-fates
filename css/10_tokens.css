@@ -154,9 +154,9 @@
   --form-title-x: 0px;    --form-title-y: 40px;  --form-title-w: 1280px; --form-title-h: 60px;
   --form-sub-x: 0px;      --form-sub-y: 105px;   --form-sub-w: 1280px;   --form-sub-h: 36px;
   --form-reso-x: 0px;     --form-reso-y: 148px;  --form-reso-w: 1280px;  --form-reso-h: 36px;
-  --form-diamond-x: 140px;--form-diamond-y: 190px;--form-diamond-w: 1000px;--form-diamond-h: 180px;
-  --form-bench-label-x: 0px;--form-bench-label-y: 380px;--form-bench-label-w: 1280px;--form-bench-label-h: 30px;
-  --form-bench-x: 140px;  --form-bench-y: 420px; --form-bench-w: 1000px; --form-bench-h: 200px;
+  --form-diamond-x: 140px;--form-diamond-y: 190px;--form-diamond-w: 1000px;--form-diamond-h: 335px;
+  --form-bench-label-x: 0px;--form-bench-label-y: 535px;--form-bench-label-w: 1280px;--form-bench-label-h: 30px;
+  --form-bench-x: 140px;  --form-bench-y: 565px; --form-bench-w: 1000px; --form-bench-h: 70px;
   --form-buttons-x: 0px; --form-buttons-y: 0px; --form-buttons-w: 1280px; --form-buttons-h: 720px;
   --form-btn-auto-x:    440px; --form-btn-auto-y:    640px; --form-btn-auto-w:    160px; --form-btn-auto-h:    44px;
   --form-btn-confirm-x: 610px; --form-btn-confirm-y: 640px; --form-btn-confirm-w: 230px; --form-btn-confirm-h: 44px;

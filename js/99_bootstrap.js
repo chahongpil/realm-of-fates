@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const s=document.getElementById('rew-sub'); if(s)s.textContent='리그 점수 +12';
             const st=document.getElementById('rew-stats'); if(st)st.innerHTML='💰 +50 골드<br>⭐ +3 경험치';
           },
-          formation:   () => RoF.UI.show('formation-screen'),
+          formation:   () => RoF.Formation && RoF.Formation.show ? RoF.Formation.show() : RoF.UI.show('formation-screen'),
           battle:      () => {
             RoF.UI.show('battle-screen');
             // 에디터 미리보기용 fake battleState — b-btn-back 같은 숨은 zone 을 드러내기 위함

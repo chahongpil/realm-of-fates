@@ -555,6 +555,8 @@ body.game-mode #formation-screen > #form-diamond{
   position:absolute;left:var(--form-diamond-x);top:var(--form-diamond-y);
   width:var(--form-diamond-w);height:var(--form-diamond-h);
   margin:0;padding:0;
+  --card-v4-w: 190px;
+  display:flex;gap:8px;justify-content:center;align-items:flex-start;
 }
 body.game-mode #formation-screen > .form-bench-label{
   position:absolute;left:var(--form-bench-label-x);top:var(--form-bench-label-y);

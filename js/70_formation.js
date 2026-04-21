@@ -70,18 +70,15 @@ RoF.Formation ={
       const isSel=this.selected&&this.selected.type==='slot'&&this.selected.idx===i;
       const slot=document.createElement('div');
       slot.className='form-slot'+(c?' occupied':'')+(isSel?' selected':'');
-      slot.style.cssText='flex:1;max-width:18%;min-width:100px;';
-      const img=c?getCardImg(c):'';
       if(c){
-        slot.innerHTML=`<div style="text-align:center;">
-          ${img?`<img src="${img}" style="width:100%;max-width:150px;aspect-ratio:1;border-radius:8px;object-fit:cover;border:3px solid ${isSel?'#44ff88':'#8b6914'};box-shadow:${isSel?'0 0 15px rgba(68,255,136,.5)':'none'};">`:`<div style="font-size:2.5rem;">${c.icon}</div>`}
-          <div class="fs-name" style="font-size:.8rem;margin-top:4px;">${c.isHero?'⭐':''}${c.name}</div>
-        </div>`;
+        const comp=RoF.CardV4Component.create(c,{});
+        comp.setSelected(isSel);
+        slot.appendChild(comp.el);
       } else {
-        slot.innerHTML=`<div style="text-align:center;padding:25px 0;border:2px dashed #333;border-radius:10px;background:rgba(0,0,0,.2);">
-          <div style="font-size:2rem;color:#333;">➕</div>
-          <div style="font-size:.6rem;color:#555;">${i+1}번 슬롯</div>
-        </div>`;
+        const empty=document.createElement('div');
+        empty.className='form-slot-empty';
+        empty.innerHTML=`<div class="fse-plus">➕</div><div class="fse-label">${i+1}번 슬롯</div>`;
+        slot.appendChild(empty);
       }
       slot.onclick=()=>this.clickSlot(i);
       diamond.appendChild(slot);

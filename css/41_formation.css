@@ -5,14 +5,19 @@
 .form-grid{display:flex;flex-direction:column;gap:var(--form-grid-gap);align-items:center;margin-bottom:15px;}
 .form-row{display:flex;gap:var(--form-row-gap);justify-content:center;}
 .form-row-label{font-size:.6rem;color:var(--text-3);margin-bottom:2px;text-align:center;}
-.form-slot{width:var(--form-slot-w);height:var(--form-slot-h);border:2px dashed var(--border-1);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02);}
-.form-slot:hover{border-color:var(--curr-gold);}
-.form-slot.occupied{border-style:solid;border-color:var(--text-3);background:rgba(255,255,255,.05);}
-.form-slot.selected{border-color:var(--success);box-shadow:0 0 10px rgba(68,255,136,.3);}
-.form-slot .fs-icon{font-size:2rem;}
-.form-slot .fs-icon img{width:90px;height:90px;border-radius:6px;object-fit:cover;}
-.form-slot .fs-name{font-size:.65rem;color:var(--gray-1);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.form-slot .fs-empty{font-size:.7rem;color:var(--text-4);}
+
+/* V4 전환: form-slot 는 단순 wrapper. 크기는 .card-v4 또는 .form-slot-empty 가 결정. */
+.form-slot{display:flex;align-items:flex-start;justify-content:center;cursor:pointer;transition:transform .15s;}
+.form-slot:hover{transform:translateY(-2px);}
+.form-slot-empty{
+  width:var(--card-v4-w,190px);aspect-ratio:4/7;
+  border:2px dashed var(--border-1);border-radius:12px;
+  background:rgba(0,0,0,.2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+}
+.form-slot-empty .fse-plus{font-size:2.5rem;color:#444;}
+.form-slot-empty .fse-label{font-size:.75rem;color:#666;}
+.form-slot.selected .form-slot-empty{border-color:var(--success);box-shadow:0 0 10px rgba(68,255,136,.3);}
 .form-bench{display:flex;gap:var(--form-bench-gap);flex-wrap:wrap;justify-content:center;margin:10px 0;}
 .form-bench-label{font-size:.7rem;color:var(--gray-3);margin-bottom:5px;text-align:center;}
 

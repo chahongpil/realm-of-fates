@@ -483,18 +483,9 @@
 
     <div class="battle-sub" id="battle-char-focus">
       <div class="bcf-backdrop"></div>
-      <div class="bcf-main-card">
-        <div class="bcf-card-img"></div>
-        <div class="bcf-hp"></div>
-        <div class="bcf-stat-col">
-          <span class="bcf-atk"></span>
-          <span class="bcf-def"></span>
-          <span class="bcf-spd"></span>
-        </div>
-        <div class="bcf-name"></div>
-        <div class="bcf-desc"></div>
-        <div class="bcf-nrg"></div>
-      </div>
+      <!-- Step 5C (2026-04-21): bcf-main-card 내부는 CardV4Component 가 런타임에 채움.
+           과거 bcf-card-img/bcf-hp/bcf-stat-col/bcf-name/bcf-desc/bcf-nrg 자식 마크업 제거. -->
+      <div class="bcf-main-card"></div>
       <!-- 스킬 row 5슬롯 사전 선언 (스토리보드 3번) — JS 는 data-skill-id + 텍스트만 주입 -->
       <div class="bcf-skill-row">
         <div class="bcf-skill-card" data-action="v2.skillClick" data-skill-id="" data-slot="0">

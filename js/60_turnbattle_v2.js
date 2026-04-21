@@ -344,8 +344,6 @@
     const el = inst.el;
     el.classList.add('card-v4-compact', 'bv2-card-' + side);
     if(unit.isHero) el.classList.add('bv2-card-hero');
-    // 하위호환 — 기존 코드가 .bv2-card 셀렉터로 조회하는 경우 대비
-    el.classList.add('bv2-card');
     // data-unit-id 병행 (V4 기본은 data-uid). 전투 엔진은 unit-id 로 조회.
     el.setAttribute('data-unit-id', unit.id);
     el.setAttribute('data-action', side === 'ally' ? 'v2.charClick' : 'v2.targetClick');
@@ -510,7 +508,7 @@
     }
 
     // 그리드에서 이 카드 숨김 (중앙 확대 본이 대신 보임)
-    document.querySelectorAll('.battle-stage-grid .bv2-card.is-selected')
+    document.querySelectorAll('.battle-stage-grid .card-v4-compact.is-selected')
       .forEach(function(el){ el.classList.remove('is-selected'); });
     const selEl = stageCardOf(c);
     if(selEl) selEl.classList.add('is-selected');
@@ -528,7 +526,7 @@
     clearTargetHighlight();
     const type = (sk && sk.targetType) || 'single_enemy';
     const caster = Battle.state.selectedChar;
-    const cards = document.querySelectorAll('.battle-stage-grid .bv2-card');
+    const cards = document.querySelectorAll('.battle-stage-grid .card-v4-compact');
     cards.forEach(function(el){
       const u = Battle.findUnitById(el.getAttribute('data-unit-id'));
       if(!u) return;
@@ -559,11 +557,11 @@
   };
 
   const clearTargetHighlight = function(){
-    document.querySelectorAll('.battle-stage-grid .bv2-card.is-target-valid')
+    document.querySelectorAll('.battle-stage-grid .card-v4-compact.is-target-valid')
       .forEach(function(el){ el.classList.remove('is-target-valid'); });
-    document.querySelectorAll('.battle-stage-grid .bv2-card.is-target-hover')
+    document.querySelectorAll('.battle-stage-grid .card-v4-compact.is-target-hover')
       .forEach(function(el){ el.classList.remove('is-target-hover'); });
-    document.querySelectorAll('.battle-stage-grid .bv2-card.is-dimmed')
+    document.querySelectorAll('.battle-stage-grid .card-v4-compact.is-dimmed')
       .forEach(function(el){ el.classList.remove('is-dimmed'); });
   };
 
@@ -921,7 +919,7 @@
       cfEl.classList.add('is-returning');
       await Battle.beatRaw(260);
     }
-    document.querySelectorAll('.battle-stage-grid .bv2-card.is-selected')
+    document.querySelectorAll('.battle-stage-grid .card-v4-compact.is-selected')
       .forEach(function(el){ el.classList.remove('is-selected'); });
   };
   Battle.performAttack = performAttack;
@@ -941,7 +939,7 @@
     if(el) el.classList.add('is-queued');
   };
   const clearAllQueuedUI = function(){
-    document.querySelectorAll('.battle-stage-grid .bv2-card.is-queued, .battle-stage-grid .bv2-card.is-acted')
+    document.querySelectorAll('.battle-stage-grid .card-v4-compact.is-queued, .battle-stage-grid .card-v4-compact.is-acted')
       .forEach(function(el){
         el.classList.remove('is-queued');
         el.classList.remove('is-acted');
@@ -1218,7 +1216,7 @@
       cfEl.classList.add('is-returning');
       await Battle.beatRaw(260);
     }
-    document.querySelectorAll('.battle-stage-grid .bv2-card.is-selected')
+    document.querySelectorAll('.battle-stage-grid .card-v4-compact.is-selected')
       .forEach(function(el){ el.classList.remove('is-selected'); });
 
     markAllyQueuedUI(c);
@@ -1254,7 +1252,7 @@
     clearHpPreview();
     clearTargetHighlight();
     if(rule.clearState.indexOf('*') >= 0){
-      document.querySelectorAll('.battle-stage-grid .bv2-card.is-selected')
+      document.querySelectorAll('.battle-stage-grid .card-v4-compact.is-selected')
         .forEach(function(el){ el.classList.remove('is-selected'); });
       Battle.resetState();
     } else {
@@ -1274,7 +1272,7 @@
     }
     clearHpPreview();
     clearTargetHighlight();
-    document.querySelectorAll('.battle-stage-grid .bv2-card.is-selected')
+    document.querySelectorAll('.battle-stage-grid .card-v4-compact.is-selected')
       .forEach(function(el){ el.classList.remove('is-selected'); });
     const cfEl = document.getElementById('battle-char-focus');
     if(cfEl) cfEl.classList.remove('is-returning');

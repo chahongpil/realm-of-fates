@@ -14,7 +14,16 @@
 - 영향: 코드 수정 0. 대표님 승인 후 실행. 뷰포트 1280×720 고정 준수(옵션 C 배제). V4 setter API(setHP/setNRG/setStatus/setShield/setStatModifier) 실전 검증 기회.
 - 관계: handoff-2026-04-21-1115.md "P0 Step 5C Battle 이식" 구체화.
 
-## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C 후속 정리 (Church z-index + Codex 5-col)
+## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C dead code 청소 (.bv2-card / .bv2c-* / bcf-*)
+- 변경:
+  1. **CSS `.bv2-card` 블록 일괄 삭제** (`css/41_battle_v2.css` L233-491, 약 260줄) — wrapper/frame/img/icon/name/status-row/hp/stats/desc/nrg + 상태 클래스(is-selected/is-target-*/is-hit/is-dead/is-dying-*/is-acted/is-queued/is-dimmed) 전부 dead. Step 5C 에서 `.card-v4.card-v4-compact` 로 전환 후 자식 `.bv2c-*` 생성 안 됨. `.bv2c-hp-delta-floating` (HP 프리뷰 floating 라벨) 만 유지.
+  2. **JS 셀렉터 치환** (`js/60_turnbattle_v2.js`) — `.battle-stage-grid .bv2-card` × 9 → `.card-v4-compact`. `buildCardEl` 에서 `classList.add('bv2-card')` 하위호환 제거.
+  3. **CSS fire-mode 셀렉터 치환** (`css/41_battle_v2.css`) — `.battle-stage-grid .bv2-card` → `.card-v4-compact` (2곳).
+  4. **index.html bcf-* 자식 마크업 제거** — `#battle-char-focus .bcf-main-card` 의 bcf-card-img/bcf-hp/bcf-stat-col/bcf-atk/bcf-def/bcf-spd/bcf-name/bcf-desc/bcf-nrg (6자식) 삭제. `CardV4Component` 가 런타임에 전담.
+  5. **CSS bcf-* 자식 규칙 삭제** — `.bcf-card-img/.bcf-hp/.bcf-stat-col/.bcf-atk/.bcf-def/.bcf-spd/.bcf-name/.bcf-desc/.bcf-nrg` 전체 블록 제거. `.bcf-main-card`/`.bcf-backdrop`/`.bcf-skill-row`/`.bcf-skill-card`/`.bsc-*` 는 유지.
+- 이유: Step 5C V4 이식으로 발생한 dead code (무해하나 유지보수 혼란) 일괄 청소. V4 전환 직후에 정리해야 다른 개발자/future self 가 "이 블록 뭐지?" 헷갈리지 않음.
+- 영향: 회귀 9/9 PASS. Playwright 전투 진입 검증 — v4compact=10 / bv2-card class=0 / bv2c-frame=0 / bcf-main-card 자식 1개(V4 인스턴스만). 시각 동일, 기능 동일.
+- 관계: Step 5C (d2c1d8f) 직후 청소. `.bv2c-hp-delta-floating`, CSS 변수 `--bv2-card-w/h/gap/focus-scale/action-scale/hover-scale` 는 유지 (공간 토큰·floating 레이어).
 - 변경:
   1. **Church NPC z-index** (`css/42_screens.css`) — `#church-npc { position:relative; z-index:20 }`. V4 카드(church-grid)가 document order 상 뒤에 있어 stacking 위로 떠서 npc 대화 바 상단을 가리던 이슈 해결. 부상자 카드 많을 때 첫 행이 npc 영역 침범하면 가렸던 상황.
   2. **Codex 5-col grid 복구** (`css/42_screens.css`) — `#codex-tab` 에 `padding:0` + `scrollbar-gutter:stable`. 40장 로드 시 세로 스크롤바가 16px 잡아먹어 유효 폭 1208 → 5×235+4×10=1215 초과로 4-col 로 떨어지던 이슈. padding 제거 + gutter 예약으로 1224 여유 확보.

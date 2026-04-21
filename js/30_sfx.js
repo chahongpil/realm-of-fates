@@ -398,3 +398,31 @@ window.SFX = RoF.SFX;
   };
   events.forEach(e => document.addEventListener(e, init, true));
 })();
+
+// 2026-04-21: iframe(편집기 미리보기) · Playwright(자동화 테스트)에서는 음악·효과음 완전 차단.
+// 중첩 재생 / 테스트 노이즈 방지. 모든 메서드를 no-op 으로 교체, 비함수 필드는 유지.
+// 감지 수단 (하나라도 해당하면 mute):
+//   - iframe 안 (편집기 미리보기)
+//   - navigator.webdriver (표준 WebDriver)
+//   - URL ?mute=1 쿼리
+//   - localStorage rof8_mute === '1'
+//   - navigator.userAgent 에 HeadlessChrome/Playwright
+(function(){
+  let mute = false;
+  try {
+    if (window.self !== window.top) mute = true;
+    else if (navigator && navigator.webdriver) mute = true;
+    else if (/(?:\?|&)mute=1(?:&|$)/.test(location.search || '')) mute = true;
+    else if (localStorage.getItem('rof8_mute') === '1') mute = true;
+    else if (/HeadlessChrome|Playwright/i.test((navigator && navigator.userAgent) || '')) mute = true;
+  } catch(e) { mute = true; }
+  if (!mute) return;
+  const S = RoF.SFX;
+  for (const k in S) {
+    if (typeof S[k] === 'function') S[k] = function(){};
+  }
+  S.on = false;
+  // 이미 초기화됐을 가능성도 처리 — 오디오 정지
+  try { if (S._bgmAudio) { S._bgmAudio.pause(); S._bgmAudio = null; } } catch(e){}
+  try { if (S.master) S.master.gain.value = 0; } catch(e){}
+})();

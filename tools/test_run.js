@@ -62,7 +62,7 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
   // ── 1. title-load ──
   try {
     pageErrors = [];
-    await page.goto(FILE_URL);
+    await page.goto(FILE_URL + '?mute=1');
     await page.waitForTimeout(800);
     const exists = await page.$('#title-screen');
     if (!exists) fail('title-load', 'no #title-screen');

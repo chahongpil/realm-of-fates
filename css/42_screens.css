@@ -39,6 +39,14 @@
 #char-hero-screen .char-role-path{font-size:.72rem;}
 #char-hero-screen .char-select-grid{gap:24px;padding:0;}
 
+/* 2026-04-21 P6: 성별 토글 — 역할 선택 화면 상단 */
+#char-hero-screen .gender-toggle{display:flex;gap:10px;justify-content:center;margin:8px 0 12px;}
+#char-hero-screen .gender-toggle .gt-btn{padding:8px 18px;background:rgba(255,255,255,.04);border:2px solid var(--border-1);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.9rem;color:var(--text-2);}
+#char-hero-screen .gender-toggle .gt-btn:hover{border-color:var(--curr-gold);transform:translateY(-1px);}
+#char-hero-screen .gender-toggle .gt-btn.sel{border-color:var(--curr-gold);background:rgba(255,215,0,.12);box-shadow:0 0 12px rgba(255,215,0,.25);color:var(--curr-gold);}
+#char-hero-screen .gender-toggle .gt-ic{font-size:1.4rem;line-height:1;}
+#char-hero-screen .gender-toggle .gt-lbl{font-weight:700;letter-spacing:.08em;}
+
 /* char-element-screen: 원소 6개를 3×2 그리드 고정 (2026-04-13 지시반영) */
 #char-element-screen .char-select-grid{
   display:grid;

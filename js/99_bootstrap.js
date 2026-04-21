@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const btns = document.getElementById('prologue-btns');
             if(btns){ btns.style.display = ''; btns.style.opacity = '1'; }
           },
-          // 2026-04-13: char-select 분리 → element + hero
+          // 2026-04-13: char-select 분리 → element + hero (Cockpit 시도 후 롤백 2026-04-21)
           'char-element':() => {
             RoF.Auth._prologueUid = RoF.Auth._prologueUid || RoF.Auth.user || '_preview';
             RoF.Auth._selElement = null; RoF.Auth._selRole = null;
@@ -161,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
           },
           'char-hero': () => {
             RoF.Auth._prologueUid = RoF.Auth._prologueUid || RoF.Auth.user || '_preview';
-            // preview 용 기본 원소
             if(!RoF.Auth._selElement) RoF.Auth._selElement = 'fire';
             if(RoF.Auth._showHeroScreen) RoF.Auth._showHeroScreen();
           },

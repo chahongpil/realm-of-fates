@@ -31,10 +31,10 @@ RoF.Auth={
     if(Backend && Backend.isReady) Backend.migrateFromLocal(id).catch(()=>{});
     setTimeout(()=>Game.load(db[id].save),300);
   },
-  _selElement:null,_selRole:null,
+  _selElement:null,_selRole:null,_selGender:'m',
   showCharSel(uid){
-    // 2026-04-13: char-select-screen 분리 → element-screen + hero-screen
-    this._selElement=null;this._selRole=null;
+    // 2단계 흐름 유지 (원소 → 역할+성별). P6 Cockpit 은 레이아웃 문제로 롤백 (2026-04-21).
+    this._selElement=null;this._selRole=null;this._selGender='m';
     this._prologueUid=uid;
     this._showElementScreen();
   },
@@ -118,11 +118,25 @@ RoF.Auth={
     this._showHeroScreen();
   },
 
-  // ── STEP 2: 역할/영웅 확정 (char-hero-screen) ──
+  // ── STEP 2: 역할/영웅 확정 + 성별 토글 (char-hero-screen) ──
+  _renderGenderToggle(){
+    const wrap=document.getElementById('hero-gender-toggle');
+    if(!wrap) return;
+    wrap.innerHTML='';
+    [{id:'m',ic:'🧔',lbl:'남성'},{id:'f',ic:'👩',lbl:'여성'}].forEach(o=>{
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='gt-btn'+(this._selGender===o.id?' sel':'');
+      b.innerHTML=`<span class="gt-ic">${o.ic}</span><span class="gt-lbl">${o.lbl}</span>`;
+      b.onclick=()=>{ if(this._selGender===o.id) return; this._selGender=o.id; SFX.play('click'); this._showHeroScreen(); };
+      wrap.appendChild(b);
+    });
+  },
   _showHeroScreen(){
     UI.show('char-hero-screen');
     document.getElementById('char-hero-preview').innerHTML=`모험자: <strong>${this._prologueUid||this.user}</strong>`;
     document.getElementById('char-hero-msg').innerHTML=`<span style="color:${ELEM_COLOR[this._selElement]};">${ELEM_ICON[this._selElement]} ${ELEM_L[this._selElement]}의 신이 당신을 선택했다!</span><br><span style="color:#aaa;font-style:italic;">어떤 방식으로 왕좌에 도전할 것인가...</span>`;
+    this._renderGenderToggle();
     const g=document.getElementById('char-hero-grid');g.innerHTML='';
     const confirmBtn=document.getElementById('btn-confirm-hero');
     confirmBtn.disabled=!this._selRole;
@@ -157,7 +171,7 @@ RoF.Auth={
   confirmHero(){
     if(!this._selRole||!this._selElement)return;
     SFX.init();
-    const gender = this._selGender || 'm';  // 성별 선택 UI 이식 전 임시 기본값
+    const gender = this._selGender || 'm';
     const heroBase = RoF.Data.createHero({gender, role:this._selRole, element:this._selElement});
     const hero = Object.assign(heroBase, {
       uid:uid(), name:this.user, heroClass:heroBase.name, isHero:true,
@@ -186,6 +200,9 @@ RoF.Auth={
   },
   _showStep1(){ this._showElementScreen(); },
   _showStep2(){ this._showHeroScreen(); },
+  // P6 Cockpit 시도 후 롤백 — alias 유지 (이미 연결된 action/autonav 깨지지 않도록)
+  _showCreateScreen(){ this._showHeroScreen(); },
+  confirmCreate(){ return this.confirmHero(); },
 };
 
 // 호환성 레이어

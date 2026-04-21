@@ -25,8 +25,9 @@ RoF.Data.SKILLS = Object.freeze([
   {id:'sk_swift',name:'하체 단련',icon:'🌬️',role:'attack',rarity:'bronze',cost:0,desc:'스피드 +1',effect:'spd+1',passive:true},
   {id:'sk_tough',name:'정밀 공격',icon:'💪',role:'crit',rarity:'bronze',cost:0,desc:'행운 +1',effect:'luck+1',passive:true},
   {id:'sk_focus',name:'집중',icon:'🎯',role:'support',rarity:'bronze',cost:0,desc:'1% 확률로 카드 2번 사용',effect:'proc_double_cast',procChance:1,passive:true},
-  // SILVER — 7장 (맹독 제거)
+  // SILVER — 8장 (2026-04-21 sk_boil 추가)
   {id:'sk_rage',name:'분노폭발',icon:'😤',role:'attack',rarity:'silver',cost:0,desc:'공격+2, 분노+5',effect:'atk+2,rage+5',passive:true},
+  {id:'sk_boil',name:'끓어오름',icon:'🔥',role:'attack',rarity:'silver',cost:0,desc:'공격+2, 분노+3',effect:'atk+2,rage+3',passive:true},
   {id:'sk_evasion',name:'잔상술',icon:'💨',role:'defense',rarity:'silver',cost:0,desc:'회피 +1',effect:'eva+1',passive:true},
   {id:'sk_energize',name:'활력충전',icon:'⚡',role:'support',rarity:'silver',cost:0,desc:'스피드+2, 에너지+5',effect:'spd+2,nrg+5',passive:true},
   {id:'sk_cleave',name:'일섬',icon:'⚔️',role:'attack',rarity:'silver',cost:0,desc:'공격+2, 스피드+1',effect:'atk+2,spd+1',passive:true},
@@ -62,7 +63,7 @@ RoF.Data.SKILLS = Object.freeze([
   //   element: 공명 시스템 데이터(현재 로직 미적용, 필드만 예약)
   // ─────────────────────────────────────────────────────────────
 
-  // BRONZE ACTIVE (5장)
+  // BRONZE ACTIVE (7장 — 2026-04-21 sk_minor_curse, sk_spark_blast 추가)
   {id:'sk_flame_arrow',name:'불꽃 화살',icon:'🔥',imgKey:'sk_flame_arrow',role:'attack',rarity:'bronze',
     element:'fire',attackType:'spell',damage:8,critBonus:0,critMult:1.5,
     cost:3,costType:'nrg',tpCost:1,targetType:'single_enemy',
@@ -71,7 +72,6 @@ RoF.Data.SKILLS = Object.freeze([
     element:'holy',attackType:'heal',heal:15,
     cost:3,costType:'nrg',tpCost:1,targetType:'single_ally',
     desc:'아군 1체 HP +15',passive:false},
-  // 2026-04-21 신규 bronze 3종 (_일반 파일 → bronze 채택)
   {id:'sk_thunder_arrow',name:'번개',icon:'⚡',imgKey:'sk_thunder_arrow',role:'attack',rarity:'bronze',
     element:'lightning',attackType:'spell',damage:8,critBonus:0,critMult:1.5,
     cost:3,costType:'nrg',tpCost:1,targetType:'single_enemy',
@@ -84,8 +84,16 @@ RoF.Data.SKILLS = Object.freeze([
     element:'fire',attackType:'spell',damage:8,critBonus:0,critMult:1.5,
     cost:3,costType:'nrg',tpCost:1,targetType:'single_enemy',
     desc:'적 1체에게 불 피해 8',passive:false},
+  {id:'sk_minor_curse',name:'작은 저주',icon:'🌘',imgKey:'sk_minor_curse',role:'defense',rarity:'bronze',
+    element:'dark',attackType:'debuff',stat:'def',amount:-2,duration:1,
+    cost:3,costType:'nrg',tpCost:1,targetType:'single_enemy',
+    desc:'적 1체 방어 -2 (1턴)',passive:false},
+  {id:'sk_spark_blast',name:'불똥 폭발',icon:'💥',imgKey:'sk_spark_blast',role:'attack',rarity:'bronze',
+    element:'fire',attackType:'spell',damage:6,critBonus:0,critMult:1.5,
+    cost:3,costType:'nrg',tpCost:1,targetType:'all_enemies',
+    desc:'적 전체에게 불 피해 6',passive:false},
 
-  // SILVER ACTIVE (4장 — 4원소 기본 커버)
+  // SILVER ACTIVE (6장 — 2026-04-21 sk_inferno_blast 강등 + sk_herb_pack 추가)
   {id:'sk_tidal_crash',name:'파도 강타',icon:'🌊',imgKey:'sk_tidal_crash',role:'attack',rarity:'silver',
     element:'water',attackType:'spell',damage:15,critBonus:0,critMult:1.5,
     cost:5,costType:'nrg',tpCost:1,targetType:'single_enemy',
@@ -102,12 +110,16 @@ RoF.Data.SKILLS = Object.freeze([
     element:'dark',attackType:'debuff',stat:'atk',amount:-4,duration:2,
     cost:5,costType:'nrg',tpCost:1,targetType:'single_enemy',
     desc:'적 1체 공격 -4 (2턴)',passive:false},
+  {id:'sk_inferno_blast',name:'화염 폭발',icon:'🌋',imgKey:'sk_inferno_blast',role:'attack',rarity:'silver',
+    element:'fire',attackType:'spell',damage:15,critBonus:0,critMult:1.5,
+    cost:5,costType:'nrg',tpCost:1,targetType:'single_enemy',
+    desc:'적 1체에게 불 피해 15',passive:false},
+  {id:'sk_herb_pack',name:'약초 꾸러미',icon:'🌿',imgKey:'sk_herb_pack',role:'support',rarity:'silver',
+    element:'holy',attackType:'heal',heal:25,
+    cost:5,costType:'nrg',tpCost:1,targetType:'single_ally',
+    desc:'아군 1체 HP +25',passive:false},
 
-  // GOLD ACTIVE (2장 — 강한 페이오프, 쿨다운 1)
-  {id:'sk_inferno_blast',name:'화염 폭발',icon:'🌋',imgKey:'sk_inferno_blast',role:'attack',rarity:'gold',
-    element:'fire',attackType:'spell',damage:25,critBonus:0,critMult:1.5,
-    cost:10,costType:'nrg',tpCost:2,cooldown:1,targetType:'single_enemy',
-    desc:'적 1체에게 불 피해 25 (쿨1)',passive:false},
+  // GOLD ACTIVE (1장 — sk_inferno_blast silver 강등 후, gold 화염 스펠은 추후 신규 제작)
   {id:'sk_blessing_light',name:'축복의 빛',icon:'🌟',imgKey:'sk_blessing_light',role:'support',rarity:'gold',
     element:'holy',attackType:'heal',heal:15,
     cost:10,costType:'nrg',tpCost:2,cooldown:1,targetType:'all_allies',

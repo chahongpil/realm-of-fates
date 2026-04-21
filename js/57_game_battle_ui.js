@@ -37,6 +37,10 @@ Object.assign(RoF.Game, {
 
   updateSkillBar(){
     const bar=document.getElementById('skill-bar');if(!bar||!this.battleState)return;
+    // 2026-04-22: battleState 객체는 생성되지만 pCards/eCards 가 null 인 짧은 순간 존재
+    //   (startBattleFromMatch → launchBattle 사이, 외부 tick 에서 updateSkillBar 호출 시).
+    //   pCards 가 배열이 될 때까지 조용히 skip.
+    if(!this.battleState.pCards)return;
     bar.innerHTML='';bar.style.display='flex';
     const bs=this.battleState;
     const pCards=bs.pCards.filter(c=>c.currentHp>0&&c.side==='player'&&c.skillType==='active');

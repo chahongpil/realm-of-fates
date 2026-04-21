@@ -14,6 +14,14 @@
 - 영향: 코드 수정 0. 대표님 승인 후 실행. 뷰포트 1280×720 고정 준수(옵션 C 배제). V4 setter API(setHP/setNRG/setStatus/setShield/setStatModifier) 실전 검증 기회.
 - 관계: handoff-2026-04-21-1115.md "P0 Step 5C Battle 이식" 구체화.
 
+## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C 후속 3건 (v2.* console noise 제거 + is-action-mode 진단)
+- 변경:
+  1. **99_bindings v2.* silent skip** (`js/99_bindings.js`) — `data-action="v2.charClick"` 등은 `Battle._installDelegatedListeners` 가 자체 처리. 99_bindings 는 "v2" 모듈 몰라서 매 클릭마다 `[bindings] 알 수 없는 모듈: v2` 에러 찍던 noise. `resolveAction` 에서 `moduleName==='v2'` 조기 return null.
+  2. **is-action-mode / is-returning 초기 잔재 진단** — 핸드오프 4/21 11:15 에 기록된 "Focus 카드가 처음 클릭 시 1.2배로 보임" 추정 버그. Playwright 재검증 결과 **정상**: page load → start → click → 500ms 후까지 모두 `className="battle-sub"` 깨끗. 이전 관찰은 반복 click/cancel/재click 누적 결과로 판명. 실질 버그 없음.
+- 이유: 전투 UX 미세 개선. 콘솔 노이즈가 디버깅 시 가짜 신호.
+- 영향: 회귀 9/9 PASS. 전투 플로우 동일.
+- 관계: Step 5C dead code 청소(eea005b) 직후 final 마감.
+
 ## 2026-04-21 오후 ▶ 콘텐츠 ▶ Step 5C dead code 청소 (.bv2-card / .bv2c-* / bcf-*)
 - 변경:
   1. **CSS `.bv2-card` 블록 일괄 삭제** (`css/41_battle_v2.css` L233-491, 약 260줄) — wrapper/frame/img/icon/name/status-row/hp/stats/desc/nrg + 상태 클래스(is-selected/is-target-*/is-hit/is-dead/is-dying-*/is-acted/is-queued/is-dimmed) 전부 dead. Step 5C 에서 `.card-v4.card-v4-compact` 로 전환 후 자식 `.bv2c-*` 생성 안 됨. `.bv2c-hp-delta-floating` (HP 프리뷰 floating 라벨) 만 유지.

@@ -33,6 +33,9 @@
     }
     const moduleName = actionStr.slice(0, dot);
     const methodName = actionStr.slice(dot + 1);
+    // v2.* 는 Battle._installDelegatedListeners (60_turnbattle_v2.js) 가 자체 처리.
+    // 99_bindings 는 resolveAction 에서 조용히 무시 (Step 5C 후속, 2026-04-21).
+    if (moduleName === 'v2') return null;
     const moduleKey  = MODULE_MAP[moduleName];
     if (!moduleKey) {
       console.error('[bindings] 알 수 없는 모듈:', moduleName);

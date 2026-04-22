@@ -313,6 +313,10 @@ Object.assign(RoF.Game, {
 
   launchBattle(){
     const bs=this.battleState;
+    if(!bs || !bs.battleDeck){
+      console.warn('[launchBattle] battleState not ready — confirmCardSelect 이전 경로일 수 있음');
+      return;
+    }
     if(!bs.pCards){
       bs.pCards=bs.battleDeck.map(c=>({...c,currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'player',row:c.formRow||'front',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:0,curShield:c.shield||0,burn:0}));
       bs.battleRelics.forEach(r=>applyRelicBattle(r,bs.pCards));

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<base href="../">
+<title>에셋 커버리지 뷰어 — Realm of Fates</title>
+<link rel="stylesheet" href="css/10_tokens.css">
+<link rel="stylesheet" href="css/32_card_v4.css">
+<style>
+/* 뷰어 전용 레이아웃만. 카드 내부 디자인은 일절 건드리지 않음. */
+body{
+  margin:0; padding:20px 24px;
+  background:#0e1020; color:#e8e8f0;
+  font-family:'Noto Sans KR',sans-serif;
+}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:#8a8aa0;font-size:12px;margin-bottom:16px}
+.stats{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;font-size:12px}
+.stats span{background:#1a1e3a;padding:6px 12px;border-radius:4px}
+.stats b{color:#9fe38a;margin-right:4px}
+section{margin-top:24px}
+section > h2{font-size:15px;margin:0 0 10px;color:#d8d8e8;font-weight:600}
+section > h2 small{color:#8a8aa0;font-size:11px;font-weight:400;margin-left:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;align-items:start}
+.slot{display:flex;flex-direction:column;gap:4px}
+.slot .tag{font-size:10px;color:#8a8aa0;font-family:ui-monospace,monospace;text-align:center}
+.slot .note{font-size:10px;color:#9fe38a;text-align:center}
+.slot .miss{background:#2a1010;color:#e74c3c;padding:60px 10px;text-align:center;border-radius:4px;font-size:12px}
+.slot .warn{color:#f1c40f}
+.slot .card-v4{--card-v4-w:200px;margin:0 auto}
+.changes{background:#1a1e3a;padding:12px 16px;border-radius:6px;margin-top:16px;font-size:12px;line-height:1.8}
+.changes b{color:#9fe38a}
+.changes code{font-family:ui-monospace,monospace;color:#f1c40f;font-size:11px}
+</style>
+</head>
+<body>
+<h1>🎴 에셋 커버리지 뷰어</h1>
+<div class="sub">실제 게임 카드 프레임(<code>.card-v4</code>) 그대로 렌더 · 2026-04-22 갱신</div>
+
+<div class="stats" id="stats"></div>
+
+<section>
+  <h2>⚔️ 유닛 <small id="unit-count"></small></h2>
+  <div class="grid" id="units"></div>
+</section>
+
+<section>
+  <h2>✨ 스펠 · 패시브 <small id="spell-count"></small></h2>
+  <div class="grid" id="spells"></div>
+</section>
+
+<section>
+  <h2>💎 유물 <small id="relic-count"></small></h2>
+  <div class="grid" id="relics"></div>
+</section>
+
+<div class="changes" id="changes"></div>
+
+<script src="js/00_namespace.js"></script>
+<script src="js/14_data_images.js"></script>
+<script src="js/11_data_units.js"></script>
+<script src="js/12_data_skills.js"></script>
+<script src="js/13_data_relics.js"></script>
+<script src="js/40_cards.js"></script>
+<script>
+const UNITS  = RoF.Data.UNITS  || [];
+const SKILLS = RoF.Data.SKILLS || [];
+const RELICS = RoF.Data.RELICS || [];
+const CARD_IMG = RoF.Data.CARD_IMG;
+
+// 오늘(2026-04-22) 변경 내역 기록만. 카드 꾸미기 아님.
+const NEW_FILES = new Set(['rl_banner','rl_crystal','rl_wall']);
+const NEW_MAPS  = new Set(['sk_flame_arrow','sk_healing_light','sk_tidal_crash','sk_earth_bulwark','sk_chain_lightning','sk_dark_curse','sk_inferno_blast','sk_blessing_light']);
+
+function probeImage(url){
+  return new Promise(res=>{
+    if(!url){ res(false); return; }
+    const img = new Image();
+    img.onload=()=>res(true);
+    img.onerror=()=>res(false);
+    img.src=url;
+  });
+}
+
+function resolveImg(item){
+  if(CARD_IMG[item.id]) return CARD_IMG[item.id];
+  if(item.imgKey && CARD_IMG[item.imgKey]) return CARD_IMG[item.imgKey];
+  return null;
+}
+
+async function renderGroup(items, containerId, kind){
+  const el = document.getElementById(containerId);
+  el.innerHTML='';
+  let ok=0, warn=0, bad=0;
+  for(const it of items){
+    const src = resolveImg(it);
+    const exists = await probeImage(src);
+    const slot = document.createElement('div');
+    slot.className='slot';
+    if(!src){
+      slot.innerHTML = `<div class="miss">매핑 없음<br><small>${it.id}</small></div>`;
+      bad++;
+    } else if(!exists){
+      slot.innerHTML = `<div class="miss">파일 없음<br><small>${it.id}</small><br><small>${src}</small></div>`;
+      bad++;
+    } else {
+      // 실제 게임 카드 컴포넌트 + kind (spell/relic/undefined=unit)
+      const opts = kind ? {kind} : {};
+      const card = RoF.CardV4Component.create(it, opts).el;
+      slot.appendChild(card);
+      if(src.includes('game-icons.net')) warn++;
+      else ok++;
+    }
+    const tag = document.createElement('div');
+    tag.className='tag';
+    tag.textContent = `${it.rarity||'-'} · ${it.id}`;
+    slot.appendChild(tag);
+    if(NEW_FILES.has(it.id)){
+      const n = document.createElement('div');
+      n.className='note'; n.textContent='2026-04-22 NEW';
+      slot.appendChild(n);
+    } else if(NEW_MAPS.has(it.id)){
+      const n = document.createElement('div');
+      n.className='note'; n.textContent='2026-04-22 매핑 복구';
+      slot.appendChild(n);
+    } else if(src && src.includes('game-icons.net')){
+      const n = document.createElement('div');
+      n.className='tag warn'; n.textContent='SVG 외부 — PNG 제작 대기';
+      slot.appendChild(n);
+    }
+    el.appendChild(slot);
+  }
+  return {ok,warn,bad,total:items.length};
+}
+
+(async ()=>{
+  const u = await renderGroup(UNITS,  'units');           // 유닛 (기본 모드)
+  const s = await renderGroup(SKILLS, 'spells', 'spell'); // 스펠 컴팩트
+  const r = await renderGroup(RELICS, 'relics', 'relic'); // 유물 컴팩트
+  document.getElementById('unit-count').textContent  = `${u.total}종 · OK ${u.ok} · 경고 ${u.warn} · 실패 ${u.bad}`;
+  document.getElementById('spell-count').textContent = `${s.total}종 · OK ${s.ok} · 경고 ${s.warn} · 실패 ${s.bad}`;
+  document.getElementById('relic-count').textContent = `${r.total}종 · OK ${r.ok} · 경고 ${r.warn} · 실패 ${r.bad}`;
+  const okAll = u.ok+s.ok+r.ok;
+  const warnAll = u.warn+s.warn+r.warn;
+  const badAll = u.bad+s.bad+r.bad;
+  document.getElementById('stats').innerHTML = `
+    <span><b>${okAll}/${u.total+s.total+r.total}</b>매핑+파일 OK</span>
+    <span><b style="color:#f1c40f">${warnAll}</b>SVG 외부</span>
+    <span><b style="color:#e74c3c">${badAll}</b>누락</span>
+  `;
+  document.getElementById('changes').innerHTML = `
+    <b>📝 2026-04-22 변경 내역</b><br>
+    · 유물 3장 PNG 신규: <code>rl_banner</code> <code>rl_crystal</code> <code>rl_wall</code><br>
+    · 스펠 매핑 복구 8건: <code>sk_flame_arrow</code> <code>sk_healing_light</code> <code>sk_tidal_crash</code> <code>sk_earth_bulwark</code> <code>sk_chain_lightning</code> <code>sk_dark_curse</code> <code>sk_inferno_blast</code> <code>sk_blessing_light</code><br>
+    · 제작 대기: <code>rl_cloak</code> (안개망토, silver)
+  `;
+})();
+</script>
+</body>
+</html>

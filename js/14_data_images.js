@@ -65,11 +65,11 @@ RoF.Data.CARD_IMG = Object.freeze({
   sk_spark_blast:__IMG+'sk_spark_blast.png',
   sk_herb_pack:__IMG+'sk_herb_pack.png',
   // 유물
-  // 유물 — 2026-04-12 픽스: 4개 404 URL을 검증된 대체로 교체
-  rl_banner:__GI+'lorc/rally-the-troops.svg',
-  rl_crystal:__GI+'lorc/crystal-growth.svg',
-  rl_wall:__GI+'delapouite/brick-wall.svg',
-  rl_cloak:__GI+'lorc/hood.svg',                // was: lorc/hooded-figure (404)
+  // 2026-04-22 bronze 3장 PNG 전환 (대표님 공급)
+  rl_banner:__IMG+'rl_banner.png',
+  rl_crystal:__IMG+'rl_crystal.png',
+  rl_wall:__IMG+'rl_wall.png',
+  rl_cloak:__GI+'lorc/hood.svg',                // TODO: PNG 대기 중
   // 2026-04-21 신규 PNG (대표님 공급) — 8장 SVG → PNG 전환 (+rl_fury/rl_boots 추가)
   rl_doom:__IMG+'rl_doom.png',
   rl_luck:__IMG+'rl_luck.png',
@@ -79,6 +79,15 @@ RoF.Data.CARD_IMG = Object.freeze({
   rl_immortal:__IMG+'rl_immortal.png',
   rl_fury:__IMG+'rl_fury.png',
   rl_boots:__IMG+'rl_boots.png',
+  // 2026-04-22 스펠 매핑 누락 8건 복구 (파일은 존재했지만 CARD_IMG 맵에 미등록 → 전투 중 검은 박스 원인)
+  sk_flame_arrow:__IMG+'sk_flame_arrow.png',
+  sk_healing_light:__IMG+'sk_healing_light.png',
+  sk_tidal_crash:__IMG+'sk_tidal_crash.png',
+  sk_earth_bulwark:__IMG+'sk_earth_bulwark.png',
+  sk_chain_lightning:__IMG+'sk_chain_lightning.png',
+  sk_dark_curse:__IMG+'sk_dark_curse.png',
+  sk_inferno_blast:__IMG+'sk_inferno_blast.png',
+  sk_blessing_light:__IMG+'sk_blessing_light.png',
 });
 
 // getCardImg 는 순수 함수이므로 RoF 직접 아래에 둠

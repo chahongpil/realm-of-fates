@@ -139,7 +139,7 @@ Object.assign(RoF.Game, {
       for(let i=0;i<6;i++)sg.insertAdjacentHTML('beforeend','<div class="empty-slot" title="전투 보상으로 비전을 획득하세요">?</div>');
     } else {
       skills.forEach(sk=>{
-        const el=mkRelicEl(sk);el.querySelector('.card-type').textContent='비전';
+        const el=mkRelicEl(sk);  // V4 로 kind 자동 판별 (effect 있으면 '비전')
         // Show equipped status
         const equipped=this.deck.find(c=>(c.equips||[]).some(e=>e.uid===sk.uid));
         if(equipped){

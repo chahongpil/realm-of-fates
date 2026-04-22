@@ -75,12 +75,15 @@
   z-index: 3;
 }
 
-/* Top row — 이름 박스 + Lv 박스. 바 유무에 따라 top 위치 변화. */
+/* Top row — 이름 박스 + Lv 박스. 바 유무에 따라 top 위치 변화.
+   2026-04-22: 두 박스 4줄 정렬 (이름=Lv, HP=NRG). align-items:stretch 로 같은 높이,
+   내부 justify-content:space-between 로 첫 줄 상단 / 둘째 줄 하단 고정. */
 .card-v4 .top-row {
   position: absolute;
   top: 8px; left: 8px; right: 8px;  /* 기본: 바 없음 → 최상단 */
   display: flex;
   justify-content: space-between;
+  align-items: stretch;              /* 두 박스 같은 높이 */
   gap: 6px;
   z-index: 4;
   pointer-events: none;
@@ -88,17 +91,23 @@
 .card-v4.with-bars .top-row,
 .card-v4.card-v4-compact .top-row { top: 28px; }  /* 전투 중: 바 아래로 이동 */
 
-/* Name box — 이름 + HP 숫자 (반응형) */
-.card-v4 .name-box {
-  width: fit-content;
-  max-width: 160px;
-  padding: 3px 4px 2px;
+/* Name box / Lv box 공통 — padding·gap·내부 정렬 통일 */
+.card-v4 .name-box,
+.card-v4 .lv-box {
+  padding: 3px 4px;
   background: linear-gradient(180deg, rgba(26,15,8,.94), rgba(26,15,8,.82));
   border: 1px solid var(--border-3, #9b7a3e);
   border-radius: 3px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  justify-content: space-between;    /* 첫 줄 상단, 둘째 줄 하단 고정 */
+  gap: 3px;
+}
+
+/* Name box 개별 — 반응형 폭 */
+.card-v4 .name-box {
+  width: fit-content;
+  max-width: 160px;
   overflow: hidden;
 }
 .card-v4 .name {
@@ -110,41 +119,31 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.card-v4 .hp-num {
-  font: 700 10px/1 ui-monospace, monospace;
-  color: #9fe38a;
-  padding-top: 2px;
-  border-top: 1px solid rgba(232,189,74,.25);
-  font-variant-numeric: tabular-nums;
-}
 
-/* Lv box — Lv badge + NRG 숫자 (fit-content 최소) */
+/* Lv box 개별 — fit-content 우측 정렬 */
 .card-v4 .lv-box {
   width: fit-content;
-  padding: 2px 3px;
-  background: linear-gradient(180deg, rgba(26,15,8,.94), rgba(26,15,8,.82));
-  border: 1px solid var(--border-3, #9b7a3e);
-  border-radius: 3px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
   align-items: flex-end;
 }
 .card-v4 .lv {
-  font: 900 11px/1 'Cinzel', serif;
+  font: 900 11px/1.1 'Cinzel', serif;  /* name 과 line-height 1.1 통일 */
   color: #2a1a08;
   background: linear-gradient(180deg, var(--curr-gold-pale, #f1d890), var(--gilt-deep, #8b6914));
   padding: 2px 5px;
   border-radius: 2px;
   letter-spacing: .02em;
 }
+
+/* 둘째 줄 — HP/NRG 숫자. font/padding/border 양쪽 동일하게 */
+.card-v4 .hp-num,
 .card-v4 .nrg-num {
-  font: 700 9px/1 ui-monospace, monospace;
-  color: #9cd0f0;
-  text-align: right;
-  padding-top: 1px;
+  font: 700 10px/1 ui-monospace, monospace;
+  padding-top: 2px;
+  border-top: 1px solid rgba(232,189,74,.25);
   font-variant-numeric: tabular-nums;
 }
+.card-v4 .hp-num  { color: #9fe38a; }
+.card-v4 .nrg-num { color: #9cd0f0; text-align: right; }
 
 /* HP / NRG bars — 2026-04-21 redesign: 기본 숨김, 전투 중만 표시.
    발동 조건: .with-bars 명시 OR .card-v4-compact (전투 스테이지 타일 자동) */

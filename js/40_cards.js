@@ -185,14 +185,11 @@ RoF.dom.mkCardEl = function(c){
 };
 
 RoF.dom.mkRelicEl = function(r){
-  const div=document.createElement('div');div.className=`card ${r.rarity||'bronze'}`;
-  const img=CARD_IMG[r.id];
-  div.innerHTML=`<div class="card-inner"><div class="card-rarity-tag">${R_LABEL[r.rarity]}</div>
-    <div class="card-portrait"><div class="card-icon">${img?`<img src="${img}">`:r.icon}</div></div>
-    <div class="card-name">${r.name}</div>
-    <div class="card-type">${r.role?ROLE_L[r.role]+' ':''}${r.effect?'비전':'유물'}</div>
-    <div class="card-ability">${r.desc}</div></div>`;
-  return div;
+  // 2026-04-22: V4 프레임 통일. 유닛과 같은 .card-v4 사용 + opts.kind 컴팩트 모드.
+  //   id prefix 로 판별 — 유물 rl_*, 스펠 sk_*. (둘 다 effect 필드 있어서 effect 판별 불가)
+  const kind = (typeof r.id === 'string' && r.id.startsWith('rl_')) ? 'relic' : 'spell';
+  const inst = RoF.CardV4Component.create(r, { kind });
+  return inst.el;
 };
 
 RoF.dom.mkMini = function(c){
@@ -245,13 +242,17 @@ RoF.CardV4Component = (function(){
 
   function create(unit, opts){
     opts = opts || {};
+    // 2026-04-22: opts.kind='spell'|'relic' 이면 컴팩트 모드 — bars/lv-box/hp-num/stats 생략.
+    //   스펠·유물은 HP/NRG/Lv/스탯 5칸이 없으므로 "이름 + 일러스트 + 설명" 만 표시.
+    const isCompact = opts.kind === 'spell' || opts.kind === 'relic';
     const rarity = unit.rarity || 'bronze';
     const element = unit.element || '';
     const el = document.createElement('div');
-    el.className = `card-v4 rar-${rarity}${rarity==='divine' && element ? ' el-'+element : ''}`;
+    el.className = `card-v4 rar-${rarity}${rarity==='divine' && element ? ' el-'+element : ''}${isCompact?' kind-'+opts.kind:''}`;
     el.setAttribute('data-uid', unit.uid || unit.id || '');
     if(unit.role) el.setAttribute('data-role', unit.role);
     if(element) el.setAttribute('data-element', element);
+    if(opts.kind) el.setAttribute('data-kind', opts.kind);
 
     const img = (typeof getCardImg === 'function') ? getCardImg(unit) : (CARD_IMG && CARD_IMG[unit.id]);
     const name = (unit.isHero ? '⭐ ' : '') + (unit.name || '');
@@ -331,74 +332,92 @@ RoF.CardV4Component = (function(){
       el.appendChild(rb);
     }
 
-    // Bars (HP / NRG) — 2026-04-21 redesign: 최상단 배치 (CSS top:8px)
-    const bars = document.createElement('div');
-    bars.className = 'bars';
-    const mkBar = (cls, pct, labelTxt) => {
-      const bar = document.createElement('div'); bar.className = 'bar ' + cls;
-      const fill = document.createElement('i'); fill.style.width = pct + '%';
-      const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = labelTxt;
-      bar.appendChild(fill); bar.appendChild(lbl);
-      return { bar, fill, lbl };
-    };
-    const hpBar = mkBar('hp', hpPct, 'HP ' + hpCur + ' / ' + hpMax);
-    const nrgBar = mkBar('nrg', nrgPct, 'NRG ' + nrgCur + ' / ' + nrgMax);
-    bars.appendChild(hpBar.bar); bars.appendChild(nrgBar.bar);
-    refs.hpFill = hpBar.fill; refs.hpLbl = hpBar.lbl;
-    refs.nrgFill = nrgBar.fill; refs.nrgLbl = nrgBar.lbl;
-    el.appendChild(bars);
+    // Bars (HP / NRG) — 유닛 전용. 스펠/유물에는 HP/NRG 개념 없으므로 생성 스킵.
+    if(!isCompact){
+      const bars = document.createElement('div');
+      bars.className = 'bars';
+      const mkBar = (cls, pct, labelTxt) => {
+        const bar = document.createElement('div'); bar.className = 'bar ' + cls;
+        const fill = document.createElement('i'); fill.style.width = pct + '%';
+        const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = labelTxt;
+        bar.appendChild(fill); bar.appendChild(lbl);
+        return { bar, fill, lbl };
+      };
+      const hpBar = mkBar('hp', hpPct, 'HP ' + hpCur + ' / ' + hpMax);
+      const nrgBar = mkBar('nrg', nrgPct, 'NRG ' + nrgCur + ' / ' + nrgMax);
+      bars.appendChild(hpBar.bar); bars.appendChild(nrgBar.bar);
+      refs.hpFill = hpBar.fill; refs.hpLbl = hpBar.lbl;
+      refs.nrgFill = nrgBar.fill; refs.nrgLbl = nrgBar.lbl;
+      el.appendChild(bars);
+    }
 
-    // Top row — 이름 박스 + Lv 박스 (2026-04-21 redesign)
+    // Top row — 이름 박스 (+ Lv 박스는 유닛만)
     const topRow = document.createElement('div');
     topRow.className = 'top-row';
 
     const nameBox = document.createElement('div');
     nameBox.className = 'name-box';
     const nmEl = document.createElement('div'); nmEl.className = 'name'; nmEl.textContent = name;
-    const hpNum = document.createElement('div'); hpNum.className = 'hp-num'; hpNum.textContent = '♥ ' + hpCur;
     nameBox.appendChild(nmEl);
-    nameBox.appendChild(hpNum);
+    if(!isCompact){
+      const hpNum = document.createElement('div'); hpNum.className = 'hp-num'; hpNum.textContent = '♥ ' + hpCur;
+      nameBox.appendChild(hpNum);
+      refs.hpNum = hpNum;
+    }
 
-    const lvBox = document.createElement('div');
-    lvBox.className = 'lv-box';
-    const lvEl = document.createElement('div'); lvEl.className = 'lv'; lvEl.textContent = 'Lv ' + lv;
-    const nrgNum = document.createElement('div'); nrgNum.className = 'nrg-num'; nrgNum.textContent = '◆ ' + nrgCur;
-    lvBox.appendChild(lvEl);
-    lvBox.appendChild(nrgNum);
+    if(!isCompact){
+      const lvBox = document.createElement('div');
+      lvBox.className = 'lv-box';
+      const lvEl = document.createElement('div'); lvEl.className = 'lv'; lvEl.textContent = 'Lv ' + lv;
+      const nrgNum = document.createElement('div'); nrgNum.className = 'nrg-num'; nrgNum.textContent = '◆ ' + nrgCur;
+      lvBox.appendChild(lvEl);
+      lvBox.appendChild(nrgNum);
+      topRow.appendChild(nameBox);
+      topRow.appendChild(lvBox);
+      refs.nrgNum = nrgNum;
+    } else {
+      // 스펠/유물: 우측에 등급 라벨만 (예: "희귀", "전설의"). Lv 자리 대체.
+      const rTag = document.createElement('div');
+      rTag.className = 'lv-box';
+      const rLabel = document.createElement('div');
+      rLabel.className = 'lv';
+      const R_LABEL = {bronze:'일반', silver:'희귀', gold:'고귀한', legendary:'전설의', divine:'신'};
+      rLabel.textContent = R_LABEL[rarity] || rarity;
+      rTag.appendChild(rLabel);
+      topRow.appendChild(nameBox);
+      topRow.appendChild(rTag);
+    }
 
-    topRow.appendChild(nameBox);
-    topRow.appendChild(lvBox);
     el.appendChild(topRow);
 
-    refs.hpNum = hpNum;
-    refs.nrgNum = nrgNum;
-
-    // Parchment plate
+    // Parchment plate — 유닛은 stats 5칸 + desc, 스펠/유물은 desc 만.
     const parch = document.createElement('div');
     parch.className = 'parch';
-    const stats = document.createElement('div');
-    stats.className = 'stats';
-    const statKeys = [
-      ['ATK', atk, 'atk'],
-      ['DEF', def, 'def'],
-      ['SPD', spd, 'spd'],
-      ['CRIT', crit + '%', 'luck'],
-      ['EVA', eva + '%', 'eva'],
-    ];
-    refs.stats = {};
-    statKeys.forEach(([label, value, key]) => {
-      const s = document.createElement('div'); s.className = 'stat';
-      const l = document.createElement('span'); l.className = 'l'; l.textContent = label;
-      const v = document.createElement('span'); v.className = 'v'; v.textContent = value;
-      const mod = document.createElement('span'); mod.className = 'mod'; mod.hidden = true;
-      s.appendChild(l); s.appendChild(v); s.appendChild(mod);
-      stats.appendChild(s);
-      refs.stats[key] = { v: v, mod: mod, base: value };
-    });
-    parch.appendChild(stats);
+    if(!isCompact){
+      const stats = document.createElement('div');
+      stats.className = 'stats';
+      const statKeys = [
+        ['ATK', atk, 'atk'],
+        ['DEF', def, 'def'],
+        ['SPD', spd, 'spd'],
+        ['CRIT', crit + '%', 'luck'],
+        ['EVA', eva + '%', 'eva'],
+      ];
+      refs.stats = {};
+      statKeys.forEach(([label, value, key]) => {
+        const s = document.createElement('div'); s.className = 'stat';
+        const l = document.createElement('span'); l.className = 'l'; l.textContent = label;
+        const v = document.createElement('span'); v.className = 'v'; v.textContent = value;
+        const mod = document.createElement('span'); mod.className = 'mod'; mod.hidden = true;
+        s.appendChild(l); s.appendChild(v); s.appendChild(mod);
+        stats.appendChild(s);
+        refs.stats[key] = { v: v, mod: mod, base: value };
+      });
+      parch.appendChild(stats);
+    }
     const descEl = document.createElement('div');
     descEl.className = 'desc';
-    descEl.textContent = desc;
+    descEl.textContent = isCompact ? (unit.desc || '') : desc;
     parch.appendChild(descEl);
     el.appendChild(parch);
 
@@ -416,18 +435,20 @@ RoF.CardV4Component = (function(){
       el, unit, _refs: refs, _state: state, _opts: opts,
 
       setHP(n){
+        if(!refs.hpFill) return;  // 스펠/유물 카드엔 HP UI 없음
         state.currentHP = n;
         const pct = Math.max(0, Math.min(100, Math.round(n / state.maxHP * 100)));
         refs.hpFill.style.width = pct + '%';
         refs.hpLbl.textContent = 'HP ' + n + ' / ' + state.maxHP;
-        refs.hpNum.textContent = '♥ ' + n;   // 이름박스 안 숫자 동기화
+        if(refs.hpNum) refs.hpNum.textContent = '♥ ' + n;
       },
       setNRG(n){
+        if(!refs.nrgFill) return;  // 스펠/유물 카드엔 NRG UI 없음
         state.currentNRG = n;
         const pct = state.maxNRG > 0 ? Math.max(0, Math.min(100, Math.round(n / state.maxNRG * 100))) : 0;
         refs.nrgFill.style.width = pct + '%';
         refs.nrgLbl.textContent = 'NRG ' + n + ' / ' + state.maxNRG;
-        refs.nrgNum.textContent = '◆ ' + n;   // Lv박스 안 숫자 동기화
+        if(refs.nrgNum) refs.nrgNum.textContent = '◆ ' + n;
       },
       setShield(n){
         state.shield = n;

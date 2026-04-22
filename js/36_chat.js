@@ -133,11 +133,15 @@
       });
     },
 
-    // ── 내부: 메시지 렌더 ─────────────────────────────
+    // ── 내부: 메시지 렌더 (id 기반 중복 제거) ─────────
     _renderMessage(msg, opts){
       opts = opts || {};
       const panel = document.getElementById(PANEL_ID);
       const msgs = panel.querySelector('.cp-messages');
+
+      // Dedup: 같은 id 가 이미 DOM 에 있으면 스킵 (optimistic append + realtime 중복 방지)
+      if(msg.id && msgs.querySelector(`[data-message-id="${msg.id}"]`)) return;
+
       const curUser = (window.Backend && Backend.getCurrentUser) ? Backend.getCurrentUser() : null;
       const isSelf = curUser && msg.user_id === curUser.id;
 
@@ -198,7 +202,7 @@
       }
 
       input.disabled = true;
-      const {error} = await Backend.chatSend(this._activeChannel, text, null);
+      const {error, message} = await Backend.chatSend(this._activeChannel, text, null);
       input.disabled = false;
       if(error){
         if(error.includes('mute') || error.includes('not-muted')) {
@@ -208,6 +212,9 @@
         }
         return;
       }
+      // Optimistic append — realtime 지연·실패에 관계없이 본인 메시지 즉시 렌더.
+      // _renderMessage 내부 dedup 으로 realtime 중복 수신 시 안전.
+      if(message) this._renderMessage(message);
       this._lastSent = now;
       input.value = '';
       input.dispatchEvent(new Event('input'));  // counter 갱신

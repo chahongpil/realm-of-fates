@@ -406,11 +406,11 @@
     return {messages: data || [], error: null};
   };
 
-  /** 메시지 전송 */
+  /** 메시지 전송. 성공 시 방금 insert 된 row 를 반환(optimistic append 용). */
   B.chatSend = async function(channel, text, attachedCard){
-    if(!B.isReady || !_user) return {error:'offline'};
+    if(!B.isReady || !_user) return {error:'offline', message:null};
     const {profile} = await B.getProfile();
-    if(!profile) return {error:'프로필 없음'};
+    if(!profile) return {error:'프로필 없음', message:null};
     const save = profile.save_data || {};
     const row = {
       channel,
@@ -422,8 +422,9 @@
       text,
       attached_card: attachedCard || null,
     };
-    const {error} = await _sb.from('chat_messages').insert(row);
-    return {error: error ? error.message : null};
+    // .select().single() 로 insert 된 row 즉시 받음 → realtime 실패해도 본인 메시지 optimistic 렌더 가능
+    const {data, error} = await _sb.from('chat_messages').insert(row).select().single();
+    return {error: error ? error.message : null, message: data || null};
   };
 
   /**

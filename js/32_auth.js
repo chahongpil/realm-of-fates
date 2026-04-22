@@ -91,7 +91,7 @@ RoF.Auth={
     const scenes=[
       {text:'창세에, 운명의 여신이\n세계를 직조하며\n일곱 자리를 남겼다.',cls:'pl-normal',hold:2400},
       {text:'여섯 자리는\n원초의 여섯이 차지했다.',cls:'pl-normal',hold:2000},
-      {text:'불의 블랙드래곤 · 물의 히드라\n땅의 싸이클롭스 · 번개의 타이탄\n빛의 대천사 · 어둠의 대악마',cls:'pl-gold',hold:3400},
+      {text:'불의 레드드래곤 · 물의 히드라\n땅의 싸이클롭스 · 번개의 타이탄\n빛의 대천사 · 어둠의 대악마',cls:'pl-gold',hold:3400},
       {text:'그리고 일곱 번째 자리는\n여신이 비워두었다.',cls:'pl-dim',hold:2400},
       {text:'여신은 조건 하나를 남기고\n깊은 잠에 들었다.',cls:'pl-normal',hold:2400},
       {text:'"오직 필멸자 출신만이\n이 자리에 오를 수 있다."',cls:'pl-bright',hold:2800},

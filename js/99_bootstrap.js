@@ -69,9 +69,40 @@ document.addEventListener('DOMContentLoaded', () => {
   // Enter 키 바인딩 → 99_bindings.js 의 data-action-enter 로 이관됨
 
   // ── 0. Backend 초기화 (S1: Supabase, 실패해도 로컬 폴백) ──
-  if(typeof Backend !== 'undefined' && Backend.init) Backend.init().catch(()=>{});
+  if(typeof Backend !== 'undefined' && Backend.init){
+    Backend.init().then(() => {
+      // S4 자동 로그인 — Supabase 세션 있으면 Game.load 즉시. 타이틀 화면 벗어남.
+      if(!Backend.isReady) return;
+      let autoHandled = false;
+      Backend.onAuthChange(async (event, user) => {
+        if(autoHandled || !user) return;
+        // 타이틀/로그인/가입 화면에 있을 때만 자동 진입 (게임 중엔 개입 X)
+        const active = document.querySelector('.screen.active');
+        const autoOK = !active || ['title-screen','login-screen','signup-screen'].includes(active.id);
+        if(!autoOK) return;
+        autoHandled = true;
+        try {
+          const {profile} = await Backend.getProfile();
+          if(!profile) return;
+          const nick = profile.nickname || localStorage.getItem('rof8_last_user') || 'hero';
+          const {save} = await Backend.loadProgress();
+          if(!save || !Object.keys(save).length) return;  // cloud 세이브 없으면 정상 로그인 화면 유지
+          // 로컬 DB 동기화 (비번은 localStorage 의 last_pw 또는 '__sb' placeholder)
+          const db = (typeof Auth !== 'undefined') ? Auth.db() : {};
+          if(!db[nick]) db[nick] = {pw: localStorage.getItem('rof8_last_pw') || '__sb', save};
+          else db[nick].save = save;
+          if(typeof Auth !== 'undefined') Auth.save(db);
+          if(typeof Auth !== 'undefined') Auth.user = nick;
+          if(typeof SFX !== 'undefined' && SFX.init) SFX.init();
+          if(typeof Game !== 'undefined' && Game.load) Game.load(save);
+        } catch(e){
+          console.warn('[Auto-login] 실패:', e.message);
+        }
+      });
+    }).catch(()=>{});
+  }
 
-  // ── 1. 마지막 로그인 정보 자동 입력 ──
+  // ── 1. 마지막 로그인 정보 자동 입력 (Supabase 자동 로그인 실패 시 폴백) ──
   const u = localStorage.getItem('rof8_last_user');
   const p = localStorage.getItem('rof8_last_pw');
   if (u) {

@@ -16,20 +16,58 @@ RoF.Auth={
     if(pw.length<4){m.className='auth-msg error';m.textContent='암호는 4자 이상입니다';return;}
     if(pw!==pw2){m.className='auth-msg error';m.textContent='암호가 일치하지 않습니다';return;}
     const db=this.db();if(db[id]){m.className='auth-msg error';m.textContent='이미 존재하는 영웅입니다';return;}
-    this.user=id;this.pendingPw=pw;this.showPrologue(id);
+    this.user=id;this.pendingPw=pw;
+    // S4: Supabase Auth 동시 가입 — 실패해도 게임 진행 (오프라인 대비).
+    if(Backend && Backend.isReady){
+      Backend.signupWithNick(id, pw).then(res => {
+        if(res.error) console.warn('[Auth] Supabase signup 실패:', res.error);
+      });
+    }
+    this.showPrologue(id);
   },
   login(){
     const id=document.getElementById('login-id').value.trim(),pw=document.getElementById('login-pw').value,m=document.getElementById('login-msg');
     if(!id||!pw){m.className='auth-msg error';m.textContent='이름과 암호를 입력하세요';return;}
-    const db=this.db();if(!db[id]){m.className='auth-msg error';m.textContent='그런 이름의 영웅은 없습니다';return;}
-    if(db[id].pw!==pw){m.className='auth-msg error';m.textContent='암호가 틀렸습니다';return;}
-    m.className='auth-msg success';m.textContent=`영웅이여, 돌아오셨군요!`;
-    // 로그인 정보 기억
-    localStorage.setItem('rof8_last_user',id);localStorage.setItem('rof8_last_pw',pw);
-    this.user=id;SFX.init();
-    // S1: Backend 클라우드 세이브 마이그레이션 (비동기, 실패해도 로컬 진행)
-    if(Backend && Backend.isReady) Backend.migrateFromLocal(id).catch(()=>{});
-    setTimeout(()=>Game.load(db[id].save),300);
+    const db=this.db();
+    // 로컬 DB 에 유저 있으면 로컬 즉시 로그인 (동기, 기존 UX). Supabase 동기화는 백그라운드.
+    if(db[id]){
+      if(db[id].pw!==pw){m.className='auth-msg error';m.textContent='암호가 틀렸습니다';return;}
+      m.className='auth-msg success';m.textContent=`영웅이여, 돌아오셨군요!`;
+      localStorage.setItem('rof8_last_user',id);localStorage.setItem('rof8_last_pw',pw);
+      this.user=id;SFX.init();
+      // S4 백그라운드: Supabase 로그인 (또는 자동 signup). 성공 시 saveProgress 동기화.
+      if(Backend && Backend.isReady){
+        Backend.loginWithNick(id, pw).then(res => {
+          if(res.error){ console.warn('[Auth] Supabase sync 실패:', res.error); return; }
+          if(db[id] && db[id].save && Backend.saveProgress)
+            Backend.saveProgress(db[id].save).catch(()=>{});
+        });
+      }
+      setTimeout(()=>Game.load(db[id].save),300);
+      return;
+    }
+    // 로컬에 없음 — Supabase 에 cloud-only 가입 유저일 수 있음. 비동기 시도.
+    if(!(Backend && Backend.isReady)){
+      m.className='auth-msg error';m.textContent='그런 이름의 영웅은 없습니다';return;
+    }
+    m.className='auth-msg';m.textContent='확인 중...';
+    Backend.loginWithNick(id, pw).then(async res => {
+      if(res.error){
+        m.className='auth-msg error';m.textContent='그런 이름의 영웅은 없습니다';return;
+      }
+      const {save, error:loadErr} = await Backend.loadProgress();
+      if(loadErr || !save || !Object.keys(save).length){
+        m.className='auth-msg error';m.textContent='세이브가 없습니다';return;
+      }
+      // Supabase 성공 + save 있음 → 로컬에 백업 후 진입
+      const localDb = this.db();
+      localDb[id] = {pw, save};
+      this.save(localDb);
+      m.className='auth-msg success';m.textContent='영웅이여, 돌아오셨군요!';
+      localStorage.setItem('rof8_last_user',id);localStorage.setItem('rof8_last_pw',pw);
+      this.user=id;SFX.init();
+      setTimeout(()=>Game.load(save),300);
+    });
   },
   _selElement:null,_selRole:null,_selGender:'m',
   showCharSel(uid){

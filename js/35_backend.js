@@ -402,6 +402,74 @@
     return {matches: data || [], error: null};
   };
 
+  // ── S4: Auth 래퍼 (게임 닉네임 ↔ Supabase Auth 통합) ──
+  // 게임은 한국어 닉네임·4자 이상 비번. Supabase 는 이메일·6자 이상.
+  //   닉 → URL-safe base64 로 email 로컬파트 생성. domain 은 fake TLD `@rof.local`.
+  //   비번 → 6자 미만이면 내부 패딩.
+
+  function _nickToEmail(nick){
+    // 한글·특수문자도 안전하게 인코드 (base64 → URL-safe 변환)
+    const utf8 = unescape(encodeURIComponent(String(nick || '')));
+    const b64 = btoa(utf8).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    return `rof_${b64}@rof.local`;
+  }
+  function _padPw(pw){
+    const s = String(pw || '');
+    return s.length >= 6 ? s : s + '__rof_pad';
+  }
+
+  /**
+   * 게임 닉네임·비번으로 Supabase 가입.
+   * 이미 가입된 닉이면 error 반환.
+   */
+  B.signupWithNick = async function(nick, pw){
+    if(!B.isReady) return {user:null, error:'offline'};
+    const email = _nickToEmail(nick);
+    const pwd = _padPw(pw);
+    const {data, error} = await _sb.auth.signUp({
+      email, password: pwd,
+      options: { data: { nickname: nick } }
+    });
+    if(error) return {user:null, error: error.message};
+    _user = data.user;
+    return {user: data.user, error: null};
+  };
+
+  /**
+   * 게임 닉네임·비번으로 Supabase 로그인.
+   * 미가입이면 자동 signup 시도 (로컬 유저 자동 migration).
+   */
+  B.loginWithNick = async function(nick, pw){
+    if(!B.isReady) return {user:null, error:'offline'};
+    const email = _nickToEmail(nick);
+    const pwd = _padPw(pw);
+    const first = await _sb.auth.signInWithPassword({email, password: pwd});
+    if(!first.error){
+      _user = first.data.user;
+      return {user: first.data.user, error: null};
+    }
+    // 미가입 or 비번 틀림. "invalid_credentials" 이면 자동 signup 한 번 시도.
+    if(first.error && /invalid|not.found|credential/i.test(first.error.message)){
+      const sign = await _sb.auth.signUp({
+        email, password: pwd,
+        options: { data: { nickname: nick } }
+      });
+      if(!sign.error){
+        _user = sign.data.user;
+        return {user: sign.data.user, error: null};
+      }
+      return {user:null, error: sign.error.message};
+    }
+    return {user:null, error: first.error.message};
+  };
+
+  /** 로그아웃 (Supabase 세션 종료) */
+  B.logoutAuth = async function(){
+    if(!B.isReady) return;
+    try { await _sb.auth.signOut(); } catch(e){}
+    _user = null;
+  };
+
   // ── S3: 채팅 (PHASE 5) ────────────────────────────────
   // 스키마: supabase/migrations/003_s3_chat.sql
   // RLS 가 채널 접근·뮤트를 DB 레벨에서 차단하므로 클라측은 UX 보조만.

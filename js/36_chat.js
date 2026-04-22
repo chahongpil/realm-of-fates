@@ -13,10 +13,12 @@
 
   const PANEL_ID   = 'chat-panel';
   const TOGGLE_ID  = 'chat-toggle';
-  const DEFAULT_CHANNEL = 'ch_world';
+  const DEFAULT_KIND = 'world';
 
-  const CHANNEL_TITLES = {
-    'ch_world': '🌍 운명의 광장',
+  // 리그 한국어명 (Game.LEAGUES 에서 id 로 매칭)
+  const LEAGUE_NAMES = {
+    bronze:'브론즈', silver:'실버', gold:'골드', platinum:'플래티넘',
+    diamond:'다이아', master:'마스터', divine:'신의 영역'
   };
 
   const COOLDOWN_MS = 5000;
@@ -24,12 +26,35 @@
   const HISTORY_LIMIT = 50;
 
   const Chat = {
-    _activeChannel: DEFAULT_CHANNEL,
-    _sub: null,                // realtime subscription
-    _lastSent: 0,              // 쿨다운 체크용 timestamp
-    _lastMsgTime: null,        // gap 복구용 마지막 수신 시각
+    _activeKind: DEFAULT_KIND,   // 'world' | 'league' | 'guild'
+    _activeChannel: 'ch_world',  // 실제 channel id — _resolveChannel() 로 갱신
+    _sub: null,                  // realtime subscription
+    _lastSent: 0,                // 쿨다운 체크용 timestamp
+    _lastMsgTime: null,          // gap 복구용 마지막 수신 시각
     _unreadCount: 0,
     _muteCheckInterval: null,
+
+    /** kind → 실제 channel id 해석. save.league / save.guild_id 참조. */
+    _resolveChannel(kind){
+      const save = (window.Game && Game.leaguePoints != null) ? Game : null;
+      const leagueId = (save && save.getLeague) ? (save.getLeague().id || 'bronze') : 'bronze';
+      const guildId = (save && save.guild_id) || null;
+      if(kind === 'league') return 'ch_league_' + leagueId;
+      if(kind === 'guild')  return guildId ? ('ch_guild_' + guildId) : null;
+      return 'ch_world';
+    },
+
+    /** kind → 헤더 제목 */
+    _channelTitle(kind){
+      if(kind === 'world')  return '🌍 운명의 광장';
+      if(kind === 'league') {
+        const lg = (window.Game && Game.getLeague) ? Game.getLeague() : null;
+        const name = lg ? (LEAGUE_NAMES[lg.id] || lg.name) : '리그';
+        return `🏛 ${name} 모임`;
+      }
+      if(kind === 'guild')  return '🛡 길드 전당';
+      return '채팅';
+    },
 
     /** 초기화 — 게임 로드 시 1회 호출 */
     async init(){
@@ -120,7 +145,42 @@
       });
 
       // 채널 제목 초기화
-      panel.querySelector('.cp-title').textContent = CHANNEL_TITLES[this._activeChannel];
+      panel.querySelector('.cp-title').textContent = this._channelTitle(this._activeKind);
+
+      // 탭 클릭 → 채널 전환
+      panel.querySelectorAll('.cp-tab').forEach(tab => {
+        tab.onclick = () => this._switchKind(tab.dataset.kind);
+      });
+    },
+
+    /** 탭 전환 (world/league/guild) */
+    async _switchKind(kind){
+      if(kind === this._activeKind) return;
+      this._activeKind = kind;
+      const panel = document.getElementById(PANEL_ID);
+      panel.querySelectorAll('.cp-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.kind === kind);
+      });
+      panel.querySelector('.cp-title').textContent = this._channelTitle(kind);
+
+      const channel = this._resolveChannel(kind);
+      if(!channel){
+        // guild 채널인데 guild_id 없는 경우 — placeholder
+        if(this._sub){ this._sub.unsubscribe(); this._sub = null; }
+        panel.querySelector('.cp-messages').innerHTML =
+          '<div class="cp-msg system">아직 길드에 속해 있지 않습니다.<br>광장이나 리그에서 대화하세요.</div>';
+        this._setInputDisabled(true);
+        this._hideBanner();
+        return;
+      }
+      this._activeChannel = channel;
+      const user = Backend && Backend.getCurrentUser && Backend.getCurrentUser();
+      if(user){
+        this._setInputDisabled(false);
+        await this._loadAndSubscribe(channel);
+      } else {
+        this._showBanner('로그인 후 이용 가능', 'info');
+      }
     },
 
     // ── 내부: 채널 로드 + 구독 ─────────────────────────

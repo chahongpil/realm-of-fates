@@ -142,13 +142,13 @@ Object.assign(RoF.Game, {
 
   // ── TUTORIAL ──
   LEAGUES:[
-    {name:'브론즈',min:0,max:99,color:'#cd7f32',icon:'🥉'},
-    {name:'실버',min:100,max:299,color:'#c0c0c0',icon:'🥈'},
-    {name:'골드',min:300,max:599,color:'#ffd700',icon:'🥇'},
-    {name:'플래티넘',min:600,max:999,color:'#00cccc',icon:'💎'},
-    {name:'다이아',min:1000,max:1499,color:'#00aaff',icon:'💠'},
-    {name:'마스터',min:1500,max:1999,color:'#aa44ff',icon:'👑'},
-    {name:'신의 영역',min:2000,max:99999,color:'#ff4444',icon:'⚡'},
+    {id:'bronze',   name:'브론즈',    min:0,    max:99,    color:'#cd7f32', icon:'🥉'},
+    {id:'silver',   name:'실버',      min:100,  max:299,   color:'#c0c0c0', icon:'🥈'},
+    {id:'gold',     name:'골드',      min:300,  max:599,   color:'#ffd700', icon:'🥇'},
+    {id:'platinum', name:'플래티넘',  min:600,  max:999,   color:'#00cccc', icon:'💎'},
+    {id:'diamond',  name:'다이아',    min:1000, max:1499,  color:'#00aaff', icon:'💠'},
+    {id:'master',   name:'마스터',    min:1500, max:1999,  color:'#aa44ff', icon:'👑'},
+    {id:'divine',   name:'신의 영역', min:2000, max:99999, color:'#ff4444', icon:'⚡'},
   ],
   getLeague(){
     const p=this.leaguePoints||0;

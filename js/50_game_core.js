@@ -37,8 +37,11 @@ Object.assign(RoF.Game, {
   },
   persist(){
     if(!Auth.user)return;const db=Auth.db();if(!db[Auth.user])return;
+    // S4: league id 자동 계산 (채팅 RLS 가 save_data->>'league' 참조)
+    const lg = this.getLeague ? this.getLeague() : null;
+    const leagueId = (lg && lg.id) || 'bronze';
     const sv={round:this.round,hp:this.hp,maxHp:this.maxHp,gold:this.gold,gems:this.gems||0,blessings:this.blessings||0,divineGrace:this.divineGrace||0,
-      deck:this.deck,relics:this.relics,ownedRelics:this.ownedRelics||[],ownedSkills:this.ownedSkills||[],hero:this.hero||null,bestRound:this.bestRound,totalWins:this.totalWins,totalGames:this.totalGames,leaguePoints:this.leaguePoints||0,buildings:this.buildings||{},tutStep:this.tutStep||0,companionName:this.companionName||'동료',blessings:this.blessings||0,winStreak:this.winStreak||0,tavernSlots:this.tavernSlots||null,tavernDate:this.tavernDate||null,savedFormations:this.savedFormations||[]};
+      deck:this.deck,relics:this.relics,ownedRelics:this.ownedRelics||[],ownedSkills:this.ownedSkills||[],hero:this.hero||null,bestRound:this.bestRound,totalWins:this.totalWins,totalGames:this.totalGames,leaguePoints:this.leaguePoints||0,league:leagueId,buildings:this.buildings||{},tutStep:this.tutStep||0,companionName:this.companionName||'동료',blessings:this.blessings||0,winStreak:this.winStreak||0,tavernSlots:this.tavernSlots||null,tavernDate:this.tavernDate||null,savedFormations:this.savedFormations||[],guild_id:this.guild_id||null};
     db[Auth.user].save=sv;
     Auth.save(db);
     // S1: 클라우드 세이브 (비동기, 실패해도 로컬은 이미 저장됨)

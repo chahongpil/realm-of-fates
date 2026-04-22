@@ -52,7 +52,7 @@ c:/work/game/
 ├── BUGFIX_EDGE_CASES.md
 ├── CURRENCY_SYSTEM.md        ← 화폐
 ├── EQUIPMENT_SYSTEM.md       ← 장비
-├── GACHA_EFFECT.md           ← 가챠 연출
+├── RARITY_REVEAL_EFFECT.md   ← 등급 공개 연출 (구 GACHA_EFFECT.md, 가챠 폐기 후 재사용)
 ├── DESIGN_ASSET_PLAN.md
 ├── STAT_TRAIT_SYSTEM.md
 ├── FEATURE_IDEAS.md

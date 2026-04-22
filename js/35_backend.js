@@ -377,6 +377,94 @@
     return {matches: data || [], error: null};
   };
 
+  // ── S3: 채팅 (PHASE 5) ────────────────────────────────
+  // 스키마: supabase/migrations/003_s3_chat.sql
+  // RLS 가 채널 접근·뮤트를 DB 레벨에서 차단하므로 클라측은 UX 보조만.
+
+  /** 채널 최근 메시지 N개 로드 (초기 진입 / gap 복구용) */
+  B.chatLoadHistory = async function(channel, limit){
+    if(!B.isReady) return {messages:[], error:'offline'};
+    const {data, error} = await _sb.from('chat_messages')
+      .select('*')
+      .eq('channel', channel)
+      .order('created_at', {ascending: false})
+      .limit(limit || 50);
+    if(error) return {messages:[], error: error.message};
+    return {messages: (data || []).reverse(), error: null};  // 화면엔 오래된→최신 순
+  };
+
+  /** 특정 시각 이후 메시지 (realtime 재연결 후 gap 복구) */
+  B.chatLoadSince = async function(channel, sinceIso){
+    if(!B.isReady) return {messages:[], error:'offline'};
+    const {data, error} = await _sb.from('chat_messages')
+      .select('*')
+      .eq('channel', channel)
+      .gt('created_at', sinceIso)
+      .order('created_at', {ascending: true})
+      .limit(200);
+    if(error) return {messages:[], error: error.message};
+    return {messages: data || [], error: null};
+  };
+
+  /** 메시지 전송 */
+  B.chatSend = async function(channel, text, attachedCard){
+    if(!B.isReady || !_user) return {error:'offline'};
+    const {profile} = await B.getProfile();
+    if(!profile) return {error:'프로필 없음'};
+    const save = profile.save_data || {};
+    const row = {
+      channel,
+      user_id:       _user.id,
+      user_name:     profile.nickname || 'hero',
+      user_level:    save.heroLevel || (save.deck && save.deck.find(c=>c.isHero)?.level) || 1,
+      user_league:   save.league || 'bronze',
+      user_guild_id: save.guild_id || null,
+      text,
+      attached_card: attachedCard || null,
+    };
+    const {error} = await _sb.from('chat_messages').insert(row);
+    return {error: error ? error.message : null};
+  };
+
+  /**
+   * Realtime 구독 — 채널에 INSERT 되는 새 메시지 수신.
+   * @param {string} channel 'ch_world' / 'ch_league_gold' / 'ch_guild_abc'
+   * @param {(msg) => void} onInsert 콜백
+   * @returns {{unsubscribe: () => void}} 구독 객체
+   */
+  B.chatSubscribe = function(channel, onInsert){
+    if(!B.isReady) return {unsubscribe(){}};
+    const sub = _sb.channel('chat:' + channel)
+      .on('postgres_changes',
+          {event:'INSERT', schema:'public', table:'chat_messages',
+           filter:`channel=eq.${channel}`},
+          (payload) => onInsert(payload.new))
+      .subscribe();
+    return {
+      unsubscribe: () => { try{ _sb.removeChannel(sub); }catch(e){} }
+    };
+  };
+
+  /** 현재 유저의 뮤트 상태 (UI "뮤트 해제까지 N분" 표시용) */
+  B.chatGetMuteStatus = async function(){
+    if(!B.isReady || !_user) return {muted:false, secondsRemaining:0, reason:null};
+    const {data, error} = await _sb.from('chat_active_mutes')
+      .select('*').eq('user_id', _user.id).maybeSingle();
+    if(error || !data) return {muted:false, secondsRemaining:0, reason:null};
+    return {muted:true, secondsRemaining: data.seconds_remaining, reason: data.reason};
+  };
+
+  /** 메시지 신고 */
+  B.chatReport = async function(messageId, reason){
+    if(!B.isReady || !_user) return {error:'offline'};
+    const {error} = await _sb.from('chat_reports').insert({
+      message_id: messageId,
+      reporter_id: _user.id,
+      reason: reason || '',
+    });
+    return {error: error ? error.message : null};
+  };
+
   // ── 네임스페이스 등록 ─────────────────────────────────
   if(typeof RoF === 'undefined') window.RoF = {};
   RoF.Backend = B;

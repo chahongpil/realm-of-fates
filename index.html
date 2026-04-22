@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="css/30_components.css">
 <link rel="stylesheet" href="css/31_card_system.css">
 <link rel="stylesheet" href="css/32_card_v4.css">
+<link rel="stylesheet" href="css/36_chat.css">
 <link rel="stylesheet" href="css/40_battle.css">
 <link rel="stylesheet" href="css/41_formation.css">
 <link rel="stylesheet" href="css/42_screens.css">
@@ -42,6 +43,7 @@
 <script>window.__ROF_SUPABASE_URL='https://bagfcvjazzfekjazpoah.supabase.co';window.__ROF_SUPABASE_KEY='sb_publishable_RSNFwIVKTsGn4NG8ZbYPpg_MGoGMCza';</script>
 <script defer src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script defer src="js/35_backend.js"></script>
+<script defer src="js/36_chat.js"></script>
 <script defer src="js/40_cards.js"></script>
 <script defer src="js/50_game_core.js"></script>
 <script defer src="js/51_game_town.js"></script>
@@ -574,6 +576,30 @@
   <!-- 개발용 취소 버튼 (플래그 ON 시 우상단) -->
   <button class="bv2-close-btn" type="button" data-action="v2.close">✕ 닫기 (ESC)</button>
 </div>
+
+<!-- PHASE 5 채팅 (Step 2: world 단일 채널) -->
+<button id="chat-toggle" type="button" title="채팅 열기">
+  💬
+  <span class="cp-badge" hidden>0</span>
+</button>
+<aside id="chat-panel">
+  <div class="cp-header">
+    <span class="cp-title">🌍 운명의 광장</span>
+    <button type="button" class="cp-close" title="채팅 닫기">✕</button>
+  </div>
+  <div class="cp-tabs">
+    <button type="button" class="cp-tab active" data-channel="ch_world">🌍 광장</button>
+    <!-- Step 3: 리그 / 길드 탭 추가 예정 -->
+  </div>
+  <div class="cp-banner" hidden></div>
+  <div class="cp-messages" aria-live="polite"></div>
+  <div class="cp-input-row">
+    <button type="button" class="cp-attach" title="카드 공유 (곧 추가)" disabled>+</button>
+    <textarea class="cp-input" placeholder="메시지 입력 (Enter 전송, Shift+Enter 줄바꿈)" maxlength="200" rows="1"></textarea>
+    <button type="button" class="cp-send" disabled>보내기</button>
+  </div>
+  <div class="cp-counter">0/200</div>
+</aside>
 
 </body>
 </html>

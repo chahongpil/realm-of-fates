@@ -1,11 +1,27 @@
 # Realm of Fates — 핸드오프 문서
-> 마지막 업데이트: **2026-04-22 새벽** — P0~P4 일괄 정리 마무리 (총 13 커밋)
+> 마지막 업데이트: **2026-04-22 낮** — P0 자매 버그 수정 (launchBattle 가드)
 
-## 🟣 2026-04-22 새벽 추가 — P0~P4 일괄 정리 (커밋 2개 추가)
+## 🟣 2026-04-22 낮 — play-director 실플레이 검수 + P0 자매 버그 수정
+
+**검수 결과 (rof-play-director)**: `updateSkillBar` 가드 **PASS** — 23.5초 프로브 중 pageError/consoleError 0건. login → town → cardselect → match → battle(시네마틱) → 라운드 2 도달 확인.
+
+**🔴 P0 자매 버그 발견·수정**: [js/55_game_battle.js:314-318](js/55_game_battle.js#L314) `launchBattle` 진입부 `bs` 자체 null 가드 누락. `const bs=this.battleState; if(!bs.pCards)` 에서 `battleState===null` 이면 TypeError. 전투 종료 후 `58_game_battle_end.js` 에서 `battleState=null` 로 리셋되므로 Formation → launchBattle 재호출 경로에서 재현 가능. 이번 `updateSkillBar` 가드와 **같은 패턴의 자매 버그**.
+- 수정: `if(!bs || !bs.battleDeck) return;` 5줄 추가 (console.warn 포함)
+
+**🟡 P1 후속 지적 2건** (다음 세션 과제):
+1. **전투 중 모든 카드 일러스트 검은 박스** — v2 전투 프레임/이름/스탯은 렌더되지만 중앙 일러스트 빈 상태. CARD_IMG 매핑 실패 또는 경로 오류 추정. 2026-04-21 "concat 리터럴 금지" 교훈 재점검.
+2. **`RoF.Battle.state.speed` undefined** — `setSpeed(1/2/4)` 호출 무예외 통과하지만 state 반영 안 됨. 전투가 10초 만에 phase 전환 → 큐잉 30초/실행 60초 규칙 실효 가능.
+
+**📍 경로 정정**: 어제 `09d1187` 의 `updateSkillBar` 가드는 `55_game_battle.js` 가 아니라 [js/57_game_battle_ui.js:38-43](js/57_game_battle_ui.js#L38). 이번 `launchBattle` 수정은 `55_game_battle.js:314`.
+
+---
+
+## 🟣 2026-04-22 새벽 — P0~P4 일괄 정리 (커밋 2개 추가)
 
 **`09d1187`** P0 블로커 해결 — updateSkillBar pCards null 가드 (1파일 4줄)
 - "⚔️ 전투 개시!" 클릭 시 PAGEERROR 2회 → 0회
 - 초기 제안(pCards:null → []) 폐기, 방어 가드가 정답 (launchBattle 의 `if(!bs.pCards)` 초기화 분기 유지)
+- **수정 파일 정확히는 [js/57_game_battle_ui.js:38-43](js/57_game_battle_ui.js#L38)** (HANDOFF 경로 정정 2026-04-22 낮)
 
 **`fc51ba2`** P1~P4 일괄 (13파일, 34MB 절감)
 - **P1-a** rage 기획 문서 3건 (BATTLE_FORMULA/BUGFIX_EDGE_CASES/BATTLE_KEYWORD_ORDER) DEPRECATED 배너

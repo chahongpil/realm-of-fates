@@ -6,8 +6,8 @@
 ## 진행 중 작업
 
 **Phase**: Phase 3 (시네마틱 전투 리뉴얼) + Phase 2 콘텐츠
-**최근 세션**: 2026-04-22 새벽 — **P0~P4 일괄 정리 완료** (세션 종료, 대표님 휴식)
-**마지막 커밋**: `fc51ba2` (P1~P4 일괄, 13파일). 전체 13 커밋 (d34b64f~fc51ba2)
+**최근 세션**: 2026-04-22 낮 — **play-director 실플레이 검수 + P0 자매 버그 수정**
+**마지막 커밋**: `9f43333` (HANDOFF 정리). 배틀 플로우 login→battle→라운드2 완주 확인 (pageError 0건)
 **유닛 수**: 51 일반 + 6 신 영웅 템플릿 · 스펠 44 · 유물 12 / 회귀 **11/11 PASS**
 
 ### ✅ 2026-04-21~22 세션 완료 (총 13 커밋)
@@ -22,9 +22,15 @@
 - [x] 세계관 용어 5곳 정정 (concept/lore-bible)
 - [x] fuseCard 진화계수 `EVOLVE_COEF` 테이블화
 
+### ✅ 2026-04-22 낮 완료
+- [x] **A. 배틀 플로우 완주 검수** — play-director PASS, 23.5초 프로브 pageError 0건
+- [x] **P0 자매 버그 수정** — launchBattle 의 `bs` 자체 null 가드 추가 (55_game_battle.js:314)
+- [x] HANDOFF 경로 정정 (09d1187 수정 파일은 57_game_battle_ui.js)
+
 ### 다음 세션 오프닝 추천 (우선순위)
-- [ ] 🔴 **A. 배틀 플로우 완주 검수** (20분) — P0 수정 효과 실증. Playwright login→전투→보상.
 - [ ] 🟠 **B. 가비지 trash 이동** (15분) — garbage-cleaner 리포트 🔴 5건, 추가 17MB 절감
+- [ ] 🔴 **F. 카드 일러스트 검은 박스 진단** — 전투 v2 에서 CARD_IMG 매핑 실패. rof-ui-inspector 병행
+- [ ] 🔴 **G. `RoF.Battle.state.speed` undefined 수정** — setSpeed 호출 무효. 큐잉 30s/실행 60s 규칙 실효 가능
 - [ ] 🟡 **C. 성별 토글 CSS transition** (15분) — minor_bugs #3 Option B, fade 200ms 추가
 - [ ] 🟡 **D. 51유닛 신 계열 매핑** — **대표님 직접 진행 예정** (2~4시간, 트랙5)
 - [ ] 🟢 **E. P4 큰 리팩터 2건** — CardV4.create() 쪼개기 / BUILDINGS.action 함수화 (위험도 중간)

@@ -16,9 +16,31 @@
   let _sb = null;   // supabase client
   let _user = null;  // auth.users row
 
+  // 외부 모듈이 구독하는 auth 이벤트 리스너 목록
+  const _authListeners = [];
+
   const B = {
     isReady: false,
     isOffline: true,
+
+    /**
+     * Auth 상태 변화 구독 — 로그인/로그아웃 이벤트를 받고 싶은 모듈이 호출.
+     * @param {(event: string, user: object|null) => void} cb
+     *   event: 'SIGNED_IN' | 'SIGNED_OUT' | 'TOKEN_REFRESHED' | 'USER_UPDATED' 등
+     * @returns {() => void} 구독 해제 함수
+     */
+    onAuthChange(cb){
+      if(typeof cb !== 'function') return () => {};
+      _authListeners.push(cb);
+      // 이미 로그인 상태면 즉시 통지 (구독 타이밍이 로그인 이후여도 초기 상태 반영)
+      if(_user) {
+        try { cb('SIGNED_IN', _user); } catch(e){ console.error('[Backend] auth listener error', e); }
+      }
+      return () => {
+        const i = _authListeners.indexOf(cb);
+        if(i >= 0) _authListeners.splice(i, 1);
+      };
+    },
 
     // ── 초기화 ──────────────────────────────────────────
     async init(){
@@ -39,9 +61,12 @@
         B.isOffline = false;
         console.log('[Backend] 연결 완료', _user ? `(유저: ${_user.id.slice(0,8)})` : '(비로그인)');
 
-        // Auth 상태 변화 감시
-        _sb.auth.onAuthStateChange((_event, session)=>{
+        // Auth 상태 변화 감시 — 내부 _user 동기화 + 외부 리스너 통지
+        _sb.auth.onAuthStateChange((event, session)=>{
           _user = session?.user || null;
+          _authListeners.forEach(cb => {
+            try { cb(event, _user); } catch(e){ console.error('[Backend] auth listener error', e); }
+          });
         });
       } catch(e){
         console.error('[Backend] 초기화 실패 →', e.message);

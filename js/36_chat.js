@@ -39,10 +39,32 @@
         this._setInputDisabled(true);
         return;
       }
-      await this._loadAndSubscribe(this._activeChannel);
+      // Auth 세션 없으면 로그인 대기 상태로. 로그인 완료 시 onAuthChange 가 _loadAndSubscribe 호출.
+      const user = Backend.getCurrentUser();
+      if(!user){
+        this._showBanner('로그인 후 이용 가능', 'info');
+        this._setInputDisabled(true);
+      } else {
+        await this._loadAndSubscribe(this._activeChannel);
+      }
+
+      // Auth 변화 구독 — SIGNED_IN: 채팅 활성, SIGNED_OUT: 비활성
+      Backend.onAuthChange((event, u) => {
+        if(event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && u)){
+          this._hideBanner();
+          this._setInputDisabled(false);
+          this._loadAndSubscribe(this._activeChannel);
+          this._refreshMuteStatus();
+        } else if(event === 'SIGNED_OUT'){
+          if(this._sub){ this._sub.unsubscribe(); this._sub = null; }
+          this._showBanner('로그인 후 이용 가능', 'info');
+          this._setInputDisabled(true);
+        }
+      });
+
       // 뮤트 상태 5초마다 점검 (자동 해제 감지)
       this._muteCheckInterval = setInterval(()=> this._refreshMuteStatus(), 5000);
-      this._refreshMuteStatus();
+      if(user) this._refreshMuteStatus();
     },
 
     /** 패널 토글 */

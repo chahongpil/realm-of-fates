@@ -33,7 +33,7 @@
 ### Phase D: 상업화
 
 - Supabase 클라우드 세이브
-- 배틀패스 구현
+- 시즌패스 구현 (3 달 / 12 주 주기, `monetization.md` v2.1 § 4 참조)
 - Capacitor IAP 연동
 - AdMob 광고 연동
 

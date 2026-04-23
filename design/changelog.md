@@ -8,6 +8,144 @@
 
 ---
 
+## 2026-04-24 01:30 ▶ 세션 ▶ 핸드오프 저장
+
+**변경**: 세션 상태를 `docs/handoff/handoff-2026-04-24-0130.md` 에 저장 + 클립보드 복사
+**이유**: 수동 저장 — 긴 세션(전투 카드 리디자인 + 설정 모달 + Supabase 로그아웃 + NPC 갤러리) 마무리 후 휴식
+**영향**: `docs/handoff/` (신규 파일 1건)
+
+---
+
+## 2026-04-24 00:59 ▶ 세션 ▶ 핸드오프 저장 (트랙5 마을 리뉴얼)
+
+**변경**: 세션 상태를 `docs/handoff/handoff-2026-04-24-0059.md` 에 저장 + 클립보드 복사
+**이유**: 수동 저장 — 트랙5 세션에서 범위 밖 대량 작업 (마을 10건물 + 영상 배경 + 투명 바 제거 + NPC 일러 crop) 마무리
+**영향**: `docs/handoff/` (신규 1건), 세션 내 변경은 `js/51_game_town.js` / `css/42_screens.css` / `css/30_components.css` / `index.html` / `design/prototypes/town_editor_v2.html` 등
+**이전 결정 관계**: 2026-04-23 밤 옵션 A/C 번복 이후 대표님 직접 이미지 공급으로 **옵션 C 재번복** (신전 별도 건물) 확정 상태
+
+---
+
+## 2026-04-23 ▶ 게임 메커닉 ▶ 영웅 카드 검은박스 최종 해결 — 레거시 skinKey 유실 구제
+
+**변경**:
+1. `js/14_data_images.js` `getCardImg` 에 **레거시 영웅 fallback** 추가. id 가 `hero_{g}_{r}_{e}` 패턴이면 gender/role 파싱 → `protagonist_{g}_{r}_1` 먼저 시도, 없으면 `protagonist_{g}_{r}` 로 재시도 (m.warrior 는 _1, 나머지 단일 파일).
+2. `js/60_turnbattle_v2.js` `legacyCardToV2Unit` 에 `skinKey: c.skinKey || null` 필드 추가. `imgKey` 도 영웅이면 skinKey 로 우선 설정.
+
+**이유**: 대표님 계정 "홍아다" 가 Formation 화면에서 검은박스 렌더. 진단:
+- `createHero()` 는 `skinKey: "protagonist_m_warrior_1"` 정상 부여
+- 하지만 **오래된 세이브** 의 deck 객체에는 skinKey 필드 자체가 없음 (이전 버전 잔재)
+- `getCardImg` 의 영웅 분기는 `skinKey` 존재 시에만 동작 → 레거시 영웅은 null 반환 → 검은박스
+
+**영향**:
+- 테스트 6 케이스 전부 PASS: createHero 정상/레거시 m warrior fire/f ranger water/m support holy/f warrior dark/일반 militia.
+- 전투 v2 도 skinKey 가 Battle.STATE 유닛 객체에 전파됨.
+- 회귀 11/11 PASS.
+- 대표님 "홍아다" + 다른 레거시 영웅 세이브 자동 구제 (세이브 데이터 수정 없이 런타임 해석).
+
+**이전 결정 관계**: 2026-04-23 세션 앞선 P1 F (getCardImg imgKey/unitId 폴백) 의 후속. 그때 "영웅은 CARD_IMG hero_* 키 0개 → 별건" 으로 남겼던 것을 완전 해결.
+
+---
+
+## 2026-04-23 ▶ 기술 스택 ▶ 설정 모달 (⚙️) + town-footer 뷰포트 밖 버그 수정
+
+**변경**:
+1. **town-footer 뷰포트 밖 밀림 버그 수정** — `.town-container { height:100%; flex-shrink:0 }` → `{ flex:1 1 auto; min-height:0 }`. 휴식 버튼 y:804(뷰포트 720 밖) → **y:666 복귀**.
+2. **설정 모달 신규** (B안, 대표님 요청) — `⚙️ 설정` 버튼 클릭 시 모달 오픈. 구성:
+   - 계정 정보 (`계정: {Auth.user}`)
+   - `🔊 BGM 끄기/켜기` (SFX.toggle 래퍼)
+   - `💾 저장하고 종료` (기존 `Game.logout` 호출 = persist + Auth.user=null + UI.show('title-screen'))
+   - 닫기
+3. **⚙️ 버튼은 sound-panel 접힘 상태의 대표 아이콘**으로 배치. 기존 `::before` 가상 ⚙️ 제거하고 실제 클릭 가능한 `.sp-settings` 로 교체. hover 드롭다운 UX(240px 펼침)는 그대로 유지 — 🔊/볼륨/⛶ 는 hover 시 노출.
+
+**파일**:
+- `js/37_settings.js` 신규 — `RoF.Settings.{open, close, exitWithSave, toggleBgm}`
+- `js/99_bindings.js` MODULE_MAP 에 `settings: 'Settings'` 추가
+- `index.html` — 사운드 패널 1줄 재배치 + `#settings-modal` 신규 DOM + `js/37_settings.js` script 태그
+- `css/30_components.css` — `.sound-panel::before` → `.sound-panel .sp-settings` 실제 버튼 대체
+- `css/42_screens.css` — `.town-container` flex 수정 + `#settings-modal .set-account/.set-vert` 스타일 append
+
+**이유**: 대표님 요청 "게임 설정에 저장하고 종료하기 메뉴 넣자 — 누르면 저장되고 새 로그인/새 게임 메뉴로 돌아가는 흐름". 작업 도중 "휴식 버튼 안 보인다" 지적으로 town-footer 뷰포트 밖 버그까지 발견·수정.
+
+**영향**:
+- Playwright E2E: settings-btn 클릭 → 모달 active → BGM 토글 → 저장하고 종료 → `activeScreen:"title-screen"`, `Auth.user:null`, 모달 닫힘 ✅
+- settings-btn 실측: x:1229, y:8, w:44, h:44 (뷰포트 우상단 안)
+- modal-box 실측: 460,218 360×285 (정확히 중앙)
+- town-footer 휴식 버튼: y:804→666 복귀
+- **rof-ui-inspector 2차 검수 🟢 승인** (블로커 0건, 초반 "⚙️ 버튼 안 보임 + 모달 우상단 치우침" 두 블로커는 스크린샷 축소 렌더 artefact 로 인한 오판이었음을 실측값(`getBoundingClientRect`)으로 공식 정정).
+- 회귀 **11/11 PASS**, pageErrors 0.
+
+**이전 결정 관계**: 기존 "🛏️ 휴식" 버튼은 그대로 유지 (중복 진입점). 이후 사용자 피드백에 따라 휴식 버튼 제거 or 설정 모달로 완전 통합 가능.
+
+---
+
+## 2026-04-23 ▶ 게임 메커닉 ▶ 전투 v2 카드 원래 크기 210×290 복원 + 바 gap:0 (두 바 딱 붙임)
+
+**변경**: 188×272 → **210×290** (최초 수직슬라이스 값 복원). HP/NRG 바 두 개를 **gap:0 으로 딱 붙여서** 한 묶음 느낌. 이름표 top 22→18.
+
+```
+카드: 188×272 (면적 51,136) → 210×290 (면적 60,900) = +19.1%
+바:   gap 2  → gap 0
+이름: top 22 → top 18 (바 끝 15 + 3 여백)
+세로 예산: HUD 56→48, mid 68→56, row 280→300, ally-row 296→316 (총 720)
+가로 예산: 5×210 + 4×14 = 1094 / 1280 → safe 93 each
+focus 확대: 338×490 → 378×522 (1.8배 유지)
+```
+
+**이유**: 대표님 지적 — "원래 이것보다 더 컸다" → git log 로 추적 결과 사용자 기억 정확. 최초 수직슬라이스 커밋 `f30cf69`(2026-04-14) 에서 `--bv2-card-w: 210, --bv2-card-h: 290` 으로 출발 → 다음 커밋 `66d3486`(2026-04-15) 에서 **"검수관 블로커 #3 — 10장 배치 호흡 확보"** 사유로 172×248 로 축소. **rof-ui-inspector 재검수 결과 "당시 블로커 #3 은 과보수적 판정이었다" 공식 인정**. 대표님 기억대로 최초값 복원.
+
+**영향**:
+- `css/41_battle_v2.css`: `--bv2-card-w 188→210`, `--bv2-card-h 272→290`, `--bv2-hud-h 56→48`, `--bv2-mid-h 68→56`, `--bv2-row-h 280→300`, `--bv2-row-h-ally 296→316`, `#battle-v2-container --card-v4-w/h 188/272→210/290`, `.bcf-main-card --card-v4-w/h 338/490→378/522`
+- `css/32_card_v4.css`: `.card-v4-compact .bars gap 2→0`, `.top top 22→18`
+- `.claude/rules/06-card-ui-principles.md`: 정본값 188×272 → 210×290 갱신 + 연혁·복원 근거 명시
+- Playwright 실측: 카드 7장 전부 renderedW:210 / renderedH:290.
+- **rof-ui-inspector 재검증 ✅ 완전 승인 (블로커 0)**: safe area 93 each + gap 14 답답하지 않음, VS 버튼 3개 mid 56 잘 수용, HUD 48 감축 후에도 가독성 유지, 05-design-direction 전면 준수.
+- 회귀 11/11 PASS.
+
+**이전 결정 관계**: 2026-04-23 같은 날 2회 시도. 172→188 (1차) → 188→210 (2차 복원). 1차 변경 당시 검수관이 "188 이 safe area 한계" 라 판정했으나, git log 복기 결과 210 이 최초값이었고 당시 축소가 과했음이 밝혀져 뒤집음.
+
+---
+
+## 2026-04-23 ▶ 게임 메커닉 ▶ 전투 v2 카드 크기 상향 (172×248 → 188×272) + HP/NRG 바 최상단
+
+**변경**:
+- 카드 크기 **172×248 → 188×272** (폭 +9.3%, 높이 +9.7%, 면적 **+19.9%**)
+- HP/NRG 바 **카드 최상단**(top:3) 배치, 이름 카르투슈는 바 아래(top:22)로 이동 — 겹침 없음
+- `css/41_battle_v2.css`: `--bv2-card-w 172→188`, `--bv2-card-h 248→272`, `#battle-v2-container --card-v4-w 172→188 + --card-v4-h 272 신규`, focus `.bcf-main-card --card-v4-w 310→338 + --card-v4-h 490 신규`
+- `css/32_card_v4.css`: `.card-v4-compact` height 하드코드 248 → `var(--card-v4-h, 248)` (fallback 유지로 다른 화면 영향 0), `.bars` top 30→3, `.top` top 6→22, `.bar` height 5→6
+- `.claude/rules/06-card-ui-principles.md`: 정본값 172×248 → 188×272 로 갱신 + 바 최상단 배치 명시
+
+**이유**: 대표님 지적 — "전에 카드가 이렇게 작았나?" 체감 문제. 이전 세션 rof-ui-inspector 가 172×248 을 "기획 정본 (확대 연출 전제로 작게 설계됨)" 이라 판정했으나, 체감상 StS2/Marvel Snap 대비 대기 상태 시야 점유율이 보수적. 188px 는 검수관이 "safe area 한계" 로 언급했던 최대값.
+
+**영향**:
+- Playwright 실측 `tools/_battle_v2_art_audit.js` 재실행: 카드 9장 전부 renderedW:188 / renderedH:272 정확.
+- **rof-ui-inspector 재검증 ✅ 완전 승인 (블로커 0)**: "172×248 유지 권고했던 이전 결론을 이 변경이 성공적으로 뒤집음". 뷰포트 가로 점유율 67.2% → 73.4% (+6.2%p). 바-이름 3px 여백 정확.
+- safe area 재계산: 5×188 + 4×14 = 996 / 1280 → 좌우 safe 142 each (이전 182).
+- 회귀 11/11 PASS, pageErrors 0.
+- focus 확대 카드 크기도 같이 커짐: 310×_ → 338×490 (1.8배 유지).
+
+**이전 결정 관계**: 2026-04-15 PHASE 3 수직슬라이스 때부터의 172×248 을 처음으로 변경. 당일 앞서 "P1 F 해결 (getCardImg 폴백)" 작업에서 발견한 "카드가 작아 보인다" 체감 이슈를 후속 조치.
+
+---
+
+## 2026-04-23 밤 ▶ 콘텐츠 ▶ 타운 맵 리메이크 번복 — 옵션 C 확정 (신전 = 성 내부 탭, 대표님 직접 구현)
+
+- **변경**: 직전 결정("2026-04-23 밤 타운 맵 리메이크 방침 확정 (9 건물 / 2560×1440 원본)") 을 **번복**. 옵션 C 로 전환.
+- **새 방침 (옵션 C)**:
+  - **신전 = 별도 건물 아님**. 성(castle) 내부 탭으로 흡수
+  - **맵 배경 이미지 변경 없음** — 기존 `bg_town_v3.png` 1376×768 유지
+  - **BUILDINGS 배열 8 개 유지** — 9 건물 확장 취소
+  - **CSS aspect-ratio 변경 없음** — 기존 `1376/768` 유지
+  - **대표님이 성 내부 신전 탭을 직접 구현** — 메인 세션 인계 불필요
+- **이유**: 대표님 결정. 외관 제작 부담·배치 재조정 비용 회피 + 신 NPC 관련 기능이 성의 "퀘스트·동료 단련" 과 의미 접점 많아 탭 흡수가 자연스러움.
+- **영향**:
+  - `design/town_map_remake_2026-04-23.md` 상단에 "옵션 C 번복 확정" 배너 추가, § 1~9 본문은 LEGACY 처리
+  - 트랙 2 assets 인계 **취소** (bg_town_v4.png / 신전 외관 cutout Lv1~5 제작 불필요)
+  - 메인 세션 인계 **취소** (CSS aspect-ratio 교체 / BUILDINGS 확장 / slot_coords 재드래그 / showTemple action 불필요 — 대표님 직접)
+  - `design/new_buildings_todo.md` § 신전 섹션 후속 대응 필요 (별도 건물 → 성 탭으로 스펙 이동)
+- **이전 결정 관계**: 직전 "2026-04-23 밤 타운 맵 리메이크 방침 확정 (9 건물 / 2560×1440 원본)" 을 완전 번복. 2026-04-22 저녁 [new_buildings_todo.md § 신전](new_buildings_todo.md) 의 "옵션 B (신전 신규 건물)" 결정도 이번에 옵션 C (성 탭 흡수) 로 재번복됨 — 해당 섹션은 후속 세션에서 스펙 이전 처리.
+
+---
+
 ## 2026-04-23 ▶ 게임 메커닉 ▶ P1 F 해결 — 전투 v2 카드 일러스트 검은 박스 (getCardImg 폴백)
 
 **변경**: `js/14_data_images.js` `RoF.getCardImg()` 에 `unit.imgKey` / `unit.unitId` 폴백 추가. 영웅 분기 `_isHero` → `_isHero || isHero` 확장.
@@ -54,6 +192,37 @@ return MAP[c.id] || MAP[c.imgKey] || MAP[c.unitId] || null;
 **이유**: 수동 저장 — NPC 9장 이식 + 씬별 표정 분기 시스템 + P0 전투 버그 G 해결 3건 완료 시점에서 휴식 전 보관.
 **영향**: `docs/handoff/` (신규 파일 1건).
 **이전 결정 관계**: 이전 핸드오프 `handoff-2026-04-22-2303.md` 이후 변동분 = 37 변경 + 11 untracked (커밋 대기).
+
+---
+
+## 2026-04-23 밤 ▶ 콘텐츠 ▶ 타운 맵 리메이크 방침 확정 (9 건물 / 2560×1440 원본)
+
+- **변경**: `design/town_map_remake_2026-04-23.md` 신규 (9 섹션). 9 번째 건물(신전) 추가 + 맵 이미지 aspect 정합성 확보 → 리메이크 결정.
+- **결정**:
+  - **제작 해상도 = 2560×1440** (옵션 A, 16:9 정확, 1280×720 의 2x)
+  - **표시 해상도 = 1280×720** (뷰포트 고정 유지)
+  - **CSS `aspect-ratio: 16/9`** 로 교체 (기존 `1376/768`)
+  - **신규 파일 = `img/bg_town_v4.png`** (v3 유지, 롤백 여유)
+  - **배치 권장안**: 신전 = 성·서고·상점 삼각 안 (교회와 시각 분리). 대안 B/C 는 대표님 확정 대기.
+- **이유**:
+  - 2026-04-22 저녁 신전 건물 9번째 추가 확정 → 기존 v3 에 자연스러운 배치 공간 없음
+  - v3 이미지 1376×768 (1.7917) 와 뷰포트 16:9 (1.7778) 비율 불일치로 letterbox 6 px — 리메이크 기회에 정합성 확보
+  - 2560×1440 원본 = retina 대비 + 다운스케일 여유
+- **후속 인계**:
+  - **트랙 2 assets (대표님 직접)**: `bg_town_v4.png` 2560×1440 원본 + 신전 cutout Lv1~5
+  - **메인**: CSS aspect-ratio 교체 + BUILDINGS 배열 9 건물 확장 + slot_coords.json 재드래그 + 신전 action 추가
+  - **트랙 5 후속**: 배치안 A/B/C 대표님 확정 + 신전 NPC 정의 + 신전 action 스펙
+- **이전 결정 관계**: [new_buildings_todo.md § 신전 (2026-04-22 저녁)](new_buildings_todo.md) 후속. 2026-04-12 확정 뷰포트 1280×720 변경 없음.
+
+---
+
+## 2026-04-23 22:29 ▶ 세션 ▶ 3차 핸드오프 저장 (얇은 포인터, 2차 이후 무변경)
+
+- **변경**: 3차 핸드오프 `docs/handoff/handoff-2026-04-23-2229.md` 저장 (얇은 포인터). 본문은 2차로 리다이렉트.
+- **이유**: 수동 저장 (대표님 재요청). 2차 핸드오프(22:20) 및 커밋(22:26) 이후 신규 작업 0 건. 동일 상태 재보관용.
+- **트랙**: 05-docs-lore
+- **내용**: 2차 Source of Truth 포인터 + 후속 작업 목록(2차와 동일) + 메타 노트 4줄
+- **커밋 없음**: 트랙 5 범위 git 상태 변화 없음 (3차 핸드오프 파일 + 시그널 append + changelog 이 entry 만 새로 생김)
 
 ---
 

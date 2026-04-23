@@ -1,20 +1,24 @@
 ================================================================
 Realm of Fates — 스킬·유물 이미지 작업 큐 (2026-04-21)
-================================================================
+===
+
 현재 스킬: 37장 (패시브 29 + 액티브 8)
 현재 유물: 12장 (brz 3 + slv 3 + gld 3 + leg 3)
-기존 범용 아이콘 11장 (img/skill_*.png): attack/defend/taunt/heal/drain/pierce/lightning/ice/crit/inspire/aoe
-  → 공격/방어/치유 카테고리 공유 사용 중. 카드별 고유 이미지 만들면 해당 카드는 그걸 우선.
+기존 범용 아이콘 11장 (img/skill\_\*.png): attack/defend/taunt/heal/drain/pierce/lightning/ice/crit/inspire/aoe
+→ 공격/방어/치유 카테고리 공유 사용 중. 카드별 고유 이미지 만들면 해당 카드는 그걸 우선.
 
 유닛 이미지와 동일 규격:
-- 400×600 비율 (세로형 카드), 프레임·외곽선 없음, 환경 배경 포함
-- 드라마틱 라이팅, 하스스톤 금지 프롬프트
-- 등급별 디테일 예산 (brz 40% ~ leg 90%, 05-design-direction.md)
+
+* 400×600 비율 (세로형 카드), 프레임·외곽선 없음, 환경 배경 포함
+* 드라마틱 라이팅, 하스스톤 금지 프롬프트
+* 등급별 디테일 예산 (brz 40% \~ leg 90%, 05-design-direction.md)
+
 
 
 ================================================================
 ★ PRIORITY TIER ORDER (이 순서대로 작업)
-================================================================
+===
+
 1. 🔴 액티브 스펠 8장 (전투 중 펑 터지는 화려한 연출 필요)
 2. 🟡 전설 패시브 7장 (카드로도 뽑히므로 시그니처 비주얼)
 3. 🟡 전설 유물 3장 (강력한 효과라 임팩트 필요)
@@ -22,212 +26,220 @@ Realm of Fates — 스킬·유물 이미지 작업 큐 (2026-04-21)
 5. 🔵 실버/브론즈 (디테일 덜해도 OK, 나중에)
 
 
+
 ================================================================
 ★ P0 (최우선 8장) — 액티브 스펠 (전투 시각 핵심)
-================================================================
+===
 
-#1. sk_flame_arrow (불꽃 화살)
-    등급: bronze, 원소: fire, 역할: attack (spell), 타겟: 단일
-    비주얼: 타오르는 화살 한 발이 공중을 가르며 날아가는 순간
-    배경: 어둡고 붉은 연기, 화살이 지나간 궤적에 불티
-    프롬프트 힌트: fire arrow, single projectile, trail of embers,
-                   dark smoky background, dramatic backlight
-    난이도: 낮음
+\#1. sk\_flame\_arrow (불꽃 화살)
+등급: bronze, 원소: fire, 역할: attack (spell), 타겟: 단일
+비주얼: 타오르는 화살 한 발이 공중을 가르며 날아가는 순간
+배경: 어둡고 붉은 연기, 화살이 지나간 궤적에 불티
+프롬프트 힌트: fire arrow, single projectile, trail of embers,
+dark smoky background, dramatic backlight
+난이도: 낮음
 
-#2. sk_healing_light (치유의 빛)
-    등급: bronze, 원소: holy, 역할: support (heal), 타겟: 아군 1체
-    비주얼: 황금빛 가루가 아래에서 위로 상승하는 오라, 중앙에 빛의 원
-    배경: 부드러운 성소 내부, 빛줄기
-    프롬프트 힌트: golden healing light, rising particles,
-                   sacred orb glow, cathedral interior
-    난이도: 낮음
+\#2. sk\_healing\_light (치유의 빛)
+등급: bronze, 원소: holy, 역할: support (heal), 타겟: 아군 1체
+비주얼: 황금빛 가루가 아래에서 위로 상승하는 오라, 중앙에 빛의 원
+배경: 부드러운 성소 내부, 빛줄기
+프롬프트 힌트: golden healing light, rising particles,
+sacred orb glow, cathedral interior
+난이도: 낮음
 
-#3. sk_tidal_crash (파도 강타)
-    등급: silver, 원소: water, 역할: attack (spell)
-    비주얼: 거대한 파도가 덮치는 순간, 물거품과 물방울
-    배경: 해변/해저 배경, 어두운 구름
-    프롬프트 힌트: crashing tidal wave, massive water strike,
-                   stormy sea background, slow-motion splash
-    난이도: 중
+\#3. sk\_tidal\_crash (파도 강타)
+등급: silver, 원소: water, 역할: attack (spell)
+비주얼: 거대한 파도가 덮치는 순간, 물거품과 물방울
+배경: 해변/해저 배경, 어두운 구름
+프롬프트 힌트: crashing tidal wave, massive water strike,
+stormy sea background, slow-motion splash
+난이도: 중
 
-#4. sk_earth_bulwark (대지 방벽)
-    등급: silver, 원소: earth, 역할: defense (buff)
-    비주얼: 땅에서 돌벽이 솟아오르는 순간, 갈라지는 바위 틈
-    배경: 갈색 먼지 흩날리는 황무지
-    프롬프트 힌트: earthen wall rising from ground,
-                   stone spikes erupting, dusty wasteland
-    난이도: 중
+\#4. sk\_earth\_bulwark (대지 방벽)
+등급: silver, 원소: earth, 역할: defense (buff)
+비주얼: 땅에서 돌벽이 솟아오르는 순간, 갈라지는 바위 틈
+배경: 갈색 먼지 흩날리는 황무지
+프롬프트 힌트: earthen wall rising from ground,
+stone spikes erupting, dusty wasteland
+난이도: 중
 
-#5. sk_chain_lightning (번개 사슬)
-    등급: silver, 원소: lightning, 역할: attack (all enemies)
-    비주얼: 지그재그로 여러 점을 잇는 번갯줄, 파란 불꽃
-    배경: 먹구름, 휘몰아치는 전기 에너지
-    프롬프트 힌트: chain lightning arcing between targets,
-                   electric blue, storm clouds, multiple arcs
-    난이도: 중
+\#5. sk\_chain\_lightning (번개 사슬)
+등급: silver, 원소: lightning, 역할: attack (all enemies)
+비주얼: 지그재그로 여러 점을 잇는 번갯줄, 파란 불꽃
+배경: 먹구름, 휘몰아치는 전기 에너지
+프롬프트 힌트: chain lightning arcing between targets,
+electric blue, storm clouds, multiple arcs
+난이도: 중
 
-#6. sk_dark_curse (암흑 저주)
-    등급: silver, 원소: dark, 역할: defense (debuff)
-    비주얼: 보라색 마법진에서 검은 연기가 나선형으로 피어오름
-    배경: 검붉은 심연, 유령 같은 손
-    프롬프트 힌트: dark curse circle, purple runes,
-                   spiraling black smoke, ominous shadow hands
-    난이도: 중
+\#6. sk\_dark\_curse (암흑 저주)
+등급: silver, 원소: dark, 역할: defense (debuff)
+비주얼: 보라색 마법진에서 검은 연기가 나선형으로 피어오름
+배경: 검붉은 심연, 유령 같은 손
+프롬프트 힌트: dark curse circle, purple runes,
+spiraling black smoke, ominous shadow hands
+난이도: 중
 
-#7. sk_inferno_blast (화염 폭발) ★ 시그니처
-    등급: gold, 원소: fire, 역할: attack (큰 단발)
-    비주얼: 거대한 화염 폭발의 중심, 방사형 불꽃, 충격파
-    배경: 타버린 대지, 붉은 하늘
-    프롬프트 힌트: massive inferno explosion, radial fire burst,
-                   shockwave distortion, scorched earth
-    난이도: 높음
+\#7. sk\_inferno\_blast (화염 폭발) ★ 시그니처
+등급: gold, 원소: fire, 역할: attack (큰 단발)
+비주얼: 거대한 화염 폭발의 중심, 방사형 불꽃, 충격파
+배경: 타버린 대지, 붉은 하늘
+프롬프트 힌트: massive inferno explosion, radial fire burst,
+shockwave distortion, scorched earth
+난이도: 높음
 
-#8. sk_blessing_light (축복의 빛) ★ 시그니처
-    등급: gold, 원소: holy, 역할: support (전체 힐)
-    비주얼: 하늘에서 쏟아지는 빛기둥, 꽃잎처럼 퍼지는 금빛 입자
-    배경: 구름 사이로 터지는 햇살
-    프롬프트 힌트: divine light column from sky,
-                   golden particles spreading like petals,
-                   sunbeams through clouds, holy mass heal
-    난이도: 높음
+\#8. sk\_blessing\_light (축복의 빛) ★ 시그니처
+등급: gold, 원소: holy, 역할: support (전체 힐)
+비주얼: 하늘에서 쏟아지는 빛기둥, 꽃잎처럼 퍼지는 금빛 입자
+배경: 구름 사이로 터지는 햇살
+프롬프트 힌트: divine light column from sky,
+golden particles spreading like petals,
+sunbeams through clouds, holy mass heal
+난이도: 높음
+
 
 
 ================================================================
 ☆ P1 (중요 10장) — 전설 패시브 7장 + 전설 유물 3장
-================================================================
+===
 
 ### 전설 패시브 7장 (강력한 시그니처 능력, 카드로도 뽑힘)
 
-#9. sk_berserk (광폭화)
-    공격력 2배, 방어 0. 붉은 기운에 휩싸인 전사 실루엣
-    비주얼: 핏빛 오라 + 광기 어린 눈빛, 양손에 쥔 무기
+\#9. sk\_berserk (광폭화)
+공격력 2배, 방어 0. 붉은 기운에 휩싸인 전사 실루엣
+비주얼: 핏빛 오라 + 광기 어린 눈빛, 양손에 쥔 무기
 
-#10. sk_transcend (초월)
-    HP 2배. 하늘 위로 초월하는 빛의 형상, 후광
-    비주얼: 백색 초월 오라, 천사 같은 실루엣, 천상 후광
+\#10. sk\_transcend (초월)
+HP 2배. 하늘 위로 초월하는 빛의 형상, 후광
+비주얼: 백색 초월 오라, 천사 같은 실루엣, 천상 후광
 
-#11. sk_invincible (무적)
-    첫 1회 피해 무효. 황금 거울/방패에서 번쩍이는 반사광
-    비주얼: 방패에 부딪힌 공격이 튕겨나가는 순간, 거울 표면
+\#11. sk\_invincible (무적)
+첫 1회 피해 무효. 황금 거울/방패에서 번쩍이는 반사광
+비주얼: 방패에 부딪힌 공격이 튕겨나가는 순간, 거울 표면
 
-#12. sk_godslayer (신살)
-    공격+5, 행운+2. 신을 죽인다는 파멸의 검 오라
-    비주얼: 검은 룬이 흐르는 검, 배경에 깨진 신상
+\#12. sk\_godslayer (신살)
+공격+5, 행운+2. 신을 죽인다는 파멸의 검 오라
+비주얼: 검은 룬이 흐르는 검, 배경에 깨진 신상
 
-#13. sk_resurrection (부활의 성배)
-    HP 10 NRG 10 부활. 금빛 성배에서 떠오르는 영혼
-    비주얼: 성배 + 부활하는 영혼, 꽃잎처럼 떨어지는 깃털
+\#13. sk\_resurrection (부활의 성배)
+HP 10 NRG 10 부활. 금빛 성배에서 떠오르는 영혼
+비주얼: 성배 + 부활하는 영혼, 꽃잎처럼 떨어지는 깃털
 
-#14. sk_shadowstep (그림자걸음)
-    회피+5, 스피드+3. 그림자에서 나타나는 암살자
-    비주얼: 검은 연기로 분해되며 이동하는 실루엣
+\#14. sk\_shadowstep (그림자걸음)
+회피+5, 스피드+3. 그림자에서 나타나는 암살자
+비주얼: 검은 연기로 분해되며 이동하는 실루엣
 
-#15. sk_dragonheart (용의심장)
-    전능력치+2, 에너지+10. 심장 속에 박힌 작은 용
-    비주얼: 빛나는 크리스털 심장, 내부에 잠든 용, 불길
+\#15. sk\_dragonheart (용의심장)
+전능력치+2, 에너지+10. 심장 속에 박힌 작은 용
+비주얼: 빛나는 크리스털 심장, 내부에 잠든 용, 불길
 
 ### 전설 유물 3장 (강력한 전체 버프, 장비 카드)
 
-#16. rl_wrath (신의 분노) — 전체 공격+7
-    비주얼: 번개가 새겨진 거대한 망치 또는 창, 구름 위 안착
-    배경: 폭풍 구름, 신성한 광채
+\#16. rl\_wrath (신의 분노) — 전체 공격+7
+비주얼: 번개가 새겨진 거대한 망치 또는 창, 구름 위 안착
+배경: 폭풍 구름, 신성한 광채
 
-#17. rl_eternal (영원의 성배) — 전체 전능력치+3
-    비주얼: 빛나는 황금 성배, 안에 별자리가 흐르는 영약
-    배경: 시간이 멈춘 듯한 사원 제단
+\#17. rl\_eternal (영원의 성배) — 전체 전능력치+3
+비주얼: 빛나는 황금 성배, 안에 별자리가 흐르는 영약
+배경: 시간이 멈춘 듯한 사원 제단
 
-#18. rl_immortal (불멸갑옷) — 전체 방어+7, 회피+6
-    비주얼: 화려한 장식의 갑옷 세트, 가슴에 불멸 룬
-    배경: 어둑한 보관실, 쇠사슬에 매달린 모습
+\#18. rl\_immortal (불멸갑옷) — 전체 방어+7, 회피+6
+비주얼: 화려한 장식의 갑옷 세트, 가슴에 불멸 룬
+배경: 어둑한 보관실, 쇠사슬에 매달린 모습
+
 
 
 ================================================================
 ◇ P2 (여유 있을 때 12장) — 골드 패시브 9장 + 골드 유물 3장
-================================================================
+===
 
 ### 골드 패시브 9장
 
-#19. sk_crit_edge (급소연마) — 행운+3. 숫돌에 갈리는 단검
-#20. sk_fortress (철벽) — 방어+3, HP+10. 대형 강철 방패
-#21. sk_revive (부활축복) — HP 1 NRG 1 부활. 작은 희미한 불씨
-#22. sk_bloodlust (피의갈증) — 공격+3, HP-5. 핏방울 떨어지는 단검
-#23. sk_mirage (신기루) — 회피+3, 행운+1. 3겹 잔상
-#24. sk_warhorn (전쟁의나팔) — 공격+1, 스피드+1, 분노+3. 황금 뿔피리
-#25. sk_execute (처형) — 공격+4. 단두대 칼날 떨어지는 순간
-#26. sk_aura (수호오라) — 방어+3, HP+10, 회피+1. 푸른 보호막 구
-#27. sk_handoff (핸드오프) — 3% 카드 2번. 두 손이 카드를 주고받는 순간
+\#19. sk\_crit\_edge (급소연마) — 행운+3. 숫돌에 갈리는 단검
+#20. sk\_fortress (철벽) — 방어+3, HP+10. 대형 강철 방패
+#21. sk\_revive (부활축복) — HP 1 NRG 1 부활. 작은 희미한 불씨
+#22. sk\_bloodlust (피의갈증) — 공격+3, HP-5. 핏방울 떨어지는 단검
+#23. sk\_mirage (신기루) — 회피+3, 행운+1. 3겹 잔상
+#24. sk\_warhorn (전쟁의나팔) — 공격+1, 스피드+1, 분노+3. 황금 뿔피리
+#25. sk\_execute (처형) — 공격+4. 단두대 칼날 떨어지는 순간
+#26. sk\_aura (수호오라) — 방어+3, HP+10, 회피+1. 푸른 보호막 구
+#27. sk\_handoff (핸드오프) — 3% 카드 2번. 두 손이 카드를 주고받는 순간
 
 ### 골드 유물 3장
 
-#28. rl_doom (파멸의검) — 전체 공격+5. 검은 룬이 흐르는 대검
-#29. rl_luck (행운부적) — 전체 행운+6. 황금 클로버 매달린 부적
-#30. rl_guard (수호방패) — 전체 방어+5 HP+10. 용 문양 대형 방패
+\#28. rl\_doom (파멸의검) — 전체 공격+5. 검은 룬이 흐르는 대검
+#29. rl\_luck (행운부적) — 전체 행운+6. 황금 클로버 매달린 부적
+#30. rl\_guard (수호방패) — 전체 방어+5 HP+10. 용 문양 대형 방패
+
 
 
 ================================================================
 ◉ P3 (낮은 우선) — 실버/브론즈 패시브 12장 + 실버/브론즈 유물 6장
-================================================================
+===
 
 ### 실버 패시브 7장
 
-#31. sk_rage (분노폭발) — 공격+2 분노+5. 포효하는 전사 실루엣
-#32. sk_evasion (잔상술) — 회피+1. 흔들리는 2겹 잔상
-#33. sk_energize (활력충전) — 스피드+2 에너지+5. 푸른 에너지 코일
-#34. sk_cleave (일섬) — 공격+2 스피드+1. 빛의 칼 궤적
-#35. sk_ironwill (불굴) — HP+12 방어+1. 부러지지 않는 강철 팔
-#36. sk_prayer (기도) — 에너지+12 행운+1. 양손 모으는 실루엣
-#37. sk_reflex (반사신경) — 1% 피해 무효. 반짝이는 방패 표면
+\#31. sk\_rage (분노폭발) — 공격+2 분노+5. 포효하는 전사 실루엣
+#32. sk\_evasion (잔상술) — 회피+1. 흔들리는 2겹 잔상
+#33. sk\_energize (활력충전) — 스피드+2 에너지+5. 푸른 에너지 코일
+#34. sk\_cleave (일섬) — 공격+2 스피드+1. 빛의 칼 궤적
+#35. sk\_ironwill (불굴) — HP+12 방어+1. 부러지지 않는 강철 팔
+#36. sk\_prayer (기도) — 에너지+12 행운+1. 양손 모으는 실루엣
+#37. sk\_reflex (반사신경) — 1% 피해 무효. 반짝이는 방패 표면
 
 ### 실버 유물 3장
 
-#38. rl_fury (분노부적) — 전체 분노+5. 붉은 호박 펜던트
-#39. rl_boots (신속장화) — 전체 스피드+3. 바람 문양 가죽 부츠
-#40. rl_cloak (안개망토) — 전체 회피+5. 안개가 흐르는 회색 망토
+\#38. rl\_fury (분노부적) — 전체 분노+5. 붉은 호박 펜던트
+#39. rl\_boots (신속장화) — 전체 스피드+3. 바람 문양 가죽 부츠
+#40. rl\_cloak (안개망토) — 전체 회피+5. 안개가 흐르는 회색 망토
 
 ### 브론즈 패시브 6장
 
-#41. sk_power (끓어오르는 힘) — 공격+1. 주먹 쥔 손 클로즈업
-#42. sk_shield (방패 사용자) — 방어+1. 작은 원형 방패
-#43. sk_heal (체력 단련) — HP+10. 약초 꾸러미
-#44. sk_swift (하체 단련) — 스피드+1. 달리는 다리 실루엣
-#45. sk_tough (정밀 공격) — 행운+1. 과녁 중앙에 꽂힌 화살
-#46. sk_focus (집중) — 1% 카드 2번. 숨 고르는 명상 자세
+\#41. sk\_power (끓어오르는 힘) — 공격+1. 주먹 쥔 손 클로즈업
+#42. sk\_shield (방패 사용자) — 방어+1. 작은 원형 방패
+#43. sk\_heal (체력 단련) — HP+10. 약초 꾸러미
+#44. sk\_swift (하체 단련) — 스피드+1. 달리는 다리 실루엣
+#45. sk\_tough (정밀 공격) — 행운+1. 과녁 중앙에 꽂힌 화살
+#46. sk\_focus (집중) — 1% 카드 2번. 숨 고르는 명상 자세
 
 ### 브론즈 유물 3장
 
-#47. rl_banner (전쟁의깃발) — 전체 공격+2. 찢어진 붉은 깃발
-#48. rl_crystal (생명수정) — 전체 HP+8. 녹색/청색 원석
-#49. rl_wall (강철성벽) — 전체 방어+2. 벽돌 성벽 조각
+\#47. rl\_banner (전쟁의깃발) — 전체 공격+2. 찢어진 붉은 깃발
+#48. rl\_crystal (생명수정) — 전체 HP+8. 녹색/청색 원석
+#49. rl\_wall (강철성벽) — 전체 방어+2. 벽돌 성벽 조각
+
 
 
 ================================================================
 ★★★ 이번에 하실 거면 추천 순서 ★★★
-================================================================
+===
 
 전투에서 시각 임팩트 최대 → 추천:
 
 A. 최소 (4장) — 액티브 스펠 시그니처만
-   #7 sk_inferno_blast, #8 sk_blessing_light, #3 sk_tidal_crash, #5 sk_chain_lightning
+#7 sk\_inferno\_blast, #8 sk\_blessing\_light, #3 sk\_tidal\_crash, #5 sk\_chain\_lightning
 
 B. 권장 (10장) — 액티브 스펠 8장 전체 + 전설 패시브 2장
-   #1 ~ #8 + #10 sk_transcend + #15 sk_dragonheart
+#1 \~ #8 + #10 sk\_transcend + #15 sk\_dragonheart
 
 C. 풀코스 (18장) — P0 8장 + P1 10장
-   #1 ~ #18 전체
+#1 \~ #18 전체
 
 유닛 추천 P0 4장 + 스킬 추천 B 권장 10장 = 총 14장이면 다음 세션에 큰 덩어리 하나 끝남.
 
 
-================================================================
-공통 스타일 가이드
-================================================================
-- 400×600 세로 비율 (추후 LANCZOS)
-- 액티브 스펠: 카드 중앙에 스펠 "순간" 포착 (시간 정지)
-- 패시브: 캐릭터 없음. 아이템/오라/실루엣 추상 상징물
-- 유물: 아이템 자체 정면, 약간 떠 있는 듯한 후광
-- 프레임·외곽선·텍스트·아이콘 넣지 말 것 (시스템 프레임 담당)
-- 금지 프롬프트: "hearthstone", "blizzard", "world of warcraft"
-- 권장 프롬프트: "fantasy card art, dramatic lighting,
-                   magical moment captured, stylized illustration"
 
 ================================================================
+공통 스타일 가이드
+===
+
+* 400×600 세로 비율 (추후 LANCZOS)
+* 액티브 스펠: 카드 중앙에 스펠 "순간" 포착 (시간 정지)
+* 패시브: 캐릭터 없음. 아이템/오라/실루엣 추상 상징물
+* 유물: 아이템 자체 정면, 약간 떠 있는 듯한 후광
+* 프레임·외곽선·텍스트·아이콘 넣지 말 것 (시스템 프레임 담당)
+* 금지 프롬프트: "hearthstone", "blizzard", "world of warcraft"
+* 권장 프롬프트: "fantasy card art, dramatic lighting,
+magical moment captured, stylized illustration"
+
+================================================================
+

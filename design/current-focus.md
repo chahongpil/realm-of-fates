@@ -177,7 +177,28 @@
 - [x] **검증 (Playwright)**: SPEED=1→2→4→1 전이 시 `Battle.SPEED` · `Battle.state.speed` · CSS `--battle-speed` 3지점 전부 동기. invalid(3) 거부. `resetState` 후에도 speed 보존. 회귀 **11/11 PASS**.
 - [x] **P0 G 완료** — 큐잉 30s/실행 60s 관련 별도 이슈는 이 수정과 무관 (speed 는 beat ms 제수 역할로 정상 작동 중).
 
-### ✅ 2026-04-23 (이어서) 완료 (PHASE 5 Step 3 + P1 전투 일러스트 F 해결)
+### ✅ 2026-04-23 (이어서) 완료 (PHASE 5 Step 3 + P1 전투 일러스트 F 해결 + 카드 크기 상향)
+
+- [x] **⚙️ 설정 모달 신규 (저장하고 종료 + BGM 토글) + town-footer 버그 수정** (대표님 요청):
+  - **town-footer 뷰포트 밖 밀림 버그**: `.town-container { height:100%; flex-shrink:0 }` → `{ flex:1 1 auto; min-height:0 }` 1줄로 휴식 버튼 y:804→666 복귀.
+  - **설정 모달 B안**: `js/37_settings.js` 신규 + `#settings-modal` DOM + sound-panel `::before` → 실제 `.sp-settings` 교체 (접힘 상태 대표 아이콘). 모달 구성: 계정 정보 + 🔊/🔇 BGM 토글 + 💾 저장하고 종료 (= Game.logout = persist + Auth.user=null + title-screen 복귀) + 닫기.
+  - **rof-ui-inspector 2차 검수 🟢 승인**: 초반 블로커 2건("⚙️ 안 보임" + "모달 우상단 치우침")은 스크린샷 축소 artefact 로 인한 오판이었음을 `getBoundingClientRect` 실측값으로 공식 정정. settings-btn 1229,8 44×44, modalBox 460,218 360×285 정중앙.
+  - 회귀 11/11 PASS, pageErrors 0.
+
+- [x] **🎨 전투 v2 카드 원래 크기 210×290 복원 + 바 gap:0 (두 바 딱 붙임)** (대표님 지적 "원래 더 컸다"):
+  - git log 추적 → 최초 수직슬라이스 `f30cf69`(2026-04-14) 에서 **210×290 이 원래값**. 다음 커밋 `66d3486`(2026-04-15) 에서 "검수관 블로커 #3 호흡 확보" 로 축소됨. 대표님 기억 정확.
+  - 세로 공간 재분배: HUD 56→48, mid 68→56, enemy-row 280→300, ally-row 296→316 (총 720 유지)
+  - `.bars gap 2→0` (두 바 딱 붙음), `.top top 22→18` (바 끝+3 여백)
+  - focus 확대: 338×490 → **378×522** (1.8배 유지)
+  - **rof-ui-inspector 재검증 ✅ 완전 승인 (블로커 0)**: "2026-04-15 당시 블로커 #3 은 과보수적 판정이었다" 공식 인정. safe area 93 each + gap 14 답답하지 않음 확인.
+  - Playwright 실측: 카드 7장 전부 210×290. 회귀 11/11 PASS.
+
+- [x] **🎨 전투 v2 카드 크기 상향 172×248 → 188×272 + HP/NRG 바 최상단** (1차 시도, 위 복원으로 대체됨):
+  - CSS 3곳 수정 (41_battle_v2.css 토큰 + #battle-v2-container override + 32_card_v4.css compact 높이 변수화·바·이름 재배치).
+  - 기획서 `06-card-ui-principles.md` 정본값 동시 갱신 (172×248 → 188×272, 바 최상단 명시).
+  - Playwright 실측: 카드 9장 전부 188×272 정확. **rof-ui-inspector 재검증 ✅ 완전 승인 (블로커 0)** — 뷰포트 가로 점유율 67.2% → 73.4% (+6.2%p), 면적 +19.9%, 바-이름 3px 여백 정확.
+  - safe area 재계산: 5×188+4×14 = 996 → 좌우 142 each (이전 182).
+  - 회귀 11/11 PASS.
 
 - [x] **🔴 P1 F — 전투 v2 카드 일러스트 검은 박스 해결** (낮 세션의 play-director 지적 사항):
   - **진단**: Playwright `tools/_battle_v2_art_audit.js` 실측 → 카드 8장 전부 `art.src` 빈 상태. 전투 v2 가 `unit.id` 에 전투용 uid(`a_*`/`e_*`)를 덮어쓰기 때문에 CARD_IMG 매핑 실패. 원본 id 는 이미 `imgKey`/`unitId` 필드에 백업되어 있음 (60_turnbattle_v2.js:1359 주석 `imgKey: c.id  // CARD_IMG key = 원본 id` 가 이 의도).

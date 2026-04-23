@@ -43,3 +43,7 @@ tools/_titan_frames/
 tools/copy_titan.py
 tools/build_titan_apng.py
 
+
+# 2026-04-24: 마을 리뉴얼 중 로컬 백업 (원본 복구용, repo 제외)
+img/bg_town_v3_original.mp4
+img/bg_town_v3_3x2_backup.png

@@ -47,9 +47,24 @@ Object.assign(RoF.Game, {
     // S1: 클라우드 세이브 (비동기, 실패해도 로컬은 이미 저장됨)
     if(Backend && Backend.isReady) Backend.saveProgress(sv).catch(()=>{});
   },
-  logout(){this.persist();Auth.user=null;this.battleRunning=false;SFX.bgm(false);
+  logout(){
+    // 2026-04-24: 완전 로그아웃 — 저장 + Supabase 세션 종료 + auto-login 정보 삭제.
+    // 과거: 로컬 Auth.user 만 null → Supabase 는 세션 유지 → 재진입 시 cloud 세이브 재로드.
+    this.persist();
+    Auth.user=null;
+    this.battleRunning=false;
+    SFX.bgm(false);
+    // Supabase 세션 종료 (비동기, 실패해도 로컬 로그아웃 진행)
+    if(window.Backend && Backend.logoutAuth) Backend.logoutAuth().catch(()=>{});
+    // Auto-login localStorage 정리 (다음 세션 자동 재로그인 방지)
+    try {
+      localStorage.removeItem('rof8_last_user');
+      localStorage.removeItem('rof8_last_pw');
+    } catch(e){}
     ['login-id','login-pw','signup-id','signup-pw','signup-pw2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-    ['login-msg','signup-msg'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='';});UI.show('title-screen');},
+    ['login-msg','signup-msg'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='';});
+    UI.show('title-screen');
+  },
   // XP/Level is PER CARD, not global
   cardXpNext(card){return (card.level||1)*10;}, // Lv1=10, Lv2=20, Lv3=30...
   giveCardXp(card,xp){

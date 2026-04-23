@@ -358,6 +358,8 @@ RoF.CardV4Component = (function(){
     const nameBox = document.createElement('div');
     nameBox.className = 'name-box';
     const nmEl = document.createElement('div'); nmEl.className = 'name'; nmEl.textContent = name;
+    // 2026-04-23: 영문 이름 자동 감지 → .name-latin 클래스 (폰트 7px) — 한글보다 시각적으로 커 보이는 현상 대응
+    if(/[A-Za-z]/.test(name) && !/[ㄱ-힝]/.test(name)) nmEl.classList.add('name-latin');
     nameBox.appendChild(nmEl);
     if(!isCompact){
       const hpNum = document.createElement('div'); hpNum.className = 'hp-num'; hpNum.textContent = '♥ ' + hpCur;

@@ -92,10 +92,29 @@ RoF.Data.CARD_IMG = Object.freeze({
 
 // getCardImg 는 순수 함수이므로 RoF 직접 아래에 둠
 // 주인공(_isHero) 은 id 대신 skinKey 로 매핑 — 원소는 id 에 들어있지만 이미지는 스킨 단위로 공유.
+// 전투 v2 는 unit.id 에 전투용 uid(a_*/e_*)를 덮어쓰므로 imgKey/unitId 로 폴백.
+// (원본 id 는 unit 생성 시 imgKey 와 unitId 에 백업됨 — 60_turnbattle_v2.js:1359 참조)
+// 2026-04-23: 레거시 영웅(skinKey 유실된 오래된 세이브) 구제 — id 에서 gender/role 파싱해 기본 스킨 매핑.
 RoF.getCardImg = function(c){
   if(!c) return null;
-  if(c._isHero && c.skinKey) return RoF.Data.CARD_IMG[c.skinKey] || null;
-  return RoF.Data.CARD_IMG[c.id] || null;
+  const MAP = RoF.Data.CARD_IMG;
+  if((c._isHero || c.isHero) && c.skinKey) return MAP[c.skinKey] || null;
+  // 레거시 영웅 fallback: id 가 hero_{gender}_{role}_{element} 패턴이면 기본 스킨 추정.
+  // m.warrior 는 _1/_2/_3 세 variant, 나머지(f.warrior, 양성 ranger/support) 는 단일.
+  if(c._isHero || c.isHero){
+    const src = c.id || c.unitId || c.imgKey || '';
+    const m = /^hero_([mf])_(warrior|ranger|support)/.exec(src);
+    if(m){
+      const g = m[1], r = m[2];
+      const tryKeys = [
+        'protagonist_' + g + '_' + r + '_1',  // m.warrior 용 (_1 기본)
+        'protagonist_' + g + '_' + r,         // 단일 스킨용 fallback
+      ];
+      for(const k of tryKeys){ if(MAP[k]) return MAP[k]; }
+      return null;
+    }
+  }
+  return MAP[c.id] || MAP[c.imgKey] || MAP[c.unitId] || null;
 };
 
 // 호환성 레이어

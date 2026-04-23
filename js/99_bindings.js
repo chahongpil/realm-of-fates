@@ -23,6 +23,7 @@
     formation:  'Formation',
     fx:         'FX',
     backend:    'Backend',
+    settings:   'Settings',
   };
 
   function resolveAction(actionStr) {

@@ -42,6 +42,9 @@
   Battle.setSpeed = function(s){
     if(Battle.VALID_SPEEDS.indexOf(s) < 0) return false;
     Battle.SPEED = s;
+    // state.speed 미러링 — Battle.SPEED 가 Source of Truth, state.speed 는 observer 편의.
+    // Battle.state 는 60_turnbattle_v2.js 에서 정의되므로 로드 순서 안전 가드 필수.
+    if(Battle.state) Battle.state.speed = s;
     if(typeof document !== 'undefined' && document.documentElement){
       document.documentElement.style.setProperty('--battle-speed', String(s));
     }

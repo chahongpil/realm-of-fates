@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>🎭 NPC 전체 일러스트 갤러리</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#140820;color:#e9e3d0;font-family:'Noto Sans KR','맑은 고딕',sans-serif;padding:24px;line-height:1.5}
+  h1{color:#d4a84a;font-size:24px;margin-bottom:6px}
+  h2{color:#f1d890;font-size:18px;margin:32px 0 12px;padding-bottom:6px;border-bottom:1px solid #4a3560}
+  .meta{font-size:13px;color:#a99e88;margin-bottom:24px}
+  .meta strong{color:#d4a84a}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .cell{background:#221430;border:1px solid #4a3560;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px}
+  .cell img{width:100%;height:300px;object-fit:contain;background:#0a0510;border-radius:4px;display:block}
+  .cell .name{color:#d4a84a;font-weight:700;font-size:14px}
+  .cell .file{font-size:11px;color:#8a8270;font-family:ui-monospace,monospace;word-break:break-all}
+  .cell .desc{font-size:11px;color:#b8ad90;margin-top:2px;min-height:2.6em}
+  .cell.missing{opacity:.35;border:2px dashed #c94545}
+  .cell.missing::before{content:'(파일 없음)';position:absolute;color:#ff6666;font-size:12px}
+  .summary{background:#2a1f35;border:1px solid #d4a84a;border-radius:6px;padding:10px 14px;margin-bottom:20px;font-size:13px}
+</style>
+</head>
+<body>
+<h1>🎭 Realm of Fates — NPC 전체 일러스트 갤러리</h1>
+<div class="meta">
+  모든 건물 × Lv1~5 NPC 일러스트 + 표정 variants.
+  <strong>총 <span id="total">0</span>슬롯</strong> /
+  <strong>실재 <span id="found">0</span>장</strong> /
+  <strong>누락 <span id="missing">0</span>장</strong>
+</div>
+<div class="summary">
+  💡 각 셀: <strong>Lv + 이름</strong> / <strong>파일명</strong> / <strong>대사 요약</strong>.
+  빨간 점선 = 파일 없음. 대표님이 옛날 이미지 보이시면 직접 삭제/교체하시면 됩니다.
+</div>
+<div id="gallery"></div>
+
+<script>
+// 51_game_town.js 의 NPCS 구조 미러. 실제 게임 이름/대사와 일치.
+const NPCS = {
+  castle: { label:'🏰 성 (Castle)', list:[
+    {lv:1, name:'늙은 조언자', file:'npc_castle_1.png', desc:'영웅이여... 오셨구먼.'},
+    {lv:2, name:'군주', file:'npc_castle_2.png', desc:'이 땅의 운명이 그대에게 달려있구려.'},
+    {lv:3, name:'현왕', file:'npc_castle_3.png', desc:'진정한 지도자시여, 성이 그대를 맞이합니다.'},
+    {lv:4, name:'왕의 수호자 (A)', file:'npc_castle_4a.png', desc:'불멸의 왕이여... 당신의 전설이 시작됩니다.'},
+    {lv:4, name:'왕의 수호자 (B)', file:'npc_castle_4b.png', desc:'(변종 B)'},
+    {lv:5, name:'대황제 (A)', file:'npc_castle_5a.png', desc:'폐하, 천하가 당신의 것입니다.'},
+    {lv:5, name:'대황제 (B)', file:'npc_castle_5b.png', desc:'(변종 B)'},
+  ]},
+  church: { label:'⛪ 성당 (Church)', list:[
+    {lv:1, name:'수녀', file:'npc_church_1.png', desc:'신의 축복이 함께하길... 다친 동료가 있나요?'},
+    {lv:2, name:'수녀 (Lv2)', file:'npc_church_2.png', desc:'(사제→수녀로 변경, 2026-04-23) 신의 은총으로 상처를 치유해 드릴게요.'},
+    {lv:3, name:'주교', file:'npc_church_3.png', desc:'영웅이시여, 동료들의 상처를 보여주십시오.'},
+    {lv:4, name:'대주교', file:'npc_church_4.png', desc:'신의 기적으로 어떤 상처도 치유하리다.'},
+    {lv:5, name:'성녀', file:'npc_church_5.png', desc:'영혼의 안식과 치유... 모두 신의 뜻입니다.'},
+  ]},
+  forge: { label:'🔨 대장간 (Forge)', list:[
+    {lv:1, name:'견습공', file:'npc_forge_1.png', desc:'어... 어서 오세요!'},
+    {lv:1, name:'견습공 (작업중)', file:'npc_forge_1_working.png', desc:'여긴 대장간이에요... (씬별 표정 variant)'},
+    {lv:1, name:'견습공 (자랑스러운)', file:'npc_forge_1_proud.png', desc:'뭐... 뭐 만들어 드릴까요?'},
+    {lv:2, name:'대장장이', file:'npc_forge_2.png', desc:'좋은 쇠다. 잘 벼릴게.'},
+    {lv:3, name:'명장', file:'npc_forge_3.png', desc:'내 망치가 영웅의 무기를 깎아내리라.'},
+    {lv:4, name:'무구의 거장', file:'npc_forge_4.png', desc:'전설의 무구를 만들 때가 왔구먼.'},
+    {lv:5, name:'신화의 대장장이', file:'npc_forge_5.png', desc:'신들의 무기를 벼릴 수 있는 자는 오직 하나.'},
+  ]},
+  gate: { label:'🚪 성문 (Gate)', list:[
+    {lv:1, name:'파수꾼 소년', file:'npc_gate_1.png', desc:'헉! 영웅님이세요?'},
+    {lv:2, name:'파수병', file:'npc_gate_2.png', desc:'문 밖 경계를 서고 있습니다.'},
+    {lv:3, name:'위병대장', file:'npc_gate_3.png', desc:'이 문은 제가 책임집니다.'},
+    {lv:4, name:'기사단 부관', file:'npc_gate_4.png', desc:'영웅이여, 언제든 출전 준비가 되어있소.'},
+    {lv:5, name:'수호기사단장', file:'npc_gate_5.png', desc:'천공의 문이 당신을 기다립니다.'},
+  ]},
+  library: { label:'📚 도서관 (Library)', list:[
+    {lv:1, name:'서생', file:'npc_library_1.png', desc:'아... 오셨나요? 여긴 도서관이에요.'},
+    {lv:2, name:'학자', file:'npc_library_2.png', desc:'옛 기록을 찾고 계신가요?'},
+    {lv:3, name:'현자', file:'npc_library_3.png', desc:'지식은 가장 강력한 무기라네.'},
+    {lv:4, name:'대현자', file:'npc_library_4.png', desc:'과거와 미래의 기록이 여기 있다네.'},
+    {lv:5, name:'전지전능의 눈', file:'npc_library_5.png', desc:'모든 것이 보인다... 모든 진실이.'},
+  ]},
+  shop: { label:'🏺 상점 (Shop)', list:[
+    {lv:1, name:'행상인 할머니', file:'npc_shop_1.png', desc:'어머나~ 손님!'},
+    {lv:2, name:'상인', file:'npc_shop_2.png', desc:'좋은 물건이 있지.'},
+    {lv:3, name:'대상인', file:'npc_shop_3.png', desc:'값진 보물은 가격도 값지다네.'},
+    {lv:4, name:'거상', file:'npc_shop_4.png', desc:'온 대륙의 진귀품을 취급하지.'},
+    {lv:5, name:'암시장의 주인', file:'npc_shop_5.png', desc:'당신이 원하는 것... 뭐든 구해드리지.'},
+  ]},
+  tavern: { label:'🍺 주막 (Tavern)', list:[
+    {lv:1, name:'주막주인', file:'npc_tavern_1.png', desc:'어서 와! 한 잔 할래?'},
+    {lv:2, name:'바텐더', file:'npc_tavern_2.png', desc:'오늘은 무슨 이야기를 들려드릴까요?'},
+    {lv:3, name:'여관 주인', file:'npc_tavern_3.png', desc:'용맹한 영웅들이 모이는 곳입니다.'},
+    {lv:4, name:'여관장', file:'npc_tavern_4.png', desc:'전설의 모험가들이 머무는 곳입니다.'},
+    {lv:5, name:'황금주막의 주인', file:'npc_tavern_5.png', desc:'왕이 머무는 자리입니다.'},
+  ]},
+  training: { label:'⚔️ 훈련장 (Training)', list:[
+    {lv:1, name:'허수아비', file:'npc_training_1.png', desc:'...안녕하세요.'},
+    {lv:2, name:'훈련 교관', file:'npc_training_2.png', desc:'몸이 무거워 보이는군, 같이 수련하지.'},
+    {lv:3, name:'검술 사범', file:'npc_training_3.png', desc:'검의 길을 가르쳐드리겠습니다.'},
+    {lv:4, name:'전장의 귀감', file:'npc_training_4.png', desc:'진짜 전사가 되려면 고통을 알아야지.'},
+    {lv:5, name:'무신', file:'npc_training_5.png', desc:'나를 이기면 당신이 무신이다.'},
+  ]},
+};
+
+const gal = document.getElementById('gallery');
+let total=0, found=0, missingCount=0;
+const checks = [];
+
+for(const [id, cfg] of Object.entries(NPCS)){
+  const sec = document.createElement('section');
+  const title = document.createElement('h2');
+  title.textContent = `${cfg.label} — ${cfg.list.length}장`;
+  sec.appendChild(title);
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  cfg.list.forEach(npc => {
+    total++;
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.style.position = 'relative';
+    const img = document.createElement('img');
+    // 캐시 버스터 + HEAD 요청으로 실파일 확인 (캐시된 이미지 무시)
+    const url = '../img/' + npc.file + '?v=' + Date.now();
+    checks.push(
+      fetch(url, { method: 'HEAD', cache: 'no-store' })
+        .then(r => {
+          if (r.ok) { img.src = url; found++; return true; }
+          cell.classList.add('missing');
+          missingCount++;
+          return false;
+        })
+        .catch(() => { cell.classList.add('missing'); missingCount++; return false; })
+    );
+    img.alt = npc.name;
+    const nameEl = document.createElement('div');
+    nameEl.className = 'name';
+    nameEl.textContent = `Lv${npc.lv} · ${npc.name}`;
+    const fileEl = document.createElement('div');
+    fileEl.className = 'file';
+    fileEl.textContent = npc.file;
+    const descEl = document.createElement('div');
+    descEl.className = 'desc';
+    descEl.textContent = `"${npc.desc}"`;
+    cell.appendChild(img);
+    cell.appendChild(nameEl);
+    cell.appendChild(fileEl);
+    cell.appendChild(descEl);
+    grid.appendChild(cell);
+  });
+  sec.appendChild(grid);
+  gal.appendChild(sec);
+}
+
+Promise.all(checks).then(() => {
+  document.getElementById('total').textContent = total;
+  document.getElementById('found').textContent = found;
+  document.getElementById('missing').textContent = missingCount;
+});
+</script>
+</body>
+</html>

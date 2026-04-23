@@ -32,6 +32,7 @@
     lastCalc: null,
     queue: [],               // [{attackerId, targetId, skillId}]
     round: 1,
+    speed: Battle.SPEED || 1,  // Battle.SPEED 미러링 (observer 편의)
   };
 
   // ── 전투 상태 컨테이너 ───────────────────────────────────────
@@ -318,6 +319,7 @@
   Battle.resetState = function(){
     const prevRound = Battle.state.round || 1;
     const prevQueue = Battle.state.queue || [];
+    const prevSpeed = Battle.state.speed || Battle.SPEED || 1;
     Battle.state = {
       phase: 'idle',
       selectedChar: null,
@@ -327,6 +329,7 @@
       lastCalc: null,
       queue: prevQueue,
       round: prevRound,
+      speed: prevSpeed,  // 라운드 전환에도 속도 유지
     };
   };
 
@@ -449,6 +452,33 @@
   };
 
   // ── char-focus 렌더 (오버레이 확대 카드 + 스킬 펼침) ──────────
+  // 2026-04-24: 적 카드 클릭 시 정보 확인용 확대 overlay (focus 시스템과 분리).
+  // CardV4Component compact + with-desc 클래스 → 동일 레이아웃 + desc 4줄 표시.
+  Battle.showEnemyPreview = function(unit){
+    if(!unit) return;
+    const sub = document.getElementById('battle-enemy-preview');
+    if(!sub) return;
+    const host = sub.querySelector('.bep-main-card');
+    if(!host) return;
+    host.innerHTML = '';
+    const inst = RoF.CardV4Component.create(unit, {});
+    inst.el.classList.add('card-v4-compact', 'with-desc');
+    inst.setHP(unit.currentHp != null ? unit.currentHp : (unit.hp || 0));
+    inst.setNRG(unit.currentNrg != null ? unit.currentNrg : 0);
+    if(unit.statuses){
+      ['burn','poison','frozen','invincible'].forEach(function(k){
+        inst.setStatus(k, unit.statuses[k] || 0);
+      });
+    }
+    if(unit.shield != null) inst.setShield(unit.shield);
+    host.appendChild(inst.el);
+    sub.classList.add('active');
+  };
+  Battle.closeEnemyPreview = function(){
+    const sub = document.getElementById('battle-enemy-preview');
+    if(sub) sub.classList.remove('active');
+  };
+
   const renderCharFocus = function(opts){
     const c = Battle.state.selectedChar;
     if(!c) return;
@@ -466,6 +496,9 @@
     if(bcfMain){
       bcfMain.innerHTML = '';
       const inst = RoF.CardV4Component.create(c, {});
+      // 2026-04-24: 확대 카드도 compact 레이아웃(바 최상단 + 이름 top:16 + parch 축소) 적용.
+      // 크기는 #battle-v2-container .bcf-main-card 스코프의 --card-v4-w:338/h:522 로 유지됨.
+      inst.el.classList.add('card-v4-compact');
       // 전투 상태 동기화 — unit.hp 가 아니라 currentHp/currentNrg 기준
       inst.setHP(c.currentHp != null ? c.currentHp : (c.hp || 0));
       inst.setNRG(c.currentNrg != null ? c.currentNrg : 0);
@@ -1302,12 +1335,19 @@
     },
     'v2.targetClick':function(e){
       const u = getUnitFromEl(e.target);
-      if(u && Battle.state.selectedSkill) Battle.onTargetClick(u);
+      if(!u) return;
+      if(Battle.state.selectedSkill){
+        Battle.onTargetClick(u);
+      } else {
+        // 2026-04-24: 스킬 미선택 상태에서 적 카드 클릭 → 정보 확인용 확대 (desc 표시)
+        Battle.showEnemyPreview(u);
+      }
     },
     'v2.targetHover':function(e){
       const u = getUnitFromEl(e.target);
       if(u) Battle.onTargetHover(u);
     },
+    'v2.closeEnemyPreview': function(){ Battle.closeEnemyPreview(); },
     'v2.autoBattle': function(){ Battle.onAutoBattle(); },
     'v2.ready':      function(){ Battle.onReady(); },
     'v2.startCombat':function(){ Battle.onStartCombat(); },
@@ -1353,7 +1393,8 @@
       unitId:      c.id,                          // 원본 data id
       name:        c.name || '',
       desc:        c.skillDesc || '',
-      imgKey:      c.id,                          // CARD_IMG key = 원본 id
+      imgKey:      (c.isHero && c.skinKey) ? c.skinKey : c.id,  // 영웅은 skinKey, 일반은 id (2026-04-23 영웅 검은박스 수정)
+      skinKey:     c.skinKey || null,             // 영웅 스킨 식별자 (getCardImg 에서 우선 조회)
       element:     c.element || 'neutral',
       role:        c.role || 'attack',            // P1-C: 액티브 스킬 매칭용
       rarity:      c.rarity || 'bronze',

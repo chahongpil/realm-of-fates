@@ -89,7 +89,7 @@
   pointer-events: none;
 }
 .card-v4.with-bars .top-row,
-.card-v4.card-v4-compact .top-row { top: 28px; }  /* 전투 중: 바 아래로 이동 */
+.card-v4.card-v4-compact .top-row { top: 16px; }  /* 2026-04-23: 바 끝(15) 바로 아래 1px 여백 */
 
 /* Name box / Lv box 공통 — padding·gap·내부 정렬 통일 */
 .card-v4 .name-box,
@@ -438,27 +438,29 @@
    =================================================================== */
 .card-v4.card-v4-compact {
   width: var(--card-v4-w, 172px);
-  height: 248px;
+  height: var(--card-v4-h, 248px);
   aspect-ratio: auto;
 }
 
-/* Top cartouche 축소 */
-.card-v4-compact > .top {
-  top: 6px; left: 6px; right: 6px;
-  padding: 3px 6px;
-}
-.card-v4-compact .name { font-size: 11px; letter-spacing: .02em; }
+/* 2026-04-23 최종: HP/NRG 바 최상단 + 이름+Lv 바로 아래 (대표님 지시). */
+
+/* 이름 카르투슈(.top-row) 규칙은 line 92 에서 top:22 (바 밑). compact 는 추가로 좌우 여백 축소. */
+.card-v4.card-v4-compact .top-row { left: 6px; right: 6px; }
+/* 이름 폰트 — 한글 10px / 영문 7px (40_cards.js 가 name 에 .name-latin 클래스 부여) */
+.card-v4-compact .name { font-size: 10px; letter-spacing: .02em; }
+.card-v4-compact .name.name-latin { font-size: 7px; letter-spacing: .05em; }
+.card-v4-compact .name-box { max-width: 120px; }  /* 영어 긴 이름 방지 */
 .card-v4-compact .lv   { font-size: 8px; padding: 2px 4px; }
 
-/* Bars 압축 */
-.card-v4-compact .bars { left: 6px; right: 6px; top: 30px; gap: 2px; }
-.card-v4-compact .bar  { height: 5px; }
+/* Bars — 카드 최상단 (top:3), 두 바 gap:0 서로 딱 붙음. 높이 12. */
+.card-v4-compact .bars { left: 6px; right: 6px; top: 3px; gap: 0; }
+.card-v4-compact .bar  { height: 6px; }
 .card-v4-compact .bar .lbl { font-size: 7px; }
 
-/* Parchment 압축 — desc 숨김, stats 만 유지 */
+/* Parchment 압축 — 2026-04-23 검수관 권장: 높이 80→58px (27.6%→20%) 로 축소 → 일러스트 노출 63% 근접 복원 */
 .card-v4-compact .parch {
   left: 4px; right: 4px; bottom: 4px;
-  padding: 4px 5px;
+  padding: 3px 5px;   /* 4→3 세로 단축 */
   gap: 0;
   box-shadow: inset 0 0 14px rgba(110,74,42,.38);
 }
@@ -467,10 +469,22 @@
   padding-bottom: 0;
   border-bottom: none;
 }
-.card-v4-compact .stat .l { font-size: 7px; letter-spacing: .06em; }
-.card-v4-compact .stat .v { font-size: 9px; margin-top: 1px; }
-.card-v4-compact .stat .mod { font-size: 7px; padding: 1px 2px; }
+.card-v4-compact .stat .l { font-size: 6px; letter-spacing: .06em; }  /* 7→6 */
+.card-v4-compact .stat .v { font-size: 8px; margin-top: 1px; }         /* 9→8 */
+.card-v4-compact .stat .mod { font-size: 6px; padding: 1px 2px; }
 .card-v4-compact .parch .desc { display: none; }
+/* 2026-04-24: .with-desc 추가 시 desc 표시 (enemy preview overlay 등 정보 보기용) */
+.card-v4-compact.with-desc .parch .desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #1a0a04;
+  font-style: italic;
+  margin-top: 2px;
+}
 
 /* 상태이상 배지 — 이름 위 정중앙은 동일, 크기만 소폭 축소 */
 .card-v4-compact .v4-status-badge { padding: 1px 4px; font-size: 9px; }

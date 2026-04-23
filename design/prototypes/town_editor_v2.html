@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>마을 배치 에디터 v2 — 10건물 / 1280×720</title>
+<style>
+:root {
+  --bg-0: #0a0e14; --bg-1: #141920; --bg-2: #1e252f;
+  --text-0: #f4ecd8; --text-1: #c9b88a; --text-2: #8a8270;
+  --accent: #4ec9ff; --danger: #ff6b6b; --line: #2a3340;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100vh; overflow: hidden; font-family: "Noto Sans KR", system-ui, sans-serif; background: var(--bg-0); color: var(--text-0); }
+.app { display: flex; height: 100vh; }
+
+.canvas-wrap {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  overflow: auto; padding: 20px;
+  background: repeating-linear-gradient(45deg, #0a0e14, #0a0e14 10px, #0c1218 10px, #0c1218 20px);
+}
+.canvas {
+  position: relative;
+  width: min(1100px, calc(100vw - 380px));
+  aspect-ratio: 16 / 9;
+  box-shadow: 0 0 60px rgba(0,0,0,.7), 0 0 0 1px var(--line);
+  background: #000;
+  overflow: hidden;
+}
+.canvas img.bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; pointer-events: none;
+}
+
+/* 건물 히트박스 — 중심 기준 (게임과 동일) */
+.building {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(78,201,255,.55);
+  background: rgba(78,201,255,.12);
+  border-radius: 6px;
+  cursor: grab;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.95), 0 0 6px rgba(0,0,0,.7);
+  font-size: 13px;
+  transition: background .12s, border-color .12s;
+  z-index: 10;
+}
+.building:hover { background: rgba(78,201,255,.22); border-color: rgba(78,201,255,.85); }
+.building.selected {
+  background: rgba(255,200,80,.25);
+  border: 3px solid #ffcc33;
+  box-shadow: 0 0 20px rgba(255,200,80,.7);
+  z-index: 999 !important;
+}
+.building .num { font-size: 18px; font-weight: 700; color: #ffd766; }
+.building .name { font-size: 11px; color: #fff; opacity: .9; }
+.building.dragging { cursor: grabbing; opacity: .7; }
+
+/* 리사이즈 핸들 */
+.handle {
+  position: absolute; width: 14px; height: 14px;
+  background: #ffcc33; border: 2px solid #000;
+  border-radius: 2px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .15s;
+  z-index: 1000;
+}
+.building.selected .handle { opacity: 1; pointer-events: auto; }
+.handle.h-se { right: -9px; bottom: -9px; cursor: se-resize; }
+.handle.h-nw { left: -9px; top: -9px; cursor: nw-resize; }
+
+.grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+  background-size: 12.5% 10%;
+  display: none;
+}
+.grid.show { display: block; }
+
+/* 사이드바 */
+.sidebar {
+  width: 340px; min-width: 340px;
+  background: var(--bg-1); border-left: 1px solid var(--line);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.sidebar h1 {
+  font-size: 15px; padding: 14px 16px;
+  background: var(--bg-2); border-bottom: 1px solid var(--line);
+  color: var(--accent);
+}
+.sec { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.sec h2 { font-size: 11px; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+
+.blist { display: flex; flex-direction: column; gap: 3px; max-height: 340px; overflow: auto; }
+.blist button {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; background: var(--bg-2); border: 1px solid var(--line);
+  color: var(--text-0); border-radius: 4px; cursor: pointer;
+  font: 12px/1 inherit; text-align: left;
+}
+.blist button:hover { border-color: var(--text-1); }
+.blist button.active { border-color: var(--accent); background: rgba(78,201,255,.12); color: var(--accent); }
+.blist button .pill { font-size: 10px; color: var(--text-2); font-family: monospace; }
+
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.controls button {
+  padding: 8px 10px; background: var(--bg-2); border: 1px solid var(--line);
+  color: var(--text-0); border-radius: 4px; cursor: pointer; font: 12px/1 inherit;
+}
+.controls button:hover { border-color: var(--accent); }
+.controls button.danger { color: var(--danger); border-color: rgba(255,107,107,.3); }
+.controls button.full { grid-column: span 2; }
+.controls button.primary { background: var(--accent); color: var(--bg-0); font-weight: 700; border-color: var(--accent); }
+
+.info { font: 11px monospace; color: var(--text-0); white-space: pre-wrap; line-height: 1.6; padding: 10px; background: var(--bg-0); border-radius: 4px; }
+.json-out { font: 11px/1.4 monospace; color: var(--text-0); white-space: pre; padding: 10px; background: var(--bg-0); border-radius: 4px; max-height: 280px; overflow: auto; }
+
+.slider-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+.slider-row label { flex: 0 0 50px; font-size: 11px; color: var(--text-1); }
+.slider-row input { flex: 1; }
+.slider-row .val { flex: 0 0 50px; font: 11px monospace; color: var(--text-0); text-align: right; }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: var(--bg-0);
+  padding: 10px 18px; border-radius: 6px;
+  font-weight: 600; opacity: 0; pointer-events: none;
+  transition: opacity .25s, transform .25s; z-index: 1000;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+@media (max-width: 800px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; min-width: 0; max-height: 45vh; border-left: none; border-top: 1px solid var(--line); }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+      <img class="bg" src="../../img/bg_town_v3.png" alt="">
+      <div class="grid" id="grid"></div>
+      <!-- buildings injected by JS -->
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <h1>🗺 마을 배치 에디터 v2</h1>
+
+    <div class="sec">
+      <h2>건물 (클릭해서 선택)</h2>
+      <div class="blist" id="blist"></div>
+    </div>
+
+    <div class="sec">
+      <h2>선택된 건물 조작</h2>
+      <div class="slider-row">
+        <label>scale</label>
+        <input type="range" id="scale" min="30" max="200" value="100">
+        <span class="val" id="scale-val">100%</span>
+      </div>
+      <div class="info" id="info">선택된 건물 없음</div>
+    </div>
+
+    <div class="sec">
+      <h2>전역</h2>
+      <div class="controls">
+        <button id="grid-btn">📐 그리드</button>
+        <button id="reset-btn" class="danger">↻ 초기값</button>
+        <button id="copy-btn" class="primary full">📋 BUILDINGS 배열로 복사</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>BUILDINGS JSON (게임 적용 형식)</h2>
+      <div class="json-out" id="json-out"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">복사됨!</div>
+
+<script>
+// 게임 현재 좌표 (js/51_game_town.js 와 동일 — 2026-04-24 mid)
+// x, y, w, h 전부 container(1280×720) 기준 % (중심점 x/y, 크기 w/h)
+const DEFAULTS = [
+  {id:'castle',   num: 1, name:'성',          x:48, y:22, w:24, h:32},
+  {id:'temple',   num: 2, name:'신전',        x:45, y:42, w:14, h:18},
+  {id:'church',   num: 3, name:'성당',        x:62, y:27, w:14, h:20},
+  {id:'forge',    num: 4, name:'대장간',      x:17, y:30, w:12, h:22},
+  {id:'training', num: 5, name:'훈련소',      x:83, y:33, w:12, h:22},
+  {id:'tavern',   num: 6, name:'선술집',      x:14, y:55, w:12, h:16},
+  {id:'library',  num: 7, name:'도서관',      x:40, y:55, w:13, h:18},
+  {id:'shop',     num: 8, name:'암시장',      x:58, y:60, w:13, h:18},
+  {id:'inn',      num: 9, name:'여관',        x:77, y:56, w:13, h:18},
+  {id:'gate',     num:10, name:'성벽 & 성문', x:50, y:87, w:22, h:14},
+];
+
+let state = JSON.parse(JSON.stringify(DEFAULTS));
+let selected = null;
+let elemMap = {};
+
+const canvas   = document.getElementById('canvas');
+const blist    = document.getElementById('blist');
+const info     = document.getElementById('info');
+const jsonOut  = document.getElementById('json-out');
+const scale    = document.getElementById('scale');
+const scaleVal = document.getElementById('scale-val');
+const toast    = document.getElementById('toast');
+
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1400);
+}
+
+function render() {
+  canvas.querySelectorAll('.building').forEach(el => el.remove());
+  blist.innerHTML = '';
+  elemMap = {};
+
+  state.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'building';
+    el.dataset.id = s.id;
+    el.style.left = s.x + '%';
+    el.style.top = s.y + '%';
+    el.style.width = s.w + '%';
+    el.style.height = s.h + '%';
+    el.innerHTML = `
+      <div class="num">${s.num}</div>
+      <div class="name">${s.name}</div>
+      <div class="handle h-se"></div>
+      <div class="handle h-nw"></div>
+    `;
+    canvas.appendChild(el);
+    elemMap[s.id] = el;
+    attachDrag(el, s.id);
+    attachResize(el, s.id);
+
+    const btn = document.createElement('button');
+    btn.dataset.id = s.id;
+    btn.innerHTML = `<span>${s.num}. ${s.name}</span><span class="pill">${s.x.toFixed(0)},${s.y.toFixed(0)}</span>`;
+    btn.addEventListener('click', () => select(s.id));
+    blist.appendChild(btn);
+  });
+
+  if (selected) {
+    elemMap[selected]?.classList.add('selected');
+    blist.querySelector(`button[data-id=${selected}]`)?.classList.add('active');
+  }
+  refreshJson();
+}
+
+function select(id) {
+  selected = id;
+  canvas.querySelectorAll('.building').forEach(b => b.classList.remove('selected'));
+  blist.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  const el = elemMap[id];
+  if (el) el.classList.add('selected');
+  blist.querySelector(`button[data-id=${id}]`)?.classList.add('active');
+  scale.value = 100;
+  scaleVal.textContent = '100%';
+  updateInfo();
+}
+
+function getState(id) { return state.find(s => s.id === id); }
+
+function updateInfo() {
+  if (!selected) { info.textContent = '선택된 건물 없음'; return; }
+  const s = getState(selected);
+  info.textContent = `${s.num}. ${s.name} (${s.id})
+x: ${s.x.toFixed(1)}%   y: ${s.y.toFixed(1)}%
+w: ${s.w.toFixed(1)}%   h: ${s.h.toFixed(1)}%`;
+}
+
+function refreshJson() {
+  const lines = state.map(s =>
+    `{id:'${s.id}', x:${s.x.toFixed(1)}, y:${s.y.toFixed(1)}, w:${s.w.toFixed(1)}, h:${s.h.toFixed(1)}}, // ${s.num}. ${s.name}`
+  );
+  jsonOut.textContent = lines.join('\n');
+}
+
+function attachDrag(el, id) {
+  const s = getState(id);
+  let startX, startY, origX, origY;
+
+  function onDown(e) {
+    if (e.target.classList.contains('handle')) return; // 리사이즈 핸들은 별도
+    e.preventDefault();
+    select(id);
+    el.classList.add('dragging');
+    const pt = e.touches ? e.touches[0] : e;
+    startX = pt.clientX; startY = pt.clientY;
+    origX = s.x; origY = s.y;
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  }
+  function onMove(e) {
+    const pt = e.touches ? e.touches[0] : e;
+    const rect = canvas.getBoundingClientRect();
+    const dx = (pt.clientX - startX) / rect.width * 100;
+    const dy = (pt.clientY - startY) / rect.height * 100;
+    s.x = Math.max(0, Math.min(100, origX + dx));
+    s.y = Math.max(0, Math.min(100, origY + dy));
+    el.style.left = s.x + '%';
+    el.style.top = s.y + '%';
+    updateInfo();
+    refreshJson();
+    // blist pill 업데이트
+    const pill = blist.querySelector(`button[data-id=${id}] .pill`);
+    if (pill) pill.textContent = `${s.x.toFixed(0)},${s.y.toFixed(0)}`;
+  }
+  function onUp() {
+    el.classList.remove('dragging');
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+  }
+  el.addEventListener('pointerdown', onDown);
+}
+
+function attachResize(el, id) {
+  const s = getState(id);
+  el.querySelectorAll('.handle').forEach(h => {
+    const dir = h.classList.contains('h-se') ? 'se' : 'nw';
+    let startX, startY, origX, origY, origW, origH;
+
+    function onDown(e) {
+      e.preventDefault(); e.stopPropagation();
+      select(id);
+      const pt = e.touches ? e.touches[0] : e;
+      startX = pt.clientX; startY = pt.clientY;
+      origX = s.x; origY = s.y;
+      origW = s.w; origH = s.h;
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+    }
+    function onMove(e) {
+      const pt = e.touches ? e.touches[0] : e;
+      const rect = canvas.getBoundingClientRect();
+      const dx = (pt.clientX - startX) / rect.width * 100;
+      const dy = (pt.clientY - startY) / rect.height * 100;
+      if (dir === 'se') {
+        // 오른-아래: w/h 증가, 중심(x/y) 은 핸들 방향으로 이동
+        s.w = Math.max(2, origW + dx * 2); // center anchor 이므로 ×2
+        s.h = Math.max(2, origH + dy * 2);
+      } else {
+        // 왼-위: w/h 감소 동일
+        s.w = Math.max(2, origW - dx * 2);
+        s.h = Math.max(2, origH - dy * 2);
+      }
+      el.style.width = s.w + '%';
+      el.style.height = s.h + '%';
+      updateInfo();
+      refreshJson();
+    }
+    function onUp() {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+    }
+    h.addEventListener('pointerdown', onDown);
+  });
+}
+
+// scale 슬라이더 — 선택된 건물 전체 비율 조정
+scale.addEventListener('input', () => {
+  if (!selected) return;
+  const s = getState(selected);
+  const def = DEFAULTS.find(d => d.id === selected);
+  const ratio = scale.value / 100;
+  scaleVal.textContent = scale.value + '%';
+  s.w = def.w * ratio;
+  s.h = def.h * ratio;
+  const el = elemMap[selected];
+  el.style.width = s.w + '%';
+  el.style.height = s.h + '%';
+  updateInfo();
+  refreshJson();
+});
+
+// 그리드 토글
+document.getElementById('grid-btn').addEventListener('click', () => {
+  document.getElementById('grid').classList.toggle('show');
+});
+
+// 초기화
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('모든 건물을 초기 좌표로 되돌릴까요?')) return;
+  state = JSON.parse(JSON.stringify(DEFAULTS));
+  selected = null;
+  render();
+  showToast('↻ 초기값 복원');
+});
+
+// 복사
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const lines = state.map(s =>
+    `    {id:'${s.id}', ..., x:${s.x.toFixed(1)}, y:${s.y.toFixed(1)}, w:${s.w.toFixed(1)}, h:${s.h.toFixed(1)}}, // ${s.num}. ${s.name}`
+  );
+  const txt = lines.join('\n');
+  navigator.clipboard.writeText(txt).then(() => showToast('📋 클립보드 복사됨 — Claude 에 붙여넣기'));
+});
+
+// 키보드 화살표로 미세 조정
+document.addEventListener('keydown', (e) => {
+  if (!selected) return;
+  const s = getState(selected);
+  const step = e.shiftKey ? 0.1 : 0.5;
+  let moved = false;
+  if (e.key === 'ArrowLeft')  { s.x = Math.max(0, s.x - step); moved = true; }
+  if (e.key === 'ArrowRight') { s.x = Math.min(100, s.x + step); moved = true; }
+  if (e.key === 'ArrowUp')    { s.y = Math.max(0, s.y - step); moved = true; }
+  if (e.key === 'ArrowDown')  { s.y = Math.min(100, s.y + step); moved = true; }
+  if (moved) {
+    e.preventDefault();
+    const el = elemMap[selected];
+    el.style.left = s.x + '%';
+    el.style.top = s.y + '%';
+    updateInfo();
+    refreshJson();
+  }
+});
+
+render();
+</script>
+</body>
+</html>

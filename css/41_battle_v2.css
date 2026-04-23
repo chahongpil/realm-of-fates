@@ -11,17 +11,20 @@
 :root{
   --battle-speed: 1;
 
-  /* 카드 크기 — 2026-04-15 검수관 블로커 #3 (10장 배치 호흡 확보)
-     172×248 + gap 14. 가로 예산: 5×172 + 4×14 = 916 → 좌우 safe 182 each. */
-  --bv2-card-w: 172px;
-  --bv2-card-h: 248px;
+  /* 카드 크기 — 2026-04-23 원래 크기 210×290 복원 (대표님 결정).
+     연혁: 210×290 (2026-04-14 수직슬라이스 최초) → 172×248 (2026-04-15 검수관 블로커 #3 "호흡 확보")
+       → 188×272 (2026-04-23 체감 상향) → 210×290 (2026-04-23 복원, 최초값).
+     가로 예산: 5×210 + 4×14 = 1094 → 좌우 safe 93 each.
+     세로 예산 재분배 필수 (HUD 48 + row 300 + mid 56 + row 316 = 720). */
+  --bv2-card-w: 210px;
+  --bv2-card-h: 290px;
   --bv2-card-gap: 14px;
 
-  /* 공간 예산 (1280×720 수직 분배) — 검수관 #2 겹침 방지 */
-  --bv2-hud-h:       56px;   /* 상단 타이머 HUD */
-  --bv2-mid-h:       68px;   /* 중앙 VS + 버튼 바 */
-  --bv2-row-h:       280px;  /* enemy-row */
-  --bv2-row-h-ally:  296px;  /* ally-row (조금 더 크게) */
+  /* 공간 예산 (1280×720 수직 분배) — 2026-04-23 210×290 수용 위해 재분배 */
+  --bv2-hud-h:       48px;   /* 상단 타이머 HUD (56→48) */
+  --bv2-mid-h:       56px;   /* 중앙 VS + 버튼 바 (68→56) */
+  --bv2-row-h:       300px;  /* enemy-row (280→300, 카드 290 + 여유 5/5) */
+  --bv2-row-h-ally:  316px;  /* ally-row (296→316) */
   --bv2-side-pad:    96px;
   --bv2-btn-w:       164px;
   --bv2-btn-h:       48px;
@@ -71,12 +74,14 @@
   z-index: 50;
   overflow: hidden;
   color: #fff;
-  /* Step 5C: V4 카드 토큰 override — 기본 172px stage / focus 는 별도 스코프 */
-  --card-v4-w: 172px;
+  /* Step 5C: V4 카드 토큰 override — 기본 210×290 stage / focus 는 별도 스코프 (2026-04-23 원래 크기 복원) */
+  --card-v4-w: 210px;
+  --card-v4-h: 290px;
 }
 #battle-v2-container .bcf-main-card{
-  /* Focus 확대 카드 — bv2 기준 172 × 1.8 = 310px */
-  --card-v4-w: 310px;
+  /* Focus 확대 카드 — bv2 기준 210 × 1.8 = 378 / 290 × 1.8 = 522 */
+  --card-v4-w: 378px;
+  --card-v4-h: 522px;
 }
 
 /* ── 스테이지 (배경 + 2×5 그리드, 항상 보임) ───────────────── */
@@ -782,3 +787,32 @@
 #battle-char-focus .bcf-main-card > .card-v4 .stat .v { font-size: 14px; }
 #battle-char-focus .bcf-main-card > .card-v4 .stat .l { font-size: 9px; }
 #battle-char-focus .bcf-main-card > .card-v4 .name   { font-size: 17px; }
+
+/* ── Enemy Preview Overlay (2026-04-24: 적 카드 클릭 → 확대 + desc 표시) ─── */
+#battle-enemy-preview{
+  position:absolute; inset:0;
+  display:none;
+  z-index:80;
+}
+#battle-enemy-preview.active{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+#battle-enemy-preview .bep-backdrop{
+  position:absolute; inset:0;
+  background:rgba(0,0,0,.72);
+  cursor:pointer;
+  animation: bep-fade .18s ease-out;
+}
+#battle-enemy-preview .bep-main-card{
+  position:relative; z-index:1;
+  --card-v4-w: 378px;
+  --card-v4-h: 522px;
+  animation: bep-pop .22s cubic-bezier(.2,.9,.3,1.25);
+}
+@keyframes bep-fade{ from{ opacity:0 } to{ opacity:1 } }
+@keyframes bep-pop{
+  from{ opacity:0; transform: scale(.5); }
+  to  { opacity:1; transform: scale(1); }
+}

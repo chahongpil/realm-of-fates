@@ -14,43 +14,51 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
 })(["BUILDINGS", "NPCS", "getNpc", "renderNpcBar", "getBuildingLv", "initBuildings", "showMenu", "buildBuilding", "upgradeBuilding", "TUT_STEPS", "showTutorial", "tutNext", "tutSkip", "showUpgrade", "getRelicSlots"]);
 
 Object.assign(RoF.Game, {
-  // 2026-04-12 밤: 사용자가 design/prototypes/town_editor.html 로 드래그한 좌표 (1376×768 base 기준)
-  // 원본: C:/Users/USER/Downloads/slot_coords_edited(2).json → design/refs/town/slot_coords.json
-  // x/y = 중심점 % / w/h = 크기 % (container 기준)
-  // 디자인 키 매핑: cathedral → church / arena → training
+  // 2026-04-23 밤: 마을전경.png (1536×1024, 3:2, 10건물 체제) 기준 좌표 재설정
+  // 이전: 1376×768 base (8건물) → `trash` 예정. slot_coords.json 도 향후 재갱신.
+  // x/y = 중심점 % / w/h = 크기 % (container 기준, aspect 3/2)
+  // 추가 2건물: temple(신전), inn(여관). rename: training 콜로세움→훈련소, shop 상점→암시장
   BUILDINGS:[
-    {id:'castle',name:'성',icon:'🏰',desc:'퀘스트 & 동료 단련',cost:[0,30,80,180,400],
-      x:52.3,y:25.6,w:22.1,h:51.4,action:'showCastle',
+    {id:'castle',name:'왕궁',icon:'🏰',desc:'퀘스트 & 동료 단련',cost:[0,30,80,180,400],
+      x:45.7,y:13.9,w:28.4,h:27.2,action:'showCastle',
       lvNames:['성','목조관저','석조성채','왕의성','왕궁'],
       lvDesc:['Lv1: 기본 단련','Lv2: 단련비용 -10%','Lv3: 단련비용 -20%','Lv4: 등급업 4단계마다','Lv5: 단련 시 보너스+1']},
-    {id:'gate',name:'차원의 문',icon:'🚪',desc:'리그 전투 참여',cost:[0,20,55,130,300],
-      x:50.7,y:79.7,w:20.3,h:28.6,action:'startBattle',
-      lvNames:['나무문','철문','성문','요새문','천공문'],
-      lvDesc:['Lv1: 리그 참여 가능','Lv2: 승리 보상+20%','Lv3: 승리 보상+40%','Lv4: 리그점수+20%','Lv5: 전설 보상 확률↑']},
-    {id:'forge',name:'대장간',icon:'⚒️',desc:'장비 제작 & 분해',cost:[10,30,75,170,380],
-      x:24.1,y:35.2,w:16,h:28.6,action:'showForge',
-      lvNames:['대장간','용광로','마법대장간','신의대장간','천공대장간'],
-      lvDesc:['Lv1: 장비 제작 가능','Lv2: 제작비용 -10%','Lv3: 분해 수율 +20%','Lv4: 레어 제작 해금','Lv5: 전설 제작 해금']},
-    {id:'shop',name:'상점',icon:'🏪',desc:'비전/유물 구매',cost:[15,40,90,200,450],
-      x:74,y:24.6,w:16,h:27.3,action:'showShop',
-      lvNames:['상점','잡화점','교역소','대상회','왕립상회'],
-      lvDesc:['Lv1: 기본 상점 개점','Lv2: 상품 4→5개','Lv3: 할인 -10%','Lv4: 희귀 상품 등장','Lv5: 전설 상품 등장']},
-    {id:'tavern',name:'선술집',icon:'🍺',desc:'용병 고용',cost:[10,30,75,170,380],
-      x:37.9,y:51.8,w:16,h:28.6,action:'showTavern',
-      lvNames:['선술집','주점','대주점','영웅의전당','전설의전당'],
-      lvDesc:['Lv1: 용병 고용 가능','Lv2: 용병 4→5명','Lv3: 고용비 -10%','Lv4: 실버 용병 등장↑','Lv5: 골드 용병 등장↑']},
-    {id:'training',name:'콜로세움',icon:'🏟️',desc:'동료 수련 & 경험',cost:[10,25,65,150,350],
-      x:83.46,y:133.23,w:18,h:28,action:'showTraining',
-      lvNames:['빈터','훈련장','검투장','투기장','콜로세움'],
-      lvDesc:['Lv1: 기본 수련 가능','Lv2: 수련 경험+20%','Lv3: 수련 경험+40%','Lv4: 합동 수련 해금','Lv5: 명예 수련 해금']},
-    {id:'library',name:'서고',icon:'📋',desc:'전력 편성 & 생명의 서',cost:[5,18,50,120,280],
-      x:37.2,y:18.5,w:14.5,h:27.3,action:'showDeckView',
-      lvNames:['도서관','서재','서고','대도서관','왕립도서관'],
-      lvDesc:['Lv1: 전력 편성 & 생명의 서','Lv2: 적 정보 해금','Lv3: 비전 설명 상세화','Lv4: 모의 전투 해금','Lv5: 숨겨진 기록 해금']},
-    {id:'church',name:'대성당',icon:'⛪',desc:'치료 & 장례',cost:[8,22,55,130,300],
-      x:69.3,y:48.2,w:19,h:37.5,action:'showChurch',
+    {id:'temple',name:'신전',icon:'🔮',desc:'역대 점유자 & 명예의 전당',cost:[0,30,80,180,400],
+      x:49.1,y:36.8,w:21.5,h:18.6,action:'showTemple',
+      lvNames:['소박한 사원','기본 사원','의식의 신전','대신전','천상신전'],
+      lvDesc:['Lv1: 역대 점유자 회랑','Lv2: 2세대 이후 점유자','Lv3: 명예의 전당','Lv4: 꺼진 신좌의 방','Lv5: 유언 편집 해금']},
+    {id:'church',name:'성당',icon:'⛪',desc:'치료 & 장례',cost:[0,22,55,130,300],
+      x:66.9,y:32.7,w:14.0,h:30.0,action:'showChurch',
       lvNames:['성당','예배당','교회','대성당','천상신전'],
       lvDesc:['Lv1: 치료 & 장례 가능','Lv2: 치료비용 -10%','Lv3: 장례 명예+20%','Lv4: 치료비용 -20%','Lv5: 무료 치료 1회/전투']},
+    {id:'forge',name:'대장간',icon:'⚒️',desc:'장비 제작 & 분해',cost:[0,30,75,170,380],
+      x:21.8,y:45.0,w:21.1,h:21.0,action:'showForge',
+      lvNames:['대장간','용광로','마법대장간','신의대장간','천공대장간'],
+      lvDesc:['Lv1: 장비 제작 가능','Lv2: 제작비용 -10%','Lv3: 분해 수율 +20%','Lv4: 레어 제작 해금','Lv5: 전설 제작 해금']},
+    {id:'training',name:'훈련소',icon:'🏟️',desc:'보병 & 기병 수련',cost:[0,25,65,150,350],
+      x:87.2,y:44.8,w:26.0,h:22.0,action:'showTraining',
+      lvNames:['빈터','훈련장','검투장','투기장','콜로세움'],
+      lvDesc:['Lv1: 기본 수련 가능','Lv2: 수련 경험+20%','Lv3: 수련 경험+40%','Lv4: 합동 수련 해금','Lv5: 명예 수련 해금']},
+    {id:'tavern',name:'선술집',icon:'🍺',desc:'용병 고용',cost:[0,30,75,170,380],
+      x:21.4,y:69.5,w:20.0,h:23.8,action:'showTavern',
+      lvNames:['선술집','주점','대주점','영웅의전당','전설의전당'],
+      lvDesc:['Lv1: 용병 고용 가능','Lv2: 용병 4→5명','Lv3: 고용비 -10%','Lv4: 실버 용병 등장↑','Lv5: 골드 용병 등장↑']},
+    {id:'library',name:'도서관',icon:'📋',desc:'전력 편성 & 생명의 서',cost:[0,18,50,120,280],
+      x:46.1,y:57.1,w:15.7,h:21.6,action:'showDeckView',
+      lvNames:['도서관','서재','서고','대도서관','왕립도서관'],
+      lvDesc:['Lv1: 전력 편성 & 생명의 서','Lv2: 적 정보 해금','Lv3: 비전 설명 상세화','Lv4: 모의 전투 해금','Lv5: 숨겨진 기록 해금']},
+    {id:'shop',name:'암시장',icon:'🎭',desc:'비전 · 유물 · 6 원소 로테이션',cost:[0,40,90,200,450],
+      x:64.2,y:63.9,w:17.4,h:19.3,action:'showShop',
+      lvNames:['암시장','잡화상','교역소','대상회','왕립 암시장'],
+      lvDesc:['Lv1: 기본 암시장 개점','Lv2: 상품 4→5개','Lv3: 할인 -10%','Lv4: 희귀 상품 등장','Lv5: 전설 상품 등장']},
+    {id:'inn',name:'여관',icon:'🛏️',desc:'여행자 거점 (TBD)',cost:[0,25,60,140,320],
+      x:87.2,y:69.6,w:26.5,h:24.8,action:'showInn',
+      lvNames:['간이 여관','마을 여관','번화한 여관','왕립 여관','전설의 여관'],
+      lvDesc:['Lv1: 휴식 해금','Lv2: 정보 수집','Lv3: 연회장 해금','Lv4: 특별 고객','Lv5: 전설 NPC 등장']},
+    {id:'gate',name:'차원의 문',icon:'🚪',desc:'리그 전투 참여',cost:[0,20,55,130,300],
+      x:51.5,y:86.8,w:33.1,h:26.3,action:'startBattle',
+      lvNames:['나무문','철문','성문','요새문','천공문'],
+      lvDesc:['Lv1: 리그 참여 가능','Lv2: 승리 보상+20%','Lv3: 승리 보상+40%','Lv4: 리그점수+20%','Lv5: 전설 보상 확률↑']},
   ],
 
   // ── BUILDING NPCs (level 1~5) ──
@@ -73,7 +81,11 @@ Object.assign(RoF.Game, {
     ],
     forge:[
       {icon:'👦',name:'견습공',greet:'아직 서툴지만... 뭐 만들어 드릴까요?',noGold:'재료 살 골드가 없어요...',upgrade:'드디어 진짜 모루가 생겼어요!',
-        scenes:['어... 어서 오세요!','여긴 대장간이에요. 장비를 만들거나 분해할 수 있죠.','뭐... 뭐 만들어 드릴까요?']},
+        scenes:[
+          {text:'어... 어서 오세요!'},
+          {text:'여긴 대장간이에요. 장비를 만들거나 분해할 수 있죠.', expr:'working'},
+          {text:'뭐... 뭐 만들어 드릴까요?', expr:'proud'}
+        ]},
       {icon:'🔨',name:'대장장이',greet:'...뭘 만들어야 하지?',noGold:'쇠도 없이 뭘 만들라는 거야.',upgrade:'용광로의 불길이 활활 타오르는군.'},
       {icon:'🔥',name:'화로장인',greet:'좋은 쇠가 필요하군. 뭘 만들까?',noGold:'좋은 재료엔 골드가 필요하지.',upgrade:'마법대장간의 불꽃은 다르지!'},
       {icon:'⚒️',name:'마법대장장이',greet:'마력이 깃든 장비를 만들 수 있소.',noGold:'마법 재료는 공짜가 아니오.',upgrade:'신의 불꽃이 대장간에 내려왔소!'},
@@ -114,10 +126,26 @@ Object.assign(RoF.Game, {
     church:[
       {icon:'🙏',name:'수녀',greet:'신의 축복이 함께하길... 다친 동료가 있나요?',noGold:'기도는 무료입니다... 하지만 치료는...',upgrade:'예배당이 생겼어요!',
         scenes:['신의 축복이 함께하시길...','이곳은 성당이에요. 다친 동료를 치료하거나 잃은 동료를 기릴 수 있답니다.','어떤 도움이 필요하신가요?']},
-      {icon:'⛪',name:'사제',greet:'신의 은총으로 상처를 치유하겠습니다.',noGold:'헌금이 부족합니다만...',upgrade:'교회의 신성한 힘이 강해졌습니다.'},
+      {icon:'🙏',name:'수녀',greet:'신의 은총으로 상처를 치유해 드릴게요.',noGold:'헌금이 조금 부족하네요...',upgrade:'교회의 신성한 힘이 강해졌어요.'},
       {icon:'📿',name:'주교',greet:'영웅이시여, 동료들의 상처를 보여주십시오.',noGold:'교회도 운영 자금이 필요합니다.',upgrade:'성당의 축복이 온 마을에 퍼집니다.'},
       {icon:'✝️',name:'대주교',greet:'신의 기적으로 어떤 상처도 치유하리다.',noGold:'기적에도 신의 뜻에 맞는 헌금이 필요합니다.',upgrade:'대성당의 빛이 어둠을 물리칩니다!'},
       {icon:'👼',name:'성녀',greet:'영혼의 안식과 치유... 모두 신의 뜻입니다.',noGold:'신께서도 때로는 기다리라 하십니다.',upgrade:'대성당이 완성되니 기적이 일어나는군요.'},
+    ],
+    temple:[
+      {icon:'🔮',name:'신전 사제',greet:'신전에 오셨군요... 옛 신들의 기록을 보시겠습니까?',noGold:'',upgrade:'신전이 더 웅장해졌습니다.',
+        scenes:['신전에 오셨군요...','이곳은 제1세대 6 신을 모신 신전입니다. 역대 점유자의 회랑을 거닐 수 있지요.','무엇을 찾으시는지요?']},
+      {icon:'📿',name:'기록 관리자',greet:'2세대 이후 점유자의 기록도 보관하고 있습니다.',noGold:'',upgrade:'기록의 방이 확장되었습니다.'},
+      {icon:'🕯️',name:'의식의 사제',greet:'명예의 전당이 열렸습니다. 누가 영원히 남을지...',noGold:'',upgrade:'의식의 힘이 더욱 깊어집니다.'},
+      {icon:'👁️',name:'꺼진 신좌의 수호자',greet:'꺼진 신좌의 방입니다. 소멸 의식이 필요하시면...',noGold:'',upgrade:'신전의 비밀이 더 많이 열립니다.'},
+      {icon:'🌟',name:'대사제',greet:'유언을 남기시겠습니까? 영원히 남을 문장을...',noGold:'',upgrade:'천상신전이 완성되었습니다.'},
+    ],
+    inn:[
+      {icon:'🛏️',name:'여관 주인',greet:'어서 오세요, 여행자여. 쉬어 가시겠습니까?',noGold:'외상은 받지 않습니다만...',upgrade:'여관이 커졌어요!',
+        scenes:['어서 오세요!','작은 마을 여관입니다. 여행자들이 잠시 쉬어 가는 곳이죠.','무엇을 도와드릴까요?']},
+      {icon:'☕',name:'주모',greet:'따뜻한 음식과 침대가 준비되어 있어요.',noGold:'',upgrade:'여관 시설이 좋아졌습니다.'},
+      {icon:'🎲',name:'연회장 주인',greet:'오늘은 어떤 흥미로운 이야기가 오갈까요?',noGold:'',upgrade:'번화한 여관이 되었군요.'},
+      {icon:'🎻',name:'음유시인',greet:'먼 곳의 소문도 들려드리지요.',noGold:'',upgrade:'왕립 여관의 품격을 갖추었습니다.'},
+      {icon:'👑',name:'전설의 관리자',greet:'전설의 영웅들도 이곳에 들렀다는군요.',noGold:'',upgrade:'전설의 여관이 완성되었습니다.'},
     ],
   },
 
@@ -150,13 +178,13 @@ Object.assign(RoF.Game, {
   getBuildingLv(id){const v=this.buildings[id];if(v===true)return 1;return v||0;},
 
   initBuildings(){
+    // 2026-04-23: 일단은 모든 건물 다 지어져있는걸로 (대표님 지시). 기존 save 의 lv 0/null 도 1 로 올림.
     if(!this.buildings)this.buildings={};
     this.BUILDINGS.forEach(b=>{
-      if(this.buildings[b.id]==null){
-        this.buildings[b.id]=b.cost[0]===0?1:0;
-      }
-      if(this.buildings[b.id]===true)this.buildings[b.id]=1;
-      if(this.buildings[b.id]===false)this.buildings[b.id]=0;
+      let v=this.buildings[b.id];
+      if(v==null||v===0||v===false)v=1;
+      if(v===true)v=1;
+      this.buildings[b.id]=v;
     });
   },
 
@@ -193,7 +221,9 @@ Object.assign(RoF.Game, {
     if(!sky.children.length){for(let i=0;i<30;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';sky.appendChild(s);}}
 
     // Buildings
-    const tc=document.getElementById('town-container');tc.innerHTML='';
+    const tc=document.getElementById('town-container');
+    // 2026-04-24: 배경 video 는 유지하고 건물 divs 만 제거 (innerHTML='' 금지)
+    tc.querySelectorAll('.town-building').forEach(el=>el.remove());
     // 빈 곳 클릭 시 선택 해제
     tc.onclick=(e)=>{if(e.target===tc)document.querySelectorAll('.town-building.selected').forEach(el=>el.classList.remove('selected'));};
     this.BUILDINGS.forEach(b=>{
@@ -209,7 +239,8 @@ Object.assign(RoF.Game, {
       div.style.width=(b.w||14)+'%';
       div.style.height=(b.h||28)+'%';
       div.style.transform='translate(-50%,-50%)';
-      const lvName=(b.lvNames&&lv>0)?b.lvNames[lv-1]:b.name;
+      // 2026-04-24: 대표님 지시 — 레벨별 이름(lvNames) 사용 중단. 항상 b.name 단일 표기.
+      const lvName=b.name;
       const castleLv=this.getBuildingLv('castle');
       // 2026-04-12 밤: 새 마을 맵 — img/town/*.png (성벽 내부 cutout) 우선 사용
       // 2026-04-22: gate 는 img/town/gate.png 미공급 상태라 처음부터 building_ 로 (404 회피)
@@ -263,9 +294,7 @@ Object.assign(RoF.Game, {
     // Walking NPCs 제거 (2026-04-14) — 사람·전투 이모티콘 애니메이션 삭제
     document.querySelectorAll('.town-npc').forEach(el=>el.remove());
 
-    // Deck preview
-    const md=document.getElementById('menu-deck');md.innerHTML='';
-    this.deck.forEach(c=>{const d=mkMini(c);md.appendChild(d);});
+    // 2026-04-24: Deck preview 삭제 (menu-deck DOM 제거). 덱 확인은 도서관에서.
     this.persist();
     // Tutorial triggers
     this.checkTutorial('town_first');
@@ -434,6 +463,11 @@ Object.assign(RoF.Game, {
     }
   },
 
+  // scenes 스키마 (2026-04-23 확장): string | {text, expr?}
+  //   string             → 기본 이미지 (npc.img)
+  //   {text}             → 기본 이미지 + text
+  //   {text, expr:'xxx'} → img/npc_{building}_{lv}_{expr}.png 로 표정 교체
+  //   expr 이미지 404 시 자동으로 기본 이미지로 폴백 (onerror)
   _renderNpcDialogScene(){
     const st = this._npcDialogState;
     if(!st) return;
@@ -442,17 +476,29 @@ Object.assign(RoF.Game, {
     const nameEl = document.getElementById('npc-dialog-name');
     const textEl = document.getElementById('npc-dialog-text');
     const nextBtn = document.getElementById('npc-dialog-next');
+    const scene = scenes[sceneIdx];
+    const sceneText = (typeof scene === 'string') ? scene : (scene && scene.text) || '';
+    const sceneExpr = (scene && typeof scene === 'object' && scene.expr) ? scene.expr : null;
     if(artEl){
       if(npc.img){
-        artEl.src = npc.img;
+        const baseImg = npc.img;
+        const exprImg = sceneExpr ? baseImg.replace(/\.png$/, '_' + sceneExpr + '.png') : baseImg;
+        artEl.src = exprImg;
         artEl.classList.remove('hidden');
-        artEl.onerror = function(){ this.classList.add('hidden'); };
+        artEl.onerror = function(){
+          // expr 이미지 없으면 기본으로 폴백
+          if(this.src !== baseImg && this.src.indexOf(baseImg) === -1){
+            this.src = baseImg;
+          } else {
+            this.classList.add('hidden');
+          }
+        };
       } else {
         artEl.classList.add('hidden');
       }
     }
     if(nameEl) nameEl.textContent = (npc.icon && typeof npc.icon === 'string' && npc.icon.length <= 4 ? npc.icon + ' ' : '') + (npc.name || '');
-    if(textEl) textEl.textContent = scenes[sceneIdx] || '';
+    if(textEl) textEl.textContent = sceneText;
     if(nextBtn) nextBtn.textContent = (sceneIdx < scenes.length - 1) ? '다음 →' : '시작 ✓';
   },
 

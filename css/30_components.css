@@ -194,8 +194,8 @@
   transition:width .25s ease, border-color .2s, box-shadow .2s;
   box-shadow:0 2px 8px rgba(0,0,0,.6);
 }
-.sound-panel::before{
-  content:'⚙️';
+/* 2026-04-23: ::before 제거 — 접힘 상태 대표 아이콘은 .sp-settings (실제 클릭 가능 버튼) 이 담당 */
+.sound-panel .sp-settings{
   display:flex;align-items:center;justify-content:center;
   width:44px;height:44px;flex-shrink:0;
   font-size:1.2rem;
@@ -230,11 +230,12 @@
 body.game-mode .npc-dialog-overlay.active{display:flex;}
 .npc-dialog-art{
   position:absolute;bottom:0;left:60px;
-  width:500px;height:800px;
+  width:500px;height:100%;max-height:720px;
   object-fit:contain;object-position:bottom center;
   pointer-events:none;
   filter:drop-shadow(0 8px 24px rgba(0,0,0,.6));
-  /* placeholder(1×1) 인 경우에도 공간 유지 */
+  /* 2026-04-24: height 800→100% — 1280×720 뷰포트에서 상단 80px 잘리던 문제 해결.
+     object-fit:contain + object-position:bottom center 로 이미지 aspect 유지. */
 }
 .npc-dialog-art.hidden{display:none;}
 .npc-dialog-box{

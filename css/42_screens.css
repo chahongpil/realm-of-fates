@@ -9,6 +9,7 @@ body.game-mode:has(#title-screen.active){
 body.game-mode:has(#title-screen.active.bg-demon){
   background:url('../img/bg_title_demon.jpg') center/cover no-repeat, #000;
 }
+/* 2026-04-24: 대표님 지시 — 마을 바깥(body 영역)은 검정 유지. 이미지 확장 제거. */
 #title-screen{justify-content:center;background:url('../img/bg_title_angel.jpg') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);position:relative;overflow:hidden;}
 #title-screen.bg-demon{background:url('../img/bg_title_demon.jpg') center/cover no-repeat,radial-gradient(ellipse at center,#251525 0%,#0a0510 60%,#080408 100%);}
 #title-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.15) 60%,rgba(0,0,0,.4) 100%);pointer-events:none;}
@@ -80,45 +81,52 @@ body.game-mode:has(#title-screen.active.bg-demon){
 /* 2026-04-12: design 폴더의 새 마을 맵으로 교체 (848×1264 세로). town-sky 는 장식 배경에서 → town-container 가 본체 맵을 렌더 */
 .town-sky{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at top,#1a1530 0%,#05061a 60%,#000 100%);pointer-events:none;z-index:0;}
 .town-sky .star{position:absolute;width:2px;height:2px;background:var(--text-0);border-radius:50%;opacity:.6;animation:twinkle 3s infinite alternate;}
-.town-hud{width:100%;padding:8px 15px;background:linear-gradient(180deg,rgba(10,8,20,.95),rgba(10,8,20,.6));border-bottom:1px solid rgba(139,105,20,.3);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;z-index:5;position:relative;}
+/* 2026-04-24: 대표님 지시 — HUD 투명 바(어두운 그라디언트 배경 + border-bottom) 제거. 텍스트는 그림자로 가독성 유지. */
+.town-hud{width:100%;padding:8px 15px;background:transparent;border:none;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;z-index:10;position:relative;}
+.town-hud .th-stat,.town-hud #menu-welcome,.town-hud #town-league{text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.7);}
 .town-hud-left,.town-hud-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .town-hud .th-stat{font-size:.8rem;color:var(--text-1);}.town-hud .th-stat span{color:var(--curr-gold);font-weight:bold;}
-/* 새 마을 맵 v3 (2026-04-12 밤): 1376×768 가로 성벽 base + 7개 건물 cutout 오버레이.
-   "성벽은 미리 지어져있는걸로" — 성벽과 성문은 base_terrain 에 그려져 있고,
-   건물은 원형 성벽 안에 cutout PNG 로 배치된다.
-   base 의 1376:768 ≈ 16:9 이라 1280×720 캔버스에 거의 정합 (상하 미세 레터박스).
+/* 마을 맵 (2026-04-23 밤): 마을전경.png (1536×1024, 3:2) 10건물 체제.
+   기존 1376×768 + cutout 오버레이 방식 → 3:2 + 건물은 배경에 그려진 방식으로 전환.
+   aspect-ratio: 3/2 로 container 와 image 정합. cover 로 letterbox 제거 (상하 crop 없음 — aspect 같으므로).
+   건물 cutout 이미지는 전부 숨김(아래 tb-icon img display:none) — 클릭 영역만 투명하게 유지.
 */
 .town-container{
-  position:relative;
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  /* 2026-04-24: 1280×720 container. video 가 메인 배경, PNG 는 poster 로 video 태그가 처리.
+     container 자체 배경은 video 로드 실패시 폴백용. */
+  background:#000;
+}
+/* 2026-04-24: 마을 배경 영상 — 건물 클릭 방해 안 되도록 pointer-events:none, z-index 바닥. */
+.town-bg-video{
+  position:absolute;
+  inset:0;
   width:100%;
   height:100%;
-  aspect-ratio:1376/768;
-  max-width:1280px;
-  max-height:720px;
-  margin:0 auto;
-  z-index:1;
-  overflow:hidden;
-  background:url('../img/bg_town_v3.png') center/contain no-repeat;
-  flex-shrink:0;
+  object-fit:cover;
+  pointer-events:none;
+  z-index:0;
 }
-/* 새 맵 모드: 각 건물 cutout 을 성벽 안에 이미지로 표시 */
+/* 2026-04-23: height:100% + flex-shrink:0 제거 — town-footer/menu-deck 가
+   뷰포트 밖으로 밀려나던 문제 해결. flex:1 1 auto + min-height:0 으로 남는 공간만 차지. */
+/* 2026-04-23 밤: 새 마을전경.png 은 건물이 배경에 전부 그려져 있음.
+   cutout 이미지는 사용 안 함 (전부 숨김). 클릭 영역만 투명하게 유지.
+   호버 시 tb-label 만 나타나게 하고, 실루엣 강조는 배경 이미지 자체로 충분.
+*/
 .town-container .town-building .tb-icon{
-  width:auto;height:auto;border:none!important;background:transparent!important;
+  width:100%;height:100%;border:none!important;background:transparent!important;
   cursor:pointer;
   display:block;
 }
 .town-container .town-building .tb-icon img{
-  display:block;
-  max-width:none;
-  filter:drop-shadow(0 4px 8px rgba(0,0,0,.7));
-  transition:transform .25s ease,filter .25s ease;
+  display:none;
 }
-/* 성문은 base 에 그려진 것만 — cutout 없음. 투명 클릭 영역만. */
-.town-container .town-building[data-id="gate"] .tb-icon img{display:none;}
-.town-container .town-building[data-id="gate"] .tb-icon{
-  width:120px;height:80px;
-  background:transparent;
-  border:none!important;
+/* 호버 시 클릭 영역에 살짝 앰버 glow (디버그 겸 UX 피드백) */
+.town-container .town-building:hover .tb-icon{
+  background:radial-gradient(circle,rgba(255,200,80,.18) 0%,rgba(255,200,80,0) 70%)!important;
 }
 /* hover glow — 앰버 hotspot (2026-04-12 FATES 레퍼런스 반영) */
 /* 네모난 box glow 제거 — 건물 실루엣 자체의 drop-shadow 로만 강조 (위 tb-icon:hover 참조) */
@@ -208,8 +216,8 @@ body.game-mode:has(#title-screen.active.bg-demon){
 .town-npc.walk-left{animation:walkLeft 25s linear infinite;}
 .town-npc.walk-up{animation:walkUp 18s linear infinite;}
 .town-building.building .tb-icon{animation:buildPulse 1s ease-out;}
-.town-footer{position:relative;z-index:5;padding:6px 10px;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;align-items:center;}
-.menu-deck{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;position:relative;z-index:5;padding:0 10px 8px;}
+.town-footer{position:relative;z-index:10;padding:6px 10px;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;align-items:center;}
+.menu-deck{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;position:relative;z-index:10;padding:0 10px 8px;margin-top:auto;}
 #upgrade-screen{background:var(--bg-0);}
 .upgrade-title{font-size:1.3rem;color:var(--curr-gold);margin:10px 0 5px;}
 .upgrade-info{color:var(--text-2);font-size:.85rem;margin-bottom:10px;}
@@ -983,13 +991,12 @@ body.game-mode .modal-box p{font-size:1rem;}
 /* ═══════════════════════════════════════════════ */
 /* ══ Menu UI 가독성 개선 (2026-04-12 자율 작업) ═ */
 /* ═══════════════════════════════════════════════ */
-/* HUD 상단 바 — 강한 다크 배경으로 가독성 ↑ */
+/* 2026-04-24: 대표님 지시 — HUD 상단 투명 바 제거. 배경·border·blur·shadow 전부 삭제.
+   개별 .th-stat 은 자체 pill 배경이 있어 가독성 유지됨. */
 .town-hud{
-  background:linear-gradient(180deg,rgba(5,5,15,.94),rgba(5,5,15,.65));
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-  border-bottom:2px solid rgba(255,200,80,.4);
-  box-shadow:0 4px 14px rgba(0,0,0,.7);
+  background:transparent;
+  border:none;
+  box-shadow:none;
   padding:10px 18px;
   z-index:10;
   display:flex;
@@ -1502,3 +1509,15 @@ body.game-mode #church-info{
   padding: 14px 28px;
   font-size: var(--fs-lg);
 }
+
+/* ── Settings Modal (2026-04-23) — 저장하고 종료 + BGM 토글 ─────────── */
+#settings-modal .set-account{
+  display:flex; justify-content:center; align-items:center; gap:8px;
+  margin:12px 0 16px; font-size:.92rem; color:var(--text-2);
+}
+#settings-modal .set-account .set-label{ color:var(--text-3); }
+#settings-modal .set-account strong{ color:var(--curr-gold); font-weight:700; }
+#settings-modal .modal-buttons.set-vert{
+  display:flex; flex-direction:column; gap:8px; align-items:stretch;
+}
+#settings-modal .modal-buttons.set-vert .btn{ width:100%; }

@@ -96,7 +96,7 @@ RoF.SFX={
       this._chord('sine',[400,500,600],.05,t+.6,.4);
     }
   },
-  bgmNodes:[],_bgmTimers:[],_bgmAudio:null,
+  bgmNodes:[],_bgmTimers:[],_bgmAudio:null,_currentGroup:null,
   _drone(ty,f,v){const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(this.master);o.start();this.bgmNodes.push(o);},
 
   // MP3 BGM tracks
@@ -134,15 +134,24 @@ RoF.SFX={
 
   bgm(type){
     if(!this.ctx)this.init();
+
+    // 2026-04-27: 3 그룹 정규화 (title / town / battle). 같은 그룹 + 재생 중이면 noop —
+    // 마을 안 건물 이동(showTavern 등) 또는 마을 복귀(showMenu 재호출) 시 음악 끊기지 않음.
+    let group=null;
+    if(type==='title') group='title';
+    else if(type==='town'||type==='menu') group='town';
+    else if(type==='battle'||type==='match') group='battle';
+    if(group && this._currentGroup===group && this._bgmAudio && !this._bgmAudio.paused) return;
+
     this._stopBgm();
-    if(!type||!this.on)return;
+    if(!type||!this.on){this._currentGroup=null;return;}
+    this._currentGroup=group;
     const c=this.ctx;
 
     // ═══ MP3 BGM ═══
     if(type==='title'){this._playMp3(this._titleTracks);return;}
     if(type==='town'||type==='menu'){this._playMp3(this._townTracks);return;}
-    if(type==='battle'){this._playMp3(this._battleTracks);return;}
-    if(type==='match'){this._playMp3(this._battleTracks,.25);return;}// 매칭은 전투곡 작은 볼륨
+    if(type==='battle'||type==='match'){this._playMp3(this._battleTracks);return;}// match 도 battle 그룹 동일 처리 (볼륨 25% override 폐기)
 
     // ═══ Web Audio fallback ═══
     if(type==='menu'||type==='title'){

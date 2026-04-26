@@ -69,7 +69,7 @@
 
 <!-- SOUND TOGGLE (2026-04-23: settings-btn 맨 앞으로 이동. 접힘 상태의 대표 아이콘 = ⚙️, hover 시 음향 옵션 펼침) -->
 <div class="sound-panel" id="sound-panel">
-  <span class="sp-btn sp-settings" id="settings-btn" data-action="settings.open" title="설정">⚙️</span>
+  <span class="sp-btn sp-settings" id="settings-btn" data-action="settings.open" onclick="if(window.RoF&&RoF.Settings&&RoF.Settings.open)RoF.Settings.open()" title="설정">⚙️</span>
   <span class="sp-btn" id="sound-toggle" data-action="sfx.toggle">🔊</span>
   <input type="range" id="vol-slider" min="0" max="100" value="40" data-action-input="sfx.setVolume">
   <span class="sp-vol" id="vol-display">40</span>

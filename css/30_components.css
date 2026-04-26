@@ -181,19 +181,23 @@
 .modal-box{background:var(--bg-2);border:1px solid var(--border-2);border-radius:10px;padding:25px 30px;text-align:center;min-width:280px;}
 .modal-box h3{color:var(--curr-gold);margin-bottom:12px;}.modal-box p{color:var(--text-2);margin-bottom:16px;font-size:.9rem;}
 .modal-buttons{display:flex;gap:10px;justify-content:center;}
-/* 설정 패널 — 기본 44×44 원형(⚙️), 호버 시 우측으로 펼쳐지며 사운드 컨트롤 노출 */
+/* 설정 패널 — 기본 44×44 원형(⚙️), 호버 시 우측으로 펼쳐지며 사운드 컨트롤 노출
+   2026-04-27: collapsed 시 padding 제거 — .sp-settings 가 부모 전체 클릭 영역 채우도록.
+   (이전엔 우측 10px padding 영역 클릭 시 부모 sound-panel 에 닿지만 그 자체엔 data-action 없어
+   bindings click handler 가 closest('[data-action]') 못 찾아 모달 안 뜸.) */
 .sound-panel{
   position:fixed;top:8px;right:8px;z-index:100;
   display:flex;align-items:center;gap:6px;
   background:rgba(15,12,8,.88);
   border:1px solid var(--curr-gold-dark);
   border-radius:22px;
-  padding:0 10px 0 0;
+  padding:0;
   height:44px;width:44px;
   overflow:hidden;
-  transition:width .25s ease, border-color .2s, box-shadow .2s;
+  transition:width .25s ease, border-color .2s, box-shadow .2s, padding .2s;
   box-shadow:0 2px 8px rgba(0,0,0,.6);
 }
+.sound-panel:hover{ padding:0 10px 0 0; }
 /* 2026-04-23: ::before 제거 — 접힘 상태 대표 아이콘은 .sp-settings (실제 클릭 가능 버튼) 이 담당 */
 .sound-panel .sp-settings{
   display:flex;align-items:center;justify-content:center;

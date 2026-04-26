@@ -58,6 +58,9 @@ body.game-mode:has(#title-screen.active.bg-demon){
 #char-hero-screen .gender-toggle .gt-btn.sel{border-color:var(--curr-gold);background:rgba(255,215,0,.12);box-shadow:0 0 12px rgba(255,215,0,.25);color:var(--curr-gold);}
 #char-hero-screen .gender-toggle .gt-ic{font-size:1.4rem;line-height:1;}
 #char-hero-screen .gender-toggle .gt-lbl{font-weight:700;letter-spacing:.08em;}
+/* 성별 토글 시 카드 그리드 fade — 전환 신호 강화 (minor_bugs #3 Option B, 2026-04-26) */
+#char-hero-grid{transition:opacity .18s ease, transform .18s ease;}
+#char-hero-grid.is-switching{opacity:.25;transform:scale(.97);}
 
 /* char-element-screen: 원소 6개를 3×2 그리드 고정 (2026-04-13 지시반영) */
 #char-element-screen .char-select-grid{
@@ -411,7 +414,7 @@ body.game-mode #church-screen > #church-grid{--card-v4-w:235px;}
    npc-bar 는 church-info div 의 afterend 로 삽입되어 title 박스 안 flow 에 있는데,
    형제인 church-grid(absolute, document order 뒤)가 기본 stacking 에서 위에 떠서
    부상자 카드 상단과 겹칠 때 npc 박스가 뒤로 묻혔다. position:relative + z-index 로 승격. */
-body.game-mode #church-npc { position: relative; z-index: 20; }
+body.game-mode #church-npc { position: relative; z-index: 20; margin-top: 10px; }
 body.game-mode #castle-screen > #castle-quest-area{
   position:absolute;left:var(--castle-grid-x);top:var(--castle-grid-y);
   width:var(--castle-grid-w);height:var(--castle-grid-h);
@@ -994,12 +997,15 @@ body.game-mode .modal-box p{font-size:1rem;}
 }
 .tb-label{
   font-size:.78rem;
-  background:rgba(0,0,0,.7);
+  font-weight:600;
+  color:#fff;
+  background:rgba(0,0,0,.85);
   padding:2px 8px;
   border-radius:4px;
-  opacity:.95;
-  border:1px solid rgba(255,200,80,.25);
-  text-shadow:0 1px 3px rgba(0,0,0,.95);
+  opacity:1;
+  border:1px solid rgba(255,200,80,.45);
+  text-shadow:0 1px 2px #000, 0 0 6px rgba(0,0,0,.85);
+  box-shadow:0 1px 4px rgba(0,0,0,.6);
 }
 .town-building.built .tb-label{
   color:#ffe4a0;

@@ -168,7 +168,23 @@ RoF.Auth={
       b.type='button';
       b.className='gt-btn'+(this._selGender===o.id?' sel':'');
       b.innerHTML=`<span class="gt-ic">${o.ic}</span><span class="gt-lbl">${o.lbl}</span>`;
-      b.onclick=()=>{ if(this._selGender===o.id) return; this._selGender=o.id; SFX.play('click'); this._showHeroScreen(); };
+      b.onclick=()=>{
+        if(this._selGender===o.id) return;
+        this._selGender=o.id;
+        SFX.play('click');
+        // 성별 전환 신호 강화 — grid fade out → 180ms 후 재렌더 → fade in (minor_bugs #3 Option B)
+        const grid=document.getElementById('char-hero-grid');
+        if(grid){
+          grid.classList.add('is-switching');
+          setTimeout(()=>{
+            this._showHeroScreen();
+            const g2=document.getElementById('char-hero-grid');
+            if(g2) g2.classList.remove('is-switching');
+          },180);
+        } else {
+          this._showHeroScreen();
+        }
+      };
       wrap.appendChild(b);
     });
   },

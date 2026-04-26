@@ -8,6 +8,56 @@
 
 ---
 
+## 2026-04-26 15:43 ▶ 세션 ▶ 핸드오프 저장 (NPC 시스템 재설계 + 자동 로그인 + 증축 폐기 마무리)
+
+- **변경**: 세션 상태를 `docs/handoff/handoff-2026-04-26-1543.md` 에 저장 + 클립보드 복사
+- **이유**: 수동 저장 — 긴 세션 (자동 로그인 opt-in, 설정 모달 섹션화, 영웅 선택 카드 정리, NPC 반신 디버깅, 증축·Lv 시스템 폐기, NPC 다이얼로그 선택지 메뉴 재설계, Formation 출전 허브 모드)
+- **작업 요약**: 9개 큰 변경, 27 파일 modified + 3 untracked, 회귀 11/11 PASS, UI 검수관 다중 라운드 🟢 승인
+- **다음 세션**: 미커밋 분할 커밋 (4분할 권장) + GitHub 푸시. Pages timeout 해결 동반 필요 (대용량 백업 정리).
+
+---
+
+## 2026-04-24 ▶ 게임 메커닉 ▶ 건물 증축·Lv 시스템 폐기 (모든 건물 상시 활성)
+
+- **변경**:
+  - 건물 **증축(upgradeBuilding)** 기능 완전 제거. UI "🔨 증축" 버튼 / Lv 종속 비용 / castle Lv 게이트 모두 삭제.
+  - 건물 **레벨(getBuildingLv)** 개념 폐기. 모든 건물은 영구 활성. `BUILDINGS[].cost`, `lvNames`, `lvDesc` 필드 삭제.
+  - 게임 시작 시 모든 건물 자동 활성 (initBuildings → 빈 함수). save 의 `buildings{}` 필드 폐기 (load/persist 에서 제거).
+  - **NPCS 단순화**: 각 건물 5인 → **1인 (Lv1) 만 유지**. `noGold` / `upgrade` 필드 제거 (Lv 종속이라 무의미).
+  - **건물명 단순화**: "Lv.N 왕궁" → "왕궁" (단일 표기). `b.lvNames` 폐기로 항상 `b.name`.
+  - **튜토리얼 재작성**: 14단계 → 9단계. `library_built` / `tavern_built` / `church_built` / `first_upgrade` 트리거 제거. "건물 짓자" → "건물 가보자" 톤 변경.
+  - **NPC 이미지**: `npc_*_2.png` ~ `npc_*_5.png` `trash/img_npc_lv2_5_2026-04-24/` 이동 (Lv1 만 유지).
+- **유지 (혼동 주의)**:
+  - **동료 단련** (`upgrade-screen` / `castle-tab-upgrade` / `showCastleUpgradeTab`) — 이건 유닛 성장 별개 기능. **그대로 유지**.
+  - 건물 첫 방문 NPC 다이얼로그 오버레이 (`.npc-dialog-overlay` 500×720 반신) — 그대로 유지.
+- **이유**:
+  - 대표님 결정. 증축은 골드 sink 외 의미 없고, 단계별 해금이 콘텐츠 압박을 만들지만 보상은 약함.
+  - "왕궁/대성당" 같은 변동 라벨이 전투 컨텍스트와 무관해 인지 부담만 늘림.
+  - NPC Lv2~5 대사 자체가 Lv 가 의미 있어야 하는데 시스템이 사라지면 dead text.
+- **영향**:
+  - `js/51_game_town.js` 대규모 단순화 (BUILDINGS / NPCS / showMenu / 함수 6개 제거 / TUT_STEPS 재작성)
+  - `js/50_game_core.js` load/persist 에서 buildings 필드 제거
+  - `js/52_game_tavern.js`, `js/54_game_castle.js`, `js/55_game_battle.js` `getBuildingLv` 호출 제거 (gate 가드도 폐지 → 성문 항상 통과)
+  - `tools/*.js` 12개 `Game.buildings = {gate:1,...}` 셋업 라인 정리
+  - `index.html` 증축 관련 라벨 (없으면 그대로)
+  - **하위 호환 미보장**: 기존 save 의 `buildings{}` 필드는 무시. 기능적 영향 0 (어차피 모든 건물 활성).
+- **이전 결정 관계**:
+  - 2026-04-23 "마을 10건물 체제 전환" 의 후속 — 건물 좌표/이미지는 유지, 진행 시스템(증축·Lv) 만 폐기.
+  - 2026-04-23 "모든 건물 자동 Lv1" 임시 처리(initBuildings 강제) 의 정식화 — 임시책 → 시스템 자체 폐기.
+
+---
+
+## 2026-04-24 01:11 ▶ 세션 ▶ 2차 핸드오프 저장 (얇은 포인터) + GitHub 푸시 5 커밋
+
+- **변경**: 2차 핸드오프 `docs/handoff/handoff-2026-04-24-0111.md` 저장 + 클립보드 복사
+- **이유**: 1차(00:59) 이후 GitHub 분할 3 커밋 + gitignore 1 커밋 푸시 완료. 실제 맥락은 1차에 유지.
+- **푸시 범위**: `67e6fc1..6f53432` (5 커밋 — 이전 미푸시 `7d7759c` 포함)
+- **분할**: ① `9dd5d18` town / ② `43cae9e` battle+settings+auth / ③ `928e723` docs+handoff / + `6f53432` gitignore
+- **Pages**: `6f53432` building 중, 직전 `928e723` errored (재빌드 트리거됨). 배포 URL: https://chahongpil.github.io/realm-of-fates/
+- **영향**: `docs/handoff/` (신규 1건), `.gitignore` (백업 2 파일 제외 규칙), `design/changelog.md` (이 entry)
+
+---
+
 ## 2026-04-24 01:30 ▶ 세션 ▶ 핸드오프 저장
 
 **변경**: 세션 상태를 `docs/handoff/handoff-2026-04-24-0130.md` 에 저장 + 클립보드 복사

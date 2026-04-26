@@ -158,8 +158,8 @@
   --form-bench-label-x: 0px;--form-bench-label-y: 535px;--form-bench-label-w: 1280px;--form-bench-label-h: 30px;
   --form-bench-x: 140px;  --form-bench-y: 565px; --form-bench-w: 1000px; --form-bench-h: 70px;
   --form-buttons-x: 0px; --form-buttons-y: 0px; --form-buttons-w: 1280px; --form-buttons-h: 720px;
-  --form-btn-auto-x:    440px; --form-btn-auto-y:    640px; --form-btn-auto-w:    160px; --form-btn-auto-h:    44px;
-  --form-btn-confirm-x: 610px; --form-btn-confirm-y: 640px; --form-btn-confirm-w: 230px; --form-btn-confirm-h: 44px;
+  /* 2026-04-24: --form-btn-auto-* / --form-btn-confirm-* 토큰 폐기 (Type A 분해 잔재).
+     Formation 액션 영역이 동적 버튼 수(2~5)로 확장되며 #form-actions 직접 flex 배치로 전환. */
 
   /* upgrade zones (동료 단련) */
   --upg-title-x: 0px;     --upg-title-y: 60px;   --upg-title-w: 1280px;  --upg-title-h: 50px;

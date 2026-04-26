@@ -163,7 +163,8 @@
       <div class="th-stat">💎<span id="town-gems">0</span></div>
       <div class="th-stat">✨<span id="town-bless">0</span></div>
       <div class="th-stat" id="town-ap"></div>
-      <button class="th-cloud" id="btn-cloud-link" data-action="backend.showLinkModal" title="클라우드 연결">☁️ 클라우드</button>
+      <!-- 2026-04-24: HUD 정리. 클라우드 연결은 ⚙️ 설정 모달로 이관. 접근성 보존을 위해 hidden 버튼은 유지 (_updateCloudBtn 이 id 를 참조). -->
+      <button id="btn-cloud-link" data-action="backend.showLinkModal" title="클라우드 연결" style="display:none;" aria-hidden="true">☁️ 클라우드</button>
     </div>
   </div>
   <div class="town-container" id="town-container">
@@ -194,18 +195,28 @@
   </div>
 </div>
 
-<!-- SETTINGS MODAL (2026-04-23) -->
+<!-- SETTINGS MODAL (2026-04-23 / 2026-04-24 확장) -->
 <div id="settings-modal" class="modal-overlay">
-  <div class="modal-box">
+  <div class="modal-box set-modal">
     <h3>⚙️ 설정</h3>
     <div class="set-account">
-      <span class="set-label">계정:</span>
-      <strong class="set-user-name">—</strong>
+      <div class="set-row"><span class="set-label">계정</span><strong class="set-user-name">—</strong></div>
+      <div class="set-row"><span class="set-label">클라우드</span><span class="set-cloud-status">—</span></div>
     </div>
+    <div class="set-section-title">진행</div>
+    <div class="modal-buttons set-vert">
+      <button class="btn btn-s" data-action="settings.saveOnly" title="현재 진행 저장 (로그아웃 없이 계속 플레이)">💾 저장하기</button>
+      <button class="btn btn-s" data-action="backend.showLinkModal" title="이메일로 다른 기기와 연결">☁️ 클라우드 연결</button>
+    </div>
+    <div class="set-section-title">사운드</div>
     <div class="modal-buttons set-vert">
       <button class="btn btn-s set-bgm-btn" data-action="settings.toggleBgm">🔊 BGM 끄기</button>
-      <button class="btn btn-s" data-action="settings.saveOnly" title="현재 진행 저장 (로그아웃 없이 계속 플레이)">💾 저장</button>
-      <button class="btn btn-s btn-red" data-action="settings.logout" title="저장 후 클라우드 세션 종료 + 타이틀로">🚪 로그아웃</button>
+    </div>
+    <div class="set-section-title">세션</div>
+    <div class="modal-buttons set-vert">
+      <button class="btn btn-s btn-red" data-action="settings.logout" title="저장 후 세션 종료 + 타이틀로">🚪 로그아웃</button>
+    </div>
+    <div class="modal-buttons set-close-row">
       <button class="btn btn-s" data-action="settings.close">닫기</button>
     </div>
   </div>
@@ -360,10 +371,9 @@
   <div id="form-diamond"></div>
   <div class="form-bench-label">대기석 (클릭하여 선택 후 슬롯 클릭)</div>
   <div class="form-bench" id="form-bench"></div>
-  <div style="padding:10px;display:flex;gap:10px;justify-content:center;">
-    <button class="btn btn-s" data-action="formation.auto">자동 배치</button>
-    <button class="btn btn-s btn-green" data-action="formation.confirm">배치 완료 → 전투!</button>
-  </div>
+  <!-- 2026-04-24: 액션 영역 동적 렌더 (인라인 style 제거 — Type A `padding:10px+gap:10px` 셀렉터 매칭 회피).
+       _mode='free'(성문→formation): 출전 허브 5 버튼. _mode='matched'(매칭→formation): [배치 완료] 2 버튼. -->
+  <div id="form-actions"></div>
 </div>
 
 <!-- BATTLE -->
@@ -460,16 +470,13 @@
   </div>
 </div>
 
-<!-- NPC DIALOG OVERLAY (2026-04-21 — 건물 첫 방문 시 NPC 일러스트 + 대화) -->
+<!-- NPC DIALOG OVERLAY (2026-04-24 재설계 — 매 진입 시 큰 반신 + 한 줄 인사 + 선택지 메뉴) -->
 <div class="npc-dialog-overlay" id="npc-dialog-overlay">
   <img class="npc-dialog-art" id="npc-dialog-art" src="" alt="">
   <div class="npc-dialog-box">
     <div class="npc-dialog-name" id="npc-dialog-name"></div>
     <div class="npc-dialog-text" id="npc-dialog-text"></div>
-    <div class="npc-dialog-foot">
-      <button class="btn btn-s" id="npc-dialog-skip" data-action="game.skipBuildingDialog">ESC · 건너뛰기</button>
-      <button class="btn" id="npc-dialog-next" data-action="game.nextBuildingDialog">다음 →</button>
-    </div>
+    <div class="npc-dialog-choices" id="npc-dialog-choices"></div>
   </div>
 </div>
 

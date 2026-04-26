@@ -11,14 +11,15 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
     }
     RoF.__gameKeys.add(k);
   }
-})(["showCastle", "showCastleUpgradeTab", "showCastleQuestTab", "showForge", "showChurch", "showTraining", "showShop", "LEAGUES", "getLeague", "getLeagueProgress"]);
+})(["showCastle", "showCastleUpgradeTab", "showCastleQuestTab", "showForge", "showChurch", "showTraining", "showShop", "showTemple", "showInn", "LEAGUES", "getLeague", "getLeagueProgress"]);
 
 Object.assign(RoF.Game, {
   showCastle(){
     UI.show('castle-screen');
     const npc=this.getNpc('castle');
     const injured=this.deck.filter(c=>c.injured).length;
-    const msg=this.gold<3?npc.noGold:injured>0?`부상자가 ${injured}명이나... 먼저 교회에 다녀오시오.`:npc.greet;
+    // 2026-04-24: noGold 필드 폐기 — 골드 부족 시 별도 안내문 사용. 부상자 알림 우선, 없으면 기본 인사.
+    const msg=this.gold<3?'국고가 비어있구려. 전투에서 벌어오시오.':injured>0?`부상자가 ${injured}명이나... 먼저 교회에 다녀오시오.`:npc.greet;
     document.querySelector('#castle-screen .hud').insertAdjacentHTML('afterend',
       `<div id="castle-npc">${this.renderNpcBar('castle',msg)}</div>`);
     // Remove duplicate on re-render
@@ -82,9 +83,9 @@ Object.assign(RoF.Game, {
     const existing=document.getElementById('church-npc');if(existing)existing.remove();
     document.getElementById('church-info').insertAdjacentHTML('afterend',`<div id="church-npc">${this.renderNpcBar('church',msg)}</div>`);
     const g=document.getElementById('church-grid');g.innerHTML='';
-    const churchLv=this.getBuildingLv('church')||1;
-    const discount=churchLv>=4?0.2:churchLv>=2?0.1:0;
-    const honorBonus=churchLv>=3?1.2:1;
+    // 2026-04-24: 건물 Lv 시스템 폐기 — discount/honorBonus 단계별 보너스 제거.
+    const discount=0;
+    const honorBonus=1;
     if(!injured.length){
       g.innerHTML='<div style="color:#888;text-align:center;padding:40px;font-size:.9rem;">부상당한 동료가 없습니다.<br><span style="font-size:.75rem;color:#555;">전투에서 쓰러진 동료가 이곳에 옵니다.</span></div>';
       return;
@@ -137,7 +138,16 @@ Object.assign(RoF.Game, {
   },
 
   showShop(){
-    UI.modal('🏪 상점','아이템 상점이 곧 문을 엽니다.\n\n(상점 시스템 준비 중)',null);
+    UI.modal('🎭 암시장','비전과 유물 6 원소 로테이션 상점이 곧 문을 엽니다.\n\n(암시장 시스템 준비 중)',null);
+  },
+
+  // 2026-04-24: temple / inn 죽은 버튼 살리기. 본 시스템 구현 전까지 모달 안내.
+  showTemple(){
+    UI.modal('🔮 신전','제1세대 6 신을 모신 신전입니다.\n\n역대 점유자 회랑 · 명예의 전당 · 꺼진 신좌의 방이 곧 열립니다.\n\n(신전 시스템 준비 중)',null);
+  },
+
+  showInn(){
+    UI.modal('🛏️ 여관','여행자들이 잠시 쉬어 가는 곳입니다.\n\n휴식 · 정보 수집 · 연회 기능이 곧 열립니다.\n\n(여관 시스템 준비 중)',null);
   },
 
   // ── TUTORIAL ──

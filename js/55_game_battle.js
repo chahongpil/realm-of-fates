@@ -147,8 +147,7 @@ Object.assign(RoF.Game, {
   },
 
   startBattle(){
-    // 성문 클릭 → 편성부터
-    if(this.getBuildingLv('gate')<1){UI.modal('🚪 성문 필요','성문을 건설해야 리그에 참여할 수 있습니다!',null);return;}
+    // 2026-04-24: 건물 Lv 시스템 폐기 — gate 건설 가드 제거 (모든 건물 항상 활성).
     this.checkTutorial('first_battle');
     this.selectedForBattle=[];this.selectedRelics=[];
     this._startBattleInner();

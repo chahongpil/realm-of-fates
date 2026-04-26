@@ -23,6 +23,8 @@
         const u = (window.Auth && Auth.user) ? Auth.user : '(로그인 안 됨)';
         userEl.textContent = u;
       }
+      // 클라우드 연결 상태 표시
+      Settings._syncCloudStatus();
       // BGM 상태 라벨 동기화
       Settings._syncBgmLabel();
       m.classList.add('active');
@@ -61,6 +63,18 @@
       if(!btn) return;
       const on = !!(window.SFX && SFX.on);
       btn.textContent = on ? '🔊 BGM 끄기' : '🔇 BGM 켜기';
+    },
+    _syncCloudStatus(){
+      const el = document.querySelector('#' + MODAL_ID + ' .set-cloud-status');
+      if(!el) return;
+      if(!window.Backend || !Backend.isReady){
+        el.textContent = '오프라인'; el.className = 'set-cloud-status is-off'; return;
+      }
+      // Supabase 세션이 살아있는지 확인 — Backend._user 는 내부 상태이나, 헬퍼가 없으면 버튼 상태 읽기
+      const cloudBtn = document.getElementById('btn-cloud-link');
+      const linked = cloudBtn && /연결됨/.test(cloudBtn.textContent || '');
+      el.textContent = linked ? '연결됨' : '연결 안 됨';
+      el.className = 'set-cloud-status ' + (linked ? 'is-on' : 'is-off');
     },
   };
 

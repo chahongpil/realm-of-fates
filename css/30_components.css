@@ -238,6 +238,23 @@ body.game-mode .npc-dialog-overlay.active{display:flex;}
      object-fit:contain + object-position:bottom center 로 이미지 aspect 유지. */
 }
 .npc-dialog-art.hidden{display:none;}
+/* 2026-04-24: art 이미지 부재 fallback — 큰 emoji placeholder. art .hidden 시에만 표시.
+   temple/inn 같이 NPC PNG 미공급 케이스에서 검은 화면 대신 NPC 정체성을 emoji 로 노출. */
+.npc-dialog-fallback{
+  position:absolute; bottom:0; left:60px;
+  width:500px; height:100%; max-height:720px;
+  display:none;
+  align-items:flex-end; justify-content:center;
+  padding-bottom:80px; box-sizing:border-box;
+  font-size:240px; line-height:1;
+  pointer-events:none;
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,.6));
+  user-select:none;
+}
+/* DOM 순서가 art → box → fallback (insertAdjacentElement 가 box 앞에 삽입되지 않음) 이므로
+   인접(+) 대신 일반(~) sibling 셀렉터로 매칭. */
+.npc-dialog-art.hidden ~ .npc-dialog-fallback,
+.npc-dialog-fallback.show{ display:flex; }
 .npc-dialog-box{
   position:relative;
   margin:0 40px 40px auto;
@@ -260,14 +277,69 @@ body.game-mode .npc-dialog-overlay.active{display:flex;}
   color:var(--amber-pale,#f1e4c3);min-height:52px;
   margin-bottom:14px;
 }
-.npc-dialog-foot{
-  display:flex;justify-content:space-between;align-items:center;gap:10px;
+/* 2026-04-24 재설계: 시퀀스 [다음/건너뛰기] (.npc-dialog-foot) 폐기. 선택지 버튼 그리드로. */
+.npc-dialog-choices{
+  display:flex; flex-direction:column; gap:8px;
 }
-.npc-bar{display:flex;align-items:center;gap:12px;padding:10px 15px;background:linear-gradient(180deg,rgba(30,25,15,.8),rgba(15,12,8,.9));border:1px solid rgba(139,105,20,.3);border-radius:8px;margin:0 auto 8px;max-width:500px;width:90%;}
-.npc-icon{font-size:2.2rem;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
-.npc-speech{flex:1;}
-.npc-name{font-size:.75rem;color:var(--curr-gold);font-weight:bold;margin-bottom:2px;}
-.npc-text{font-size:.8rem;color:var(--amber-pale);line-height:1.4;font-style:italic;}
+.npc-choice-btn{
+  width:100%; text-align:left; padding:10px 16px;
+  font:600 14px/1.4 'Noto Serif KR',serif;
+  letter-spacing:.02em;
+  position:relative;
+  background:linear-gradient(180deg,rgba(60,42,22,.85),rgba(40,28,14,.92));
+  color:var(--amber-pale,#f1e4c3);
+  border:1px solid rgba(212,168,74,.4);
+  border-radius:6px;
+  cursor:pointer;
+  transition:background .15s, border-color .15s, transform .1s;
+}
+.npc-choice-btn:hover{
+  background:linear-gradient(180deg,rgba(80,56,30,.92),rgba(50,36,18,.95));
+  border-color:var(--curr-gold);
+  color:var(--curr-gold);
+}
+.npc-choice-btn:active{ transform:translateY(1px); }
+.npc-choice-back{
+  margin-top:4px;
+  background:linear-gradient(180deg,rgba(50,30,30,.85),rgba(30,18,18,.92));
+  border-color:rgba(160,80,80,.5);
+}
+.npc-choice-back:hover{
+  background:linear-gradient(180deg,rgba(70,42,42,.92),rgba(50,30,30,.95));
+  border-color:#ff8a8a;
+  color:#ffd0d0;
+}
+.npc-choice-soon{
+  font-size:.78em; color:rgba(255,200,80,.6); margin-left:6px;
+  font-weight:400;
+}
+/* 2026-04-24: 원형 클립(56×56) → 세로 반신 포트레이트 전환.
+   원본 이미지 500×750 (~500×799, ~500×624) 을 object-position:50% 12% 로 얼굴부터 어깨/가슴까지 노출.
+   ⚠️ 기존 4화면 Type A 래퍼 좌표 토큰이 바 ~99px 높이를 전제로 쌓여있어,
+      반신 "큰 720×400" 까지 확장하면 하위 컨텐츠 겹침. 먼저 컴팩트 80×110 + min-height 130 으로 안전 진입. */
+.npc-bar{
+  display:flex; align-items:center; gap:12px;
+  padding:10px 15px;
+  background:linear-gradient(180deg,rgba(30,25,15,.8),rgba(15,12,8,.9));
+  border:1px solid rgba(139,105,20,.3); border-radius:10px;
+  margin:0 auto 8px; max-width:560px; width:92%;
+  min-height:130px;
+}
+.npc-icon{flex-shrink:0; display:flex; align-items:center; font-size:2.2rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+.npc-portrait{
+  width:80px; height:110px;
+  border-radius:8px;
+  border:2px solid #8b6914;
+  object-fit:cover;
+  object-position:50% 12%;   /* 얼굴 상단 기준, 어깨까지 안정적 노출 */
+  display:block;
+  background:#0a0a0a;
+  box-shadow:0 3px 8px rgba(0,0,0,.6);
+}
+.npc-emoji{font-size:3rem; display:flex; align-items:center; justify-content:center; width:80px; height:110px;}
+.npc-speech{flex:1; display:flex; flex-direction:column; justify-content:center;}
+.npc-name{font-size:.88rem; color:var(--curr-gold); font-weight:bold; margin-bottom:4px;}
+.npc-text{font-size:.82rem; color:var(--amber-pale); line-height:1.45; font-style:italic;}
 .timer-bar{width:100%;height:6px;background:var(--gray-8);border-radius:3px;margin:8px 0;overflow:hidden;}
 .timer-bar-fill{height:100%;background:linear-gradient(90deg,var(--success),var(--el-lightning),var(--danger));border-radius:3px;transition:width .5s linear;}
 .timer-text{font-size:.75rem;color:var(--warn);text-align:center;}

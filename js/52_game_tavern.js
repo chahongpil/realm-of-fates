@@ -20,9 +20,9 @@ Object.assign(RoF.Game, {
     document.getElementById('tav-name').textContent=`👤 ${Auth.user}`;
     document.getElementById('tav-gold').textContent=this.gold;
     document.getElementById('tav-deck').textContent=this.deck.length;
-    // NPC
+    // NPC (2026-04-24: noGold 필드 폐기 — 골드 부족 시 별도 안내문)
     const npc=this.getNpc('tavern');
-    const msg=this.gold<5?npc.noGold:npc.greet;
+    const msg=this.gold<5?'돈 없으면 물이라도 마시고 가게.':npc.greet;
     const existing=document.getElementById('tav-npc');if(existing)existing.remove();
     document.getElementById('tav-info').insertAdjacentHTML('afterend',`<div id="tav-npc">${this.renderNpcBar('tavern',msg)}</div>`);
     this._tavTab='unit';this.showTavernUnit();
@@ -82,13 +82,13 @@ Object.assign(RoF.Game, {
   },
 
   // Generate tavern slots (saved to persist)
+  // 2026-04-24: 건물 Lv 시스템 폐기 — slot count 4 고정, pickRar 입력에서 tavLv 가중치 제거.
   _generateTavernSlots(){
-    const tavLv=this.getBuildingLv('tavern')||1;
-    const count=tavLv>=2?5:4;
+    const count=4;
     const slots=[];
     const usedIds=new Set();  // P0-1: 같은 선술집 갱신 안에서 동일 유닛 id 중복 금지 (아트 중복 → 저예산 시그널)
     for(let i=0;i<count;i++){
-      const r=pickRar(this.getHeroLevel()+tavLv*2,'tavern');
+      const r=pickRar(this.getHeroLevel(),'tavern');
       let pool=UNITS.filter(u=>u.rarity===r&&!u.id.startsWith('h_')&&!usedIds.has(u.id));
       // pool 소진 시: 등급 제한 풀고 dedup 유지
       if(!pool.length)pool=UNITS.filter(u=>!u.id.startsWith('h_')&&!usedIds.has(u.id));

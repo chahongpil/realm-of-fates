@@ -10,8 +10,13 @@ RoF.Formation ={
   selected:null, // {type:'slot',idx} or {type:'bench',card}
   _cards:[],
 
-  showForBattle(battleDeck){this._cards=battleDeck;this._init();},
-  show(){this._cards=Game.deck;this._init();},
+  // 2026-04-24: 진입 컨텍스트 모드 추가.
+  //   'matched' = Game.startBattle → showMatchmaking → showForBattle. [배치 완료 → 전투!] 만 표시.
+  //   'free'    = 성문 [전열 정비하기] / Game.showFormation 직접. 출전 허브(리그/원정대/결투) 표시.
+  _mode:'matched',
+
+  showForBattle(battleDeck){this._mode='matched';this._cards=battleDeck;this._init();},
+  show(){this._mode='free';this._cards=Game.deck;this._init();},
 
   _init(){
     UI.show('formation-screen');
@@ -27,6 +32,49 @@ RoF.Formation ={
     });
     this.selected=null;
     this.render();
+    this._renderActions();
+  },
+
+  // 액션 영역 렌더 (진입 컨텍스트별).
+  _renderActions(){
+    const host=document.getElementById('form-actions');
+    if(!host) return;
+    if(this._mode==='matched'){
+      host.innerHTML =
+        `<button class="btn btn-s" data-action="formation.auto">자동 배치</button>` +
+        `<button class="btn btn-s btn-green" data-action="formation.confirm">배치 완료 → 전투!</button>`;
+    } else {
+      // 'free' — 마을 [전열 정비하기] 진입. 편성 후 출전 모드 선택.
+      host.innerHTML =
+        `<button class="btn btn-s" data-action="formation.auto">자동 배치</button>` +
+        `<button class="btn btn-s btn-green" data-action="formation.startLeague">⚔️ 리그 도전하기</button>` +
+        `<button class="btn btn-s" data-action="formation.startExpedition">🤝 원정대 모집하기 <span style="opacity:.55;font-size:.85em;">(준비 중)</span></button>` +
+        `<button class="btn btn-s" data-action="formation.startArena">⚔️ 결투장 입장하기</button>` +
+        `<button class="btn btn-s btn-red" data-action="game.showMenu">돌아가기</button>`;
+    }
+  },
+
+  // 'free' 모드 출전 액션. 슬롯 저장 후 실제 매칭/전투 시스템 호출.
+  _persistSlots(){
+    this.slots.forEach((c,i)=>{ if(c){c.formSlot=i;c.formIdx=i;} });
+    if(typeof Game!=='undefined' && Game.persist) Game.persist();
+  },
+  startLeague(){
+    this._persistSlots();
+    if(typeof Game!=='undefined' && typeof Game.startBattle==='function') Game.startBattle();
+  },
+  startExpedition(){
+    UI.modal('🤝 원정대',
+      '동료들과 함께 보스를 토벌하는 협동 원정 기능이 곧 열립니다.\n\n(원정대 시스템 준비 중)', null);
+  },
+  startArena(){
+    this._persistSlots();
+    if(typeof Arena!=='undefined' && typeof Arena.startGhostBattle==='function'){
+      Arena.startGhostBattle();
+    } else {
+      UI.modal('⚔️ 결투장',
+        '결투장 매칭 시스템 초기화 중입니다. 잠시 후 다시 시도해 주세요.\n\n(Arena 모듈 미로딩)', null);
+    }
   },
 
   auto(){

@@ -69,13 +69,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Enter 키 바인딩 → 99_bindings.js 의 data-action-enter 로 이관됨
 
   // ── 0. Backend 초기화 (S1: Supabase, 실패해도 로컬 폴백) ──
+  // 자동 로그인 정책 (2026-04-24 opt-in 전환):
+  //   - 기본은 "매번 로그인 화면". 로그인 성공 시 `rof8_remember='1'` 세팅 → 다음 접속만 자동 진입.
+  //   - 로그아웃(Game.logout) 은 이 플래그 + Supabase 세션 + auto-login 정보 모두 제거.
+  //   - 플래그 없는 상태에서 Supabase 세션이 남아있으면 즉시 signOut (쿠키/구 세션 청소).
   if(typeof Backend !== 'undefined' && Backend.init){
     Backend.init().then(() => {
-      // S4 자동 로그인 — Supabase 세션 있으면 Game.load 즉시. 타이틀 화면 벗어남.
       if(!Backend.isReady) return;
+      const remember = localStorage.getItem('rof8_remember') === '1';
       let autoHandled = false;
       Backend.onAuthChange(async (event, user) => {
         if(autoHandled || !user) return;
+        // opt-in 아닌 상태에서 세션이 남아있다 → 사용자가 이전에 로그아웃 안 한 잔존 세션. 정리만 하고 종료.
+        if(!remember){
+          try { if(Backend.logoutAuth) await Backend.logoutAuth(); } catch(e){}
+          return;
+        }
         // 타이틀/로그인/가입 화면에 있을 때만 자동 진입 (게임 중엔 개입 X)
         const active = document.querySelector('.screen.active');
         const autoOK = !active || ['title-screen','login-screen','signup-screen'].includes(active.id);
@@ -113,6 +122,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById('login-pw');
     if (el) el.value = p;
   }
+
+  // ── 1.5. NPC seen 플래그 일괄 정리 (2026-04-24, 영구 1회성) ──
+  // NPC 다이얼로그가 매 진입 시 선택지 메뉴로 재설계되면서 seen 플래그 시스템 자체 폐기.
+  // localStorage / sessionStorage 양쪽의 누적 키 정리.
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf('rof8_npc_seen_') === 0) localStorage.removeItem(k);
+    }
+    for (let i = sessionStorage.length - 1; i >= 0; i--) {
+      const k = sessionStorage.key(i);
+      if (k && k.indexOf('rof8_npc_seen_') === 0) sessionStorage.removeItem(k);
+    }
+  } catch (e) {}
 
   // ── 2. 볼륨 복원 ──
   const sv = localStorage.getItem('rof8_vol');

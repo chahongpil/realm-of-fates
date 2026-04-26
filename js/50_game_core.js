@@ -22,7 +22,7 @@ Object.assign(RoF.Game, {
 
   load(s){
     Object.assign(this,{round:s.round||0,hp:s.hp||3,maxHp:s.maxHp||3,gold:s.gold||2,
-      deck:s.deck||[],relics:s.relics||[],ownedRelics:s.ownedRelics||[],ownedSkills:s.ownedSkills||[],hero:s.hero||null,bestRound:s.bestRound||0,totalWins:s.totalWins||0,totalGames:s.totalGames||0,leaguePoints:s.leaguePoints||0,buildings:s.buildings||{},tutStep:s.tutStep||0,companionName:s.companionName||'동료',blessings:s.blessings||0,winStreak:s.winStreak||0,tavernSlots:s.tavernSlots||null,tavernDate:s.tavernDate||null,savedFormations:s.savedFormations||[]});
+      deck:s.deck||[],relics:s.relics||[],ownedRelics:s.ownedRelics||[],ownedSkills:s.ownedSkills||[],hero:s.hero||null,bestRound:s.bestRound||0,totalWins:s.totalWins||0,totalGames:s.totalGames||0,leaguePoints:s.leaguePoints||0,tutStep:s.tutStep||0,companionName:s.companionName||'동료',blessings:s.blessings||0,winStreak:s.winStreak||0,tavernSlots:s.tavernSlots||null,tavernDate:s.tavernDate||null,savedFormations:s.savedFormations||[]});
     this.deck.forEach(c=>{if(!c.equips)c.equips=[];if(!c.maxHp)c.maxHp=c.hp;if(!c.xp)c.xp=0;if(!c.honor)c.honor=0;if(!c.level)c.level=1;if(c.shield==null)c.shield=0;if(c.meva==null)c.meva=0;if(c.hpReg==null)c.hpReg=0;if(c.nrgReg==null)c.nrgReg=0;if(!c.range)c.range=(c.type==='사수'||c.type==='마법사')?'ranged':'melee';
       if(!c.growthPts)c.growthPts={atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0};if(c.freePoints==null)c.freePoints=0;
     });
@@ -41,26 +41,34 @@ Object.assign(RoF.Game, {
     const lg = this.getLeague ? this.getLeague() : null;
     const leagueId = (lg && lg.id) || 'bronze';
     const sv={round:this.round,hp:this.hp,maxHp:this.maxHp,gold:this.gold,gems:this.gems||0,blessings:this.blessings||0,divineGrace:this.divineGrace||0,
-      deck:this.deck,relics:this.relics,ownedRelics:this.ownedRelics||[],ownedSkills:this.ownedSkills||[],hero:this.hero||null,bestRound:this.bestRound,totalWins:this.totalWins,totalGames:this.totalGames,leaguePoints:this.leaguePoints||0,league:leagueId,buildings:this.buildings||{},tutStep:this.tutStep||0,companionName:this.companionName||'동료',blessings:this.blessings||0,winStreak:this.winStreak||0,tavernSlots:this.tavernSlots||null,tavernDate:this.tavernDate||null,savedFormations:this.savedFormations||[],guild_id:this.guild_id||null};
+      deck:this.deck,relics:this.relics,ownedRelics:this.ownedRelics||[],ownedSkills:this.ownedSkills||[],hero:this.hero||null,bestRound:this.bestRound,totalWins:this.totalWins,totalGames:this.totalGames,leaguePoints:this.leaguePoints||0,league:leagueId,tutStep:this.tutStep||0,companionName:this.companionName||'동료',blessings:this.blessings||0,winStreak:this.winStreak||0,tavernSlots:this.tavernSlots||null,tavernDate:this.tavernDate||null,savedFormations:this.savedFormations||[],guild_id:this.guild_id||null};
     db[Auth.user].save=sv;
     Auth.save(db);
     // S1: 클라우드 세이브 (비동기, 실패해도 로컬은 이미 저장됨)
     if(Backend && Backend.isReady) Backend.saveProgress(sv).catch(()=>{});
   },
-  logout(){
-    // 2026-04-24: 완전 로그아웃 — 저장 + Supabase 세션 종료 + auto-login 정보 삭제.
-    // 과거: 로컬 Auth.user 만 null → Supabase 는 세션 유지 → 재진입 시 cloud 세이브 재로드.
+  async logout(){
+    // 2026-04-24: 완전 로그아웃 — 저장 + Supabase 세션 종료 + auto-login 정보 + remember 플래그 제거.
+    // async 화 이유: Supabase signOut 이 완료되기 전에 페이지가 멈추면 세션 토큰이 남아 재진입 시 자동 로그인.
     this.persist();
     Auth.user=null;
     this.battleRunning=false;
     SFX.bgm(false);
-    // Supabase 세션 종료 (비동기, 실패해도 로컬 로그아웃 진행)
-    if(window.Backend && Backend.logoutAuth) Backend.logoutAuth().catch(()=>{});
-    // Auto-login localStorage 정리 (다음 세션 자동 재로그인 방지)
+    // Auto-login / remember 플래그 정리 (다음 세션 자동 재로그인 방지) — Supabase signOut 보다 먼저.
     try {
       localStorage.removeItem('rof8_last_user');
       localStorage.removeItem('rof8_last_pw');
+      localStorage.removeItem('rof8_remember');
+      // Supabase 가 세션 토큰을 저장하는 localStorage 키 (sb-<project>-auth-token 형식) 도 청소
+      for(let i = localStorage.length - 1; i >= 0; i--){
+        const k = localStorage.key(i);
+        if(k && k.indexOf('sb-') === 0 && /auth-token/.test(k)) localStorage.removeItem(k);
+      }
     } catch(e){}
+    // Supabase 세션 종료 (await — 완료까지 기다린 뒤 타이틀 복귀. 실패해도 진행)
+    if(window.Backend && Backend.logoutAuth){
+      try { await Backend.logoutAuth(); } catch(e){}
+    }
     ['login-id','login-pw','signup-id','signup-pw','signup-pw2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
     ['login-msg','signup-msg'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='';});
     UI.show('title-screen');

@@ -300,6 +300,15 @@
 .card-v2 .cv-def{ left:var(--gem-def-x); top:var(--gem-def-y); font-size:1.1rem; width:9%; }
 .card-v2 .cv-spd{ left:var(--gem-spd-x); top:var(--gem-spd-y); font-size:1.1rem; width:9%; }
 .card-v2 .cv-luck{ left:var(--gem-luck-x); top:var(--gem-luck-y); font-size:1.1rem; width:9%; color:#ffe066; text-shadow:0 1px 3px var(--gray-9),0 0 6px rgba(255,224,102,.5); }
+/* ── 영웅 선택 모드 (2026-04-24) — "카드 고르기" 단계에서는 전투 수치 숨김.
+   HP/NRG 는 바 같은 인상이라 특히 혼잡. shield/status/상태 modifier 도 전투 전용. */
+.card-v2.cv-mode-select .cv-hp,
+.card-v2.cv-mode-select .cv-nrg,
+.card-v2.cv-mode-select .cv-shield,
+.card-v2.cv-mode-select .cv-status,
+.card-v2.cv-mode-select .cv-atk-mod,
+.card-v2.cv-mode-select .cv-def-mod,
+.card-v2.cv-mode-select .cv-spd-mod{ display:none !important; }
 /* ── 박스 타입 슬롯 공통 — 좌상단 기준, 변환 없음 (숫자 슬롯의 translate 와 다름) ── */
 .card-v2 .cv-box{
   position:absolute;

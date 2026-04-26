@@ -34,6 +34,7 @@ RoF.Auth={
       if(db[id].pw!==pw){m.className='auth-msg error';m.textContent='암호가 틀렸습니다';return;}
       m.className='auth-msg success';m.textContent=`영웅이여, 돌아오셨군요!`;
       localStorage.setItem('rof8_last_user',id);localStorage.setItem('rof8_last_pw',pw);
+      localStorage.setItem('rof8_remember','1');  // 다음 접속 자동 진입 허용 (로그아웃 시 제거)
       this.user=id;SFX.init();
       // S4 백그라운드: Supabase 로그인 (또는 자동 signup). 성공 시 saveProgress 동기화.
       if(Backend && Backend.isReady){
@@ -65,6 +66,7 @@ RoF.Auth={
       this.save(localDb);
       m.className='auth-msg success';m.textContent='영웅이여, 돌아오셨군요!';
       localStorage.setItem('rof8_last_user',id);localStorage.setItem('rof8_last_pw',pw);
+      localStorage.setItem('rof8_remember','1');  // 다음 접속 자동 진입 허용
       this.user=id;SFX.init();
       setTimeout(()=>Game.load(save),300);
     });

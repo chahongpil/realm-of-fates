@@ -147,66 +147,13 @@ body.game-mode:has(#title-screen.active.bg-demon){
   opacity:1;visibility:visible;transform:translate(-50%,8px);
 }
 .town-building{position:absolute;text-align:center;cursor:pointer;transition:transform .25s;z-index:2;padding:0;background:none!important;border:none!important;}
-/* 미건설 건물 — 1/5 축소 마커 (작은 ➕ + 골드 비용만, 건물 div 중심에 작게) */
-.town-building.unbuilt .tb-empty{
-  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:auto;height:auto;
-  border:1px dashed rgba(255,200,80,.55);
-  border-radius:6px;
-  background:rgba(0,0,0,.55);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:1px;padding:3px 6px;box-sizing:border-box;
-  transition:all .25s;
-  animation:unbuiltPulse 2.4s ease-in-out infinite;
-}
-.town-building.unbuilt:hover .tb-empty{
-  border-color:#ffd700;
-  background:rgba(20,15,5,.8);
-  box-shadow:0 0 12px rgba(255,200,80,.6),inset 0 0 6px rgba(255,200,80,.25);
-  animation-play-state:paused;
-  transform:translate(-50%,-50%) scale(1.15);
-}
-.town-building.unbuilt .tb-empty-plus{
-  font-size:.7rem;color:rgba(255,215,0,.75);
-  text-shadow:0 1px 2px rgba(0,0,0,.95);
-  line-height:1;
-}
-.town-building.unbuilt .tb-empty-name{
-  display:none;
-}
-.town-building.unbuilt:hover .tb-empty-name{
-  display:block;
-  font-size:.55rem;font-weight:900;color:#ffd700;
-  font-family:var(--font-title,'Cinzel',serif);letter-spacing:.3px;
-  text-shadow:0 1px 2px #000;
-  white-space:nowrap;
-  margin-top:1px;
-}
-.town-building.unbuilt .tb-empty-cost{
-  font-size:.5rem;font-weight:900;color:#ffe066;
-  text-shadow:0 1px 2px #000;
-  white-space:nowrap;
-  line-height:1;
-}
-@keyframes unbuiltPulse{
-  0%,100%{border-color:rgba(255,200,80,.55);box-shadow:0 0 0 rgba(255,200,80,0);}
-  50%    {border-color:rgba(255,220,100,.85);box-shadow:0 0 20px rgba(255,200,80,.35);}
-}
+/* 2026-04-24: 증축·Lv 시스템 폐기 — `.unbuilt` / `.ruins` / `.tb-empty-*` / `unbuiltPulse` 규칙 일괄 제거.
+   모든 건물은 영구 활성. 시각 차등은 hover/selected 만. */
 .town-building:hover{z-index:3;}
 .town-building:hover .tb-icon img{transform:scale(1.08);filter:drop-shadow(0 0 24px rgba(255,200,80,.8)) drop-shadow(0 0 40px rgba(255,170,40,.4)) brightness(1.15);}
 .tb-icon img{transition:transform .25s, filter .25s;border-radius:0;}
-.tb-upgrade{font-size:.5rem;color:var(--curr-gold);cursor:pointer;margin-top:1px;opacity:0;pointer-events:none;transition:all .2s;}
-.town-building.selected .tb-upgrade{opacity:1;pointer-events:auto;color:#ffcf33;font-weight:bold;text-shadow:0 0 6px rgba(0,0,0,.9),0 0 3px rgba(255,215,0,.8);background:rgba(0,0,0,.7);padding:2px 8px;border-radius:4px;border:1px solid rgba(255,215,0,.5);}
 .town-building.selected .tb-icon img{filter:brightness(1.15) drop-shadow(0 0 12px rgba(255,215,0,.6));}
-.tb-upgrade:hover{text-decoration:underline;}
 .tb-icon{filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));transition:filter .25s;}
-.tb-cost{font-size:.6rem;color:var(--warn);margin-top:1px;}
-.town-building.ruins .tb-icon{filter:grayscale(.9) brightness(.3) sepia(.3) drop-shadow(0 4px 8px rgba(0,0,0,.8));}
-.town-building.ruins .tb-icon img{opacity:.5;}
-.town-building.ruins .tb-label{color:var(--text-4);}
-.town-building.ruins:hover .tb-icon{filter:grayscale(.4) brightness(.6) drop-shadow(0 0 12px rgba(218,165,32,.4));}
-.town-building.ruins:hover .tb-label{color:var(--curr-gold-mid);}
-.town-building.ruins::after{content:'🏚️';position:absolute;top:0;right:-5px;font-size:.8rem;opacity:.6;}
 .town-building.built .tb-icon{filter:drop-shadow(0 0 10px rgba(255,215,0,.25)) drop-shadow(0 4px 8px rgba(0,0,0,.5));}
 .town-building.built .tb-icon img{border:none;border-radius:0;}
 .town-building.built:hover .tb-icon{filter:drop-shadow(0 0 18px rgba(255,215,0,.5)) drop-shadow(0 4px 8px rgba(0,0,0,.5));}
@@ -422,6 +369,12 @@ body.game-mode #deckview-screen > #lib-npc{
 body.game-mode #deckview-screen > #lib-npc .npc-bar{
   width:100%;max-width:none;margin:0;height:100%;
 }
+/* 2026-04-24: 도서관은 --dv-lib-npc-h:99 고정 (탭/그리드 토큰 다 이걸 기준으로 쌓임).
+   그래서 다른 화면(80×110) 과 완전 통일은 토큰 일괄 재배치가 필요. 절충: portrait 80×88 로
+   너비는 다른 화면과 동일, 높이만 99 컨테이너에 맞춰 줄임. object-position:50% 8% 로 face 살림. */
+body.game-mode #lib-npc .npc-bar{ min-height:0; padding:6px 14px; align-items:center; }
+body.game-mode #lib-npc .npc-portrait{ width:80px; height:88px; border-radius:6px; object-position:50% 8%; }
+body.game-mode #lib-npc .npc-emoji{ width:80px; height:88px; font-size:2.6rem; }
 body.game-mode #deckview-screen > #codex-tab{
   position:absolute;left:var(--dv-codex-x);top:var(--dv-codex-y);
   width:var(--dv-codex-w);height:var(--dv-codex-h);
@@ -1183,23 +1136,17 @@ body.game-mode #tavern-screen > div[style*="padding:10px"][style*="gap:8px"] > b
   width:var(--tav-btn-back-w); height:var(--tav-btn-back-h);
 }
 
-/* FORMATION — padding:10px;display:flex;gap:10px wrapper (맨 아래) */
-body.game-mode #formation-screen > div[style*="padding:10px"][style*="gap:10px"]{
-  position:absolute; left:0; top:0; width:100%; height:100%;
-  padding:0; margin:0; display:block !important;
-  background:none !important; filter:none !important;
+/* FORMATION 액션 영역 (2026-04-24 재설계) — 동적 버튼 수 (matched 2개 / free 5개) 모두 수용.
+   Type A `padding:10px+gap:10px` 인라인 매칭 + 자식 absolute 좌표 토큰 패턴 폐기.
+   #form-actions 직접 매칭으로 단일 flex 행. */
+body.game-mode #formation-screen > #form-actions{
+  position:absolute; left:0; right:0; bottom:20px;
+  display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+  padding:0 16px;
   pointer-events:none;
 }
-body.game-mode #formation-screen > div[style*="padding:10px"][style*="gap:10px"] > button{
-  pointer-events:auto; position:absolute; margin:0 !important;
-}
-body.game-mode #formation-screen > div[style*="padding:10px"][style*="gap:10px"] > button[data-action="formation.auto"]{
-  left:var(--form-btn-auto-x); top:var(--form-btn-auto-y);
-  width:var(--form-btn-auto-w); height:var(--form-btn-auto-h);
-}
-body.game-mode #formation-screen > div[style*="padding:10px"][style*="gap:10px"] > button[data-action="formation.confirm"]{
-  left:var(--form-btn-confirm-x); top:var(--form-btn-confirm-y);
-  width:var(--form-btn-confirm-w); height:var(--form-btn-confirm-h);
+body.game-mode #formation-screen > #form-actions > button{
+  pointer-events:auto; position:static; margin:0;
 }
 
 /* GAMEOVER — display:flex;gap:10px wrapper */
@@ -1510,14 +1457,50 @@ body.game-mode #church-info{
   font-size: var(--fs-lg);
 }
 
-/* ── Settings Modal (2026-04-23) — 저장하고 종료 + BGM 토글 ─────────── */
+/* ── Settings Modal (2026-04-23 / 2026-04-24 확장) — 계정·진행·사운드·세션 섹션화 ─── */
+#settings-modal .set-modal{ min-width:360px; max-width:420px; }
+#settings-modal h3{ margin:0 0 14px; text-align:center; letter-spacing:.02em; }
 #settings-modal .set-account{
-  display:flex; justify-content:center; align-items:center; gap:8px;
-  margin:12px 0 16px; font-size:.92rem; color:var(--text-2);
+  display:flex; flex-direction:column; gap:6px;
+  margin:0 0 12px; padding:10px 14px;
+  background:rgba(0,0,0,.38);
+  border:1px solid rgba(255,200,80,.15);
+  border-radius:8px;
+  font-size:.88rem; color:var(--text-2);
 }
-#settings-modal .set-account .set-label{ color:var(--text-3); }
-#settings-modal .set-account strong{ color:var(--curr-gold); font-weight:700; }
+#settings-modal .set-account .set-row{
+  display:flex; justify-content:space-between; align-items:center; gap:12px; line-height:1.4;
+  background:transparent !important;
+}
+#settings-modal .set-account .set-label{ color:var(--text-3); font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; background:transparent !important; }
+#settings-modal .set-account strong.set-user-name{
+  color:var(--curr-gold) !important; font-weight:700;
+  background:transparent !important;
+  padding:0 !important; border:none !important;
+}
+#settings-modal .set-cloud-status{ font-size:.9rem; font-weight:600; background:transparent !important; }
+#settings-modal .set-cloud-status.is-on{ color:var(--success); }
+#settings-modal .set-cloud-status.is-off{ color:var(--text-3); }
+#settings-modal .set-cloud-status.is-off::before{ content:'● '; color:var(--text-3); }
+#settings-modal .set-cloud-status.is-on::before{ content:'● '; color:var(--success); }
+
+#settings-modal .set-section-title{
+  margin:10px 2px 6px; padding:0 0 4px;
+  font-size:.72rem; color:var(--text-3);
+  text-transform:uppercase; letter-spacing:.1em;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
 #settings-modal .modal-buttons.set-vert{
-  display:flex; flex-direction:column; gap:8px; align-items:stretch;
+  display:flex; flex-direction:column; gap:6px; align-items:stretch;
+  margin:0;
 }
-#settings-modal .modal-buttons.set-vert .btn{ width:100%; }
+/* 설정 모달 버튼은 text-align:center 유지 (돌 프레임 PNG 의 좌우 장식과 충돌 방지). */
+#settings-modal .modal-buttons.set-vert .btn{ width:100%; text-align:center; padding:10px 14px; }
+/* 로그아웃 버튼 — 돌 프레임 + color:var(--danger) 조합에서 글자 대비 부족. 밝은 빨강으로 강제. */
+#settings-modal .btn.btn-red{ color:#ff8a8a !important; text-shadow:0 1px 0 rgba(0,0,0,.6); }
+#settings-modal .btn.btn-red:hover{ color:#ffd0d0 !important; }
+#settings-modal .modal-buttons.set-close-row{
+  margin-top:10px;
+  display:flex; justify-content:center;
+}
+#settings-modal .modal-buttons.set-close-row .btn{ min-width:120px; }

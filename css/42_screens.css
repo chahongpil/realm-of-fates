@@ -1502,18 +1502,21 @@ body.game-mode #church-info{
 #settings-modal .set-cloud-status.is-off::before{ content:'● '; color:var(--text-3); }
 #settings-modal .set-cloud-status.is-on::before{ content:'● '; color:var(--success); }
 
+/* 2026-04-27: 검수관 진단 — banner_modal_box.png 갈색 텍스처 위에서 text-3 색·.72rem 가
+   대비 4.5:1 미달이라 사용자가 "진행/세션 섹션이 안 보인다" 인지. 색·크기·그림자 강화. */
 #settings-modal .set-section-title{
-  margin:10px 2px 6px; padding:0 0 4px;
-  font-size:.72rem; color:var(--text-3);
+  margin:14px 2px 8px; padding:0 0 4px;
+  font-size:.82rem; font-weight:700; color:var(--curr-gold);
   text-transform:uppercase; letter-spacing:.1em;
-  border-bottom:1px solid rgba(255,255,255,.12);
+  text-shadow:0 1px 2px rgba(0,0,0,.8);
+  border-bottom:1px solid rgba(255,200,80,.28);
 }
 #settings-modal .modal-buttons.set-vert{
   display:flex; flex-direction:column; gap:6px; align-items:stretch;
   margin:0;
 }
 /* 설정 모달 버튼은 text-align:center 유지 (돌 프레임 PNG 의 좌우 장식과 충돌 방지). */
-#settings-modal .modal-buttons.set-vert .btn{ width:100%; text-align:center; padding:10px 14px; }
+#settings-modal .modal-buttons.set-vert .btn{ width:100%; text-align:center; padding:10px 14px; text-shadow:0 1px 0 rgba(0,0,0,.7); }
 /* 로그아웃 버튼 — 돌 프레임 + color:var(--danger) 조합에서 글자 대비 부족. 밝은 빨강으로 강제. */
 #settings-modal .btn.btn-red{ color:#ff8a8a !important; text-shadow:0 1px 0 rgba(0,0,0,.6); }
 #settings-modal .btn.btn-red:hover{ color:#ffd0d0 !important; }

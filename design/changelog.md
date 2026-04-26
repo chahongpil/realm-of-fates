@@ -8,6 +8,69 @@
 
 ---
 
+## 2026-04-27 01:45 ▶ 세션 ▶ 핸드오프 저장 (타이틀 영상 + BGM 3그룹화 + 설정 모달 가독성·클릭 + 음악 메타 복구)
+
+- **변경**: 세션 상태를 `docs/handoff/handoff-2026-04-27-0145.md` 에 저장
+- **이유**: 세션 마무리 — 11 커밋 push 완료, 미완 작업(전투 HP/NRG 풀 충전 + 여관·성당 안내 + NRG 스킬 토스트) 다음 세션 인계
+- **작업 요약**:
+  - 타이틀 배경 영상 시스템 (5b525ec / d8aff0e / 2de6e14): bg_title.mp4 1.62MB (24MB → ffmpeg 압축), letterbox 영역까지 cover, 정중앙도 노출
+  - BGM 3그룹화 (fb3045f): _currentGroup 추적, 마을 안 건물 이동 시 음악 끊김 방지
+  - 음악 메타 7곡 복구 (d89bcd5): Downloads/ size 일치 매칭. AcoustID 미매칭 7곡 fingerprint 준비됨
+  - 검수관 후속 (6b05ca4): 마을 라벨 가독성 + church 갭 + 성별 토글 fade
+  - 설정 모달 가독성 (25b081b) + 톱니 클릭 사각지대 (2f458a1)
+  - 직전 세션 미커밋 27파일 분할 커밋 + push (43fbabd / 50931d6 / bb2215e)
+- **미완**: 사용자 요청 4번 (HP/NRG 풀 충전 + 여관·성당 안내 + NRG 스킬 토스트) 진단만 완료, 구현 미시작
+- **다음 세션**: 4번 재개 → cluster Edit 권장 (의존 그래프 SCC 단위)
+
+---
+
+## 2026-04-27 ▶ 게임 메커닉 ▶ BGM 3그룹화 (title / town / battle)
+
+- **변경**:
+  - `js/30_sfx.js` `_currentGroup` 필드 추가 (`title` / `town` / `battle` / `null`)
+  - `bgm(type)` 진입부 그룹 정규화: title=title / town·menu=town / battle·match=battle
+  - 같은 그룹 + `_bgmAudio` 재생 중 → noop (이어서 재생)
+  - match 의 볼륨 25% override 폐기 → battle 그룹 동일 처리
+- **이유**: 사용자 보고 — 마을 안 건물(선술집·성당 등) 들어갔다 나올 때마다 마을 BGM 이 새 곡으로 셔플되어 끊김. 사용자 요청 "타이틀 / 마을(모든 집들 들어가도 그대로) / 전투 3그룹".
+- **영향**:
+  - 호출자(showMenu, launchBattle, etc.) 변경 없음 — bgm 함수 안에서만 처리
+  - match → battle 전이 시 같은 그룹 noop 으로 음악 그대로 이어짐 (이전: match 25% → battle 100% 볼륨 변화)
+  - title → town 시 그룹 변경, 노래 정상 전환
+
+---
+
+## 2026-04-27 ▶ 콘텐츠 ▶ 타이틀 화면 배경 영상 (bg-angel 자리)
+
+- **변경**:
+  - `img/bg_title.mp4` 신규 (1.62MB, 1920×858, H.264 CRF 30, 8s loop, no audio)
+    원본 24MB (3770×1684) → ffmpeg `scale=1920:-2 + libx264 CRF 30 + preset slow + faststart` 으로 15배 압축
+  - `index.html` `#title-screen` 안에 `<video.title-bg-video>` 첫 자식 추가 (autoplay loop muted, poster=angel.jpg)
+  - `js/99_bootstrap.js` `wrapGameRoot` 가 video 를 body 직계로 끌어올림 → game-root transform:scale 영향 우회 (letterbox 영역까지 cover)
+  - `css/42_screens.css` `.title-bg-video` `position:fixed; inset:0; width:100vw; height:100vh; object-fit:cover; z-index:0`
+  - `:has(.game-root > #title-screen.active:not(.bg-demon))` 로 angel 분기에서만 video 표시. demon 분기는 png 그대로 노출 (50% 랜덤 보존)
+  - `#title-screen` background 를 transparent (radial-gradient 제거)
+- **이유**: 사용자 제작 영상 적용. 처음엔 마을 배경에 잘못 적용 → 롤백 후 타이틀로 이동. 16:10 등 non-16:9 viewport 에서 letterbox 영역 + 정중앙 둘 다 영상 노출되도록 다단계 fix.
+- **영향**:
+  - 24MB 원본은 git history 에서 squash 제거 (rebase 비-interactive: tmp branch + amend + reset + cherry-pick)
+  - GitHub Pages 빌드 timeout 위험 완화 (1.62MB)
+- **이전 결정 관계**: 2026-04-21 타이틀 angel/demon 랜덤 (PNG) 의 angel 자리만 영상으로 교체. demon 은 png 유지.
+
+---
+
+## 2026-04-27 ▶ 콘텐츠 ▶ 음악 메타 7곡 복구 (Downloads/ size 일치 매칭)
+
+- **변경**:
+  - `snd/SOURCES.md` 7곡 매칭 정보 반영 (+109/-16)
+  - 매칭 확정 5곡: title3 (Canticum Tenebrae 03 / VJGalaxy), town3 (Fantasy Medieval Ambient / Deuslower), town4 (Peace / smvj1978smvj), town5 (Medieval Star / MatthewMikeMusic), battle6 (Medieval Escape / Forgotten Hero Records)
+  - 부분 확정 2곡: title1 (Angel of God), title2 (한글 rename, 영문 미상)
+  - 미매칭 7곡: title2 영문 / town1·2 / battle1~5 (Downloads/Music/Documents/D: 검색했으나 size 일치 없음)
+- **이유**: 상업 출시 전 음원 출처 확정 필요. Pixabay Content License 추정 11곡 → 추적.
+- **영향**:
+  - 매칭 7곡 라이선스 증빙 확보
+  - 미매칭 7곡: AcoustID + Chromaprint fingerprint 추적 옵션. fpcalc.exe 다운로드 + 8곡 fingerprint 추출 완료. AcoustID 키 발급 필요 (대표님 액션).
+
+---
+
 ## 2026-04-26 15:43 ▶ 세션 ▶ 핸드오프 저장 (NPC 시스템 재설계 + 자동 로그인 + 증축 폐기 마무리)
 
 - **변경**: 세션 상태를 `docs/handoff/handoff-2026-04-26-1543.md` 에 저장 + 클립보드 복사

@@ -10,7 +10,9 @@ body.game-mode:has(#title-screen.active.bg-demon){
   background:url('../img/bg_title_demon.jpg') center/cover no-repeat, #000;
 }
 /* 2026-04-24: 대표님 지시 — 마을 바깥(body 영역)은 검정 유지. 이미지 확장 제거. */
-#title-screen{justify-content:center;background:url('../img/bg_title_angel.jpg') center/cover no-repeat,radial-gradient(ellipse at center,#1a1525 0%,#0a0810 60%,#050408 100%);position:relative;overflow:hidden;}
+/* 2026-04-27: angel 분기는 영상 노출, demon 분기만 png. radial-gradient 도 영상 가리므로 제거. */
+#title-screen{justify-content:center;background:transparent;position:relative;overflow:hidden;}
+#title-screen.bg-demon{background:url('../img/bg_title_demon.jpg') center/cover no-repeat,radial-gradient(ellipse at center,#251525 0%,#0a0510 60%,#080408 100%);}
 /* 2026-04-27: 타이틀 배경 영상 — game-root 외부 (body 직계) 로 이동되어 letterbox 영역까지 cover.
    99_bootstrap.js viewportBoot 가 wrap 직후 video 를 body 로 끌어올림. demon 분기에서는 png 노출. */
 body.game-mode > .title-bg-video{
@@ -20,7 +22,8 @@ body.game-mode > .title-bg-video{
 }
 body.game-mode:has(.game-root > #title-screen.active:not(.bg-demon)) > .title-bg-video{display:block;}
 body.game-mode > .game-root{position:relative;z-index:1;}/* video 위에 떠야 */
-#title-screen.bg-demon{background:url('../img/bg_title_demon.jpg') center/cover no-repeat,radial-gradient(ellipse at center,#251525 0%,#0a0510 60%,#080408 100%);}
+/* 타이틀 angel 활성 시 game-root 자체도 투명 — 정중앙 영역까지 영상 노출. demon 분기는 dark 유지. */
+body.game-mode:has(.game-root > #title-screen.active:not(.bg-demon)) > .game-root{background:transparent;}
 #title-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.15) 60%,rgba(0,0,0,.4) 100%);pointer-events:none;}
 #title-screen::after{content:'';position:absolute;inset:0;pointer-events:none;animation:titleLightning 4s infinite;opacity:0;}
 .title-fire{position:absolute;bottom:0;left:0;width:100%;height:30%;background:linear-gradient(0deg,rgba(255,60,0,.08),transparent);pointer-events:none;animation:titleFire 3s infinite alternate;}

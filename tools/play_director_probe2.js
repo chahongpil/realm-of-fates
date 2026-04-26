@@ -42,7 +42,6 @@ const consoleWarns = [];
   mark("logged-in", { user });
   const deckSetup = await page.evaluate(() => {
     if (typeof Game === "undefined" || !Game) return { err: "no Game" };
-    Game.buildings = Game.buildings || { gate:1, library:1, forge:1, tavern:1, shop:1, church:1, training:1, castle:1 };
     if (typeof RoF !== "undefined" && RoF.Data && typeof RoF.Data.createHero === "function") {
       const hero = RoF.Data.createHero({ gender:"m", role:"warrior", element:"fire", skinIndex:0 });
       hero.uid = "my_hero_001";

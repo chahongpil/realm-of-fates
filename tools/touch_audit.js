@@ -31,7 +31,6 @@ const FILE_URL = 'file:///' + path.join(__dirname, '..', 'index.html').replace(/
       await page.waitForTimeout(1200);
     }
     await page.evaluate(() => {
-      Game.buildings = { gate:1, library:1, forge:1, tavern:1, shop:1, church:1, training:1, castle:1 };
       Game.showMenu();
     });
     await page.waitForTimeout(500);

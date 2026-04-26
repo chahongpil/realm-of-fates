@@ -47,3 +47,6 @@ tools/build_titan_apng.py
 # 2026-04-24: 마을 리뉴얼 중 로컬 백업 (원본 복구용, repo 제외)
 img/bg_town_v3_original.mp4
 img/bg_town_v3_3x2_backup.png
+
+# 2026-04-26: 대표님 로컬 메모 (repo 제외)
+00.할일목록.txt

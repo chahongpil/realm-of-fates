@@ -52,11 +52,7 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
       await page.evaluate(() => Auth.signup());
       await page.waitForTimeout(1500);
     }
-    await page.evaluate(() => {
-      if (typeof Game !== 'undefined') {
-        Game.buildings = Game.buildings || { gate:1, library:1, forge:1, tavern:1, shop:1, church:1, training:1, castle:1 };
-      }
-    });
+    // 2026-04-24: 건물 Lv 시스템 폐기 → Game.buildings 셋업 불필요. 모든 건물 항상 활성.
   }
 
   // ── 1. title-load ──

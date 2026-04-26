@@ -52,7 +52,6 @@ const limit = firstIdx >= 0 ? parseInt(args[firstIdx + 1]) : 999;
   }
   await page.evaluate(() => {
     if (typeof Game !== 'undefined') {
-      Game.buildings = Game.buildings || { gate:1, library:1, forge:1, tavern:1, shop:1, church:1, training:1, castle:1 };
     }
   });
 

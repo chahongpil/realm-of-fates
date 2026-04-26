@@ -55,7 +55,6 @@ const log = (n, extra) => console.log(JSON.stringify(Object.assign({n}, extra||{
 
   // deck setup — 영웅 + bronze 3종
   await page.evaluate(() => {
-    Game.buildings = Game.buildings || { gate:1, library:1, forge:1, tavern:1, shop:1, church:1, training:1, castle:1 };
     if (RoF && RoF.Data && RoF.Data.createHero) {
       const hero = RoF.Data.createHero({ gender:'m', role:'warrior', element:'fire', skinIndex:0 });
       hero.uid = 'my_hero_001'; hero.isHero = true; hero.level = 1;

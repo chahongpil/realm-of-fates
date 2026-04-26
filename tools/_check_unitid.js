@@ -8,7 +8,6 @@ const { chromium } = require('playwright');
   await p.fill('#login-id','art_audit'); await p.fill('#login-pw','1234');
   await p.evaluate(() => Auth.login()); await p.waitForTimeout(800);
   await p.evaluate(() => {
-    Game.buildings = Game.buildings || { gate:1,library:1,forge:1,tavern:1,shop:1,church:1,training:1,castle:1 };
     const hero = RoF.Data.createHero({ gender:'m', role:'warrior', element:'fire', skinIndex:0 });
     hero.uid='my_hero_001'; hero.isHero=true; hero.level=1; hero.maxHp=hero.hp; hero.currentHp=hero.hp; hero.shield=0;
     Game.deck = Game.deck || [];

@@ -56,7 +56,6 @@ const path = require('path');
   // Ensure buildings exists (post-signup may skip init)
   await page.evaluate(() => {
     if (typeof Game !== 'undefined') {
-      Game.buildings = Game.buildings || { gate:1, library:1, forge:1, tavern:1, shop:1, church:1, training:1, castle:1 };
       Game.ownedSkills = (typeof SKILLS_DB !== 'undefined') ? SKILLS_DB.map(s => ({ ...s })) : [];
     }
   });

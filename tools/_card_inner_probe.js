@@ -14,7 +14,6 @@ const { chromium } = require('playwright');
     await p.evaluate(() => Auth.signup()); await p.waitForTimeout(1500);
   }
   await p.evaluate(() => {
-    Game.buildings = Game.buildings || { gate:1,library:1,forge:1,tavern:1,shop:1,church:1,training:1,castle:1 };
     const hero = RoF.Data.createHero({ gender:'m', role:'warrior', element:'fire', skinIndex:0 });
     hero.uid='h'; hero.isHero=true; hero.level=1; hero.maxHp=hero.hp; hero.currentHp=hero.hp; hero.shield=0;
     Game.deck = [hero].concat(UNITS.filter(u=>u.rarity==='bronze').slice(0,3).map((u,i)=>Object.assign({},u,{uid:'u'+i,level:1,equips:[],maxHp:u.hp,currentHp:u.hp,shield:0})));

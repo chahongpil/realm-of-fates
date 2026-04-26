@@ -35,6 +35,11 @@
       root.appendChild(document.body.firstChild);
     }
     document.body.appendChild(root);
+
+    // 2026-04-27: 타이틀 배경 영상은 game-root 의 transform:scale 영향 받지 않게
+    // body 직계로 끌어올림. 100vw/100vh fixed cover 로 letterbox 영역까지 채움.
+    const titleVideo = root.querySelector('#title-bg-video');
+    if (titleVideo) document.body.insertBefore(titleVideo, root);
   }
 
   function fitViewport(){

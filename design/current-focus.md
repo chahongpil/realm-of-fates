@@ -5,63 +5,43 @@
 
 ## 진행 중 작업
 
-**Phase**: Phase 3 (시네마틱 전투 리뉴얼) + Phase 2 콘텐츠 + 운영 UX 정비
-**최근 세션**: 2026-04-27 (오후) — **자원 누적 소모 시스템 + 여관 휴식 + NRG 토스트 + UI.toast helper**
-**마지막 커밋**: `2f458a1` (이전), 이번 작업 미커밋 (HP/NRG 영구화 + 여관·교회·토스트)
-**누적 커밋**: 11건 (origin/master = 6f53432 → 2f458a1)
+**Phase**: Phase 3 (시네마틱 전투) + Phase 2 콘텐츠 + **Phase 5 (채팅) Step 4 종료**
+**최근 세션**: 2026-04-27 (밤) — **NPC 투명 + 카드 레이아웃 + 전투 2버그 + NPC 거절 + 가비지 + PHASE 5 Step 4**
+**마지막 커밋**: `adb25ea` feat(chat): PHASE 5 Step 4 — 카드 공유 (4a~4d)
+**누적 커밋**: 4건 이번 세션 (`f9cac48` → `3b46281` → `54f0131` → `adb25ea`), origin 동기
 **유닛 수**: 51 일반 + 6 신 영웅 / 스펠 44 / 유물 12 (변동 없음)
 
-### ✅ 2026-04-27 세션 완료
-- [x] **타이틀 배경 영상** — `img/bg_title.mp4` 1.62MB (24MB → 압축, ffmpeg 1920×858 H.264 CRF 30)
-- [x] **영상 letterbox 영역까지 cover** — `99_bootstrap.js` 가 video 를 body 직계로 끌어올림
-- [x] **정중앙도 영상 노출** — game-root + #title-screen background transparent
-- [x] **24MB 원본 git history 제거** — squash via tmp branch + amend + cherry-pick (비-interactive)
-- [x] **BGM 3그룹화** — `_currentGroup` 추적, 같은 그룹 재호출 시 noop. 마을 안 건물 이동 시 음악 끊김 방지
-- [x] **음악 메타 7곡 복구** — Downloads/ size 일치 매칭 (title3/town3·4·5/battle6 + title1·2 부분)
-- [x] **검수관 후속** — 마을 .tb-label 가독성 + church 갭 +10 + 성별 토글 fade
-- [x] **설정 모달 섹션 라벨 가독성** — var(--curr-gold) + .82rem + 700 + text-shadow
-- [x] **톱니 클릭 사각지대 수정** — sound-panel collapsed padding:0 + onclick fallback
-
-### ✅ 2026-04-27 오후 추가 완료
-- [x] **deck 영구 `currentHp`/`curNrg` 도입** — 전투 시작/종료 시 풀충전 안 함, 누적 소모
-- [x] **launchBattle pCards** — `c.currentHp ?? c.hp` / `c.curNrg ?? 0` 영구 우선
-- [x] **showBattleEnd 동기화** — 출전 카드 종료값 → deck 영구 필드 저장
-- [x] **V4 카드 표시** — 마을·덱뷰에 `currentHp/curNrg` 가시화 (40_cards.js:265-268)
-- [x] **여관 (`showInn`)** — 살아있는 동료 HP/NRG 풀 회복, 무료
-- [x] **교회 치료 reset** — `injured=false; currentHp=hp; curNrg=nrg`
-- [x] **NPC 라우팅** — inn `휴식하기 (HP·에너지 회복)` → `showInn`
-- [x] **NRG 부족 토스트** — `UI.toast('⚡ 에너지 부족 — N 필요 (현재 M)')` + 흔들림
-- [x] **`UI.toast` helper** — 31_ui.js, 1.6초 자동 사라짐, kind warn/error
-- [x] **opacity .42→.68** — `.is-unaffordable` 사용자 피드백 반영
-- [x] **회귀테스트 11/11 통과**
+### ✅ 2026-04-27 밤 세션 완료
+- [x] **여관 NPC 흰 배경 → 투명** — rembg, alpha 0% → 44.9% (`f9cac48`)
+- [x] **카드 V4 이름박스/Lv박스** — parch 위로 이동 (bottom:100%) → 일러스트 상단 전체 확장
+- [x] **첫 유닛 클릭 엄청 확대 버그** — applyFocusOrigin 단위 불일치 (viewport vs local) → offsetWidth 사용
+- [x] **모든 유닛 NRG=0 시작 버그** — curNrg ?? 0 → ?? c.nrg (HP 패턴 일치)
+- [x] **NPC 조건부 거절 시스템** — choice.guard + denyMsg, chat 모드 재사용 (church 부상자/장례, inn 휴식)
+- [x] **가비지 정리** — tools/_ 12건 + 백업 PNG 2건 + 진단 스크립트 1건 → trash (15건 5.24MB)
+- [x] **PHASE 5 Step 4 카드 공유** — 4a(kind:'share') / 4b(+ picker) / 4c(미니카드 렌더) / 4d(풀모달)
+- [x] **회귀 11/11 PASS** (각 단계마다 확인)
 
 ### 🔴 다음 세션 우선순위
 
-1. **이번 작업 커밋 + push** (단일 커밋 권장)
-2. 🟠 직접 플레이 검증 — 휴식·치료 흐름, NRG 부족 토스트
-3. 🟡 AcoustID 키 재발급 + 미매칭 7곡 lookup
-4. 🟢 PHASE 5 Step 4 카드 공유
-5. 🟢 NPC 이미지 2장 (`temple`, `inn`) 대표님 공급 대기
+1. **🟠 직접 플레이 검증** — 이번 세션 6개 변경사항 (NPC 투명·카드 레이아웃·첫클릭 확대·NRG=0·NPC 거절·카드 공유)
+2. **🟡 PHASE 5 Step 5** — 발언 제한 세부 (Lv5 이하 world 차단 / 1분 10개 플러드 / 금칙어 50개 / URL 차단)
+3. **🟡 PHASE 5 Step 6** — 신고 + 모더레이션 (chat_reports INSERT / 자동 뮤트)
+4. **🟢 PHASE 5 Step 7** — 전투 중 채팅 숨김 + 읽지 않은 배지
+5. **🟢 AcoustID 키 재발급 + 미매칭 7곡 lookup**
 
 ## 막혀있는 것
 - 📌 AcoustID 키 (대표님 발급 필요, 무료 등록)
-- 📌 temple/inn/gate building_*.png 404 (대표님 공급 또는 fallback)
-- 📌 hero_* skinKey CARD_IMG 매핑 (영웅 일러 1장 잔여)
+- 📌 `gate.png` 404 (대표님 공급 또는 fallback 유지)
+- 📌 hero_* skinKey CARD_IMG 매핑 1장 잔여
 
 ## 노트
-- **squash 우회 패턴 정립**: -i 금지 환경에서 tmp branch + amend + reset + cherry-pick 으로 history rewrite. backup tag 안전망.
-- **WCAG 4.5:1 미달 = "안 보인다"**: banner PNG 텍스처 위 var(--text-3) + .72rem 미달. 검수관 진단 패턴 재확인.
-- **클릭 사각지대 패턴**: 자식 element 가 부모 영역 정확히 채워야 bindings closest('[data-action]') 가 닿음. padding 영역은 자식이 안 닿는 부모 영역.
+- **rembg 배경 제거 워크플로** — 흰 배경 PNG 자동 알파 추출. backup .bak.png → 검증 → trash. NPC PNG 추가 시 동일 패턴.
+- **NPC 거절 패턴 표준화** — choice.guard(game) + denyMsg. forge/tavern 등 향후 확장 시 1줄로 추가 가능.
+- **viewport vs local pixel 트랩** — `getBoundingClientRect().width` 는 game-root scale 후, CSS 변수는 local. 비교 시 단위 일치 (offsetWidth) 또는 scale 보정 필수.
+- **카드 V4 share 사이즈** — 100×175 (aspect 4/7). PHASE5 plan 120×170 은 비율 안 맞아서 폐기.
 
 ## 이번 세션 커밋 (시간순)
-- `43fbabd` feat(ops): auth opt-in + 증축 폐기 + NPC 재설계 + 성문 허브 (직전 세션 미커밋 정리)
-- `50931d6` chore(tools): Game.buildings + gitignore
-- `bb2215e` docs: changelog + handoff
-- `6b05ca4` fix(ui): 검수관 후속 + 성별 fade
-- `5b525ec` feat(title): 타이틀 배경 영상 (squash with 1.62MB)
-- `d89bcd5` docs(snd): SOURCES.md 매핑 7곡
-- `d8aff0e` fix(title): letterbox 영역 cover
-- `2de6e14` fix(title): 정중앙 영상 노출
-- `fb3045f` feat(audio): BGM 3그룹화
-- `25b081b` fix(settings): 모달 가독성
-- `2f458a1` fix(settings): 톱니 클릭 사각지대
+- `f9cac48` fix(npc): 여관 NPC 흰 배경 → 투명 (rembg)
+- `3b46281` fix(card+battle+npc): 카드 레이아웃 + 전투 2버그 + NPC 조건부 거절
+- `54f0131` chore(cleanup): tools/_ 12건 + play_sk_check.js → trash
+- `adb25ea` feat(chat): PHASE 5 Step 4 — 카드 공유 (4a~4d 완료)

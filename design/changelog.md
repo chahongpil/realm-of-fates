@@ -8,6 +8,70 @@
 
 ---
 
+## 2026-04-27 (밤) ▶ 세션 ▶ 핸드오프 저장 (4 커밋, PHASE 5 Step 4 종료)
+
+- **변경**: 세션 상태를 `docs/handoff/handoff-2026-04-27-2235.md` 에 저장. current-focus 갱신.
+- **이유**: 세션 마무리 + 다음 세션 컨텍스트 복구용.
+- **영향**: 4 커밋 (`f9cac48` → `3b46281` → `54f0131` → `adb25ea`) + 가비지 5.24MB 정리 + PHASE 5 Step 4 (4a~4d) 완료.
+
+---
+
+## 2026-04-27 (밤) ▶ 콘텐츠 ▶ PHASE 5 Step 4 — 카드 공유 (4a~4d 완료)
+
+- **변경**:
+  - **4a** `CardV4Component.create(card, {kind:'share'})` 모드 추가 — `isShare` 분기 (lv-box 에 'Lv X' 표시), `.kind-share` CSS 100×175 (aspect 4/7 유지)
+  - **4b** 채팅 입력창 `+` 버튼 활성화 + `_showCardPicker()` 동적 overlay (chat-panel 내부 absolute, deck 카드 그리드). `_setAttachedCard` / `_clearAttachedCard` / `_renderAttachedPreview`. send.disabled 조건 갱신 (텍스트 OR 첨부)
+  - **4c** `Backend.chatSend(channel, text, this._attachedCard)` 동봉. `_renderMessage` 에 `attached_card` 분기 → `kind:'share'` inst 추가. 첨부 단독 전송 허용
+  - **4d** 미니카드 클릭 → `_showCardDetailModal` (position:fixed inset:0, ✕ 닫기 + 외부 클릭 닫기)
+- **이유**: PHASE5_CHAT_PLAN.md Step 4 스펙. DB 스키마(`attached_card jsonb`) 와 `chatSend` 시그니처는 Step 1 단계에 이미 마련되어 있어 백엔드 변경 0건.
+- **영향**: 4파일 +276줄. `js/40_cards.js` / `css/32_card_v4.css` / `js/36_chat.js` / `css/36_chat.css`. 회귀 11/11 PASS.
+
+---
+
+## 2026-04-27 (밤) ▶ 청소 ▶ 가비지 15건 5.24MB → trash
+
+- **변경**: `tools/_` 진단 스크립트 12건 + 루트 `play_sk_check.js` + 백업 PNG 2건 (`npc_inn_1.bak.png`, `bg_town_v3_3x2_backup.png`) 을 `trash/garbage_2026-04-27/` 로 이동.
+- **이유**: session_start 누적 카운터(12건) 트리거 + rembg 백업 검증 완료.
+- **영향**: 회귀 11/11 PASS. 08-garbage-lessons.md 업데이트 없음 (1회성 케이스).
+
+---
+
+## 2026-04-27 (밤) ▶ UX ▶ NPC 조건부 거절 시스템 (church + inn)
+
+- **변경**: NPC choice 에 `guard:(game)=>boolean` + `denyMsg:string` 표준 패턴 추가. `_runChoiceAction` 가 guard 미충족 시 chat 모드 재사용 → 화면전환 없이 NPC 가 거절 대사로 응답.
+  - church 부상자 회복 / 장례 (injured 0명) → "지금은 부상자가 없네요"
+  - inn 휴식 (전원 만전) → "모두 만전이시군요"
+- **이유**: 사용자 요청 — "부상자가 없을 때는 화면전환하지말고 수녀가 그대로 대화로 거절". 또한 inn `showInn` 의 modal 거절도 NPC 대사로 일관성 통일.
+- **영향**: `js/51_game_town.js` NPCS.church/inn choices + `_runChoiceAction` guard 분기. 향후 forge/tavern 등 동일 패턴 1줄로 추가 가능.
+
+---
+
+## 2026-04-27 (밤) ▶ 버그픽스 ▶ 첫 유닛 클릭 엄청 확대 + 모든 유닛 NRG=0
+
+- **변경**:
+  1. **첫 유닛 클릭 확대 점프**: `applyFocusOrigin` 의 `srcRect.width`(viewport pixel = game-root scale 후) ÷ `tgtW`(local pixel) 단위 불일치. 큰 모니터(scale>1)에서 srcScale 이 1 근접 → focus 카드 큰 사이즈에서 시작. `srcEl.offsetWidth`(layout pixel) 로 변경.
+  2. **NRG=0 시작**: `launchBattle` 의 `curNrg ?? 0` → `curNrg ?? (c.nrg||0)` (HP fallback `?? c.hp` 패턴 일치).
+- **이유**: 사용자 보고 — "전투 중 처음 유닛 클릭하면 엄청 확대" + "유닛영웅들 모두 전투 시작하면 nrg가 0".
+- **영향**: `js/55_game_battle.js:322` (1줄), `js/60_turnbattle_v2.js` applyFocusOrigin (+3줄). 회귀 11/11 PASS.
+
+---
+
+## 2026-04-27 (밤) ▶ UX ▶ 카드 V4 이름박스/Lv박스 → parch 위로 이동
+
+- **변경**: `.top-row` 를 `.card-v4` 의 자식이 아닌 `.parch` 의 absolute 자식으로 이동 (`bottom:100% margin-bottom:4px`). with-bars/compact 의 `top:16/22` 오버라이드 제거 (무의미해짐).
+- **이유**: 사용자 요청 — "스탯+설명 박스는 그대로 두고 그 박스 바로 위 영역에 배치". 일러스트가 카드 상단 전체로 확장, 능력 텍스트 자리 보존.
+- **영향**: `css/32_card_v4.css` + `js/40_cards.js`. 모든 카드 사이즈(풀 / compact / share)에 일관 적용. 회귀 11/11 PASS.
+
+---
+
+## 2026-04-27 (밤) ▶ 콘텐츠 ▶ 여관 NPC 흰 배경 → 투명 (rembg)
+
+- **변경**: `img/npc_inn_1.png` 를 `rembg` 로 자동 배경 제거. alpha 0% → 44.9%, 1.96MB → 1.75MB. 원본은 검증용으로 `npc_inn_1.bak.png` 보관 후 같은 세션에서 trash 이동.
+- **이유**: NPC dialog overlay 위에서 캐릭터 주변 흰 박스로 보임. `npc_temple_1.png` 는 이미 30.9% 투명 (정상).
+- **영향**: 여관 NPC 다이얼로그 자연스러운 컷아웃. NPC PNG 추가 시 rembg 워크플로 표준화 (alpha 검사 → 흰배경이면 rembg → backup → 검증 → trash).
+
+---
+
 ## 2026-04-27 (오후) ▶ 콘텐츠 ▶ NPC 이미지 2장 이식 (temple, inn)
 
 - **변경**: `Downloads/신전사제_일반.png` → `img/npc_temple_1.png` (3.0MB), `Downloads/여관주인_일반.png` → `img/npc_inn_1.png` (1.9MB).

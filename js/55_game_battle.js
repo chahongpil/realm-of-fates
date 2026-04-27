@@ -319,7 +319,9 @@ Object.assign(RoF.Game, {
     if(!bs.pCards){
       // 2026-04-27: deck 카드의 영구 currentHp/curNrg 가 있으면 그 값으로 시작 (전투 종료 상태 유지).
       // 휴식(여관) 또는 부상자 치료(교회) 후에는 영구값이 풀로 reset 되어 다시 풀 시작.
-      bs.pCards=bs.battleDeck.map(c=>({...c,currentHp:c.currentHp!=null?c.currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'player',row:c.formRow||'front',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:c.curNrg!=null?c.curNrg:0,curShield:c.shield||0,burn:0}));
+      // 2026-04-27 fix: curNrg fallback 을 0 → c.nrg(풀충전) 로. HP 와 동일 패턴 (?? c.hp).
+      // 영웅/유닛 모두 curNrg 미설정이라 첫 전투부터 NRG=0 으로 시작하던 버그.
+      bs.pCards=bs.battleDeck.map(c=>({...c,currentHp:c.currentHp!=null?c.currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'player',row:c.formRow||'front',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:c.curNrg!=null?c.curNrg:(c.nrg||0),curShield:c.shield||0,burn:0}));
       bs.battleRelics.forEach(r=>applyRelicBattle(r,bs.pCards));
       const rawE=this.genEnemy();
       rawE.forEach(c=>{c.row=(c.type==='전사'||c.type==='야수')?'front':'back';});

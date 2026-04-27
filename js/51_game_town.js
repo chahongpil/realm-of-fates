@@ -66,8 +66,12 @@ Object.assign(RoF.Game, {
       icon:'🙏', name:'수녀',
       greet:'신의 축복이 함께하시길.',
       choices:[
-        {label:'부상자 회복하기', action:'showChurch'},
-        {label:'장례 치르기',     action:'showChurch'},
+        {label:'부상자 회복하기', action:'showChurch',
+          guard:(g)=>g.deck.some(c=>c.injured&&!c.isHero),
+          denyMsg:'지금은 부상자가 없네요. 신께서 모두를 보살피셨군요.'},
+        {label:'장례 치르기',     action:'showChurch',
+          guard:(g)=>g.deck.some(c=>c.injured&&!c.isHero),
+          denyMsg:'장례를 치를 동료가 없습니다. 다행한 일이지요.'},
         {label:'대화하기',        action:'chat'},
       ],
       chat:'신께서는 모두를 굽어보십니다. 영웅이든, 동료든.',
@@ -128,7 +132,9 @@ Object.assign(RoF.Game, {
       icon:'🛏️', name:'여관 주인',
       greet:'어서 오세요, 여행자여. 잠시 쉬어 가시지요.',
       choices:[
-        {label:'휴식하기 (HP·에너지 회복)', action:'showInn'},
+        {label:'휴식하기 (HP·에너지 회복)', action:'showInn',
+          guard:(g)=>g.deck.some(c=>!c.injured && ((c.currentHp!=null?c.currentHp:c.hp)<c.hp || (c.curNrg!=null?c.curNrg:0)<(c.nrg||0))),
+          denyMsg:'모두 만전이시군요. 지금은 쉬실 필요 없겠어요.'},
         {label:'정보 듣기', action:'modal', comingSoon:true,
           modal:{title:'🛏️ 여관 소문', body:'먼 곳의 소문과 정보가 곧 들려올 것입니다.\n\n(정보 시스템 준비 중)'}},
         {label:'대화하기',  action:'chat'},
@@ -410,6 +416,14 @@ Object.assign(RoF.Game, {
     const choice = st.npc.choices && st.npc.choices[idx];
     if(!choice) return;
     if(typeof SFX !== 'undefined' && SFX.play) SFX.play('click');
+    // 2026-04-27: guard 미충족 시 화면전환 없이 NPC 거절 대사 (chat 모드 재사용).
+    // 예: 교회에 부상자 0명 → 수녀가 "지금은 부상자가 없네요" 그 자리에서 답함.
+    if(typeof choice.guard === 'function' && !choice.guard(this)){
+      st.mode = 'chat';
+      st.npc = Object.assign({}, st.npc, { chat: choice.denyMsg || '지금은 어렵겠네요.' });
+      this._renderNpcDialog();
+      return;
+    }
     // 'chat' — npc.chat 한 줄 표시 모드 전환 (오버레이 유지)
     if(choice.action === 'chat'){
       st.mode = 'chat';

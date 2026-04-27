@@ -392,11 +392,11 @@ RoF.CardV4Component = (function(){
       topRow.appendChild(rTag);
     }
 
-    el.appendChild(topRow);
-
     // Parchment plate — 유닛은 stats 5칸 + desc, 스펠/유물은 desc 만.
+    // 2026-04-27: top-row(이름/Lv) 를 parch 의 absolute 자식으로 이동 → parch 바로 위에 자동 정렬, 일러스트 상단 전체 확장
     const parch = document.createElement('div');
     parch.className = 'parch';
+    parch.appendChild(topRow);
     if(!isCompact){
       const stats = document.createElement('div');
       stats.className = 'stats';

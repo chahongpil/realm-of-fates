@@ -79,8 +79,10 @@
    2026-04-22: 두 박스 4줄 정렬 (이름=Lv, HP=NRG). align-items:stretch 로 같은 높이,
    내부 justify-content:space-between 로 첫 줄 상단 / 둘째 줄 하단 고정. */
 .card-v4 .top-row {
+  /* 2026-04-27: parch 의 자식으로 이동 → parch 바로 위에 띄움 (일러스트 상단 전체 확장) */
   position: absolute;
-  top: 8px; left: 8px; right: 8px;  /* 기본: 바 없음 → 최상단 */
+  bottom: 100%; left: 0; right: 0;
+  margin-bottom: 4px;                /* parch 와 띄움 */
   display: flex;
   justify-content: space-between;
   align-items: stretch;              /* 두 박스 같은 높이 */
@@ -88,8 +90,7 @@
   z-index: 4;
   pointer-events: none;
 }
-.card-v4.with-bars .top-row,
-.card-v4.card-v4-compact .top-row { top: 16px; }  /* 2026-04-23: 바 끝(15) 바로 아래 1px 여백 */
+/* 2026-04-27: top-row 가 parch 자식이 되면서 with-bars/compact top 오버라이드 무의미 → 제거 */
 
 /* Name box / Lv box 공통 — padding·gap·내부 정렬 통일 */
 .card-v4 .name-box,
@@ -444,8 +445,7 @@
 
 /* 2026-04-23 최종: HP/NRG 바 최상단 + 이름+Lv 바로 아래 (대표님 지시). */
 
-/* 이름 카르투슈(.top-row) 규칙은 line 92 에서 top:22 (바 밑). compact 는 추가로 좌우 여백 축소. */
-.card-v4.card-v4-compact .top-row { left: 6px; right: 6px; }
+/* 2026-04-27: top-row 가 parch 자식이라 left/right:0 (parch 폭에 맞춤) — compact 도 동일 */
 /* 이름 폰트 — 한글 10px / 영문 7px (40_cards.js 가 name 에 .name-latin 클래스 부여) */
 .card-v4-compact .name { font-size: 10px; letter-spacing: .02em; }
 .card-v4-compact .name.name-latin { font-size: 7px; letter-spacing: .05em; }

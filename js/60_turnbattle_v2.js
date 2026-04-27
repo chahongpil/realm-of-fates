@@ -441,7 +441,11 @@
     const srcCy = srcRect.top  + srcRect.height / 2;
     const dx = srcCx - tgtCx;
     const dy = srcCy - tgtCy;
-    const srcScale = srcRect.width / tgtW;
+    // 2026-04-27: srcScale 은 game-local 끼리 비교해야 game-root transform:scale 영향 무시됨.
+    // srcRect.width 는 viewport pixel(game-root scale 후), offsetWidth 는 layout pixel(scale 전).
+    // 큰 모니터(scale>1)에서 srcRect.width / tgtW 가 1.0 근처가 되어 첫 클릭 시 "엄청 확대" 점프 발생했음.
+    const srcLocalW = srcEl.offsetWidth || srcRect.width;
+    const srcScale = srcLocalW / tgtW;
     focusEl.style.setProperty('--bv2-origin-dx', dx + 'px');
     focusEl.style.setProperty('--bv2-origin-dy', dy + 'px');
     focusEl.style.setProperty('--bv2-origin-scale', srcScale);

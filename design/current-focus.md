@@ -6,8 +6,8 @@
 ## 진행 중 작업
 
 **Phase**: Phase 3 (시네마틱 전투 리뉴얼) + Phase 2 콘텐츠 + 운영 UX 정비
-**최근 세션**: 2026-04-27 — **타이틀 영상 + BGM 3그룹화 + 설정 모달 가독성·클릭 사각지대 + 음악 메타 7곡 복구**
-**마지막 커밋**: `2f458a1` (sound-panel padding 클릭 사각지대 수정, push 완료)
+**최근 세션**: 2026-04-27 (오후) — **자원 누적 소모 시스템 + 여관 휴식 + NRG 토스트 + UI.toast helper**
+**마지막 커밋**: `2f458a1` (이전), 이번 작업 미커밋 (HP/NRG 영구화 + 여관·교회·토스트)
 **누적 커밋**: 11건 (origin/master = 6f53432 → 2f458a1)
 **유닛 수**: 51 일반 + 6 신 영웅 / 스펠 44 / 유물 12 (변동 없음)
 
@@ -22,14 +22,26 @@
 - [x] **설정 모달 섹션 라벨 가독성** — var(--curr-gold) + .82rem + 700 + text-shadow
 - [x] **톱니 클릭 사각지대 수정** — sound-panel collapsed padding:0 + onclick fallback
 
-### 🔴 보류 / 다음 세션 우선순위
+### ✅ 2026-04-27 오후 추가 완료
+- [x] **deck 영구 `currentHp`/`curNrg` 도입** — 전투 시작/종료 시 풀충전 안 함, 누적 소모
+- [x] **launchBattle pCards** — `c.currentHp ?? c.hp` / `c.curNrg ?? 0` 영구 우선
+- [x] **showBattleEnd 동기화** — 출전 카드 종료값 → deck 영구 필드 저장
+- [x] **V4 카드 표시** — 마을·덱뷰에 `currentHp/curNrg` 가시화 (40_cards.js:265-268)
+- [x] **여관 (`showInn`)** — 살아있는 동료 HP/NRG 풀 회복, 무료
+- [x] **교회 치료 reset** — `injured=false; currentHp=hp; curNrg=nrg`
+- [x] **NPC 라우팅** — inn `휴식하기 (HP·에너지 회복)` → `showInn`
+- [x] **NRG 부족 토스트** — `UI.toast('⚡ 에너지 부족 — N 필요 (현재 M)')` + 흔들림
+- [x] **`UI.toast` helper** — 31_ui.js, 1.6초 자동 사라짐, kind warn/error
+- [x] **opacity .42→.68** — `.is-unaffordable` 사용자 피드백 반영
+- [x] **회귀테스트 11/11 통과**
 
-1. **사용자 요청 4번 재개** — 전투 HP/NRG 풀 충전 + 여관/성당 안내 + NRG 부족 스킬 토스트
-   - 진단 데이터 핸드오프 문서에 정리됨 ([handoff-2026-04-27-0145.md](../docs/handoff/handoff-2026-04-27-0145.md))
-   - 4 작업 cluster Edit 권장 (08-garbage-lessons.md 의존 그래프 원칙)
-2. 🟠 회귀 테스트 (`tools/test_run.js`) — 11 커밋 누적
-3. 🟡 AcoustID 키 재발급 + 미매칭 7곡 (title2 영문 / town1·2 / battle1~5) lookup
+### 🔴 다음 세션 우선순위
+
+1. **이번 작업 커밋 + push** (단일 커밋 권장)
+2. 🟠 직접 플레이 검증 — 휴식·치료 흐름, NRG 부족 토스트
+3. 🟡 AcoustID 키 재발급 + 미매칭 7곡 lookup
 4. 🟢 PHASE 5 Step 4 카드 공유
+5. 🟢 NPC 이미지 2장 (`temple`, `inn`) 대표님 공급 대기
 
 ## 막혀있는 것
 - 📌 AcoustID 키 (대표님 발급 필요, 무료 등록)

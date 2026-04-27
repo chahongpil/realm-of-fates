@@ -1,0 +1,39 @@
+═══════════════════════════════════════════════════════════════
+  Realm of Fates — NPC 제작 요청서 (2026-04-27)
+  누락분 2장: temple, inn
+═══════════════════════════════════════════════════════════════
+
+📐 공통 규격 (npc_production_2026-04-22.txt 와 동일)
+  해상도  500 × 800 px (5:8 세로)
+  배경    투명 PNG
+  구도    하프바디 (머리 ~ 허리/엉덩이)
+  포즈    손님을 맞이하는 자세 (인사/환영/손짓/미소)
+  시선    정면 또는 약간 45도
+
+  금지    hearthstone / blizzard / world of warcraft / 원형 초상화 /
+          불투명 배경 / 갑옷 portrait 스타일
+  권장    fantasy character portrait, dramatic lighting,
+          stylized illustration, painterly style
+
+
+═══════════════════════════════════════════════════════════════
+  ① npc_temple_1.png — 신전 사제
+═══════════════════════════════════════════════════════════════
+
+Fantasy character portrait, half body from head to hips, 500x800 vertical composition, transparent PNG background, solemn welcoming pose facing the viewer. An elderly androgynous priest in their 60s with a serene wise expression, deep-set knowing eyes, long flowing silver hair tied back, wearing ornate ceremonial robes layered in deep indigo and gold-trimmed white silk, with a six-pointed pendant representing the six elements (fire, water, lightning, earth, holy, dark) hanging at the chest. Holding an ancient leather-bound tome of records in one hand, the other hand raised in a soft greeting gesture, palm open. Subtle ethereal six-color aura faintly emanating from behind, divine temple atmosphere. Painterly stylized illustration, dramatic side lighting with golden divine accent, intricate fabric embroidery and texture detail. No hearthstone or blizzard aesthetic, no circular frame, no armor portrait. Character occupies the central 60% of canvas, head near top, body extending down.
+
+
+═══════════════════════════════════════════════════════════════
+  ② npc_inn_1.png — 여관 주인
+═══════════════════════════════════════════════════════════════
+
+Fantasy character portrait, half body from head to hips, 500x800 vertical composition, transparent PNG background, warm welcoming pose facing the viewer. A middle-aged plump female innkeeper in her 40s with rosy cheeks and a hearty motherly smile, hair tied up in a simple bun with a few loose strands, wearing a checkered apron over a long-sleeved cream tunic with rolled sleeves, a heavy iron key ring at her belt. Holding a steaming wooden bowl of stew in one hand, gesturing toward an empty seat with the other hand in an inviting motion. Soft warm hearth-fire glow from the side, cozy inn lobby atmosphere. Painterly stylized illustration, dramatic side lighting with warm orange accent, detailed fabric folds and steam wisps. No hearthstone or blizzard aesthetic, no circular frame, no armor portrait. Character occupies the central 60% of canvas, head near top, body extending down.
+
+
+═══════════════════════════════════════════════════════════════
+  파일 저장 경로 (대표님 → 내가 이식)
+═══════════════════════════════════════════════════════════════
+  다운로드 폴더(C:/Users/USER/Downloads/) 에 저장하시면
+  제가 c:/work/game/img/npc_{temple,inn}_1.png 로 자동 복사 + 커밋합니다.
+
+  파일명은 편하신 대로 — 제가 식별해서 바꿔 넣을게요.

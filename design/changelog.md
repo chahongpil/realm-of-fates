@@ -8,6 +8,99 @@
 
 ---
 
+## 2026-04-27 (오후) ▶ 콘텐츠 ▶ NPC 이미지 2장 이식 (temple, inn)
+
+- **변경**: `Downloads/신전사제_일반.png` → `img/npc_temple_1.png` (3.0MB), `Downloads/여관주인_일반.png` → `img/npc_inn_1.png` (1.9MB).
+- **이유**: `design/npc_production_2026-04-27.txt` 프롬프트 기반 대표님 생성 → 이식. 마을 10개 건물 NPC 이미지 풀 완성 (이전 8장 + 이번 2장 = 10/10).
+- **영향**: temple/inn 다이얼로그에서 emoji fallback 대신 하프바디 NPC 일러스트 표시. `RoF.Game.getNpc()` 가 buildingId 로 자동 매칭 → 코드 변경 0건.
+
+---
+
+## 2026-04-27 (오후) ▶ UX ▶ 타이틀 화면 우측 경계선 제거 + 번개 이펙트 폐기
+
+- **변경**:
+  1. **`#title-screen::before` 어둠 그라디언트 제거** (42_screens.css:27) — `linear-gradient(180deg, rgba(0,0,0,.05)→.4)` 가 game-root(1280×720) 영역에만 적용되어 letterbox 영역(body 직계 영상이 보이는 좌우 여백)과 brightness 차이 발생 → 우측 경계선 인식. 영상 자체로 충분히 어두워 그라디언트 불필요.
+  2. **JS 번개 갈래 + 화면 flash 폐기** (80_fx.js): `_loop()` 의 `bolts` 분기·`_boltTimer`·`bolts:[]` 필드 모두 제거. 잿불(embers) 입자 50개만 유지.
+  3. **CSS 번개 가짜 효과 폐기**:
+     - `#title-screen::after` (42_screens.css:28) 제거
+     - `@keyframes titleLightning` (80_animations.css:2) 제거
+- **이유**: 사용자 보고 (2026-04-27) — "타이틀 화면 오른쪽에 설정창 바로 오른쪽 기준으로 경계선이 뚜렷". 진단: 어둠 그라디언트가 game-root 영역에만 입혀져 letterbox 와 명확한 brightness 경계 형성. 번개는 별개 결정 — "번개 내려치는 이펙트 삭제".
+- **영향**: 타이틀 우측 경계선 사라짐 + 번개 깜빡임 사라짐. 영상 + embers + h1 glow 만 남음. 회귀 11/11 통과.
+
+---
+
+## 2026-04-27 (오후) ▶ UX ▶ 자동 로그인 시스템 완전 폐기 — 매번 로그인 화면
+
+- **변경**:
+  1. **`Auth.login`** (32_auth.js:37, 69) — `localStorage.setItem('rof8_remember','1')` 두 줄 제거. `last_user`/`last_pw` 만 input prefill 용으로 보존.
+  2. **부팅 자동 진입 블록 폐기** (99_bootstrap.js:81-117) — `Backend.onAuthChange` 의 자동 진입 로직 완전 삭제. 대체: 부팅 직후 `Backend.logoutAuth()` 무조건 호출 → Supabase 잔존 세션·refresh token 청소.
+  3. **`rof8_remember` 잔존 플래그 정리**: 부팅 시 `localStorage.removeItem('rof8_remember')` (이전 버전 흔적 청소).
+  4. **`Game.logout`** (50_game_core.js): `rof8_remember` 제거 라인은 dead but safe → 그대로.
+- **이유**: 사용자 보고 (2026-04-27) — "여전히 게임 켜자마자 자동 로그인됨". 진단 결과 `rof8_remember='1'` 이 한 번 세팅되면 명시적 logout 전까지 영구 잔존 → 매 접속 자동 진입. 사용자 의도는 "매번 로그인 화면", 즉 opt-in 자체가 불필요.
+- **영향**:
+  - 사용자가 마지막 입력한 ID/PW 는 input 에 그대로 남아 클릭 한 번으로 로그인 가능 (UX 손실 최소).
+  - Supabase 잔존 세션 청소로 cloud 동기화 첫 호출이 약간 늦어짐 (signIn 다시 필요). 무시할 수준.
+  - 회귀 11/11 통과 (test_run.js 는 Auth.signup 직접 호출이라 영향 없음).
+- **이전 결정**: 2026-04-24 `feat(ops): 자동 로그인 opt-in` (43fbabd) 의 opt-in 정책 → 이번에 사용자 명시 폐기로 종결.
+
+---
+
+## 2026-04-27 (오후) ▶ 게임 메커닉 ▶ trait(특성) 시스템 완전 폐기 + deckview 설명창 → 카드 focus UI
+
+- **변경**:
+  1. **`js/15_data_traits.js` 폐기** → `trash/2026-04-27_traits_removed/` 이동. `index.html` script 태그 제거.
+  2. **호출자 정리**: `js/57_game_battle_ui.js` (battle-card stats 행 traitHtml 제거), `js/60_turnbattle.js` (action panel traitIcons 제거). `js/16_migration.js` 의 TRAITS_DB 가드 코드는 dead but safe → 그대로.
+  3. **`showCardDetail` 함수 폐기** (`js/53_game_deck.js`) — `#detail-modal` 텍스트 설명창 호출 제거. 자유점수(freePoints) 분배 grid + 비전 해제 UI 도 함께 폐기. 단련은 castle 에서.
+  4. **신규 `showDeckCardFocus(c)`**: 카드 클릭 시 중앙 V4 카드 1.6배 확대 + 보유 스킬카드 row (전투 char-focus 와 동형). `Battle.buildUnitSkillSet` 사용.
+  5. **`Battle.buildUnitSkillSet` export** (`js/60_turnbattle_v2.js`): 기존 IIFE 내부 함수를 `Battle.` 네임스페이스로 노출 → deckview·기타 모듈에서 호출 가능.
+  6. **신규 HTML/CSS** (`index.html` + `css/42_screens.css`): `#dv-focus` 오버레이 + `.dvf-main-card`/`.dvf-skill-row`/`.dvf-skill-card` 스타일. dim 배경 + V4 카드 확대 애니 + 스킬 row slide-in. 빈 곳 클릭 또는 닫기 버튼으로 종료.
+- **이유**: 사용자 결정 (2026-04-27).
+  - traits = 자동 부여되는 색깔 라벨일 뿐 게임 깊이를 만들지 못함. 14종 정의했지만 실제 효과는 코드에서 부분 구현. 정리 시 진짜 필요하면 패시브 스킬로 흡수.
+  - deckview 텍스트 설명창은 카드 게임 시각 일관성 깨뜨림 (전투는 카드 중심인데 마을은 텍스트 중심). 카드 클릭 = 카드 확대 = 시각 일관성.
+- **영향**: 14_data_skills/UNITS 의 `traits` 필드는 이제 무시됨 (어차피 동적 계산이라 데이터 변경 없음). castle 단련의 `freePoints +=5` 라인은 dead but safe → 영향 없음. 회귀 11/11 통과.
+- **이전 결정**: `design/battle-v2-migration.md` 의 "TRAITS_DB 가드" 보류 결정 → 이번에 사용자 명시 폐기로 종결.
+
+---
+
+## 2026-04-27 (오후) ▶ UX ▶ 사운드 패널 호버 펼침 폐기 + 설정창에 볼륨/풀스크린 통합
+
+- **변경**:
+  1. **HTML** (`#sound-panel`): 톱니 단일 버튼만 노출. 기존 `sound-toggle` / `vol-slider` / `vol-display` / `fullscreen-toggle` 4개 자식 모두 `#settings-modal` 안으로 이동.
+  2. **설정 모달**: "사운드" 섹션에 `.set-vol-row` (음소거 토글 + 슬라이더 + 표시) 추가. "디스플레이" 섹션 신설 → 전체화면 토글 버튼.
+  3. **CSS** (`30_components.css`): `.sound-panel:hover{ width:240px }` 펼침 규칙 + 호버 padding 변경 모두 제거. `.sound-panel` 은 44×44 고정 톱니 버튼. `.set-vol-row` 스타일 신규.
+  4. **`Settings._syncVolume`** (37_settings.js 신규): 모달 열릴 때마다 슬라이더·아이콘을 현재 `SFX.vol`/`SFX.on` 으로 동기화.
+- **이유**: 사용자 피드백 (2026-04-27) — "톱니 호버 시 슬라이더 안 나오게, 클릭 시 설정창에서 볼륨 조절". 호버 펼침이 거슬리고 컨트롤이 두 곳(panel/모달)에 분산되어 일관성 떨어짐.
+- **영향**: ID 그대로 유지 (`vol-slider`/`vol-display`/`sound-toggle`/`fullscreen-toggle`) → `30_sfx.js`/`31_ui.js`/`99_bootstrap.js` 의 `getElementById` 코드 무수정. 회귀 11/11 통과.
+
+---
+
+## 2026-04-27 (오후) ▶ 콘텐츠 ▶ NPC 누락분 2장 (temple, inn) 프롬프트 추가
+
+- **변경**: `game/design/npc_production_2026-04-27.txt` 작성. 신전 사제 + 여관 주인 하프바디 프롬프트.
+- **이유**: 누락된 NPC 이미지 2장 채우기. 마을 10개 건물 중 8개 NPC 이미지 보유, temple/inn 만 emoji fallback.
+- **양식**: `npc_production_2026-04-22.txt` 동일 (500×800 PNG 투명, 하프바디).
+
+---
+
+## 2026-04-27 (오후) ▶ 게임 메커닉 ▶ 영구 currentHp/curNrg 누적 소모 + 여관 휴식 + NRG 토스트
+
+- **변경**:
+  1. **deck 카드에 영구 `currentHp`/`curNrg` 필드 도입**. 전투 시작·종료 시 풀충전 안 함 — 종료 시점 상태 유지.
+  2. **launchBattle pCards 매핑**: `currentHp:c.currentHp ?? c.hp`, `curNrg:c.curNrg ?? 0`. 영구 필드 우선 사용.
+  3. **showBattleEnd 종료 동기화**: 출전 카드의 종료 HP/NRG 를 deck 영구 필드로 저장. 죽은 일반 유닛은 `injured=true` (영웅 제외).
+  4. **V4 카드 표시 보강** (40_cards.js:265-268): `unit.currentHp/curNrg` 가 있으면 그 값 표시. 마을·덱뷰에서 누적 소모 가시화.
+  5. **여관 휴식** (`showInn`): 살아있는 동료 전원 HP/NRG 풀 회복 — 무료, 부상자 제외. 회복 필요 동료 0명이면 만전 안내.
+  6. **교회 치료**: `injured` 해제 + `currentHp=hp` + `curNrg=nrg` 풀 reset 추가.
+  7. **NPC 다이얼로그**: inn `휴식하기 (HP·에너지 회복)` 라벨 + `showInn` 라우팅 (기존 `comingSoon` modal 폐기).
+  8. **NRG 부족 스킬 토스트** (60_turnbattle_v2.js onSkillClick): 흔들림 + 기존 → `UI.toast('⚡ 에너지 부족 — N 필요 (현재 M)', kind:'warn')` 추가.
+  9. **`UI.toast` helper 신설** (31_ui.js): 1.6초 자동 사라짐, kind: warn/error 지원. 62_ghost_pvp.js 의 미정의 호출도 살아남.
+  10. **`.is-unaffordable` opacity** .42→.68 + grayscale .7→.55: "투명해서 안 보임" 사용자 피드백 반영.
+- **이유**: 사용자 결정 (2026-04-27) — 풀 충전 자동화 폐기 → 자원 관리 게임 (StS 스타일). NRG 회복 = 여관, 부상 회복 = 교회로 분리.
+- **영향**: 기존 세이브 호환 (`?? c.hp` fallback). 부상 시스템 유지 (A안). 표시 일관성 마을→전투→마을. 회귀테스트 11/11 통과.
+- **이전 결정**: 2026-04-27 01:45 핸드오프의 "전투 시작·종료 모두 풀 충전" 방향에서 사용자 재검토로 **누적 소모 방향으로 전환**.
+
+---
+
 ## 2026-04-27 01:45 ▶ 세션 ▶ 핸드오프 저장 (타이틀 영상 + BGM 3그룹화 + 설정 모달 가독성·클릭 + 음악 메타 복구)
 
 - **변경**: 세션 상태를 `docs/handoff/handoff-2026-04-27-0145.md` 에 저장

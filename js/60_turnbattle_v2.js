@@ -792,6 +792,15 @@
         slotEl.classList.add('is-deny-shake');
         setTimeout(function(){ slotEl.classList.remove('is-deny-shake'); }, 420);
       }
+      // 2026-04-27: 토스트로 부족 사유 명시 — 흔들림만으로는 사용자가 이유 인지 못함.
+      const cost = sk.cost ?? 0;
+      const type = sk.costType || 'nrg';
+      const have = type === 'hp' ? (caster.currentHp ?? 0) : (caster.currentNrg ?? 0);
+      const label = type === 'hp' ? '생명력' : '에너지';
+      const icon = type === 'hp' ? '💔' : '⚡';
+      if(typeof UI !== 'undefined' && UI.toast){
+        UI.toast(`${icon} ${label} 부족 — ${cost} 필요 (현재 ${have})`, {kind:'warn'});
+      }
       return;
     }
     Battle.state.selectedSkill = sk;
@@ -1534,6 +1543,10 @@
     }
     return set;
   };
+
+  // 2026-04-27: deckview 의 카드 focus 화면이 같은 스킬셋(기본공격+시그니처+activeSkill) 을 표시하기 위해 export.
+  // unit 은 deck 영구 카드(c) 또는 v2unit 모두 받음 — 둘 다 .id/.element/.atk/.skillIds 등 동일 필드 보유.
+  Battle.buildUnitSkillSet = buildUnitSkillSet;
 
   Battle.startFromLegacyBS = async function(bs){
     if(!RoF.FEATURE || !RoF.FEATURE.CINEMATIC_BATTLE){

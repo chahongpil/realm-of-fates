@@ -20,6 +20,25 @@ RoF.UI={
   },
   closeModal(){document.getElementById('modal-overlay').classList.remove('active');},
 
+  // 2026-04-27: 가벼운 토스트 — 자원 부족·간단 안내. 자동 1.6초 후 사라짐.
+  // 동시 다발 호출 시 큐 안 쓰고 위로 쌓임 (Stack) — 최근 5개까지만 보존.
+  toast(msg, opts){
+    let stage=document.getElementById('toast-stage');
+    if(!stage){
+      stage=document.createElement('div');
+      stage.id='toast-stage';
+      document.body.appendChild(stage);
+    }
+    const t=document.createElement('div');
+    t.className='ui-toast';
+    if(opts && opts.kind) t.classList.add('toast-'+opts.kind);
+    t.textContent=msg;
+    stage.appendChild(t);
+    while(stage.children.length>5) stage.removeChild(stage.firstChild);
+    setTimeout(()=>{ t.classList.add('fade-out'); }, 1300);
+    setTimeout(()=>{ if(t.parentElement) t.parentElement.removeChild(t); }, 1700);
+  },
+
   // 2026-04-21: 전체화면 토글 (F 키 또는 ⛶ 버튼)
   // Fullscreen API — 진입 시 주소창/탭바 사라지고 창 꽉 사용 → fitViewport 가 자동 재계산.
   toggleFullscreen(){

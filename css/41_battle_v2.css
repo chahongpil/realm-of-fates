@@ -415,12 +415,14 @@
   border-style: dashed !important;
   cursor: not-allowed;
 }
-/* 자원 부족 — 클릭 가능하지만 시각적으로 억제. HS/Snap/LoR 공통 UX */
+/* 자원 부족 — 클릭 가능하지만 시각적으로 억제. HS/Snap/LoR 공통 UX.
+   2026-04-27: 사용자 피드백 — opacity .42 는 너무 투명해서 카드 내용 확인 어려움.
+   .68 + grayscale 완화로 "보이지만 억제" 명확화. */
 .bcf-skill-card.is-unaffordable{
-  opacity: .42;
-  filter: grayscale(.7) brightness(.75);
-  border-color: #553b3b !important;
-  box-shadow: 0 4px 12px rgba(120, 40, 40, .35);
+  opacity: .68;
+  filter: grayscale(.55) brightness(.85);
+  border-color: #6e3a3a !important;
+  box-shadow: 0 4px 12px rgba(140, 50, 50, .4);
   cursor: not-allowed;
 }
 .bcf-skill-card.is-unaffordable:hover{

@@ -24,8 +24,8 @@ body.game-mode:has(.game-root > #title-screen.active:not(.bg-demon)) > .title-bg
 body.game-mode > .game-root{position:relative;z-index:1;}/* video 위에 떠야 */
 /* 타이틀 angel 활성 시 game-root 자체도 투명 — 정중앙 영역까지 영상 노출. demon 분기는 dark 유지. */
 body.game-mode:has(.game-root > #title-screen.active:not(.bg-demon)) > .game-root{background:transparent;}
-#title-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.15) 60%,rgba(0,0,0,.4) 100%);pointer-events:none;}
-#title-screen::after{content:'';position:absolute;inset:0;pointer-events:none;animation:titleLightning 4s infinite;opacity:0;}
+/* 2026-04-27: ::before 어둠 그라디언트 제거 — game-root 영역만 어두워져 letterbox 와 brightness 경계선 생기던 문제. 영상 자체로 충분히 어두움.
+   ::after 번개 이펙트 제거 (사용자 결정) — JS 캔버스 bolts 와 함께 폐기. */
 .title-fire{position:absolute;bottom:0;left:0;width:100%;height:30%;background:linear-gradient(0deg,rgba(255,60,0,.08),transparent);pointer-events:none;animation:titleFire 3s infinite alternate;}
 #title-screen h1{font-size:var(--title-logo-size);color:var(--curr-gold-pale);text-shadow:0 0 40px rgba(230,204,128,.6),0 0 80px rgba(255,215,0,.3),0 3px 6px rgba(0,0,0,.9);margin-bottom:.5rem;letter-spacing:var(--title-logo-spacing);font-family:var(--font-title);font-weight:700;animation:titleGlow 3s infinite alternate;}
 #title-screen .subtitle{color:var(--text-2);font-size:var(--title-subtitle-size);margin-bottom:var(--title-subtitle-mb);}
@@ -1525,3 +1525,76 @@ body.game-mode #church-info{
   display:flex; justify-content:center;
 }
 #settings-modal .modal-buttons.set-close-row .btn{ min-width:120px; }
+
+/* ═══ DECKVIEW CARD FOCUS (2026-04-27) ═══
+   카드 클릭 시 중앙 확대 + 보유 스킬카드 표시. 전투 char-focus 와 동형이지만 deckview 컨테이너 내부에서 동작.
+   기존 #detail-modal (텍스트 설명창) 폐기 → 시각 일관성 강화. */
+body.game-mode #deckview-screen #dv-focus.dv-focus-overlay{
+  display:none;
+  position:absolute;inset:0;width:100%;height:100%;
+  z-index:300;pointer-events:auto;
+}
+body.game-mode #deckview-screen #dv-focus.dv-focus-overlay.active{display:block;}
+.dvf-backdrop{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at center, rgba(0,0,0,.78) 0%, rgba(0,0,0,.92) 70%);
+  pointer-events:auto;
+  animation:dvfBackdropIn .22s ease-out;
+}
+.dvf-main-card{
+  position:absolute;left:50%;top:48%;
+  transform:translate(-50%,-50%);
+  z-index:2;pointer-events:auto;
+  /* V4 카드 1.6배 확대 — 전투 focus(1.8x) 와 비슷하지만 약간 작게 (deckview 화면이 더 좁음) */
+  --card-v4-w:336px;
+  animation:dvfCardIn .26s cubic-bezier(.25,.9,.3,1);
+  filter:drop-shadow(0 12px 32px rgba(0,0,0,.85)) drop-shadow(0 0 28px rgba(255,200,80,.35));
+}
+.dvf-skill-row{
+  position:absolute;left:50%;bottom:8%;
+  transform:translateX(-50%);
+  display:flex;gap:10px;justify-content:center;
+  z-index:3;pointer-events:auto;
+  max-width:90%;flex-wrap:wrap;
+  animation:dvfSkillIn .3s ease-out .1s both;
+}
+.dvf-skill-card{
+  width:140px;height:200px;
+  border-radius:8px;
+  background:linear-gradient(180deg,#3a4a6e,#1a2240);
+  border:2px solid #88a8e0;
+  box-shadow:0 6px 18px rgba(0,0,0,.7),0 0 14px rgba(136,168,224,.25);
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:8px;cursor:default;
+}
+.dvf-skill-card .bsc-card-img{position:absolute;inset:0;}
+.dvf-skill-card .bsc-card-img img{width:100%;height:100%;object-fit:cover;filter:brightness(.92);}
+.dvf-skill-card .bsc-cost{
+  position:absolute;top:6px;right:8px;
+  font-size:.85rem;font-weight:700;color:#ffe78a;
+  text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 6px rgba(0,0,0,.7);
+  z-index:2;
+}
+.dvf-skill-card .bsc-name{
+  position:relative;z-index:2;
+  color:#fff;font-size:.85rem;font-weight:700;text-align:center;
+  text-shadow:0 1px 2px rgba(0,0,0,.9);margin-bottom:4px;
+}
+.dvf-skill-card .bsc-desc{
+  position:relative;z-index:2;
+  color:#e8eaf0;font-size:.7rem;line-height:1.35;text-align:center;
+  text-shadow:0 1px 2px rgba(0,0,0,.9);
+  background:rgba(0,0,0,.4);padding:4px 6px;border-radius:4px;
+}
+.dvf-skill-empty{
+  color:#aaa;font-size:.85rem;padding:20px 30px;
+  background:rgba(0,0,0,.55);border:1px solid #555;border-radius:6px;
+}
+.dvf-close-row{
+  position:absolute;top:14px;right:18px;
+  z-index:4;pointer-events:auto;
+}
+@keyframes dvfBackdropIn{0%{opacity:0;}100%{opacity:1;}}
+@keyframes dvfCardIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.6);}100%{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+@keyframes dvfSkillIn{0%{opacity:0;transform:translateX(-50%) translateY(20px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}

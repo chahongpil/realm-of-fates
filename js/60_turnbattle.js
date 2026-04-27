@@ -128,14 +128,13 @@ RoF.TurnBattle ={
     this._currentUnit=unit;this._activeCardIdx=-1;
     const act=document.getElementById('tb-actions');act.style.display='';act.innerHTML='';
     const img=getCardImg(unit);
-    const traits=getTraits(unit);
-    const traitIcons=traits.map(tid=>{const tr=TRAITS[tid];return tr?`<span style="color:${tr.color};">${tr.icon}</span>`:''}).join(' ');
+    // 2026-04-27: trait 시스템 폐기 (사용자 결정).
 
     // Character portrait top
     act.innerHTML=`
       <div class="ta-selected">
         ${img?`<img src="${img}">`:`<div style="font-size:2.5rem;">${unit.icon}</div>`}
-        <div class="ta-name">${unit.isHero?'⭐ ':''}${unit.name} ${traitIcons}</div>
+        <div class="ta-name">${unit.isHero?'⭐ ':''}${unit.name}</div>
         <div class="ta-stats">♥${Math.ceil(unit.currentHp)}/${unit.maxBHp} ⚔${unit.atk} 🛡${unit.def||0} 💨${unit.spd} ⚡${Math.floor(unit.curNrg||0)}</div>
       </div>
       <div class="ta-hand" id="ta-hand"></div>

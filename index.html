@@ -31,7 +31,7 @@
 <script defer src="js/12_data_skills.js"></script>
 <script defer src="js/13_data_relics.js"></script>
 <script defer src="js/14_data_images.js"></script>
-<script defer src="js/15_data_traits.js"></script>
+<!-- 15_data_traits.js: 2026-04-27 사용자 결정으로 trait 시스템 폐기 → trash/2026-04-27_traits_removed/ 이동 -->
 <!-- PHASE 3 시네마틱 전투 v2 — 마이그레이션 + 설정 + 엔진 (플래그 OFF 기본) -->
 <script defer src="js/16_migration.js"></script>
 <script defer src="js/config_battle.js"></script>
@@ -67,13 +67,10 @@
 </head>
 <body>
 
-<!-- SOUND TOGGLE (2026-04-23: settings-btn 맨 앞으로 이동. 접힘 상태의 대표 아이콘 = ⚙️, hover 시 음향 옵션 펼침) -->
+<!-- SETTINGS LAUNCHER (2026-04-27: 호버 펼침 폐기 — 톱니 단일 버튼.
+     볼륨/음소거/전체화면은 설정 모달 안으로 이동. 사용자 의도: 톱니 호버 시 슬라이더 안 나옴, 클릭 시 모달. -->
 <div class="sound-panel" id="sound-panel">
   <span class="sp-btn sp-settings" id="settings-btn" data-action="settings.open" onclick="if(window.RoF&&RoF.Settings&&RoF.Settings.open)RoF.Settings.open()" title="설정">⚙️</span>
-  <span class="sp-btn" id="sound-toggle" data-action="sfx.toggle">🔊</span>
-  <input type="range" id="vol-slider" min="0" max="100" value="40" data-action-input="sfx.setVolume">
-  <span class="sp-vol" id="vol-display">40</span>
-  <span class="sp-btn sp-fs" id="fullscreen-toggle" data-action="ui.toggleFullscreen" title="전체화면 (F)">⛶</span>
 </div>
 
 <!-- TITLE -->
@@ -212,8 +209,17 @@
       <button class="btn btn-s" data-action="backend.showLinkModal" title="이메일로 다른 기기와 연결">☁️ 클라우드 연결</button>
     </div>
     <div class="set-section-title">사운드</div>
+    <div class="set-vol-row">
+      <span class="sp-btn" id="sound-toggle" data-action="sfx.toggle" title="음소거 토글">🔊</span>
+      <input type="range" id="vol-slider" min="0" max="100" value="40" data-action-input="sfx.setVolume" title="볼륨">
+      <span class="sp-vol" id="vol-display">40</span>
+    </div>
     <div class="modal-buttons set-vert">
       <button class="btn btn-s set-bgm-btn" data-action="settings.toggleBgm">🔊 BGM 끄기</button>
+    </div>
+    <div class="set-section-title">디스플레이</div>
+    <div class="modal-buttons set-vert">
+      <button class="btn btn-s sp-fs" id="fullscreen-toggle" data-action="ui.toggleFullscreen" title="전체화면 (F)">⛶ 전체화면 토글</button>
     </div>
     <div class="set-section-title">세션</div>
     <div class="modal-buttons set-vert">
@@ -287,6 +293,15 @@
     <div id="codex-grid" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:8px;align-content:flex-start;"></div>
   </div>
   <div style="padding:8px;text-align:center;"><button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button></div>
+
+  <!-- 2026-04-27: 카드 클릭 시 중앙 확대 + 보유 스킬카드 표시 (전투 char-focus 와 동형).
+       이전 #detail-modal (텍스트 설명창) 폐기. dvf-* CSS 는 css/42_screens.css 의 deckview 섹션. -->
+  <div id="dv-focus" class="dv-focus-overlay" onclick="if(event.target===this)RoF.Game.closeDeckCardFocus()">
+    <div class="dvf-backdrop"></div>
+    <div class="dvf-main-card"></div>
+    <div class="dvf-skill-row"></div>
+    <div class="dvf-close-row"><button class="btn btn-s" data-action="game.closeDeckCardFocus">닫기</button></div>
+  </div>
 </div>
 
 <!-- CASTLE SCREEN -->

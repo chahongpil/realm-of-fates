@@ -166,8 +166,7 @@ Object.assign(RoF.Game, {
       const d=document.createElement('div');d.className=`battle-card ${c.rarity||'bronze'} ${c.currentHp<=0?'dead':''} ${c.isHero?'hero-card':''}`;d.id=`bc-${c.uid}`;
       const hp=Math.max(0,(c.currentHp/c.maxBHp)*100);const hpC=hp>50?'#44cc66':hp>25?'#ccaa44':'#cc4444';
       const eqHtml=(c.equips||[]).map(e=>`<span>${e.icon}</span>`).join('');
-      const traits=getTraits(c);
-      const traitHtml=traits.map(tid=>{const tr=TRAITS[tid];return tr?`<span style="color:${tr.color};" title="${tr.desc}">${tr.icon}</span>`:''}).join('');
+      // 2026-04-27: trait 시스템 폐기 (사용자 결정).
       const imgSrc=getCardImg(c);
       // 상태효과 배지 (지속 턴 숫자 표시) — StS2 관찰 노트 반영 2026-04-12
       const stts=[];
@@ -182,7 +181,7 @@ Object.assign(RoF.Game, {
         <div class="bc-left"><div class="bc-icon">${imgSrc?`<img src="${imgSrc}">`:c.icon}</div></div>
         <div class="bc-right">
           <div class="bc-name">${c.isHero?'⭐':''}${c.name} <span style="color:var(--curr-gold);font-size:.45rem;">Lv${c.level||1}</span></div>
-          <div class="bc-stats"><span class="st-atk">⚔${c.atk}</span><span class="st-hp">♥${Math.max(0,Math.ceil(c.currentHp))}</span><span class="st-nrg">⚡${Math.floor(c.curNrg||0)}</span>${traitHtml?` ${traitHtml}`:''}</div>
+          <div class="bc-stats"><span class="st-atk">⚔${c.atk}</span><span class="st-hp">♥${Math.max(0,Math.ceil(c.currentHp))}</span><span class="st-nrg">⚡${Math.floor(c.curNrg||0)}</span></div>
           <div class="bc-bars"><div class="bc-bar"><div class="bc-bar-fill" style="width:${hp}%;background:${hpC}"></div></div>
           <div class="bc-bar"><div class="bc-bar-fill" style="width:${Math.min(100,((c.curNrg||0)/(c.skillNrg||10))*100)}%;background:var(--stat-nrg)"></div></div></div>
         </div>${eqHtml?`<div class="bc-equips" style="position:absolute;top:1px;right:2px;">${eqHtml}</div>`:''}${sttHtml}`;

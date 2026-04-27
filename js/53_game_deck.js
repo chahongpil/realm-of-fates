@@ -11,7 +11,7 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
     }
     RoF.__gameKeys.add(k);
   }
-})(["_dvTab", "showDeckTab", "showCodexTab", "_codexFilter", "renderCodex", "showCodexDetail", "showDeckView", "equipOwnedSkill", "showCardDetail", "showRelicDetail", "equipSkill"]);
+})(["_dvTab", "showDeckTab", "showCodexTab", "_codexFilter", "renderCodex", "showCodexDetail", "showDeckView", "equipOwnedSkill", "showDeckCardFocus", "closeDeckCardFocus", "showRelicDetail", "equipSkill"]);
 
 Object.assign(RoF.Game, {
   _dvTab:'deck',
@@ -119,7 +119,8 @@ Object.assign(RoF.Game, {
     g.insertAdjacentHTML('beforebegin',`<div class="dv-title">👥 동료 (${ownedUnits}/${totalUnits})</div>`);
     this.deck.forEach(c=>{
       const el=mkCardElV4(c);  // Step 5A-1: V4 프레임 (2026-04-21)
-      el.onclick=()=>this.showCardDetail(c);
+      // 2026-04-27: 클릭 → 중앙 확대 focus (전투 char-focus 와 동형). 기존 showCardDetail 모달 폐기.
+      el.onclick=()=>this.showDeckCardFocus(c);
       g.appendChild(el);
     });
     const emptyU=Math.max(0,Math.min(6,totalUnits-ownedUnits));
@@ -197,105 +198,55 @@ Object.assign(RoF.Game, {
     modal.classList.add('active');
   },
 
-  showCardDetail(c){
-    const m=document.getElementById('detail-modal');
-    const ct=document.getElementById('detail-content');
-    const equips=c.equips||[];
-    const gp=c.growthPts||{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0};
-    const fp=c.freePoints||0;
-    const elemColor=ELEM_COLOR[c.element]||'#aaa';
-    ct.innerHTML=`
-      <div style="text-align:center;margin-bottom:10px;">
-        <div style="font-size:2.5rem;">${c.icon}</div>
-        <div style="font-size:1.2rem;color:#fff;font-weight:bold;">${c.isHero?'⭐ ':''}${c.name}</div>
-        ${c.heroClass?`<div style="font-size:.85rem;color:#ccc;">${c.heroClass}</div>`:''}
-        <div style="font-size:.8rem;color:#aaa;">${c.type||''} · ${ROLE_L[c.role]||''} · ${R_LABEL[c.rarity]||''}</div>
-        <div style="font-size:.8rem;"><span style="color:${elemColor};">${ELEM_ICON[c.element]||''} ${ELEM_L[c.element]||'무속성'}</span> · ${c.race==='human'?'인간':c.race||'?'}</div>
-        <div style="font-size:.75rem;color:#ffd700;">Lv.${c.level||1} | 경험: ${c.xp||0}/${(c.level||1)*10} | ⭐ ${c.honor||0}명예</div>
-        <div style="font-size:.7rem;color:#ffaa44;">지휘권: ${c.isHero?'무료(자동)':(c.level||1)} | ${c.range==='ranged'?'🏹 원거리':'⚔️ 근접'}</div>
-        ${fp>0?`<div style="font-size:.85rem;color:#44ff88;margin-top:4px;">🟢 배분 가능 포인트: ${fp}</div>`:''}
-      </div>
-      <div style="border-top:1px solid #333;padding-top:8px;margin-bottom:8px;">
-        <div style="font-size:.85rem;color:#fff;margin-bottom:4px;">📊 능력치 <span style="font-size:.7rem;color:#888;">(기본+성장)</span></div>
-        <div id="stat-alloc-grid"></div>
-      </div>
-      <div style="border-top:1px solid #333;padding-top:8px;margin-bottom:8px;">
-        <div style="font-size:.85rem;color:#fff;margin-bottom:4px;">🏷️ 특성</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">${getTraits(c).map(tid=>{const tr=TRAITS[tid];return tr?`<span style="font-size:.75rem;padding:2px 8px;border-radius:4px;background:rgba(0,0,0,.4);border:1px solid ${tr.color};color:${tr.color};">${tr.icon} ${tr.name}: ${tr.desc}</span>`:''}).join('')||'<span style="color:#555;font-size:.75rem;">없음</span>'}</div>
-        <div style="font-size:.85rem;color:#fff;margin-bottom:4px;">⚡ 고유 비전</div>
-        <div style="font-size:.75rem;color:#ddd;">${c.skillDesc||'없음'}</div>
-        ${c.bonusTrigger?`<div style="font-size:.7rem;color:#ff88cc;margin-top:4px;">🎲 보너스: ${c.bonusTrigger.desc}</div>`:''}
-        ${c.action&&c.action!=='attack'?`<div style="font-size:.7rem;color:#ffaa44;margin-top:2px;">⚠️ 행동: ${({none:'공격불가 (피격 전용)',counter:'반격 전용',skill_only:'비전만 사용'})[c.action]||c.action}</div>`:''}
-      </div>
-      <div style="border-top:1px solid #333;padding-top:8px;">
-        <div style="font-size:.85rem;color:#fff;margin-bottom:4px;">🔧 장착 장비/비전 (${equips.length}개)</div>
-        <div id="detail-equips"></div>
-      </div>
-    `;
-    // Stat allocation grid
-    const sg=document.getElementById('stat-alloc-grid');
-    const statDefs=[
-      {key:'atk',label:'⚔ 공격',color:'#ff6644',val:c.atk,grow:gp.atk||0},
-      {key:'hp',label:'♥ 체력',color:'#44cc66',val:c.hp,grow:gp.hp||0},
-      {key:'def',label:'🛡 방어',color:'#aaddff',val:c.def||0,grow:gp.def||0},
-      {key:'spd',label:'💨 스피드',color:'#66ccff',val:c.spd||0,grow:gp.spd||0},
-      {key:'nrg',label:'⚡ 에너지',color:'#ffdd44',val:c.nrg||0,grow:gp.nrg||0},
-      {key:'luck',label:'🍀 행운',color:'#44ff88',val:c.luck||0,grow:gp.luck||0},
-      {key:'eva',label:'💫 회피',color:'#ff88cc',val:c.eva||0,grow:gp.eva||0},
-    ];
-    statDefs.forEach(s=>{
-      const row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:6px;padding:3px 0;font-size:.8rem;';
-      row.innerHTML=`<span style="color:${s.color};width:90px;">${s.label}</span>
-        <span style="color:#fff;width:30px;text-align:right;">${s.val}</span>
-        <span style="color:#44ff88;font-size:.7rem;width:40px;">${s.grow>0?'(+'+s.grow+')':''}</span>`;
-      if(fp>0){
-        const btn=document.createElement('button');
-        btn.className='btn btn-s btn-green';btn.style.cssText='padding:1px 8px;font-size:.65rem;margin-left:auto;';
-        btn.textContent='+1';
-        btn.onclick=()=>{
-          if(!c.freePoints||c.freePoints<=0)return;
-          c.freePoints--;
-          if(!c.growthPts)c.growthPts={atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0};
-          c.growthPts[s.key]=(c.growthPts[s.key]||0)+1;
-          // Apply stat immediately
-          if(s.key==='hp'){c.hp+=1;c.maxHp=(c.maxHp||c.hp)+1;}
-          else{c[s.key]=(c[s.key]||0)+1;}
-          SFX.play('click');this.persist();this.checkTutorial('first_stat_alloc');this.showCardDetail(c);
-        };
-        row.appendChild(btn);
-      }
-      sg.appendChild(row);
-    });
-    // Non-growable stats
-    const fixedStats=document.createElement('div');
-    fixedStats.style.cssText='display:flex;flex-wrap:wrap;gap:6px;font-size:.75rem;margin-top:6px;padding-top:6px;border-top:1px solid #222;';
-    fixedStats.innerHTML=`<span style="color:#88ddff;">🔮 마법회피 ${c.meva||0}</span>
-      <span style="color:#aaddff;">🛡️ 보호막 ${c.shield||0}</span>
-      <span class="st-hp">💗 체력회복 ${c.hpReg||0}/턴</span>
-      <span class="st-nrg">🔋 에너지회복 ${c.nrgReg||0}/턴</span>`;
-    sg.appendChild(fixedStats);
+  // 2026-04-27: showCardDetail (detail-modal 텍스트 설명창) 폐기.
+  //   대체: showDeckCardFocus — 전투 char-focus 와 동형 UI (중앙 V4 카드 확대 + 보유 스킬카드 row).
+  //   trait 시스템 / freePoints 분배 / 비전 해제 버튼 모두 폐기. 단련은 castle 에서.
+  showDeckCardFocus(c){
+    const overlay = document.getElementById('dv-focus');
+    if(!overlay) return;
+    const mainCard = overlay.querySelector('.dvf-main-card');
+    const skillRow = overlay.querySelector('.dvf-skill-row');
+    if(!mainCard || !skillRow) return;
 
-    const eqDiv=document.getElementById('detail-equips');
-    if(!equips.length){
-      eqDiv.innerHTML='<div style="color:#555;font-size:.75rem;">장착된 것 없음</div>';
+    // 1) 중앙 카드 — V4 컴포넌트로 currentHp/curNrg 반영해서 큰 사이즈로 렌더.
+    mainCard.innerHTML='';
+    const cardEl = mkCardElV4(c);
+    mainCard.appendChild(cardEl);
+
+    // 2) 스킬 row — 전투 char-focus 와 동일하게 buildUnitSkillSet 결과 표시.
+    //    Battle.buildUnitSkillSet 가 export 되어 있으면 사용 (정확). 미정의 시 기본 스킬만 표시.
+    let skills = [];
+    try {
+      if(window.Battle && typeof Battle.buildUnitSkillSet === 'function'){
+        skills = Battle.buildUnitSkillSet(c).filter(s=>s && s.passive!==true);
+      }
+    } catch(e){ skills = []; }
+
+    skillRow.innerHTML='';
+    if(!skills.length){
+      const empty=document.createElement('div');
+      empty.className='dvf-skill-empty';
+      empty.textContent='전투 시 사용할 스킬이 없습니다.';
+      skillRow.appendChild(empty);
     } else {
-      equips.forEach((eq,i)=>{
-        const row=document.createElement('div');
-        row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid #222;';
-        row.innerHTML=`<span style="font-size:.8rem;">${eq.icon} ${eq.name}</span>`;
-        const btn=document.createElement('button');
-        btn.className='btn btn-s btn-red';btn.style.cssText='padding:2px 8px;font-size:.65rem;';
-        btn.textContent='해제';
-        btn.onclick=()=>{
-          c.equips.splice(i,1);
-          this.persist();SFX.play('click');
-          this.showCardDetail(c);
-        };
-        row.appendChild(btn);eqDiv.appendChild(row);
+      skills.forEach(sk=>{
+        const slot=document.createElement('div');
+        slot.className='dvf-skill-card';
+        const skImg = (typeof Battle !== 'undefined' && Battle.resolveImg) ? Battle.resolveImg(sk.imgKey) : null;
+        slot.innerHTML=`
+          <div class="bsc-card-img">${skImg?`<img src="${skImg}" alt="">`:''}</div>
+          <div class="bsc-cost">⚡${sk.cost ?? 0}${sk.tpCost > 1 ? ' TP' + sk.tpCost : ''}</div>
+          <div class="bsc-name">${sk.name||''}</div>
+          <div class="bsc-desc">${sk.desc||''}</div>`;
+        skillRow.appendChild(slot);
       });
     }
-    m.classList.add('active');
+
+    overlay.classList.add('active');
+  },
+  closeDeckCardFocus(){
+    const overlay = document.getElementById('dv-focus');
+    if(overlay) overlay.classList.remove('active');
   },
 
   showRelicDetail(r){

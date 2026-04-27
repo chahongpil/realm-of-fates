@@ -27,6 +27,8 @@
       Settings._syncCloudStatus();
       // BGM 상태 라벨 동기화
       Settings._syncBgmLabel();
+      // 2026-04-27: 볼륨 슬라이더·음소거 아이콘을 현재 SFX 상태로 동기화 (모달 열 때마다 갱신).
+      Settings._syncVolume();
       m.classList.add('active');
     },
     close(){
@@ -63,6 +65,19 @@
       if(!btn) return;
       const on = !!(window.SFX && SFX.on);
       btn.textContent = on ? '🔊 BGM 끄기' : '🔇 BGM 켜기';
+    },
+    _syncVolume(){
+      const slider = document.getElementById('vol-slider');
+      const display = document.getElementById('vol-display');
+      const toggle = document.getElementById('sound-toggle');
+      const vol01 = (window.SFX && typeof SFX.vol === 'number') ? SFX.vol : 0.4;
+      const v = Math.round(vol01 * 100);
+      if(slider) slider.value = v;
+      if(display) display.textContent = v;
+      if(toggle){
+        const on = !!(window.SFX && SFX.on);
+        toggle.textContent = !on ? '🔇' : v === 0 ? '🔇' : v < 30 ? '🔉' : '🔊';
+      }
     },
     _syncCloudStatus(){
       const el = document.querySelector('#' + MODAL_ID + ' .set-cloud-status');

@@ -317,10 +317,13 @@ Object.assign(RoF.Game, {
       return;
     }
     if(!bs.pCards){
-      bs.pCards=bs.battleDeck.map(c=>({...c,currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'player',row:c.formRow||'front',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:0,curShield:c.shield||0,burn:0}));
+      // 2026-04-27: deck 카드의 영구 currentHp/curNrg 가 있으면 그 값으로 시작 (전투 종료 상태 유지).
+      // 휴식(여관) 또는 부상자 치료(교회) 후에는 영구값이 풀로 reset 되어 다시 풀 시작.
+      bs.pCards=bs.battleDeck.map(c=>({...c,currentHp:c.currentHp!=null?c.currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'player',row:c.formRow||'front',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:c.curNrg!=null?c.curNrg:0,curShield:c.shield||0,burn:0}));
       bs.battleRelics.forEach(r=>applyRelicBattle(r,bs.pCards));
       const rawE=this.genEnemy();
       rawE.forEach(c=>{c.row=(c.type==='전사'||c.type==='야수')?'front':'back';});
+      // 적은 매 전투 새로 생성되므로 풀 HP/NRG=0 (기존 그대로).
       bs.eCards=rawE.map(c=>({...c,currentHp:c.hp,maxBHp:c.maxHp||c.hp,side:'enemy',frozen:0,poisoned:0,revived:false,invincible:0,curNrg:0,curShield:c.shield||0,burn:0}));
       this.enemyMirrorDeploy(bs);
     }

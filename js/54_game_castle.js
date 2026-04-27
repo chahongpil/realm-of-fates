@@ -106,8 +106,9 @@ Object.assign(RoF.Game, {
       const revBtn=document.createElement('button');revBtn.className='btn btn-s btn-green';
       revBtn.textContent=`✨ 치료 (${cost}💰)`;revBtn.disabled=this.gold<cost;
       revBtn.onclick=()=>{
-        UI.modal('✨ 치료 확인',`${c.icon} ${c.name}을(를) ${cost}💰로 치료하시겠습니까?\n\n부상이 치유되어 다시 출전할 수 있습니다.`,()=>{
-          this.gold-=cost;c.injured=false;
+        UI.modal('✨ 치료 확인',`${c.icon} ${c.name}을(를) ${cost}💰로 치료하시겠습니까?\n\n부상이 치유되고 HP/에너지가 만전으로 회복됩니다.`,()=>{
+          // 2026-04-27: injured 해제 + 영구 currentHp/curNrg 풀 reset (전투 종료 시 깎인 상태 폐기).
+          this.gold-=cost;c.injured=false;c.currentHp=c.hp;c.curNrg=c.nrg||0;
           SFX.play('heal');
           const flash=document.createElement('div');flash.className='upgrade-flash';document.body.appendChild(flash);setTimeout(()=>flash.remove(),600);
           this.persist();this.showChurch();
@@ -146,8 +147,30 @@ Object.assign(RoF.Game, {
     UI.modal('🔮 신전','제1세대 6 신을 모신 신전입니다.\n\n역대 점유자 회랑 · 명예의 전당 · 꺼진 신좌의 방이 곧 열립니다.\n\n(신전 시스템 준비 중)',null);
   },
 
+  // 2026-04-27: 여관 = 휴식 → 살아있는 동료 전원 HP/NRG 풀 회복 (무료, 부상자 제외).
+  // 부상자(죽은 자) 회복은 교회 골드 치료. 여관은 살아있는 동료의 누적 소모만 회복.
   showInn(){
-    UI.modal('🛏️ 여관','여행자들이 잠시 쉬어 가는 곳입니다.\n\n휴식 · 정보 수집 · 연회 기능이 곧 열립니다.\n\n(여관 시스템 준비 중)',null);
+    const alive=this.deck.filter(c=>!c.injured);
+    const needRest=alive.filter(c=>{
+      const hpCur=c.currentHp!=null?c.currentHp:c.hp;
+      const nrgCur=c.curNrg!=null?c.curNrg:0;
+      return hpCur<c.hp||nrgCur<(c.nrg||0);
+    });
+    if(needRest.length===0){
+      UI.modal('🛏️ 여관','동료 전원이 만전입니다.\n\n다음 전투를 준비하세요.',null);
+      return;
+    }
+    const lines=needRest.map(c=>{
+      const hpCur=c.currentHp!=null?c.currentHp:c.hp;
+      const nrgCur=c.curNrg!=null?c.curNrg:0;
+      return `• ${c.icon||'🗡️'} ${c.name} — HP ${hpCur}/${c.hp}, ⚡${nrgCur}/${c.nrg||0}`;
+    }).join('\n');
+    UI.modal('🛏️ 여관 휴식',`${needRest.length}명의 동료가 휴식이 필요합니다.\n\n${lines}\n\n잠을 청해 만전으로 회복하시겠습니까?`,()=>{
+      alive.forEach(c=>{c.currentHp=c.hp;c.curNrg=c.nrg||0;});
+      SFX.play('heal');
+      this.persist();
+      UI.modal('🛏️ 휴식 완료','동료 전원이 만전으로 회복되었습니다.',null);
+    });
   },
 
   // ── TUTORIAL ──

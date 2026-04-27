@@ -166,15 +166,19 @@ Object.assign(RoF.Game, {
     } // end if(won) 4지선다
 
     // === ROGUELIKE RESET — restore stats but keep XP/honor/level ===
-    // Track which deployed units died in battle
+    // 2026-04-27: 전투 종료 시점의 currentHp/curNrg 를 deck 영구 필드로 동기화.
+    // 죽은 유닛은 injured=true (교회 치료 시 풀 reset), 살아있는 유닛은 종료 상태 유지 (여관 휴식으로 회복).
     const deadUids=new Set();
+    const endStateMap={}; // uid -> {currentHp, curNrg}
     if(this.battleState){
       const bs=this.battleState;
       const deployed=bs.battleDeck||[];
       const pCards=bs.pCards||[];
       deployed.forEach(dc=>{
         const bc=pCards.find(p=>p.uid===dc.uid);
-        if(bc&&bc.currentHp<=0&&!bc.isHero)deadUids.add(bc.uid);
+        if(!bc)return;
+        endStateMap[bc.uid]={currentHp:Math.max(0,bc.currentHp||0),curNrg:Math.max(0,bc.curNrg||0)};
+        if(bc.currentHp<=0&&!bc.isHero)deadUids.add(bc.uid);
       });
     }
     if(this._deckSnapshot){
@@ -191,7 +195,13 @@ Object.assign(RoF.Game, {
           const gained=c.level-prevLv;
           if(gained>0){c.atk+=gained;c.hp+=gained*2;c.maxHp+=gained*2;c.def+=gained;}
         }
-        // Mark dead deployed units as injured
+        // 종료 시점 HP/NRG 영구 동기화 — 출전 안 한 카드는 건드리지 않음.
+        const end=endStateMap[c.uid];
+        if(end){
+          c.currentHp=Math.min(end.currentHp,c.hp);
+          c.curNrg=Math.min(end.curNrg,c.nrg||0);
+        }
+        // 영웅은 죽어도 injured 안 됨 (게임 끝). injured 는 일반 유닛만.
         if(deadUids.has(c.uid)){c.injured=true;}
       });
       this._deckSnapshot=null;

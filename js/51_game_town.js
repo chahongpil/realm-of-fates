@@ -126,10 +126,9 @@ Object.assign(RoF.Game, {
     },
     inn: {
       icon:'🛏️', name:'여관 주인',
-      greet:'어서 오세요, 여행자여.',
+      greet:'어서 오세요, 여행자여. 잠시 쉬어 가시지요.',
       choices:[
-        {label:'휴식하기', action:'modal', comingSoon:true,
-          modal:{title:'🛏️ 휴식', body:'여관에서 휴식하는 기능이 곧 열립니다.\n\n(휴식 시스템 준비 중)'}},
+        {label:'휴식하기 (HP·에너지 회복)', action:'showInn'},
         {label:'정보 듣기', action:'modal', comingSoon:true,
           modal:{title:'🛏️ 여관 소문', body:'먼 곳의 소문과 정보가 곧 들려올 것입니다.\n\n(정보 시스템 준비 중)'}},
         {label:'대화하기',  action:'chat'},

@@ -263,9 +263,11 @@ RoF.CardV4Component = (function(){
     const crit = unit.luck != null ? unit.luck : 0;
     const eva = unit.eva != null ? unit.eva : 0;
     const hpMax = unit.maxHp || unit.hp || 1;
-    const hpCur = unit.hp != null ? unit.hp : hpMax;
+    // 2026-04-27: 영구 currentHp/curNrg 가 있으면 그 값 표시 (전투 종료 상태 마을에서 보임).
+    // 신규 영입/생성 시점에는 currentHp 없음 → hp(=max) fallback. curNrg 없음 → 0 (charge 시작).
+    const hpCur = unit.currentHp != null ? unit.currentHp : (unit.hp != null ? unit.hp : hpMax);
     const nrgMax = unit.nrg || 0;
-    const nrgCur = 0;  // 영입/생성 시점 charge 0
+    const nrgCur = unit.curNrg != null ? unit.curNrg : 0;
     const hpPct = Math.max(0, Math.min(100, Math.round(hpCur / hpMax * 100)));
     const nrgPct = nrgMax > 0 ? Math.max(0, Math.min(100, Math.round(nrgCur / nrgMax * 100))) : 0;
     const desc = stripTokens(unit.skillDesc || unit.desc || '');

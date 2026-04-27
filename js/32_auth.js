@@ -33,8 +33,9 @@ RoF.Auth={
     if(db[id]){
       if(db[id].pw!==pw){m.className='auth-msg error';m.textContent='암호가 틀렸습니다';return;}
       m.className='auth-msg success';m.textContent=`영웅이여, 돌아오셨군요!`;
+      // 2026-04-27: 자동 로그인 폐기 (사용자 결정) — last_user/last_pw 는 로그인 화면 input prefill 용으로만 보존,
+      // rof8_remember 플래그는 더 이상 세팅하지 않음. 매 부팅 시 로그인 화면.
       localStorage.setItem('rof8_last_user',id);localStorage.setItem('rof8_last_pw',pw);
-      localStorage.setItem('rof8_remember','1');  // 다음 접속 자동 진입 허용 (로그아웃 시 제거)
       this.user=id;SFX.init();
       // S4 백그라운드: Supabase 로그인 (또는 자동 signup). 성공 시 saveProgress 동기화.
       if(Backend && Backend.isReady){
@@ -65,8 +66,8 @@ RoF.Auth={
       localDb[id] = {pw, save};
       this.save(localDb);
       m.className='auth-msg success';m.textContent='영웅이여, 돌아오셨군요!';
+      // 2026-04-27: 자동 로그인 폐기 — last_user/last_pw 는 input prefill 용 보존만.
       localStorage.setItem('rof8_last_user',id);localStorage.setItem('rof8_last_pw',pw);
-      localStorage.setItem('rof8_remember','1');  // 다음 접속 자동 진입 허용
       this.user=id;SFX.init();
       setTimeout(()=>Game.load(save),300);
     });

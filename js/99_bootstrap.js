@@ -74,45 +74,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Enter 키 바인딩 → 99_bindings.js 의 data-action-enter 로 이관됨
 
   // ── 0. Backend 초기화 (S1: Supabase, 실패해도 로컬 폴백) ──
-  // 자동 로그인 정책 (2026-04-24 opt-in 전환):
-  //   - 기본은 "매번 로그인 화면". 로그인 성공 시 `rof8_remember='1'` 세팅 → 다음 접속만 자동 진입.
-  //   - 로그아웃(Game.logout) 은 이 플래그 + Supabase 세션 + auto-login 정보 모두 제거.
-  //   - 플래그 없는 상태에서 Supabase 세션이 남아있으면 즉시 signOut (쿠키/구 세션 청소).
+  // 자동 로그인 정책 (2026-04-27 완전 폐기, 사용자 결정):
+  //   - **매번 로그인 화면**. opt-in 플래그(rof8_remember)도 폐기.
+  //   - 부팅 시 Supabase 잔존 세션이 있으면 즉시 signOut (어차피 사용 안 함, refresh-token 자동 재로그인 방지).
+  //   - login() 호출 시에만 Supabase signIn → 세션 발급 → 게임 진입. onAuthChange 자동 진입 로직 폐기.
   if(typeof Backend !== 'undefined' && Backend.init){
     Backend.init().then(() => {
       if(!Backend.isReady) return;
-      const remember = localStorage.getItem('rof8_remember') === '1';
-      let autoHandled = false;
-      Backend.onAuthChange(async (event, user) => {
-        if(autoHandled || !user) return;
-        // opt-in 아닌 상태에서 세션이 남아있다 → 사용자가 이전에 로그아웃 안 한 잔존 세션. 정리만 하고 종료.
-        if(!remember){
-          try { if(Backend.logoutAuth) await Backend.logoutAuth(); } catch(e){}
-          return;
-        }
-        // 타이틀/로그인/가입 화면에 있을 때만 자동 진입 (게임 중엔 개입 X)
-        const active = document.querySelector('.screen.active');
-        const autoOK = !active || ['title-screen','login-screen','signup-screen'].includes(active.id);
-        if(!autoOK) return;
-        autoHandled = true;
-        try {
-          const {profile} = await Backend.getProfile();
-          if(!profile) return;
-          const nick = profile.nickname || localStorage.getItem('rof8_last_user') || 'hero';
-          const {save} = await Backend.loadProgress();
-          if(!save || !Object.keys(save).length) return;  // cloud 세이브 없으면 정상 로그인 화면 유지
-          // 로컬 DB 동기화 (비번은 localStorage 의 last_pw 또는 '__sb' placeholder)
-          const db = (typeof Auth !== 'undefined') ? Auth.db() : {};
-          if(!db[nick]) db[nick] = {pw: localStorage.getItem('rof8_last_pw') || '__sb', save};
-          else db[nick].save = save;
-          if(typeof Auth !== 'undefined') Auth.save(db);
-          if(typeof Auth !== 'undefined') Auth.user = nick;
-          if(typeof SFX !== 'undefined' && SFX.init) SFX.init();
-          if(typeof Game !== 'undefined' && Game.load) Game.load(save);
-        } catch(e){
-          console.warn('[Auto-login] 실패:', e.message);
-        }
-      });
+      // 부팅 직후 잔존 세션 청소 — Supabase refresh token 으로 인한 자동 재로그인 차단.
+      if(Backend.logoutAuth){
+        Backend.logoutAuth().catch(()=>{});
+      }
+      // localStorage 잔존 remember 플래그 정리 (이전 버전 흔적).
+      try { localStorage.removeItem('rof8_remember'); } catch(e){}
     }).catch(()=>{});
   }
 

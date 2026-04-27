@@ -264,6 +264,101 @@ body.game-mode #chat-panel.active { transform: translateX(0); }
 #chat-panel .cp-counter.warn { color: var(--warn); opacity: 1; }
 #chat-panel .cp-counter.over { color: var(--danger); opacity: 1; }
 
+/* ── PHASE 5 Step 4b: 카드 첨부 미리보기 (입력창 위) ────────── */
+#chat-panel .cp-attach-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(212,168,74,.08);
+  border-top: 1px solid rgba(212,168,74,.2);
+  font: 400 12px/1.3 'Noto Sans KR', sans-serif;
+  color: var(--amber-pale);
+}
+#chat-panel .cp-ap-icon { font-size: 13px; }
+#chat-panel .cp-ap-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#chat-panel .cp-ap-remove {
+  background: transparent;
+  border: none;
+  color: var(--amber-pale);
+  font-size: 13px;
+  cursor: pointer;
+  opacity: .7;
+  padding: 2px 4px;
+}
+#chat-panel .cp-ap-remove:hover { opacity: 1; color: var(--danger, #e74c3c); }
+
+/* ── PHASE 5 Step 4b: 카드 picker overlay (chat-panel 내부) ──── */
+#chat-panel .cp-card-picker {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,7,3,.92);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+#chat-panel .cp-cp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(212,168,74,.3);
+  margin-bottom: 8px;
+}
+#chat-panel .cp-cp-title {
+  font: 700 13px/1 'Cinzel', serif;
+  color: var(--curr-gold);
+}
+#chat-panel .cp-cp-close {
+  background: transparent;
+  border: 1px solid rgba(212,168,74,.3);
+  color: var(--amber-pale);
+  font-size: 14px;
+  cursor: pointer;
+  width: 24px; height: 24px;
+  border-radius: 3px;
+}
+#chat-panel .cp-cp-close:hover { background: rgba(212,168,74,.15); }
+#chat-panel .cp-cp-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+/* ── PHASE 5 Step 4d: 미니카드 클릭 → 풀사이즈 카드 modal ──── */
+.cp-card-detail {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  cursor: pointer;
+}
+.cp-card-detail .card-v4 {
+  cursor: default;
+}
+.cp-card-detail .cp-cd-close {
+  position: absolute;
+  top: 20px; right: 24px;
+  width: 36px; height: 36px;
+  border-radius: 4px;
+  background: rgba(20,12,4,.85);
+  border: 1px solid rgba(212,168,74,.5);
+  color: var(--amber-pale);
+  font-size: 16px;
+  cursor: pointer;
+}
+.cp-card-detail .cp-cd-close:hover {
+  background: rgba(40,24,8,.95);
+  color: var(--curr-gold);
+}
+
 /* ── 모바일 대응 (풀스크린 전환) ─────────────────────────── */
 @media (max-width: 720px){
   body.game-mode #chat-panel { width: 100%; }

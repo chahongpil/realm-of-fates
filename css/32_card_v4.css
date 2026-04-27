@@ -493,3 +493,19 @@
 
 /* Shield badge 위치/크기 축소 */
 .card-v4-compact .shield-badge { top: 26px; left: 6px; font-size: 9px; padding: 2px 4px; }
+
+/* ===================================================================
+   2026-04-27 PHASE 5 Step 4 — 공유 카드 미니 (kind:'share')
+   채팅 메시지 풍선 안에 첨부되는 미니카드. 100×175 (aspect 4/7 유지).
+   클릭 시 풀사이즈 상세 팝업 (Step 4d).
+   =================================================================== */
+.card-v4.kind-share {
+  --card-v4-w: 100px;
+  /* aspect-ratio 4/7 자동 → height ≈ 175 */
+  cursor: pointer;
+  margin-top: 6px;
+  transition: transform .15s ease;
+}
+.card-v4.kind-share:hover {
+  transform: scale(1.05);
+}

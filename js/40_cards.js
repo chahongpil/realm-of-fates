@@ -244,7 +244,10 @@ RoF.CardV4Component = (function(){
     opts = opts || {};
     // 2026-04-22: opts.kind='spell'|'relic' 이면 컴팩트 모드 — bars/lv-box/hp-num/stats 생략.
     //   스펠·유물은 HP/NRG/Lv/스탯 5칸이 없으므로 "이름 + 일러스트 + 설명" 만 표시.
-    const isCompact = opts.kind === 'spell' || opts.kind === 'relic';
+    // 2026-04-27: kind='share' = 채팅 카드 공유용 미니카드. compact 흐름 + Lv 표시 + desc 숨김.
+    //   사이즈/숨김은 CSS .kind-share 에서 처리 (PHASE 5 Step 4).
+    const isCompact = opts.kind === 'spell' || opts.kind === 'relic' || opts.kind === 'share';
+    const isShare = opts.kind === 'share';
     const rarity = unit.rarity || 'bronze';
     const element = unit.element || '';
     const el = document.createElement('div');
@@ -380,13 +383,17 @@ RoF.CardV4Component = (function(){
       topRow.appendChild(lvBox);
       refs.nrgNum = nrgNum;
     } else {
-      // 스펠/유물: 우측에 등급 라벨만 (예: "희귀", "전설의"). Lv 자리 대체.
+      // 스펠/유물: 우측에 등급 라벨만. share: Lv 만 (등급은 테두리 색으로 표현).
       const rTag = document.createElement('div');
       rTag.className = 'lv-box';
       const rLabel = document.createElement('div');
       rLabel.className = 'lv';
-      const R_LABEL = {bronze:'일반', silver:'희귀', gold:'고귀한', legendary:'전설의', divine:'신'};
-      rLabel.textContent = R_LABEL[rarity] || rarity;
+      if(isShare){
+        rLabel.textContent = 'Lv ' + lv;
+      } else {
+        const R_LABEL = {bronze:'일반', silver:'희귀', gold:'고귀한', legendary:'전설의', divine:'신'};
+        rLabel.textContent = R_LABEL[rarity] || rarity;
+      }
       rTag.appendChild(rLabel);
       topRow.appendChild(nameBox);
       topRow.appendChild(rTag);

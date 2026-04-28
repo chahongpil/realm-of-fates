@@ -11,7 +11,7 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
     }
     RoF.__gameKeys.add(k);
   }
-})(["_dvTab", "showDeckTab", "showCodexTab", "_codexFilter", "renderCodex", "showCodexDetail", "showDeckView", "equipOwnedSkill", "showDeckCardFocus", "closeDeckCardFocus", "showRelicDetail", "equipSkill"]);
+})(["_dvTab", "showDeckTab", "showCodexTab", "showCodexView", "_codexFilter", "renderCodex", "showCodexDetail", "showDeckView", "equipOwnedSkill", "showDeckCardFocus", "closeDeckCardFocus", "showRelicDetail", "equipSkill"]);
 
 Object.assign(RoF.Game, {
   _dvTab:'deck',
@@ -29,6 +29,12 @@ Object.assign(RoF.Game, {
     document.getElementById('tab-codex').style.borderColor='#ffd700';document.getElementById('tab-codex').style.color='#ffd700';
     document.getElementById('tab-deck').style.borderColor='';document.getElementById('tab-deck').style.color='';
     this.renderCodex();
+  },
+  // 2026-04-28: 도서관 NPC "생명의 서 확인하기" 진입용 wrapper.
+  // showDeckView() 가 deckview-screen 진입 + HUD + default(deck) 탭 셋업을 마친 뒤 codex 탭으로 전환.
+  showCodexView(){
+    this.showDeckView();
+    this.showCodexTab();
   },
   _codexFilter:'all',
   renderCodex(filter){

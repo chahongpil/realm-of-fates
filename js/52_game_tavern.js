@@ -11,7 +11,7 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
     }
     RoF.__gameKeys.add(k);
   }
-})(["_tavTab", "showTavern", "showTavernUnit", "showTavernHero", "genHeroRecruitCards", "_generateTavernSlots", "_ensureTavernSlots", "genTavernCards", "refreshTavern"]);
+})(["_tavTab", "showTavern", "showTavernUnit", "showTavernHero", "showTavernHeroEntry", "genHeroRecruitCards", "_generateTavernSlots", "_ensureTavernSlots", "genTavernCards", "refreshTavern"]);
 
 Object.assign(RoF.Game, {
   _tavTab:'unit',
@@ -46,6 +46,12 @@ Object.assign(RoF.Game, {
     h.disabled=true;                        u.disabled=false;
     document.getElementById('tav-info').innerHTML=`✨ 신의 축복: <span style="color:#ffd700;">${this.blessings||0}개</span> | 신의 축복 1개로 영웅 동료를 소환합니다`;
     this.genHeroRecruitCards();
+  },
+  // 2026-04-28: 선술집 NPC "영웅 영입하기" 진입용 wrapper.
+  // showTavern() 가 tavern-screen 진입 + HUD + NPC bar + default(unit) 탭 셋업을 마친 뒤 hero 탭으로 전환.
+  showTavernHeroEntry(){
+    this.showTavern();
+    this.showTavernHero();
   },
   genHeroRecruitCards(){
     const g=document.getElementById('tav-grid');g.innerHTML='';

@@ -771,6 +771,9 @@
     // 이미 이번 라운드 큐잉된 아군은 재선택 불가
     if(isAllyQueued(unit)) return;
     if(Battle.isDead(unit)) return;
+    // 2026-04-28: 이전 스킬 선택의 dim 잔류 방지. AoE 스킬(all_enemies/all_allies) 클릭 후
+    // 적/아군 클릭 없이 다른 아군 카드로 선택 전환하면 is-dimmed 가 안 풀려 회색 잔류했음.
+    clearTargetHighlight();
     Battle.state.selectedChar = unit;
     Battle.state.selectedSkill = null;
     // FLIP origin 은 showScreen 이전에 계산해야 srcEl 이 아직 숨김 안 된 상태
@@ -1206,6 +1209,10 @@
     // 라운드 종료
     Battle.state.queue = [];
     clearAllQueuedUI();
+    // 2026-04-28: 라운드 종료 시 dim/target highlight 도 함께 클리어.
+    // clearAllQueuedUI 는 is-queued/is-acted 만 처리하므로 is-dimmed 가 잔류했었음
+    // (AoE 스킬 시전 후 적 클릭 없이 라운드 넘어가면 우리편 모두 회색으로 보였음).
+    clearTargetHighlight();
     Battle.state.round = (Battle.state.round || 1) + 1;
 
     // HP 레거시 역동기화 (라운드마다)
@@ -1416,7 +1423,10 @@
       spd:         c.spd  ?? 0,
       luck:        c.luck ?? 0,
       nrg:         c.nrg  ?? 10,
-      currentNrg:  c.curNrg ?? 0,
+      // 2026-04-28: 이중방어. 55_game_battle.js fix 후 c.curNrg 가 항상 풀충값으로 들어오지만,
+      // 다른 진입 경로(미래 추가)에서 c.curNrg 가 undefined 일 때 NRG 0 시작 회귀를 막기 위해
+      // HP 패턴(currentHp: c.currentHp ?? c.hp ?? 10) 과 일치시킴.
+      currentNrg:  c.curNrg ?? c.nrg ?? 10,
       nrgReg:      c.nrgReg ?? 1,
       hp:          c.hp ?? 10,
       currentHp:   c.currentHp ?? c.hp ?? 10,

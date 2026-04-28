@@ -8,6 +8,35 @@
 
 ---
 
+## 2026-04-29 ▶ 버그 ▶ NPC 액션 화면 진입 + AoE 스킬 dim 누수 + NRG 이중방어
+
+**변경**:
+- **NPC choice 화면 진입 fix (3건)** — 도서관/선술집/왕궁 NPC 의 6개 액션 중 4개가 탭 전환 메서드(`showDeckTab`/`showCodexTab`/`showTavernUnit`/`showTavernHero`/`showCastleQuestTab`)를 호출하면서 `UI.show()` 화면 진입을 안 해서 마을 화면에서 NPC 클릭하면 "아무 반응 없음"으로 보였음. wrapper 메서드 3개 신규(`showCodexView`, `showTavernHeroEntry`, `showCastleQuestEntry`)로 화면 진입 + 탭 전환을 합쳐 처리. NPC choice action 5건 갱신.
+- **AoE 스킬 `is-dimmed` 누수 fix** — 타이탄 번개사슬(`all_enemies` AoE) 등 AoE 스킬 클릭 시 `applyTargetDimByType` 가 본인+아군 모두에 `is-dimmed`(filter:grayscale + brightness .45 + pointer-events:none) 부여. 정상 흐름은 적 클릭 → `onTargetClick:1241` 의 `clearTargetHighlight()` 가 풀어주는 구조. 누수 경로 2개:
+  - `startCombatExecution` 라운드 종료 시 `clearAllQueuedUI()` 만 호출하고 dim 미클리어 → 다음 라운드까지 회색 잔류
+  - `onCharClick` 진입 시 dim 클리어 호출 없음 → 스킬 선택 후 적 안 누르고 다른 아군 카드 클릭하면 dim 잔류
+  - 두 지점에 `clearTargetHighlight()` 추가.
+- **`legacyCardToV2Unit` 1419 NRG 이중방어** — `currentNrg: c.curNrg ?? 0` → `c.curNrg ?? c.nrg ?? 10`. HP 패턴(`?? c.hp ?? 10`)과 일치. 2026-04-27 fix(`55:324`) 후 정상 흐름엔 영향 없으나 다른 진입 경로에서 c.curNrg undefined 일 때 NRG 0 회귀 방지.
+
+**이유**:
+- 사용자 직접 플레이 검증 중 발견. 도서관/선술집 액션 클릭해도 반응 없음 → wrapper 패턴 누락 확인. 같은 패턴 왕궁 "퀘스트 받기"도 발견 → 동시 fix.
+- 번개사슬 시전 시 우리편 모두 검은색 잠긴 상태로 보임 → `is-dimmed` 누수 경로 2개 차단.
+- NRG 이중방어는 향후 신규 진입 경로 추가 시 회귀 안전장치.
+
+**영향**:
+- 회귀 12/12 PASS. UI 텍스트/밸런스 변경 없음.
+- 라운드 전환 시 dim 잔류 없음 보장. AoE 스킬 정상 사용.
+- 비슷한 누수 클래스 점검: `is-acted/queued/selected/target-valid` 모두 lifecycle 클리어 정상. `is-dimmed` 만 누수 위험이었음.
+
+**참고 — 자율학습 감사 결과 (별도 처리 대기)**:
+- balance-auditor: archmage hp 12, sniper hp 10, lich hp 20 P0 범위 미달. pirate/dark_shaman rarity 오기재. divine defense/support 셀 0종.
+- lore-consistency-auditor: PHASE3_COATING_PLAN/PHASE1_PLAN/PHASE2_TOWN_PLAN 에 "가챠/뽑기" 잔존(monetization v2.1 § 0 위반). skillDesc 의 "번개" → "전기" 통일 필요.
+- garbage-cleaner: `60_turnbattle.js` 100% dead 아님 (2 fallback 진입점). design/ 19개 + tools/ 7개 archive 권장 -2K 줄 가능.
+
+**이전 결정**: 2026-04-24 NPC choice 시스템(`51_game_town.js`) 신설 — choice.action 이 RoF.Game 메서드명 직접 호출. 메서드가 화면 진입 메서드인지 탭 전환 메서드인지 검증 안 함이 이번 버그 원인.
+
+---
+
 ## 2026-04-28 23:31 ▶ 세션 ▶ 핸드오프 저장 (6 커밋 정리)
 
 **변경**: 세션 상태를 `docs/handoff/handoff-2026-04-28-2331.md` 에 저장

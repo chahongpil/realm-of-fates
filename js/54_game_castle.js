@@ -11,7 +11,7 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
     }
     RoF.__gameKeys.add(k);
   }
-})(["showCastle", "showCastleUpgradeTab", "showCastleQuestTab", "showForge", "showChurch", "showTraining", "showShop", "showTemple", "showInn", "LEAGUES", "getLeague", "getLeagueProgress"]);
+})(["showCastle", "showCastleUpgradeTab", "showCastleQuestTab", "showCastleQuestEntry", "showForge", "showChurch", "showTraining", "showShop", "showTemple", "showInn", "LEAGUES", "getLeague", "getLeagueProgress"]);
 
 Object.assign(RoF.Game, {
   showCastle(){
@@ -68,6 +68,12 @@ Object.assign(RoF.Game, {
     document.getElementById('castle-upgrade-area').style.display='none';
     document.getElementById('castle-quest-area').style.display='';
     document.getElementById('castle-quest-area').innerHTML='<div style="color:#888;text-align:center;padding:40px;font-size:.9rem;">📜 왕의 퀘스트가 곧 준비됩니다...<br><br><span style="font-size:.75rem;color:#555;">퀘스트 시스템 개발 중</span></div>';
+  },
+  // 2026-04-28: 왕궁 NPC "퀘스트 받기" 진입용 wrapper.
+  // showCastle() 가 castle-screen 진입 + HUD + NPC bar + default(upgrade) 탭 셋업을 마친 뒤 quest 탭으로 전환.
+  showCastleQuestEntry(){
+    this.showCastle();
+    this.showCastleQuestTab();
   },
 
   showForge(){

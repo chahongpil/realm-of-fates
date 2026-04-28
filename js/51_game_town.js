@@ -44,8 +44,9 @@ Object.assign(RoF.Game, {
       icon:'👴', name:'늙은 조언자',
       greet:'영웅이여, 어떤 일로 오셨소?',
       choices:[
-        {label:'동료 단련하기', action:'showCastle'},
-        {label:'퀘스트 받기',   action:'showCastleQuestTab'},
+        // 2026-04-28: showCastleQuestTab 도 탭 전환 메서드라 wrapper 로 변경 (도서관/선술집과 같은 패턴).
+        {label:'동료 단련하기', action:'showCastle'},               // upgrade 가 default 탭
+        {label:'퀘스트 받기',   action:'showCastleQuestEntry'},     // showCastle + showCastleQuestTab
         {label:'대화하기',      action:'chat'},
       ],
       chat:'운명의 왕좌까지 가는 길은 멀다오. 한 걸음씩, 천천히 가시오.',
@@ -102,8 +103,9 @@ Object.assign(RoF.Game, {
       icon:'🧑', name:'주막주인',
       greet:'어서 와! 한 잔 할래?',
       choices:[
-        {label:'용병 고용하기', action:'showTavernUnit'},
-        {label:'영웅 영입하기', action:'showTavernHero'},
+        // 2026-04-28: showTavernUnit/Hero 는 탭 전환 메서드라 화면 진입 wrapper 로 변경.
+        {label:'용병 고용하기', action:'showTavern'},           // unit 이 default 탭
+        {label:'영웅 영입하기', action:'showTavernHeroEntry'},  // showTavern + showTavernHero
         {label:'대화하기',      action:'chat'},
       ],
       chat:'세상엔 별의별 사연 가진 놈들이 모인다구. 언제든 들러.',
@@ -112,8 +114,9 @@ Object.assign(RoF.Game, {
       icon:'📖', name:'서생',
       greet:'조용히 살펴보시면 됩니다.',
       choices:[
-        {label:'전력 열람',         action:'showDeckTab'},
-        {label:'생명의 서 확인하기', action:'showCodexTab'},
+        // 2026-04-28: showDeckTab/CodexTab 은 탭 전환 메서드라 화면 진입 wrapper 로 변경.
+        {label:'전력 열람',         action:'showDeckView'},   // deck 이 default 탭
+        {label:'생명의 서 확인하기', action:'showCodexView'},  // showDeckView + showCodexTab
         {label:'대화하기',          action:'chat'},
       ],
       chat:'기록은 거짓말을 하지 않지요. 영웅의 발자취도, 적의 약점도.',

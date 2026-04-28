@@ -103,9 +103,8 @@ Object.assign(RoF.Game, {
       icon:'🧑', name:'주막주인',
       greet:'어서 와! 한 잔 할래?',
       choices:[
-        // 2026-04-28: showTavernUnit/Hero 는 탭 전환 메서드라 화면 진입 wrapper 로 변경.
-        {label:'용병 고용하기', action:'showTavern'},           // unit 이 default 탭
-        {label:'영웅 영입하기', action:'showTavernHeroEntry'},  // showTavern + showTavernHero
+        // 2026-04-29: 영웅 = 유저 카드 1장 고정. 선술집 영웅 영입 폐기. 전직은 왕궁에서.
+        {label:'용병 고용하기', action:'showTavern'},
         {label:'대화하기',      action:'chat'},
       ],
       chat:'세상엔 별의별 사연 가진 놈들이 모인다구. 언제든 들러.',

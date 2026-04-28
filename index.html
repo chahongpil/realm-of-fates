@@ -238,11 +238,8 @@
     <div class="hud-left"><div class="hud-name" id="tav-name"></div></div>
     <div class="hud-right"><div class="hud-stat">💰<span id="tav-gold">0</span></div><div class="hud-stat">전력 <span id="tav-deck">0</span>/8</div></div>
   </div>
+  <!-- 2026-04-29: 영웅 = 유저 카드 1장 고정. 선술집 영웅 모집 탭 폐기. 용병만 영입. -->
   <div style="text-align:center;padding:8px;">
-    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:6px;">
-      <button class="btn btn-s" id="tav-tab-unit" data-action="game.showTavernUnit" style="border-color:#ffd700;color:#ffd700;">🗡️ 용병 모병</button>
-      <button class="btn btn-s" id="tav-tab-hero" data-action="game.showTavernHero">✨ 영웅 모집</button>
-    </div>
     <div style="font-size:.8rem;color:#aaa;" id="tav-info">골드를 지불하고 동료를 영입하세요</div>
   </div>
   <div id="tav-grid" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:10px;flex:1;align-items:flex-start;align-content:flex-start;"></div>
@@ -522,8 +519,14 @@
   <div class="battle-stage">
     <div class="battle-stage-bg"></div>
 
-    <!-- 상단 HUD — 타이머 (검수관 블로커 #1, Slay the Spire / Monster Train 2 레이아웃 참조) -->
+    <!-- 상단 HUD — 타이머 (검수관 블로커 #1, Slay the Spire / Monster Train 2 레이아웃 참조)
+         2026-04-29: 좌측에 전투 속도 토글(×1/×2/×4) 추가. data-speed 값으로 매직 넘버 제거.  -->
     <div class="bv2-hud-top">
+      <div class="bsm-speed-group" role="group" aria-label="전투 속도">
+        <button class="bsm-speed-btn is-active" type="button" data-action="v2.setSpeed" data-speed="1">×1</button>
+        <button class="bsm-speed-btn"           type="button" data-action="v2.setSpeed" data-speed="2">×2</button>
+        <button class="bsm-speed-btn"           type="button" data-action="v2.setSpeed" data-speed="4">×4</button>
+      </div>
       <div class="bsm-timer" id="bv2-queue-timer" aria-live="polite">
         <span class="bsm-timer-icon">⏱</span><span class="bsm-timer-val">10</span>
       </div>

@@ -1373,6 +1373,20 @@
     'v2.startCombat':function(){ Battle.onStartCombat(); },
     'v2.cancel':     function(){ Battle.cancelOne(); },
     'v2.close':      function(){ Battle.close(); },
+    // 2026-04-29: 전투 속도 토글 (×1/×2/×4). data-speed 속성으로 매직 넘버 제거 — 새 배수
+    // 추가 시 index.html 의 button 만 추가, JS 변경 불필요. VALID_SPEEDS 화이트리스트 검증.
+    'v2.setSpeed': function(e){
+      const el = e.target && e.target.closest && e.target.closest('[data-speed]');
+      if(!el) return;
+      const s = parseInt(el.getAttribute('data-speed'), 10);
+      if(!Battle.setSpeed(s)) return;  // VALID_SPEEDS 외 거부
+      // is-active 동기화 — 모든 speed 버튼 순회 (그룹 위치 의존 없음)
+      const all = document.querySelectorAll('.bsm-speed-btn[data-speed]');
+      all.forEach(function(b){
+        const bs = parseInt(b.getAttribute('data-speed'), 10);
+        b.classList.toggle('is-active', bs === s);
+      });
+    },
   };
 
   Battle._installDelegatedListeners = function(){

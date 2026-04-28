@@ -1,0 +1,435 @@
+═══════════════════════════════════════════════════════════════════════
+  REALM OF FATES — 유닛/영웅/스킬 종합 목록 (이펙트 이미지 제작 참고)
+  생성: 2026-04-29 / 정본: js/11_data_units.js + 11_data_heroes.js + 12_data_skills.js
+═══════════════════════════════════════════════════════════════════════
+
+총계: 51 일반 유닛 + 36 영웅 조합 (2성별×3역할×6원소) + 44 스킬 (패시브 28 + 액티브 16)
+
+
+═══════════════════════════════════════════════════════════════════════
+  PART 1 — 영웅 (HERO_BASE × ELEMENT_BONUS × HERO_SKILL_TABLE)
+  생성 ID 패턴: hero_{m|f}_{warrior|ranger|support}_{element}
+═══════════════════════════════════════════════════════════════════════
+
+[베이스 스탯 (성별·원소 무관)]
+warrior  | atk:2 hp:50 def:1 spd:1 nrg:5  luck:1 hpReg:2 nrgReg:1 (탱커)
+ranger   | atk:3 hp:30 def:1 spd:1 nrg:10 luck:1 hpReg:1 nrgReg:1 (DPS)
+support  | atk:1 hp:25 def:1 spd:1 nrg:30 luck:1 hpReg:1 nrgReg:2 (힐러)
+
+[원소 보너스 — 베이스 위에 가산]
+fire      | atk +2
+water     | hp +8, hpReg +1
+lightning | spd +3, eva +2
+earth     | hp +5, def +2
+dark      | atk +1, luck +3
+holy      | nrg +3, meva +2
+
+─── HERO_SKILL_TABLE (역할 × 원소 = 18 시그니처) ───
+
+[warrior]
+  fire      | 광기 (HP50%↓공격2배, 패시브) + 20% 공격시 cleave / skillIds: sk_flame_arrow
+  water     | 도발 (적 공격 대신 받음, 패시브) + 20% 피격시 counter
+  lightning | 선제 (항상 먼저 공격, 패시브) + 25% double_arrow
+  earth     | 방어 (받는 피해 -3, 패시브) + 20% thorns 3
+  dark      | 생명흡수 (피해 100% 회복, 패시브 50%) + 40% kill 시 soul_harvest 공격력+3 영구
+  holy      | 신성 (HP4 회복, 액티브 90%, NRG2) + 20% 비전 시 divine_shield
+
+[ranger]
+  fire      | 화살비 (적전체 3, 액티브 60%, NRG4) + 25% 비전 시 ignite 2턴 화상
+  water     | 빙결 (1턴 행동불가, 액티브 50%, NRG5) + 15% 공격시 frostbite spd-3
+  lightning | 관통 (방어무시, 패시브) + 20% headshot HP10% 즉사
+  earth     | 위장 (받는 피해 -3, 패시브) + 20% 피격시 thorns 3 독가시
+  dark      | 급소 (3배 데미지, 패시브 30%) + 40% kill 시 stealth 다음턴 회피100%
+  holy      | 선제 (항상 먼저, 패시브) + 20% double_arrow
+
+[support]
+  fire      | 화염 (적전체 3, 액티브 70%, NRG4) + 25% 비전 시 ignite 2턴 화상
+  water     | 치유 (아군 HP5, 액티브 80%, NRG3) + 30% 비전 시 group_heal 전체 HP2
+  lightning | 전기충전 (아군 전체 공격+2, 액티브 70%, NRG4) + 25% 비전 시 arcane_burst 적전체 +2
+  earth     | 대치유 (아군전체 HP3, 액티브 80%, NRG4) + 20% 비전 시 bless 보호막+3
+  dark      | 흡수 (피해 50% 회복, 패시브 70%) + 35% kill 시 soul_harvest 공격력+3 영구
+  holy      | 신성치유 (아군 HP6, 액티브 90%, NRG3) + 25% 비전 시 group_heal 전체 HP3
+
+
+═══════════════════════════════════════════════════════════════════════
+  PART 2 — 일반 유닛 51종 (등급별 정리)
+═══════════════════════════════════════════════════════════════════════
+
+────────── BRONZE (13) ──────────
+
+militia       민병        | 전사 attack    earth     | atk2 hp10 def1 spd1 nrg1
+              skill: 기본 공격만 / bonusTrigger: 15% 광역 cleave (인접 적 +50%)
+
+hunter        사냥꾼      | 사수 attack    earth     | atk3 hp8  def0 spd2 nrg3
+              skill: [패시브] 선제 first_strike / 20% 쌍발 double_arrow
+
+apprentice    견습마법사  | 마법사 support fire      | atk1 hp8  def0 spd1 nrg8
+              skill: [액티브 50%] 화염구 aoe 적전체 2 (NRG4) / 15% 비전 시 ignite 1턴 화상
+
+wolf          늑대        | 야수 attack    earth     | atk3 hp6  def0 spd3 nrg1
+              skill: [패시브] 무리 pack (야수 1마리당 +2공) / 40% kill 시 howl 야수 공+1
+
+guard         수비병      | 전사 defense   water     | atk1 hp12 def2 spd1 nrg1
+              skill: [패시브] 도발 taunt / 15% counter
+
+rogue         도적        | 사수 attack    dark      | atk3 hp6  def0 spd3 nrg2
+              skill: [패시브 20%] 급소 crit 3배 / 30% kill 시 stealth
+
+herbalist     약초사      | 마법사 support earth     | atk1 hp9  def0 spd1 nrg10
+              skill: [액티브 70%] 치유 heal_ally 아군 HP4 (NRG3) / 20% 비전 시 group_heal
+
+lancer        창병        | 전사 attack    lightning | atk3 hp8  def1 spd2 nrg1
+              skill: [패시브] 선제 / 20% 관통 cleave 뒤열 +50%
+
+crossbow      석궁병      | 사수 attack    fire      | atk4 hp7  def0 spd1 nrg2
+              skill: [패시브] 관통 pierce / 10% headshot HP10% 즉사
+
+fire_spirit   불꽃정령    | 야수 attack    fire      | atk2 hp5  def0 spd2 nrg6
+              skill: [액티브 50%] 불꽃 aoe 전체 2 (NRG3) / 20% 비전 시 ignite
+
+infantry      보병        | 전사 defense   earth     | atk2 hp12 def2 spd1 nrg1
+              skill: [패시브] 중장갑 armor -2 / 20% thorns 3 방패반사
+
+archer        궁병        | 사수 attack    lightning | atk3 hp9  def1 spd2 nrg2
+              skill: 기본 공격만 / 20% 관통 cleave 뒤열
+
+────────── SILVER (13) ──────────
+
+knight        기사        | 전사 defense   holy      | atk3 hp18 def3 spd1 nrg2
+              skill: [패시브] 도발 / 25% counter / skillIds: sk_healing_light
+
+assassin      암살자      | 사수 attack    dark      | atk5 hp10 def0 spd4 nrg3
+              skill: [패시브 30%] 급소 3배 / 50% kill 시 stealth
+
+pyromancer    화염술사    | 마법사 attack  fire      | atk4 hp12 def0 spd2 nrg12
+              skill: [액티브 70%] 화염폭발 aoe 전체 4 (NRG4) / 30% ignite 전체 2턴 (턴당3)
+
+cryomancer    빙결술사    | 마법사 defense water     | atk2 hp14 def1 spd2 nrg12
+              skill: [액티브 60%] 빙결 freeze 1턴 행동불가 (NRG5) / 20% frostbite spd-3
+
+cryomancer_f  빙결술사    | 마법사 support water     | atk1 hp13 def1 spd2 nrg14
+              skill: [액티브 70%] 빙결의 위안 heal_ally 아군 HP4 (NRG3) / 25% frostbite
+
+berserker     광전사      | 전사 attack    fire      | atk5 hp15 def0 spd2 nrg2
+              skill: [패시브] 광기 frenzy HP50%↓2배 / 25% cleave 인접+50%
+
+priest        사제        | 마법사 support holy      | atk1 hp14 def1 spd1 nrg15
+              skill: [액티브 80%] 대치유 mass_heal 전체 HP4 (NRG4) / 25% bless 보호막+3
+
+thunderbird   썬더버드    | 야수 attack    lightning | atk4 hp10 def0 spd5 nrg3
+              skill: [패시브] 선제 / 20% double_arrow
+
+griffin       그리핀      | 야수 attack    lightning | atk5 hp12 def0 spd5 nrg3
+              skill: [패시브] 선제 / 25% 비행 급습 double_arrow
+
+stormcaller   번개 채들러 | 마법사 attack  lightning | atk5 hp12 def0 spd3 nrg10
+              skill: [액티브 60%] 번개구체 chain_lightning 적2명 4 (NRG5) / 25% arcane_burst 적전체 +2
+
+stonemason    석공 전사   | 전사 defense   earth     | atk3 hp18 def4 spd1 nrg2
+              skill: [패시브] 석벽 armor -2 / 20% thorns 2 돌조각
+
+pirate        해적        | 전사 attack    water     | atk3 hp10 def0 spd3 nrg2
+              skill: [패시브 15%] 기습 crit 2배 / 20% kill 시 stealth
+              ⚠️ rarity 필드 'bronze' 오기재 — 'silver' 정정 필요 (감사 보고)
+
+tidal_knight  해파의 기사 | 전사 attack    water     | atk4 hp16 def1 spd3 nrg5
+              skill: [액티브 40%] 파도 빙결 freeze 1턴 (NRG5) / 20% frostbite
+
+────────── GOLD (10) ──────────
+
+paladin            성기사            | 전사 defense   holy      | atk4 hp25 def4 spd1 nrg5
+                   skill: [액티브 90%] 신성 heal_self HP6 (NRG2) / 25% divine_shield
+
+archmage           대마법사          | 마법사 attack  lightning | atk6 hp12 def0 spd3 nrg20
+                   skill: [액티브 50%] 더블캐스트 double_cast 2회공격 (NRG6) / 25% arcane_burst
+                   ⚠️ hp12 — gold attack 최솟값(15) 미달 (감사 P0)
+
+death_knight       죽음의기사        | 전사 attack    dark      | atk7 hp22 def3 spd1 nrg3
+                   skill: [패시브 60%] 생명흡수 life_steal 100% / 50% kill 시 raise_dead 좀비
+
+sniper             저격수            | 사수 attack    lightning | atk6 hp10 def0 spd4 nrg5
+                   skill: [패시브] 관통 pierce / 25% headshot HP10% 즉사
+                   ⚠️ hp10 — gold attack 최솟값(15) 미달 (감사 P0)
+
+phoenix            불사조            | 야수 support   fire      | atk4 hp18 def1 spd2 nrg6
+                   skill: [패시브] 부활 rebirth 첫사망 HP50% / 25% flame_aura 피격자 5
+
+armored_griffin    중장갑 그리핀     | 야수 defense   earth     | atk5 hp24 def5 spd1 nrg4
+                   skill: [패시브] 강철 갑주 armor -3 / 25% thorns 4 갑주 가시
+
+genie_noble        고귀한 지니       | 정령 support   lightning | atk5 hp22 def2 spd4 nrg20
+                   skill: [액티브 80%] 번개 소원 arcane_burst 적전체 3 (NRG5) / 30% group_heal 전체+2
+
+stonemason_noble   고귀한 석공 전사  | 전사 defense   earth     | atk5 hp26 def6 spd1 nrg4
+                   skill: [패시브] 대지 방벽 armor -3 / 25% thorns 4 석편 반격
+
+dark_shaman        어둠의 주술사     | 마법사 support dark      | atk2 hp15 def1 spd2 nrg15
+                   skill: [패시브 50%] 어둠 흡수 drain 50% / 25% kill 시 raise_dead 언데드
+                   ⚠️ rarity 필드 'silver' 오기재 — 'gold' 정정 필요 (감사 보고)
+
+tidal_knight_noble 고귀한 해파의 기사| 전사 attack    water     | atk7 hp22 def2 spd3 nrg5
+                   skill: [패시브] 파도의 선제 first_strike / 30% double_arrow 파도 2격
+
+flame_warrior      화염의 전사       | 전사 attack    fire      | atk8 hp20 def2 spd3 nrg4
+                   skill: [패시브] 광기 frenzy / 25% ignite 2턴 (턴당3)
+
+────────── LEGENDARY (11) ──────────
+
+dragon            드래곤              | 야수 attack    fire      | atk10 hp35 def3 spd2 nrg6
+                  skill: [액티브 70%] 브레스 breath 전체6 (NRG6) / 30% inferno 전체 화상 2턴
+
+lich              리치                | 마법사 attack  dark      | atk8  hp20 def1 spd2 nrg25
+                  skill: [패시브 80%] 흡수 drain 50% / 50% kill 시 raise_dead 해골
+                  ⚠️ hp20 — legendary attack 최솟값(25) 미달 (감사 P0)
+
+archangel         대천사              | 전사 defense   holy      | atk7  hp40 def8 spd2 nrg15
+                  skill: [액티브 90%] 천상치유 mass_heal 전체 HP5 (NRG5) / 30% divine_shield 아군 전체 1회 무효
+
+griffin_knight    심홍의 그리핀 기사  | 전사 attack    fire      | atk9  hp32 def4 spd2 nrg5
+                  skill: [패시브] 광기 frenzy / 30% cleave 진홍의 일격
+
+griffin_rider     전설의 그리핀 용사  | 전사 attack    holy      | atk8  hp35 def4 spd3 nrg8
+                  skill: [패시브] 천공의 선제 / 30% 비전 시 divine_shield
+
+earth_guardian    대지의 수호자       | 골렘 defense   earth     | atk8  hp42 def10 spd2 nrg6
+                  skill: [패시브] 대지의 방벽 armor -5 / 30% thorns 6 대지의 가시
+
+sea_priest        심해의 대신관       | 성직자 support water     | atk8  hp42 def3 spd5 nrg22
+                  skill: [액티브 90%] 심해의 축복 mass_heal 전체 HP+8 (NRG6) / 30% bless 보호막+3
+
+genie_legendary   전설의 지니         | 정령 attack    lightning | atk10 hp38 def4 spd5 nrg10
+                  skill: [패시브] 소원의 선제 / 30% double_arrow 번개 쌍발
+
+mountain_breaker  산악 파괴자         | 거인 attack    earth     | atk11 hp38 def4 spd2 nrg5
+                  skill: [액티브 70%] 산산조각 breath 단일 10 (NRG6) / 30% cleave 지진 인접+100%
+
+sea_paladin       해신 팔라딘         | 전사 defense   water     | atk8  hp45 def10 spd2 nrg8
+                  skill: [액티브 80%] 해신의 은총 mass_heal 전체 HP+6 (NRG5) / 30% divine_shield 전체 1회
+
+flame_guardian    화염의 수호자       | 전사 defense   fire      | atk9  hp42 def9 spd2 nrg6
+                  skill: [패시브] 용암 도발 taunt / 30% flame_aura 피격자 5
+
+────────── DIVINE (4) ──────────
+
+titan      번개 타이탄         | 거인 attack lightning | atk15 hp55 def4 spd3 nrg10 luck5
+           skill: [액티브 80%] 뇌격 breath 전체8 (NRG5) / 30% 공격시 double_arrow 번개 연쇄 2회
+
+archfiend  대악마              | 악마 attack dark      | atk16 hp55 def4 spd3 nrg10 luck6
+           skill: [액티브 80%] 지옥창 breath 전체8 (NRG5) / 25% 공격시 life_steal 피해의 50% HP 흡수
+
+behemoth   땅의 신 베히모스    | 거신 attack earth     | atk15 hp65 def7 spd2 nrg10 luck3
+           skill: [액티브 80%] 대지진 breath 전체8 (NRG6) / 30% 공격시 cleave 진동파 인접+50%
+
+leviathan  바다의 신 레비아탄  | 거신 attack water     | atk15 hp58 def3 spd4 nrg12 luck4
+           skill: [액티브 80%] 해일 breath 전체7 (NRG6) / 30% 비전 시 arcane_burst 적전체 추가 2
+
+⚠️ DIVINE 누락: defense 0종, support 0종 (감사 P1 — 신규 추가 필요)
+
+
+═══════════════════════════════════════════════════════════════════════
+  PART 3 — 스킬 44종
+═══════════════════════════════════════════════════════════════════════
+
+────────── PASSIVE 28장 (장착 시 스탯/트리거 영구) ──────────
+
+[BRONZE 6장]
+sk_power      💥 끓어오르는 힘 | atk +1
+sk_shield     🔰 방패 사용자   | def +1
+sk_heal       ✨ 체력 단련     | hp +10
+sk_swift      🌬️ 하체 단련     | spd +1
+sk_tough      💪 정밀 공격     | luck +1
+sk_focus      🎯 집중          | 1% proc_double_cast (카드 2번 사용)
+
+[SILVER 8장]
+sk_rage       😤 광전사의외침  | atk +3
+sk_boil       🔥 끓어오름      | atk +2, luck +2
+sk_evasion    💨 잔상술        | eva +1
+sk_energize   ⚡ 활력충전      | spd +2, nrg +5
+sk_cleave     ⚔️ 일섬          | atk +2, spd +1
+sk_ironwill   🦾 불굴          | hp +12, def +1
+sk_prayer     🙏 기도          | nrg +12, luck +1
+sk_reflex     ⚡ 반사신경      | 1% proc_nullify_hit
+
+[GOLD 9장]
+sk_crit_edge  🔪 급소연마      | luck +3
+sk_fortress   🧱 철벽          | def +3, hp +10
+sk_revive     🌈 부활축복      | grant_rebirth (HP1 NRG1 부활)
+sk_bloodlust  🩸 피의갈증      | atk +3, hp -5
+sk_mirage     🌀 신기루        | eva +3, luck +1
+sk_warhorn    📯 전쟁의나팔    | atk +1, spd +2
+sk_execute    🗡️ 처형          | atk +4
+sk_aura       🛡️ 수호오라      | def +3, hp +10, eva +1
+sk_handoff    🤝 핸드오프      | 3% proc_double_cast
+
+[LEGENDARY 7장]
+sk_berserk      🌀 광폭화        | berserk (공격×2, 방어 0)
+sk_transcend    👁️ 초월          | hp_mult ×2
+sk_invincible   🌐 무적          | invincible1 (첫 1회 피해 무효)
+sk_godslayer    💀 신살          | atk +5, luck +2
+sk_resurrection 🏆 부활의성배    | grant_rebirth (HP10 NRG10 부활)
+sk_shadowstep   👤 그림자걸음    | eva +5, spd +3
+sk_dragonheart  🐉 용의심장      | atk/hp/def/spd/luck/eva +2, nrg +10
+
+────────── ACTIVE 16장 (전투 큐잉, NRG/TP 소모) ★ 이펙트 이미지 핵심 ★ ──────────
+
+★★★ DAMAGE SPELL — 공격 이펙트 (8종) ★★★
+
+sk_flame_arrow    🔥 불꽃 화살      | bronze fire     spell  | dmg 8  / NRG 3 / TP1 / single_enemy
+sk_thunder_arrow  ⚡ 번개            | bronze lightning spell | dmg 8  / NRG 3 / TP1 / single_enemy
+sk_ember          🔥 잉걸           | bronze fire     spell  | dmg 8  / NRG 3 / TP1 / single_enemy
+sk_spark_blast    💥 불똥 폭발      | bronze fire     spell  | dmg 3  / NRG 3 / TP1 / all_enemies
+sk_tidal_crash    🌊 파도 강타      | silver water    spell  | dmg 15 / NRG 5 / TP1 / single_enemy
+sk_chain_lightning⚡ 번개 사슬      | silver lightning spell | dmg 8  / NRG 5 / TP2 / all_enemies
+sk_inferno_blast  🌋 화염 폭발      | silver fire     spell  | dmg 15 / NRG 5 / TP1 / single_enemy
+
+★★★ HEAL — 회복 이펙트 (3종) ★★★
+
+sk_healing_light  ✨ 치유의 빛      | bronze holy heal | heal 15 / NRG 3 / TP1 / single_ally
+sk_herb_pack      🌿 약초 꾸러미    | silver holy heal | heal 20 / NRG 5 / TP1 / single_ally
+sk_blessing_light 🌟 축복의 빛      | gold   holy heal | heal 15 / NRG 10 / TP2 / cooldown 1 / all_allies
+
+★★★ DEBUFF — 약화 이펙트 (3종) ★★★
+
+sk_hex            🌑 저주           | bronze dark debuff | atk -2 (1턴) / NRG 3 / TP1 / single_enemy
+sk_minor_curse    🌘 작은 저주      | bronze dark debuff | def -2 (1턴) / NRG 3 / TP1 / single_enemy
+sk_dark_curse     🌑 암흑 저주      | silver dark debuff | atk -4 (2턴) / NRG 5 / TP1 / single_enemy
+
+★★★ BUFF — 강화 이펙트 (1종) ★★★
+
+sk_earth_bulwark  ⛰️ 대지 방벽      | silver earth buff  | def +5 (2턴) / NRG 5 / TP1 / single_ally
+
+
+═══════════════════════════════════════════════════════════════════════
+  PART 4 — bonusTrigger 효과 분류 (영웅·일반 유닛 시그니처) ★ 이펙트 2차 우선순위 ★
+═══════════════════════════════════════════════════════════════════════
+
+[on:'attack' — 공격 시 발동]
+cleave         | 인접 적 +50% 추가데미지 (베기 충격파)
+double_arrow   | 2회 타격 (잔상 + 2번째 공격)
+headshot       | HP 10% 즉사 (관통 폭발)
+frostbite      | spd -3 (얼음 파편)
+ignite         | 2턴 화상 (불꽃 흔적)
+life_steal     | 피해 50%를 HP 흡수 (붉은 흡수광)
+
+[on:'hit' — 피격 시 발동]
+counter        | 공격력 50% 반격 (방패 후려치기)
+thorns         | 공격자에게 N데미지 (가시 반사)
+flame_aura     | 공격자에게 5데미지 (불꽃 폭풍)
+divine_shield  | 다음 피해 1회 무효 (천사 결계)
+
+[on:'kill' — 처치 시 발동]
+soul_harvest   | 공격력 +3 영구 (영혼 흡수)
+stealth        | 다음턴 회피 100% (그림자)
+howl           | 야수 공격력 +1 (외침 파장)
+raise_dead     | 적을 아군 좀비/언데드 소환 (부활 검은 안개)
+
+[on:'skill' — 액티브 스킬 발동 시 추가]
+group_heal     | 아군 전체 HP 회복 (성스러운 빛 비)
+arcane_burst   | 적 전체 추가 2~3 데미지 (마법 폭발)
+bless          | 랜덤 아군 보호막 (별빛 보호막)
+inferno        | 전체 화상 2턴 (지옥불 폭풍)
+
+
+═══════════════════════════════════════════════════════════════════════
+  PART 5 — 이펙트 제작 우선순위
+═══════════════════════════════════════════════════════════════════════
+
+P1 (즉시 필요 — 액티브 스킬 16종, 사용자가 큐잉해서 시전):
+  1. 🔥 fire spell × 4 (sk_flame_arrow, sk_ember, sk_inferno_blast, sk_spark_blast AoE)
+  2. ⚡ lightning spell × 2 (sk_thunder_arrow, sk_chain_lightning AoE)
+  3. 🌊 water spell × 1 (sk_tidal_crash)
+  4. ✨ heal × 3 (sk_healing_light, sk_herb_pack, sk_blessing_light AoE)
+  5. 🌑 debuff × 3 (sk_hex, sk_minor_curse, sk_dark_curse)
+  6. ⛰️ buff × 1 (sk_earth_bulwark)
+
+P2 (유닛 시그니처 — bonusTrigger 18종, 자동 발동):
+  - cleave, double_arrow, counter, thorns, ignite, frostbite, headshot
+  - soul_harvest, stealth, raise_dead, group_heal, arcane_burst, bless
+  - divine_shield, life_steal, flame_aura, howl, inferno
+
+P3 (유닛 active skill — 데이터의 skill 필드):
+  - aoe (원소별 4종 — fire/water/earth/lightning), heal_ally, heal_self, mass_heal
+  - chain_lightning, arcane_burst, breath, freeze, drain, life_steal, inspire
+
+
+═══════════════════════════════════════════════════════════════════════
+  PART 6 — 애니메이션 적용 방법 (게임 도메인 기준)
+═══════════════════════════════════════════════════════════════════════
+
+방법 비교:
+
+┌──────────────────┬──────────┬──────────┬──────────┬──────────────┐
+│ 방식             │ 알파     │ 통제력   │ 파일크기 │ 권장 용도    │
+├──────────────────┼──────────┼──────────┼──────────┼──────────────┤
+│ APNG             │ ✅       │ ❌ 자동만 │ 중       │ 빠른 프로토  │
+│ Sprite Sheet PNG │ ✅       │ ✅ 풀제어│ 작        │ ★ 게임 정본  │
+│ Lottie JSON      │ ✅       │ ✅       │ 매우 작   │ 벡터 이펙트  │
+│ WebM with alpha  │ ✅       │ ✅       │ 큼       │ 배경/풀화면  │
+│ GIF              │ ❌ 1bit  │ ❌       │ 큼       │ 사용 X       │
+└──────────────────┴──────────┴──────────┴──────────┴──────────────┘
+
+★ 권장 워크플로 (대표님 SD/LoRA 환경 기준):
+
+1) 생성: AnimateDiff (SD 확장) 로 16프레임 GIF/MP4 생성
+   - 프롬프트: "fire arrow projectile, magic spell effect, transparent background, 16 frames, dramatic"
+   - 1초 = 16fps 정도. 너무 길면 게임 템포 깨짐.
+   - 256×256 또는 512×512 정사각형.
+
+2) 알파 처리: rembg (이미 사용 중) 로 프레임별 배경 제거
+   - 검은 배경이면 luminosity 블렌드로 그대로 써도 됨 (eclipse/spell 류)
+   - 투명 배경 권장. 카드 위에 겹쳐 쓰면 깔끔.
+
+3) 패킹: Sprite Sheet 로 변환 (4×4 또는 8×2 그리드)
+   - ImageMagick: montage frame_*.png -tile 4x4 -geometry +0+0 sheet.png
+   - 256×256 16프레임 → 1024×1024 시트.
+
+4) 게임 적용 (CSS):
+
+```css
+/* CSS 변수로 한 번 정의, 스킬마다 키만 바꾸기 */
+.fx-skill {
+  position: absolute;
+  width: 256px; height: 256px;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  animation: fx-spr 0.6s steps(16) forwards;  /* 16프레임 = steps(16) */
+}
+@keyframes fx-spr {
+  from { background-position: 0 0; }
+  to   { background-position: -4096px 0; }    /* 16 × 256 = 4096 */
+}
+
+/* 스킬별 스프라이트 시트 변경 */
+.fx-skill.sk_flame_arrow    { background-image: url('img/fx/sk_flame_arrow.png'); }
+.fx-skill.sk_chain_lightning{ background-image: url('img/fx/sk_chain_lightning.png'); }
+.fx-skill.sk_healing_light  { background-image: url('img/fx/sk_healing_light.png'); }
+```
+
+5) JS 발동 (60_turnbattle_v2.js의 fire 모드 진입 시):
+
+```js
+const fxEl = document.createElement('div');
+fxEl.className = 'fx-skill ' + skill.imgKey;  // imgKey 가 sk_flame_arrow 등
+targetCardEl.appendChild(fxEl);
+fxEl.addEventListener('animationend', () => fxEl.remove());
+```
+
+★ 간단한 대안 — APNG 직접 사용:
+
+```html
+<img class="fx-skill" src="img/fx/sk_flame_arrow.apng">
+```
+- APNG 는 자동 재생 (loop 1회 설정 권장)
+- 단 재생 시작/종료 통제 어려움. 프로토타입에 적합.
+- Photoshop 또는 https://apng.onevcat.com/assembler 같은 도구로 PNG 시퀀스 → APNG.
+
+★ 가장 가벼운 시작:
+
+1) 액티브 스킬 16종 중 자주 쓸 것 3종 (sk_flame_arrow, sk_healing_light, sk_chain_lightning) 만 먼저
+2) 256×256 16프레임 sprite sheet 로 만들어 `img/fx/` 에 저장
+3) imgKey 가 이미 데이터에 있으니 매핑 1:1 (예: sk_flame_arrow.png)
+4) 60_turnbattle_v2.js 의 fire 모드 진입 후 해당 element 에 클래스 부여
+
+═══════════════════════════════════════════════════════════════════════
+  파일 끝
+═══════════════════════════════════════════════════════════════════════

@@ -8,6 +8,33 @@
 
 ---
 
+## 2026-04-29 (밤) ▶ 메커닉 ▶ 영웅 시스템 단일화 + 전투 속도 B+D
+
+**변경**:
+- **영웅 = 유저 카드 1장 고정** — 회원가입 시 1명 생성, 추가 영입 불가. 선술집 영웅 영입 시스템 완전 폐기.
+  - `index.html:241-244` — 영웅/용병 탭 버튼 폐기, 안내문만 단일 표시
+  - `js/51_game_town.js` — tavern NPC choices 의 "영웅 영입하기" 라인 삭제
+  - `js/52_game_tavern.js` — `_tavTab` / `showTavernHero` / `showTavernHeroEntry` / `genHeroRecruitCards` 4개 폐기. `showTavernUnit` 단순화 (탭 활성화 코드 제거).
+- **전투 속도 절대값 상향 (B)** — `js/config_battle.js` TIMING 4개:
+  - CHAR_FOCUS_IN 350→500, FIRE_TRAVEL 450→700, HIT_SHAKE 350→550, BETWEEN_ACTION 250→450
+  - 1 액션당 1.7~2.0초 → 2.6~3.0초 (시네마틱 임팩트 회복)
+- **속도 토글 UI (D)** — `index.html` + `css/41_battle_v2.css` + `js/60_turnbattle_v2.js`
+  - `bv2-hud-top` 좌측에 ×1/×2/×4 버튼 그룹. `data-speed` 속성으로 매직 넘버 제거. `Battle.setSpeed()` (VALID_SPEEDS 화이트리스트 검증) 통과 후 is-active 동기화.
+- **NPC 화면 진입 fix 1건 추가** — 왕궁 "퀘스트 받기" 도 같은 패턴(`showCastleQuestTab` 탭 전환만). `showCastleQuestEntry()` wrapper 신규.
+- **08-garbage-lessons.md 6번째 교훈** (HTML ↔ JS 경계) — element 폐기 시 JS getElementById 참조 누락. "선언/참조 동기화 누락" 패턴의 5번째 변형 (이전 4건은 JS 내부, 이번부터 HTML ↔ JS 확장).
+
+**이유**:
+- 영웅 = 유저 카드 컨셉 명확화. 영웅 영입 시스템은 "1장 고정" 룰과 충돌. 선술집은 용병 전용.
+- 전투 속도가 빠르다는 사용자 피드백. UI 미구현 상태(콘솔 setSpeed만)에서 절대값 상향 + 속도 UI 노출 동시 처리.
+
+**영향**:
+- 회귀 12/12 PASS. 영웅 등급 캡 시스템(같은 세션 초반에 fix 한 1번 작업) 무효화 — 그 코드도 함께 폐기됨.
+- 다음 세션 우선순위: 직업 트리 시스템 기획서 작성 (마검사 같은 전직 카드 N개 + 해금 조건 3축).
+
+**이전 결정**: 2026-04-21 영웅 시스템 매트릭스 (성별×역할×원소=36 조합) 신설. 이번 결정으로 "36 조합 중 유저는 1개 선택 → 유지" 로 명확화. 매트릭스 자체는 유효 (회원가입 시 선택지).
+
+---
+
 ## 2026-04-29 ▶ 버그 ▶ NPC 액션 화면 진입 + AoE 스킬 dim 누수 + NRG 이중방어
 
 **변경**:

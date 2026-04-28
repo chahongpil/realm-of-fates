@@ -52,20 +52,23 @@
   };
 
   // ── 연출 타이밍 상수 (ms) — 기본 1x 기준 ────────────────────
+  // 2026-04-29: 시네마틱 임팩트 절대값 회복 — 핵심 4개 절대값 상향.
+  // 빠르게 진행하고 싶은 유저는 게임 내 속도 UI(×1/×2/×4) 로 토글.
+  // 이전 값: CHAR_FOCUS_IN 350, FIRE_TRAVEL 450, HIT_SHAKE 350, BETWEEN_ACTION 250.
   Battle.TIMING = {
-    CHAR_FOCUS_IN:  350,
+    CHAR_FOCUS_IN:  500,        // 350 → 500 (시전자 인지 시간 확보)
     CHAR_FOCUS_OUT: 250,
     SKILL_ROW_IN:   300,
     SKILL_HOVER:    180,
     TARGET_PREVIEW: 200,
-    FIRE_TRAVEL:    450,
-    HIT_SHAKE:      350,
+    FIRE_TRAVEL:    700,        // 450 → 700 (발사체 임팩트)
+    HIT_SHAKE:      550,        // 350 → 550 (피격 인지)
     HP_ROLL:        400,
     DEATH_OUT:      800,
     HIT_STOP:       300,        // beatRaw 로 사용 — 속도 배수 무시
     CRIT_POP:       400,        // CSS bv2CritPop 과 동기화
     ROUND_END:      600,
-    BETWEEN_ACTION: 250,
+    BETWEEN_ACTION: 450,        // 250 → 450 (다음 액션까지 호흡)
   };
 
   // ── 레이아웃 상수 (CSS 와 연동) ──────────────────────────────

@@ -143,14 +143,15 @@
 .bsm-auto  { justify-self: start; }
 .bsm-start { justify-self: end; }
 
-/* 상단 HUD — 타이머 독립 영역 (검수관 블로커 #1: 겹침 제거) */
+/* 상단 HUD — 타이머 독립 영역 (검수관 블로커 #1: 겹침 제거)
+   2026-04-29: 좌측에 속도 토글 그룹 추가 → space-between 으로 양 끝 정렬. */
 .bv2-hud-top{
   position: absolute;
   top: 0; left: 0; right: 0;
   height: var(--bv2-hud-h);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 0 28px;
   gap: 16px;
   z-index: 40;
@@ -158,6 +159,42 @@
   pointer-events: none;
 }
 .bv2-hud-top > *{ pointer-events: auto; }
+
+/* 속도 토글 그룹 (×1/×2/×4) — Battle.VALID_SPEEDS 와 1:1 매핑.
+   data-speed 속성이 매직 넘버 대신 단일 진실원천. */
+.bsm-speed-group{
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 40px;
+  padding: 4px;
+  background: rgba(20, 14, 28, .82);
+  border: 1.5px solid var(--bv2-accent-dim);
+  border-radius: 22px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .75);
+}
+.bsm-speed-btn{
+  height: 30px;
+  min-width: 44px;
+  padding: 0 12px;
+  background: transparent;
+  border: 0;
+  color: var(--bv2-accent);
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 16px;
+  transition: background 150ms, color 150ms, transform 120ms;
+}
+.bsm-speed-btn:hover{
+  background: rgba(255, 215, 0, .14);
+  transform: translateY(-1px);
+}
+.bsm-speed-btn.is-active{
+  background: var(--bv2-accent-dim);
+  color: #1a0f00;
+  box-shadow: 0 0 8px rgba(255, 215, 0, .35);
+}
 
 .bsm-timer{
   display: inline-flex;

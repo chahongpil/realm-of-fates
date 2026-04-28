@@ -11,10 +11,12 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
     }
     RoF.__gameKeys.add(k);
   }
-})(["_tavTab", "showTavern", "showTavernUnit", "showTavernHero", "showTavernHeroEntry", "genHeroRecruitCards", "_generateTavernSlots", "_ensureTavernSlots", "genTavernCards", "refreshTavern"]);
+// 2026-04-29: 영웅 = 유저 카드 1장 고정. 영웅 영입 시스템 폐기 (showTavernHero/Entry/genHeroRecruitCards 삭제).
+//   - _tavTab 상태도 폐기 (탭 자체 없음)
+//   - showTavernUnit 은 호환성 위해 유지 (다른 곳에서 호출), 탭 활성화 코드 제거 후 안내+카드만 갱신
+})(["showTavern", "showTavernUnit", "_generateTavernSlots", "_ensureTavernSlots", "genTavernCards", "refreshTavern"]);
 
 Object.assign(RoF.Game, {
-  _tavTab:'unit',
   showTavern(){
     UI.show('tavern-screen');
     document.getElementById('tav-name').textContent=`👤 ${Auth.user}`;
@@ -25,66 +27,11 @@ Object.assign(RoF.Game, {
     const msg=this.gold<5?'돈 없으면 물이라도 마시고 가게.':npc.greet;
     const existing=document.getElementById('tav-npc');if(existing)existing.remove();
     document.getElementById('tav-info').insertAdjacentHTML('afterend',`<div id="tav-npc">${this.renderNpcBar('tavern',msg)}</div>`);
-    this._tavTab='unit';this.showTavernUnit();
+    this.showTavernUnit();
   },
   showTavernUnit(){
-    this._tavTab='unit';
-    const u=document.getElementById('tav-tab-unit'),h=document.getElementById('tav-tab-hero');
-    u.style.cssText='border-color:#ffd700;color:#ffd700;';
-    h.style.cssText='';
-    u.classList.add('tav-tab-current');    h.classList.remove('tav-tab-current');
-    u.disabled=true;                        h.disabled=false;
     document.getElementById('tav-info').textContent='골드를 지불하고 동료를 영입하세요';
     this.genTavernCards();
-  },
-  showTavernHero(){
-    this._tavTab='hero';
-    const u=document.getElementById('tav-tab-unit'),h=document.getElementById('tav-tab-hero');
-    h.style.cssText='border-color:#ffd700;color:#ffd700;';
-    u.style.cssText='';
-    h.classList.add('tav-tab-current');    u.classList.remove('tav-tab-current');
-    h.disabled=true;                        u.disabled=false;
-    document.getElementById('tav-info').innerHTML=`✨ 신의 축복: <span style="color:#ffd700;">${this.blessings||0}개</span> | 신의 축복 1개로 영웅 동료를 소환합니다`;
-    this.genHeroRecruitCards();
-  },
-  // 2026-04-28: 선술집 NPC "영웅 영입하기" 진입용 wrapper.
-  // showTavern() 가 tavern-screen 진입 + HUD + NPC bar + default(unit) 탭 셋업을 마친 뒤 hero 탭으로 전환.
-  showTavernHeroEntry(){
-    this.showTavern();
-    this.showTavernHero();
-  },
-  genHeroRecruitCards(){
-    const g=document.getElementById('tav-grid');g.innerHTML='';
-    if((this.blessings||0)<1){
-      g.innerHTML='<div style="color:#888;text-align:center;padding:40px;">✨ 신의 축복이 부족합니다.<br><span style="font-size:.75rem;color:#555;">리그에서 승전하면 신의 축복을 얻을 수 있습니다.</span></div>';
-      return;
-    }
-    // Generate 3 hero candidates (silver~divine)
-    for(let i=0;i<3;i++){
-      const roll=Math.random()*100;
-      let r;
-      if(roll<5)r='divine';else if(roll<20)r='legendary';else if(roll<50)r='gold';else r='silver';
-      // Pick random hero unit
-      let pool=UNITS.filter(u=>u.id.startsWith('h_')&&u.rarity===r);
-      if(!pool.length)pool=UNITS.filter(u=>u.id.startsWith('h_'));
-      const b=pool[Math.floor(Math.random()*pool.length)];
-      const HERO_NAMES=['아리안','칼리스','제논','리아나','볼카르','에리나','다리우스','셀레나','오딘','이솔데','펜릭','모르가나','티리온','루나','갈라드','아스트라'];
-      const heroName=HERO_NAMES[Math.floor(Math.random()*HERO_NAMES.length)];
-      const c={...b,uid:uid(),name:heroName,heroClass:b.name,level:1,equips:[],maxHp:b.hp,xp:0,honor:0,freePoints:0,growthPts:{atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0}};
-      const el=mkCardElV4(c);  // V4 Illuminated Manuscript (2026-04-20 Step 4)
-      const btn=document.createElement('div');btn.style.cssText='text-align:center;margin-top:4px;';
-      btn.innerHTML=`<button class="btn btn-s btn-purple" ${(this.blessings||0)<1||this.deck.length>=this.maxDeck?'disabled':''}>✨ 신의 축복 1개</button>`;
-      btn.querySelector('button').onclick=(e)=>{e.stopPropagation();
-        if((this.blessings||0)<1||this.deck.length>=this.maxDeck)return;
-        this.blessings--;this.deck.push(c);
-        SFX.play('rarity_up');
-        if(b.rarity==='legendary'||b.rarity==='divine'){const rv=document.createElement('div');rv.className='tavern-reveal legendary-reveal';document.body.appendChild(rv);setTimeout(()=>rv.remove(),1000);}
-        document.getElementById('tav-info').innerHTML=`✨ <span style="color:#ffd700;">${heroName}</span> 영웅이 합류했습니다!`;
-        this.persist();this.showTavernHero();
-      };
-      const wrap=document.createElement('div');wrap.className='tavern-card-wrap';wrap.appendChild(el);wrap.appendChild(btn);g.appendChild(wrap);
-      el.classList.add('tavern-card-inner');el.classList.add('flipping');setTimeout(()=>el.classList.remove('flipping'),600);
-    }
   },
 
   // Generate tavern slots (saved to persist)

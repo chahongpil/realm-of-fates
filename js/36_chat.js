@@ -25,6 +25,10 @@
   const MAX_LEN = 200;
   const HISTORY_LIMIT = 50;
 
+  // PHASE 5 Step 5a: 채널별 최소 레벨 — Lv5 미만은 world 채널 차단(저레벨 신규 어그로 방지).
+  // league/guild 는 자체 진입 조건이 있으므로 1.
+  const MIN_LEVEL = { world: 5, league: 1, guild: 1 };
+
   const Chat = {
     _activeKind: DEFAULT_KIND,   // 'world' | 'league' | 'guild'
     _activeChannel: 'ch_world',  // 실제 channel id — _resolveChannel() 로 갱신
@@ -42,6 +46,24 @@
       if(kind === 'league') return 'ch_league_' + leagueId;
       if(kind === 'guild')  return guildId ? ('ch_guild_' + guildId) : null;
       return 'ch_world';
+    },
+
+    /** PHASE 5 Step 5a: 내 영웅 레벨. backend.chatSend 와 동일 계산식 (단일 source).
+     *  save.heroLevel 우선, 없으면 영웅 카드의 .level, 그것도 없으면 1. */
+    _getMyLevel(){
+      const save = (typeof RoF !== 'undefined' && RoF.Game) ? RoF.Game : (window.Game || null);
+      if(!save) return 1;
+      if(save.heroLevel != null) return Math.max(1, save.heroLevel|0);
+      if(Array.isArray(save.deck)){
+        const hero = save.deck.find(c => c && c.isHero);
+        if(hero && hero.level) return Math.max(1, hero.level|0);
+      }
+      return 1;
+    },
+
+    /** kind 채널의 최소 진입 레벨 */
+    _minLevelFor(kind){
+      return MIN_LEVEL[kind] || 1;
     },
 
     /** kind → 헤더 제목 */
@@ -187,8 +209,20 @@
       if(user){
         this._setInputDisabled(false);
         await this._loadAndSubscribe(channel);
+        // PHASE 5 Step 5a: 채널 진입 후 레벨 체크 — 미달 시 입력 잠금 + 안내
+        this._applyChannelLevelGate();
       } else {
         this._showBanner('로그인 후 이용 가능', 'info');
+      }
+    },
+
+    /** PHASE 5 Step 5a: 현재 채널의 최소 레벨 미달 시 input 잠그고 안내 banner. */
+    _applyChannelLevelGate(){
+      const minLv = this._minLevelFor(this._activeKind);
+      const myLv = this._getMyLevel();
+      if(myLv < minLv){
+        this._setInputDisabled(true);
+        this._showBanner(`Lv${minLv} 부터 발언 가능 (현재 Lv${myLv}) — 메시지는 읽을 수 있습니다`, 'info');
       }
     },
 
@@ -211,6 +245,8 @@
         return;
       }
       this._hideBanner();
+      // PHASE 5 Step 5a: 로드 후 즉시 level gate 재평가 (history 실패 후 성공 케이스 대응)
+      this._applyChannelLevelGate();
       messages.forEach(m => this._renderMessage(m, {skipUnread:true}));
       if(messages.length){
         this._lastMsgTime = messages[messages.length-1].created_at;
@@ -294,6 +330,13 @@
       if(!text && !this._attachedCard) return;
       if(text.length > MAX_LEN){
         this._showBanner(`메시지 길이 초과 (${text.length}/${MAX_LEN})`, 'error');
+        return;
+      }
+      // PHASE 5 Step 5a: 채널 최소 레벨 검증 (UX 1차, RLS 가 서버측 백업)
+      const minLv = this._minLevelFor(this._activeKind);
+      const myLv = this._getMyLevel();
+      if(myLv < minLv){
+        this._showBanner(`Lv${minLv} 부터 ${this._channelTitle(this._activeKind)} 채널에서 발언할 수 있습니다 (현재 Lv${myLv})`, 'error');
         return;
       }
       // 클라측 쿨다운 (DB RLS 에도 뮤트 체크 있지만 UX 보조)

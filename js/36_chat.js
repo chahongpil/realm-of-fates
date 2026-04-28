@@ -29,11 +29,18 @@
   // league/guild 는 자체 진입 조건이 있으므로 1.
   const MIN_LEVEL = { world: 5, league: 1, guild: 1 };
 
+  // PHASE 5 Step 5b: 도배 감지 — sliding window 60초에 8개 도달 시 사전 경고 banner.
+  // 서버 trigger(004 migration trg_auto_mute_on_flood) 가 10개 도달 시 30분 자동 뮤트.
+  const FLOOD_WINDOW_MS = 60000;
+  const FLOOD_WARN_AT   = 8;
+  const FLOOD_HARD_LIMIT = 10;
+
   const Chat = {
     _activeKind: DEFAULT_KIND,   // 'world' | 'league' | 'guild'
     _activeChannel: 'ch_world',  // 실제 channel id — _resolveChannel() 로 갱신
     _sub: null,                  // realtime subscription
     _lastSent: 0,                // 쿨다운 체크용 timestamp
+    _sentTimestamps: [],         // PHASE 5 Step 5b: 도배 감지 sliding window
     _lastMsgTime: null,          // gap 복구용 마지막 수신 시각
     _unreadCount: 0,
     _muteCheckInterval: null,
@@ -363,6 +370,15 @@
       // _renderMessage 내부 dedup 으로 realtime 중복 수신 시 안전.
       if(message) this._renderMessage(message);
       this._lastSent = now;
+      // PHASE 5 Step 5b: 도배 sliding window 갱신 + 임계 도달 시 사전 경고
+      this._sentTimestamps.push(now);
+      this._sentTimestamps = this._sentTimestamps.filter(t => now - t < FLOOD_WINDOW_MS);
+      if(this._sentTimestamps.length === FLOOD_WARN_AT){
+        const remaining = FLOOD_HARD_LIMIT - FLOOD_WARN_AT;
+        this._showBanner(`⚠️ 도배 감지 — ${remaining}개 더 보내면 30분 자동 뮤트`, 'info');
+      } else if(this._sentTimestamps.length >= FLOOD_HARD_LIMIT){
+        this._showBanner('🔇 30분 자동 뮤트 — 잠시 후 자동 해제', 'error');
+      }
       input.value = '';
       input.dispatchEvent(new Event('input'));  // counter 갱신
       // 2026-04-27 Step 4b: 전송 후 첨부 클리어

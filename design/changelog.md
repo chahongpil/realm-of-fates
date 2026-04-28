@@ -8,6 +8,29 @@
 
 ---
 
+## 2026-04-28 ▶ 보안 ▶ Supabase PAT 누출 사후 정리 + secret-scan 훅 추가
+
+**변경**:
+- 누출 경로: `game/docs/handoff/handoff-2026-04-22-2303.md` line 59 에 PAT 평문(`sbp_568b…`) 박혀 있던 채로 commit `928e723` 으로 public repo push (2026-04-22). 6일 후 GitHub secret scanning → Supabase 자동 revoke + 사용자 메일 통보 (2026-04-28).
+- 누출 파일 sanitize: 해당 라인 `[REDACTED — revoked 2026-04-28]` 로 교체. 보안 섹션을 "사후 정리" 형식으로 재작성.
+- 재발 방지: `c:/work/.claude/hooks/post_edit_secrets.js` 신규 추가 (Edit/Write 직후 11개 패턴 검사 — sbp_/JWT/sk-ant/ghp_/AKIA/xoxb 등). settings.json `PostToolUse → Edit|Write` 등록. 자가 테스트로 PAT 차단 검증.
+- git history 처리: A1 (그대로 두고 sanitize 커밋만 push) 채택. 토큰은 이미 무효화 상태라 history 잔존 위험 0. force-push 비용이 효과보다 큼.
+- 새 PAT 발급: 미룸. 다음 migration 작업 시 환경변수로 처리.
+
+**이유**:
+- 토큰은 이미 죽었으므로 history 정리는 형식적 효과만 있고 협업자 충격이 더 크다.
+- 암묵 상식("PAT 평문 금지")이 가드 없으면 결국 한 번은 깨진다는 사실 확인 → 처음부터 가드를 만들어야 했던 항목. 이번 사고로 가드 도입.
+
+**영향**:
+- 운영 위험: 0. Supabase 가 시점부터 토큰 거부 중.
+- 다음부터 누구든(=나든) 시크릿 패턴을 코드/문서에 쓰면 즉시 차단되어 누출 방지.
+- 핸드오프 문서 작성 원칙 변경: "revoke 권고 메모 작성 금지 — 즉시 revoke" + "토큰 평문 금지, prefix 4자만 적기".
+
+**이전 결정 관계**:
+- 2026-04-22 PHASE 5 채팅 Step 1~3 + Auth Supabase 통합(`27d34fa`/`a00823c`/…) 세션 마무리 핸드오프에서 발생한 보안 부채를 6일 뒤 정리.
+
+---
+
 ## 2026-04-27 (밤) ▶ 세션 ▶ 핸드오프 저장 (4 커밋, PHASE 5 Step 4 종료)
 
 - **변경**: 세션 상태를 `docs/handoff/handoff-2026-04-27-2235.md` 에 저장. current-focus 갱신.

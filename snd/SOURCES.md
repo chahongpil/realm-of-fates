@@ -168,12 +168,42 @@
 
 ### 미매칭 7곡 추가 추적 옵션
 
-- [ ] **AcoustID + Chromaprint fingerprinting** — `fpcalc.exe` (Windows 바이너리) 다운로드 후 곡당 ~3초로 식별. 무료 AcoustID API 키.
+- [x] **AcoustID + Chromaprint fingerprinting** — `c:/work/tools/fpcalc/fpcalc.exe` 1.5.1 설치 완료, 7곡 fingerprint 추출 완료 (아래)
+- [ ] AcoustID API lookup — **Application API Key 발급 필요** (User Key 가 아닌 Application Key, https://acoustid.org/new-application 에서 등록 — 등록 시 프로필 이메일 필수)
 - [ ] 사용자 머신 외부 위치 (외장 드라이브, 클라우드 동기화 폴더) 검색
 - [ ] 찾지 못하면 **Pixabay 등에서 새 트랙으로 교체**
 - [ ] 자체 제작 음원으로 대체
 
 유튜브 영상(게임플레이/트레일러) 올릴 때 Content ID 클레임 걸릴 수 있으므로 출시 전 정리 권장.
+
+### 2026-04-28 AcoustID 시도 — Application Key 발급 막혀 보류
+
+**시도 결과**:
+- `fpcalc.exe` 1.5.1 (chromaprint) `c:/work/tools/fpcalc/` 에 설치 완료
+- 7곡 모두 정상 fingerprint 추출 완료
+- 사용자가 제공한 키 2개(`Wmr0V4a7M7`, `qMiheLTzso`) 둘 다 AcoustID 서버에서 `invalid API key` 거부
+  → 두 키 모두 **User API Key** 형식 (https://acoustid.org/api-key 페이지의 키, fingerprint **submit** 용)
+  → lookup 에 필요한 건 **Application API Key** (https://acoustid.org/new-application 등록 시 발급)
+- Application 등록 시도 → "Missing email address" 로 막힘 (AcoustID 계정 프로필에 이메일 없음, MusicBrainz/OpenID SSO 가 자동 import 안 함). 프로필에 이메일 추가 + 인증 후 재시도 필요
+
+**보존 — fingerprint + duration** (Application Key 발급 후 즉시 lookup 가능):
+
+| 파일 | duration (s) | fingerprint 길이 | 용도 |
+|---|---|---|---|
+| town1.mp3 | 235.87 | 4400+ | town |
+| town2.mp3 | 190.15 | 3600+ | town |
+| battle1.mp3 | 122.91 | 2400+ | battle/match |
+| battle2.mp3 | 162.22 | 3100+ | battle/match |
+| battle3.mp3 | 68.20 | 1300+ | battle/match |
+| battle4.mp3 | 108.67 | 2100+ | battle/match |
+| battle5.mp3 | 76.04 | 1500+ | battle/match |
+
+전체 fingerprint 문자열은 `c:/work/tools/fpcalc/fpcalc.exe -json <file>` 로 즉시 재추출 가능. lookup 스크립트는 `c:/work/tools/fpcalc/lookup.js` (`ACOUSTID_KEY` 환경변수로 키 받음).
+
+**재시도 절차** (다음에 키 발급 받으면):
+```
+ACOUSTID_KEY=<application_key> node c:/work/tools/fpcalc/lookup.js
+```
 
 ### 2026-04-26 복구 도구
 

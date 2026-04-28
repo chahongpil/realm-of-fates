@@ -8,6 +8,29 @@
 
 ---
 
+## 2026-04-28 ▶ 콘텐츠 ▶ PHASE 5 Step 5 — 발언 제한 세부 (4 sub-step 완료)
+
+**변경**:
+- **5a (Lv5 미만 world 차단)** `b956616` — `js/36_chat.js` 에 `MIN_LEVEL = {world:5, league:1, guild:1}` + `_getMyLevel/_minLevelFor/_applyChannelLevelGate` 헬퍼. `_sendMessage` 진입부 + 채널 진입(`_switchKind`/`_loadAndSubscribe`) 모두 검증. `supabase/migrations/004_s5_limits.sql` RLS WITH CHECK `channel<>'ch_world' OR user_level>=5`.
+- **5b (도배 사전 경고 + 자동 뮤트)** `e96dafe` — 클라 sliding window 60초. 8개 도달 시 `⚠️` 사전 경고 banner, 10개 도달 시 `🔇` 안내. 서버는 004 migration 의 `trg_auto_mute_on_flood` 트리거가 INSERT 후 같은 user 60초 메시지 ≥10 시 30분 mute upsert. 신고 누적('reports') 사유는 보존(우선).
+- **5c/5d (금칙어 마스킹 + URL 차단)** `e2bf9c3` — 신규 `js/38_chat_filters.js`. 49개 금칙어(욕설/혐오/광고매크로) 어근 매칭 → 첫 글자 보존 + 별표. URL regex(http(s)//, www., 주요 TLD .com .net .kr 등) → 메시지 거부. `_sendMessage` 에서 `RoF.ChatFilters.censor()` 호출, banner 안내. `tools/test_run.js` 12번째 시나리오로 6 케이스 검증.
+
+**이유**:
+- 저레벨 봇·매크로 광고 → 신규 가이드 채널 보호 (Lv5 게이트는 기본 신고 누적 임계와 비슷한 효과).
+- 도배 사전 경고는 봇이 아닌 진짜 유저가 의도치 않게 차단당하지 않도록 — 8개에서 알려주면 회피 가능.
+- 금칙어/URL 은 1차 클라단 빠른 마스킹·차단. 회피 변형은 Step 6 신고 누적으로 흡수.
+
+**영향**:
+- 누적 코드 +180줄 (36_chat +60, 38_chat_filters +89, 004_s5_limits +67, test_run +27 — 메모리 임계 5파일/300줄 이내).
+- 회귀 12/12 PASS (chat-filters 신규 포함).
+- DB 측 004_s5_limits.sql 은 PAT revoke 상태라 자동 push 불가 → 다음 세션 수동 적용 필요.
+
+**이전 결정 관계**:
+- PHASE 5 Step 4 (`adb25ea`, 카드 공유) 다음 단계.
+- PHASE5_CHAT_PLAN.md "Step 5 — 발언 제한 세부 (1시간)" 의 4 sub-task 모두 구현.
+
+---
+
 ## 2026-04-28 ▶ 보안 ▶ Supabase PAT 누출 사후 정리 + secret-scan 훅 추가
 
 **변경**:

@@ -346,6 +346,19 @@
         this._showBanner(`Lv${minLv} 부터 ${this._channelTitle(this._activeKind)} 채널에서 발언할 수 있습니다 (현재 Lv${myLv})`, 'error');
         return;
       }
+      // PHASE 5 Step 5c/5d: 금칙어 마스킹 + URL 차단 (text 가 비어있으면 첨부카드 단독 전송이라 skip)
+      let cleanText = text;
+      if(text && window.RoF && RoF.ChatFilters){
+        const result = RoF.ChatFilters.censor(text);
+        if(result.blocked && result.reason === 'url'){
+          this._showBanner('URL 은 채팅에 보낼 수 없습니다', 'error');
+          return;
+        }
+        if(result.reason === 'profanity'){
+          this._showBanner('일부 단어가 마스킹되었습니다', 'info');
+        }
+        cleanText = result.cleaned;
+      }
       // 클라측 쿨다운 (DB RLS 에도 뮤트 체크 있지만 UX 보조)
       const now = Date.now();
       if(now - this._lastSent < COOLDOWN_MS){
@@ -356,7 +369,8 @@
 
       input.disabled = true;
       // 2026-04-27 Step 4b: attached_card 동봉 (없으면 null — 기존 동작과 동일)
-      const {error, message} = await Backend.chatSend(this._activeChannel, text, this._attachedCard || null);
+      // 2026-04-28 Step 5c: 금칙어 마스킹된 cleanText 전송 (원문 text 아님)
+      const {error, message} = await Backend.chatSend(this._activeChannel, cleanText, this._attachedCard || null);
       input.disabled = false;
       if(error){
         if(error.includes('mute') || error.includes('not-muted')) {

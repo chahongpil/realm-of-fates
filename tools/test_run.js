@@ -287,6 +287,33 @@ function fail(name, msg) { results.push({name, status:'FAIL', msg}); }
     else pass('card-grids', `units=${grid.units}, skills=${grid.skills}, relics=${grid.relics}`);
   } catch (e) { fail('card-grids', e.message); }
 
+  // ── 12. chat-filters (PHASE 5 Step 5c/5d) ──
+  // RoF.ChatFilters.censor 의 핵심 분기 검증: profanity 마스킹 / URL 차단 / 정상 텍스트 통과
+  try {
+    const fres = await page.evaluate(() => {
+      if (!window.RoF || !RoF.ChatFilters) return { error: 'ChatFilters not loaded' };
+      const cf = RoF.ChatFilters;
+      const cases = [
+        { in:'안녕하세요',                   expect:{blocked:false, reason:null} },
+        { in:'씨발 좀 그만해',                expect:{blocked:false, reason:'profanity', mask:'씨* 좀 그만해'} },
+        { in:'http://evil.com 와봐',         expect:{blocked:true,  reason:'url'} },
+        { in:'www.example.com 좋아요',       expect:{blocked:true,  reason:'url'} },
+        { in:'evil.com 봐바',                expect:{blocked:true,  reason:'url'} },
+        { in:'이거 좀 보세요',                expect:{blocked:false, reason:null} },
+      ];
+      const errors = [];
+      cases.forEach((c,i) => {
+        const r = cf.censor(c.in);
+        if (r.blocked !== c.expect.blocked) errors.push(`#${i} blocked=${r.blocked}≠${c.expect.blocked} (in="${c.in}")`);
+        if (r.reason !== c.expect.reason) errors.push(`#${i} reason=${r.reason}≠${c.expect.reason} (in="${c.in}")`);
+        if (c.expect.mask && r.cleaned !== c.expect.mask) errors.push(`#${i} mask="${r.cleaned}"≠"${c.expect.mask}"`);
+      });
+      return { error: errors.join('; '), profCount: cf._PROFANITY.length };
+    });
+    if (fres.error) fail('chat-filters', fres.error);
+    else pass('chat-filters', `${fres.profCount} profanity entries, 6 cases pass`);
+  } catch (e) { fail('chat-filters', e.message); }
+
   await browser.close();
 
   // ── 결과 출력 ──

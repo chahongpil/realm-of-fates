@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 2026-05-02: 개발 중 캐시 무력화 (사용자 답답함 해소). 출시 시 제거 권장. -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <!-- 2026-04-22: 타이틀 배경 preload — JPEG 변환으로 각 ~700KB. CSS 파싱 전에 fetch 시작. -->
 <link rel="preload" as="image" href="img/bg_title_angel.jpg">
 <link rel="preload" as="image" href="img/bg_title_demon.jpg">
@@ -45,6 +49,8 @@
 <script defer src="js/35_backend.js"></script>
 <script defer src="js/36_chat.js"></script>
 <script defer src="js/37_settings.js"></script>
+<script defer src="js/38_profile.js"></script>
+<script defer src="js/39_formation_slots.js"></script>
 <script defer src="js/38_chat_filters.js"></script>
 <script defer src="js/40_cards.js"></script>
 <script defer src="js/50_game_core.js"></script>
@@ -155,7 +161,14 @@
   <div class="town-sky" id="town-sky"></div>
   <div class="town-hud">
     <div class="town-hud-left">
-      <div class="th-stat" style="color:#ffd700;font-weight:bold;" id="menu-welcome"></div>
+      <!-- 2026-05-03: 프로필 슬롯 — 영웅 카드 미니 일러스트 + 닉. 클릭 → 프로필 카드 변경 모달. -->
+      <div class="th-profile" id="town-profile" title="프로필 카드 변경" data-action="profile.open">
+        <div class="th-profile-img" id="town-profile-img"></div>
+        <div class="th-profile-text">
+          <div class="th-profile-name" id="town-profile-name">—</div>
+          <div class="th-profile-lv" id="town-profile-lv">Lv.1</div>
+        </div>
+      </div>
       <div class="th-stat" id="town-league"></div>
       <div class="th-stat" title="보유 전력"><span style="opacity:.75;">⚔</span><span id="town-deck-count">0</span></div>
     </div>
@@ -225,9 +238,34 @@
     <div class="set-section-title">세션</div>
     <div class="modal-buttons set-vert">
       <button class="btn btn-s btn-red" data-action="settings.logout" title="저장 후 세션 종료 + 타이틀로">🚪 로그아웃</button>
+      <button class="btn btn-s btn-red" data-action="settings.exitGame" title="진행 자동 저장 후 게임 창 닫기">❌ 게임 종료</button>
     </div>
     <div class="modal-buttons set-close-row">
       <button class="btn btn-s" data-action="settings.close">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORMATION SLOTS MODAL (2026-05-03) — 출정 편성 화면의 "편성 슬롯" 버튼 클릭 시 -->
+<div id="formation-slots-modal" class="modal-overlay">
+  <div class="modal-box fs-modal-box">
+    <h3>📜 편성 슬롯</h3>
+    <div class="fs-modal-info">3개 슬롯에 편성을 저장하고 불러올 수 있습니다. 이름을 편집해 용도별로 구분하세요 (예: 리그용 / 캠페인용).</div>
+    <div id="fs-grid" class="fs-grid"></div>
+    <div class="modal-buttons set-close-row">
+      <button class="btn btn-s" data-action="formationSlots.close">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE CARD SELECT MODAL (2026-05-03) — 마을 좌상단 프로필 슬롯 클릭 시 -->
+<div id="profile-modal" class="modal-overlay">
+  <div class="modal-box profile-modal-box">
+    <h3>🖼️ 프로필 카드 선택</h3>
+    <div class="profile-modal-info">마을 좌상단에 표시할 카드를 선택하세요.</div>
+    <div id="profile-grid" class="profile-grid"></div>
+    <div class="modal-buttons set-close-row">
+      <button class="btn btn-s" data-action="profile.close">닫기</button>
     </div>
   </div>
 </div>
@@ -302,23 +340,35 @@
   </div>
 </div>
 
-<!-- CASTLE SCREEN -->
+<!-- CASTLE SCREEN — 2026-05-02: 단련 탭 제거, 퀘스트 + 전직(예정) 만 -->
 <div id="castle-screen" class="screen">
   <div class="hud">
     <div class="hud-left"><div class="hud-name">🏰 성</div></div>
     <div class="hud-right"><div class="hud-stat">💰<span id="castle-gold">0</span></div></div>
   </div>
+  <div id="castle-quest-area"></div>
+  <div style="padding:8px;text-align:center;"><button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button></div>
+</div>
+
+<!-- TRAINING SCREEN — 2026-05-02 신규: 단련 + 스킬 교체 -->
+<div id="training-screen" class="screen">
+  <div class="hud">
+    <div class="hud-left"><div class="hud-name">🏟️ 훈련장</div></div>
+    <div class="hud-right"><div class="hud-stat">💰<span id="training-gold">0</span></div></div>
+  </div>
   <div style="text-align:center;padding:6px;">
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:6px;">
-      <button class="btn btn-s" id="castle-tab-upgrade" data-action="game.showCastleUpgradeTab" style="border-color:#ffd700;color:#ffd700;">🔧 동료 단련</button>
-      <button class="btn btn-s" id="castle-tab-quest" data-action="game.showCastleQuestTab">📜 퀘스트</button>
+      <button class="btn btn-s" id="training-tab-upgrade" data-action="game.showTrainingUpgradeTab" style="border-color:#ffd700;color:#ffd700;">🔧 단련</button>
+      <button class="btn btn-s" id="training-tab-skill" data-action="game.showTrainingSkillTab">📚 스킬 교체</button>
     </div>
   </div>
-  <div id="castle-upgrade-area">
-    <div style="font-size:.75rem;color:#aaa;text-align:center;" id="castle-upgrade-info">골드를 바쳐 동료를 단련시키세요 (성장 시 +5 능력치 배분 가능)</div>
-    <div id="castle-upgrade-grid" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:10px;flex:1;align-items:flex-start;align-content:flex-start;"></div>
+  <div id="training-upgrade-area" class="training-area">
+    <div id="training-grid" class="training-grid"></div>
+    <div id="training-detail" class="training-detail"></div>
   </div>
-  <div id="castle-quest-area" style="display:none;"></div>
+  <div id="training-skill-area" class="training-area" style="display:none;">
+    <div style="color:#888;text-align:center;padding:40px;font-size:.9rem;">📚 스킬 교체가 곧 준비됩니다...<br><br><span style="font-size:.75rem;color:#555;">스킬 교체 시스템 개발 중</span></div>
+  </div>
   <div style="padding:8px;text-align:center;"><button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button></div>
 </div>
 
@@ -362,10 +412,10 @@
   <!-- 출전 카드 (상단) -->
   <div style="font-size:.85rem;color:#ffd700;text-align:center;margin:4px 0;">▼ 출전 동료 ▼</div>
   <div id="cs-selected" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:10px 15px;min-height:80px;background:rgba(255,215,0,.08);border:2px solid #ffd700;border-radius:8px;margin:0 10px 10px;"></div>
-  <div style="padding:8px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+  <div class="cs-actions" style="padding:8px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
     <button class="btn btn-s" data-action="game.showMenu">← 돌아가기</button>
-    <button class="btn btn-s btn-blue" data-action="game.saveFormation">📜 편성 기억</button>
-    <button class="btn btn-s btn-purple" data-action="game.loadFormation">📜 편성 소환</button>
+    <!-- 2026-05-03: 편성 기억/소환 통합 → 편성 슬롯 모달 (3슬롯 + 이름 편집) -->
+    <button class="btn btn-s btn-blue" data-action="formationSlots.open">📜 편성 슬롯</button>
     <button class="btn btn-green" id="cs-go-btn" data-action="game.confirmCardSelect" disabled style="font-size:1.1rem;padding:12px 36px;">⚔️ 도전자 찾기 →</button>
   </div>
   <!-- 유물 출전 -->

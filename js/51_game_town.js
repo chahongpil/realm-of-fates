@@ -44,9 +44,10 @@ Object.assign(RoF.Game, {
       icon:'👴', name:'늙은 조언자',
       greet:'영웅이여, 어떤 일로 오셨소?',
       choices:[
-        // 2026-04-28: showCastleQuestTab 도 탭 전환 메서드라 wrapper 로 변경 (도서관/선술집과 같은 패턴).
-        {label:'동료 단련하기', action:'showCastle'},               // upgrade 가 default 탭
-        {label:'퀘스트 받기',   action:'showCastleQuestEntry'},     // showCastle + showCastleQuestTab
+        // 2026-05-02: 단련은 훈련장으로 분리. 왕궁 = 퀘스트 + 전직 (전직 placeholder).
+        {label:'퀘스트 받기',   action:'showCastleQuestEntry'},
+        {label:'전직 알아보기', action:'modal', comingSoon:true,
+          modal:{title:'⚜️ 전직', body:'영웅의 새 길이 곧 열립니다.\n\n(전직 시스템 준비 중)'}},
         {label:'대화하기',      action:'chat'},
       ],
       chat:'운명의 왕좌까지 가는 길은 멀다오. 한 걸음씩, 천천히 가시오.',
@@ -67,8 +68,13 @@ Object.assign(RoF.Game, {
       icon:'🙏', name:'수녀',
       greet:'신의 축복이 함께하시길.',
       choices:[
+        // 2026-05-02: guard 확장 — 영웅 포함 + 부분 손상 카드도 검사 (showChurch filter 와 일치)
         {label:'부상자 회복하기', action:'showChurch',
-          guard:(g)=>g.deck.some(c=>c.injured&&!c.isHero),
+          guard:(g)=>g.deck.some(c=>{
+            if(c.injured)return true;
+            const hp=c.currentHp!=null?c.currentHp:c.hp;
+            return hp<c.hp;
+          }),
           denyMsg:'지금은 부상자가 없네요. 신께서 모두를 보살피셨군요.'},
         {label:'장례 치르기',     action:'showChurch',
           guard:(g)=>g.deck.some(c=>c.injured&&!c.isHero),
@@ -93,8 +99,9 @@ Object.assign(RoF.Game, {
       icon:'👦', name:'허수아비',
       greet:'...저를 때려도 됩니다.',
       choices:[
-        {label:'수련하기', action:'modal', comingSoon:true,
-          modal:{title:'🏟️ 훈련장', body:'동료 수련 기능이 곧 열립니다.\n\n(수련 시스템 준비 중)'}},
+        // 2026-05-02: 단련 (왕궁에서 이전) + 스킬 교체 (placeholder).
+        {label:'단련하기',   action:'showTraining'},                // upgrade 가 default 탭
+        {label:'스킬 교체', action:'showTrainingSkillEntry'},        // showTraining + showTrainingSkillTab
         {label:'대화하기', action:'chat'},
       ],
       chat:'...언젠가는, 저도 움직일 수 있을까요?',
@@ -134,9 +141,10 @@ Object.assign(RoF.Game, {
       icon:'🛏️', name:'여관 주인',
       greet:'어서 오세요, 여행자여. 잠시 쉬어 가시지요.',
       choices:[
-        {label:'휴식하기 (HP·에너지 회복)', action:'showInn',
-          guard:(g)=>g.deck.some(c=>!c.injured && ((c.currentHp!=null?c.currentHp:c.hp)<c.hp || (c.curNrg!=null?c.curNrg:0)<(c.nrg||0))),
-          denyMsg:'모두 만전이시군요. 지금은 쉬실 필요 없겠어요.'},
+        // 2026-05-02: 여관 = 에너지 회복 전담. HP 회복은 성당으로 이동.
+        {label:'에너지 회복하기', action:'showInn',
+          guard:(g)=>g.deck.some(c=>!c.injured && (c.curNrg!=null?c.curNrg:0)<(c.nrg||0)),
+          denyMsg:'에너지가 모두 만전이시군요. 지금은 쉬실 필요 없겠어요.'},
         {label:'정보 듣기', action:'modal', comingSoon:true,
           modal:{title:'🛏️ 여관 소문', body:'먼 곳의 소문과 정보가 곧 들려올 것입니다.\n\n(정보 시스템 준비 중)'}},
         {label:'대화하기',  action:'chat'},
@@ -151,7 +159,9 @@ Object.assign(RoF.Game, {
         {label:'리그 도전하기',   action:'startBattle'},
         {label:'원정대 모집하기', action:'modal', comingSoon:true,
           modal:{title:'🚪 원정대', body:'동료들과 함께 보스 토벌에 나서는 기능이 곧 열립니다.\n\n(원정대 시스템 준비 중)'}},
-        {label:'결투장 입장하기', action:'startGhostBattle'},
+        // 2026-05-02: 결투장 준비중으로 변경 (사용자 결정).
+        {label:'결투장 입장하기', action:'modal', comingSoon:true,
+          modal:{title:'⚔️ 결투장', body:'다른 영주의 영웅과 1:1 결투를 벌이는 결투장이 곧 열립니다.\n\n(결투장 시스템 준비 중)'}},
       ],
       // gate 는 핵심 기능 4개라 chat 옵션 없음 — 4 선택지로 충분.
     },
@@ -180,8 +190,20 @@ Object.assign(RoF.Game, {
     const hLv=hero?(hero.level||1):1;
     const lg=this.getLeague();const lp=this.leaguePoints||0;
 
-    // HUD
-    document.getElementById('menu-welcome').textContent=`⭐ ${Auth.user} Lv.${hLv}`;
+    // HUD — 2026-05-03: menu-welcome → 프로필 슬롯 (이미지 + 닉/Lv 분리). getProfileCard() = 영웅 default + profileCardId 우선.
+    const profileCard = (typeof this.getProfileCard === 'function') ? this.getProfileCard() : hero;
+    const profImgEl = document.getElementById('town-profile-img');
+    if(profImgEl){
+      const src = profileCard ? RoF.getCardImg(profileCard) : null;
+      profImgEl.style.backgroundImage = src ? `url('${src}')` : '';
+      profImgEl.classList.toggle('is-empty', !src);
+    }
+    const profNameEl = document.getElementById('town-profile-name');
+    if(profNameEl) profNameEl.textContent = Auth.user || '—';
+    const profLvEl = document.getElementById('town-profile-lv');
+    // 프로필 카드의 Lv 표시 (영웅 = hLv, 다른 카드는 그 카드의 Lv)
+    const profLv = profileCard ? (profileCard.level || 1) : hLv;
+    if(profLvEl) profLvEl.textContent = `Lv.${profLv}`;
     document.getElementById('town-league').innerHTML=`<span style="color:${lg.color};">${lg.icon} ${lg.name} (${lp}점)</span>`;
     document.getElementById('town-gold').textContent=this.gold;
     document.getElementById('town-bless').textContent=this.blessings||0;

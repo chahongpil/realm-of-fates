@@ -24,6 +24,8 @@
     fx:         'FX',
     backend:    'Backend',
     settings:   'Settings',
+    profile:    'Profile',
+    formationSlots: 'FormationSlots',
   };
 
   function resolveAction(actionStr) {

@@ -46,6 +46,15 @@
 - 원본 파일명: `vjgalaxy-epic-gregorian-choir-cinematic-soundtrack-canticum-tenebrae-03-436725.mp3`
 - 용도: title (약 8분, 7.78 MB)
 
+### title4.mp3 (2026-05-02 추가)
+- 다운로드 URL: Pixabay (track ID 323163) — https://pixabay.com/music/?q=hitslab
+- 업로더/아티스트: **hitslab**
+- 트랙명: Gospel Worship Christian Church Music
+- 라이선스: Pixabay Content License
+- 다운로드 날짜: 2026-05-02
+- 원본 파일명: `[타이틀노래_조용함]hitslab-gospel-worship-christian-church-music-323163.mp3`
+- 용도: **title + town** (양쪽 풀 등록 — 사용자 결정. 약 4.07 MB, ~3분 추정. "조용함" — 잔잔한 분위기)
+
 ---
 
 ## Town BGM

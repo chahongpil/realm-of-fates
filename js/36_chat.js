@@ -35,6 +35,14 @@
   const FLOOD_WARN_AT   = 8;
   const FLOOD_HARD_LIMIT = 10;
 
+  // PHASE 5 Step 4 v2 / 2단계: @ 자동완성 dropdown 표시용 라벨.
+  const ELEM_BADGE = {
+    fire:'🔥', water:'💧', lightning:'⚡', earth:'🌿', holy:'✨', dark:'🌙'
+  };
+  const RARITY_LABEL = {
+    bronze:'일반', silver:'희귀', gold:'고귀한', legendary:'전설의', divine:'신'
+  };
+
   const Chat = {
     _activeKind: DEFAULT_KIND,   // 'world' | 'league' | 'guild'
     _activeChannel: 'ch_world',  // 실제 channel id — _resolveChannel() 로 갱신
@@ -160,26 +168,75 @@
         counter.textContent = `${len}/${MAX_LEN}`;
         counter.classList.toggle('over', len > MAX_LEN);
         counter.classList.toggle('warn', len > MAX_LEN * 0.9 && len <= MAX_LEN);
-        // 2026-04-27 Step 4b: 텍스트 OR 첨부 카드 둘 중 하나라도 있으면 send 활성화
-        send.disabled = (len === 0 && !this._attachedCard) || len > MAX_LEN;
+        // 2026-05-02: share 폐기 → 텍스트만으로 send 활성화 판정
+        send.disabled = len === 0 || len > MAX_LEN;
       };
-      input.addEventListener('input', updateCounter);
+      input.addEventListener('input', () => {
+        updateCounter();
+        // 2026-05-02 Step 4 v2 / 2단계: @ 자동완성 — input 마다 prefix 재평가
+        this._handleMentionInput(input);
+      });
       updateCounter();
 
       send.onclick = () => this._sendMessage();
       input.addEventListener('keydown', (e) => {
+        // 2026-05-02 Step 4 v2 / 4단계: mention dropdown 키보드 navigation
+        if(this._mentionOpen){
+          if(e.key === 'Escape'){
+            e.preventDefault();
+            this._hideMentionDropdown();
+            return;
+          }
+          if(e.key === 'ArrowDown'){
+            e.preventDefault();
+            this._moveMentionSelection(+1);
+            return;
+          }
+          if(e.key === 'ArrowUp'){
+            e.preventDefault();
+            this._moveMentionSelection(-1);
+            return;
+          }
+          if(e.key === 'Enter' && !e.shiftKey){
+            e.preventDefault();
+            this._confirmMentionSelection();
+            return;
+          }
+          if(e.key === 'Tab'){
+            // Tab 도 확정 (slack/discord 패턴)
+            e.preventDefault();
+            this._confirmMentionSelection();
+            return;
+          }
+        }
         if(e.key === 'Enter' && !e.shiftKey){
           e.preventDefault();
           this._sendMessage();
         }
       });
+      // 2026-05-02 Step 4 v2 / 5단계: cursor 이동·focus 시 mention 재평가
+      //   사용자가 textarea 외부 클릭 후 다시 들어와 cursor 가 `@xxx` 안에 있으면 dropdown 다시 표시.
+      input.addEventListener('click', () => this._handleMentionInput(input));
+      input.addEventListener('keyup', (e) => {
+        // 화살표·홈·엔드 등 cursor 이동 키만 재평가 (텍스트 입력은 input 이벤트가 처리)
+        if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
+          this._handleMentionInput(input);
+        }
+      });
+      input.addEventListener('focus', () => {
+        // focus 복귀 시점 — cursor 위치 기반 재평가
+        this._handleMentionInput(input);
+      });
+      // dropdown 외부 클릭 시 닫기 — mousedown 이 먼저 잡혀야 selection 보호
+      input.addEventListener('blur', () => {
+        setTimeout(() => this._hideMentionDropdown(), 150);
+      });
 
-      // 2026-04-27 PHASE 5 Step 4b: + 버튼 활성화 + 카드 picker 핸들러.
+      // 2026-05-02: PHASE 5 Step 4 카드 share 시스템 폐기 — + 버튼 숨김.
+      //   향후 채팅에서는 텍스트 내 카드 이름 링크 → default 모달 (별도 phase) 로 대체.
       const attach = panel.querySelector('.cp-attach');
       if(attach){
-        attach.disabled = false;
-        attach.title = '카드 공유';
-        attach.onclick = () => this._showCardPicker();
+        attach.style.display = 'none';
       }
 
       // 채널 제목 초기화
@@ -298,22 +355,25 @@
 
       const text = document.createElement('div');
       text.className = 'cp-msg-text';
-      text.textContent = msg.text;   // textContent 로 XSS 방지
+      // 2026-05-02: PHASE 5 Step 4 v2 — 카드 이름 자동 링크화.
+      //   메시지 텍스트 안 카드 이름 (UNITS / 영웅 prototype) 매칭 → 파란 링크 element.
+      //   클릭 시 _showCardDetailModal 호출 (default 카드 모달).
+      this._renderTextWithCardLinks(text, msg.text || '');
 
       el.appendChild(head);
       // 텍스트 비어있으면 (첨부 단독 전송) 텍스트 div 생략
       if(msg.text) el.appendChild(text);
 
-      // 2026-04-27 Step 4c: attached_card 있으면 미니 카드 첨부 (kind:'share') + 클릭 시 풀사이즈 모달
+      // 2026-05-02: PHASE 5 Step 4 share 폐기 — 과거 메시지의 attached_card 는 텍스트 라벨로 표시.
+      //   기존 데이터 호환 유지 (DB 에 남아있을 수 있음). 신규 메시지에는 attached_card 안 붙음.
       if(msg.attached_card && typeof msg.attached_card === 'object'){
         const ac = msg.attached_card;
-        // attached_card.lv → unit.level 변환 (V4 컴포넌트는 .level 필드 사용)
-        const cardData = Object.assign({}, ac, { level: ac.level != null ? ac.level : ac.lv });
-        if(RoF.CardV4Component && RoF.CardV4Component.create){
-          const inst = RoF.CardV4Component.create(cardData, { kind: 'share' });
-          inst.el.addEventListener('click', () => this._showCardDetailModal(cardData));
-          el.appendChild(inst.el);
-        }
+        const fallback = document.createElement('span');
+        fallback.className = 'cp-msg-card-fallback';
+        fallback.style.cssText = 'display:inline-block;padding:2px 8px;background:rgba(232,189,74,.12);color:#e8bd4a;border-radius:3px;font-size:11px;margin-left:6px;cursor:default';
+        fallback.textContent = '🃏 ' + (ac.name || '카드');
+        fallback.title = '과거 share 카드 (시스템 폐기됨)';
+        el.appendChild(fallback);
       }
 
       // 스크롤이 맨 아래 근처일 때만 auto-scroll (과거 메시지 보는 중엔 유지)
@@ -334,7 +394,8 @@
       const input = panel.querySelector('.cp-input');
       const text = input.value.trim();
       // 2026-04-27 Step 4b: 텍스트 OR 첨부 카드 둘 중 하나라도 있으면 전송 가능 (자랑용 단독 전송)
-      if(!text && !this._attachedCard) return;
+      // 2026-05-02: share 폐기 → 텍스트 없으면 전송 안 함 (이전엔 첨부카드 단독 전송 가능했음)
+      if(!text) return;
       if(text.length > MAX_LEN){
         this._showBanner(`메시지 길이 초과 (${text.length}/${MAX_LEN})`, 'error');
         return;
@@ -368,9 +429,9 @@
       }
 
       input.disabled = true;
-      // 2026-04-27 Step 4b: attached_card 동봉 (없으면 null — 기존 동작과 동일)
+      // 2026-05-02: share 폐기 — attached_card 항상 null (backend API 호환 유지).
       // 2026-04-28 Step 5c: 금칙어 마스킹된 cleanText 전송 (원문 text 아님)
-      const {error, message} = await Backend.chatSend(this._activeChannel, cleanText, this._attachedCard || null);
+      const {error, message} = await Backend.chatSend(this._activeChannel, cleanText, null);
       input.disabled = false;
       if(error){
         if(error.includes('mute') || error.includes('not-muted')) {
@@ -395,87 +456,283 @@
       }
       input.value = '';
       input.dispatchEvent(new Event('input'));  // counter 갱신
-      // 2026-04-27 Step 4b: 전송 후 첨부 클리어
-      this._clearAttachedCard();
       input.focus();
     },
 
-    // ── PHASE 5 Step 4b: 카드 picker + 첨부 state ─────────────────
-    /** 내 덱에서 카드 1장 선택 → this._attachedCard 세팅. 동적 overlay. */
-    _showCardPicker(){
-      const game = (typeof RoF !== 'undefined' && RoF.Game) ? RoF.Game : null;
-      if(!game || !Array.isArray(game.deck) || game.deck.length === 0){
-        this._showBanner('덱에 공유할 카드가 없습니다', 'info');
+    // 2026-05-02: PHASE 5 Step 4 카드 share 시스템 폐기.
+    //   _showCardPicker / _setAttachedCard / _clearAttachedCard / _refreshSendButton / _renderAttachedPreview 5 함수 제거.
+    //   향후 채팅 카드 링크는 텍스트 내 카드 이름 인식 → _showCardDetailModal 재사용 (별도 phase).
+
+    // ── 2026-05-02 Step 4 v2 / 2단계: @ 자동완성 (입력 측) ──────────
+    //   1단계 텍스트 자동 링크는 _renderTextWithCardLinks 가 처리.
+    //   여기서는 입력 시 `@` 다음 prefix 를 매칭해 dropdown 표시.
+    //   본 단계에서는 마우스 클릭 선택만 — 키보드 navigation 은 4단계.
+    _mentionOpen: false,
+    _mentionAnchor: -1,   // textarea 내 `@` 위치 (start)
+    _mentionPrefix: '',   // `@` 뒤 사용자가 입력한 부분
+    _mentionSelectedIndex: -1,   // 4단계: 키보드 nav 선택 인덱스 (-1 = 미선택)
+    _mentionItems: [],           // 현재 dropdown 에 렌더된 unit 배열 (Enter 확정용)
+    _mentionLastPrefix: null,    // 마지막 렌더 시 prefix — 같은 prefix 재호출 시 selectedIndex 보존
+
+    /** input 변경 시 호출 — cursor 직전 텍스트에서 @ 패턴 추출, dropdown 갱신/숨김. */
+    _handleMentionInput(input){
+      const value = input.value;
+      const cursor = input.selectionStart || 0;
+      // cursor 앞으로 거슬러 올라가며 @ 찾기, 공백/줄바꿈/특수문자 만나면 중단.
+      let at = -1;
+      for(let i = cursor - 1; i >= 0; i--){
+        const ch = value[i];
+        if(ch === '@'){ at = i; break; }
+        if(/[\s\n\r\t]/.test(ch)) break;
+        // 너무 길면 중단 (10글자 이상이면 mention 아닐 가능성 높음)
+        if(cursor - i > 12) break;
+      }
+      if(at < 0){
+        this._hideMentionDropdown();
         return;
       }
-      // 기존 picker 가 떠 있으면 중복 방지
-      if(document.getElementById('cp-card-picker')) return;
-      const overlay = document.createElement('div');
-      overlay.id = 'cp-card-picker';
-      overlay.className = 'cp-card-picker';
-      overlay.innerHTML = `
-        <div class="cp-cp-header">
-          <span class="cp-cp-title">공유할 카드 선택</span>
-          <button type="button" class="cp-cp-close" title="닫기">✕</button>
-        </div>
-        <div class="cp-cp-grid"></div>
-      `;
-      const grid = overlay.querySelector('.cp-cp-grid');
-      game.deck.forEach(card => {
-        if(!card || !card.id) return;
-        const inst = (RoF.CardV4Component && RoF.CardV4Component.create)
-          ? RoF.CardV4Component.create(card, { kind: 'share' })
-          : null;
-        if(!inst) return;
-        inst.el.addEventListener('click', () => {
-          this._setAttachedCard(card);
-          overlay.remove();
-        });
-        grid.appendChild(inst.el);
-      });
-      overlay.querySelector('.cp-cp-close').onclick = () => overlay.remove();
-      // 바깥 클릭 시 닫기
-      overlay.addEventListener('click', (e) => {
-        if(e.target === overlay) overlay.remove();
-      });
+      // @ 바로 앞이 글자면 이메일·URL 패턴이라 무시 (예: foo@bar)
+      if(at > 0 && /[\w가-힣]/.test(value[at - 1])){
+        this._hideMentionDropdown();
+        return;
+      }
+      const prefix = value.substring(at + 1, cursor);
+      this._mentionAnchor = at;
+      this._mentionPrefix = prefix;
+      this._showMentionDropdown(prefix);
+    },
+
+    /** dropdown 표시 — prefix 로 필터한 카드 list 렌더. */
+    _showMentionDropdown(prefix){
       const panel = document.getElementById(PANEL_ID);
-      panel.appendChild(overlay);
+      if(!panel) return;
+      const inputRow = panel.querySelector('.cp-input-row');
+      if(!inputRow) return;
+
+      let dd = panel.querySelector('.cp-mention-dropdown');
+      if(!dd){
+        dd = document.createElement('div');
+        dd.className = 'cp-mention-dropdown';
+        // input-row 의 형제로 삽입 (input-row 위에 띄움 — 절대좌표 + bottom)
+        inputRow.parentNode.insertBefore(dd, inputRow);
+      }
+      const matches = this._filterMentions(prefix);
+      dd.innerHTML = '';
+      if(matches.length === 0){
+        // 매칭 없으면 dropdown 닫음 (시각 노이즈 방지)
+        this._hideMentionDropdown();
+        return;
+      }
+      // 4단계: items 캐싱 + 선택 인덱스 초기화 (prefix 변경/항목 축소 시에만 0 reset)
+      const prefixChanged = this._mentionLastPrefix !== prefix;
+      this._mentionLastPrefix = prefix;
+      this._mentionItems = matches;
+      if(prefixChanged || this._mentionSelectedIndex < 0 || this._mentionSelectedIndex >= matches.length){
+        this._mentionSelectedIndex = 0;
+      }
+      const selIdx = this._mentionSelectedIndex;
+      matches.forEach((u, idx) => {
+        const item = document.createElement('div');
+        item.className = 'cp-mention-item' + (idx === selIdx ? ' selected' : '');
+        item.dataset.unitId = u.id;
+        item.dataset.idx = String(idx);
+
+        const elem = document.createElement('span');
+        elem.className = 'cp-mention-elem';
+        elem.style.color = `var(--el-${u.element || 'water'})`;
+        elem.textContent = ELEM_BADGE[u.element] || '◆';
+
+        const name = document.createElement('span');
+        name.className = 'cp-mention-name';
+        name.textContent = u.name;
+
+        const rar = document.createElement('span');
+        rar.className = 'cp-mention-rar';
+        rar.textContent = RARITY_LABEL[u.rarity] || u.rarity || '';
+        rar.style.color = `var(--rar-${u.rarity || 'bronze'})`;
+
+        item.appendChild(elem);
+        item.appendChild(name);
+        item.appendChild(rar);
+        // mousedown — blur 이벤트보다 먼저 잡혀 dropdown 닫힘 회피
+        item.addEventListener('mousedown', e => {
+          e.preventDefault();
+          this._selectMention(u);
+        });
+        // 4단계: hover 시 selected index 동기화 (마우스/키보드 일관)
+        item.addEventListener('mouseenter', () => {
+          this._mentionSelectedIndex = idx;
+          this._renderMentionSelection();
+        });
+        dd.appendChild(item);
+      });
+      dd.hidden = false;
+      this._mentionOpen = true;
     },
 
-    /** 첨부 카드 세팅 + 미리보기 렌더. attached_card row 스키마: {id, rarity, lv, element, ...}.
-     *  Step 4c 에서 수신 시 동일 데이터로 mini 카드 재구성하므로 표시에 필요한 필드 모두 포함. */
-    _setAttachedCard(card){
-      this._attachedCard = {
-        id: card.id,
-        name: card.name,
-        rarity: card.rarity || 'bronze',
-        lv: card.level || 1,
-        element: card.element || '',
-        atk: card.atk, def: card.def, spd: card.spd,
-        hp: card.hp, nrg: card.nrg,
-        luck: card.luck, eva: card.eva,
-        skill: card.skill,
-        isHero: !!card.isHero,
-      };
-      this._renderAttachedPreview();
-      this._refreshSendButton();
+    /** 4단계: 선택 인덱스 ±1 이동, dropdown 시각 갱신 + 스크롤 가시화. */
+    _moveMentionSelection(delta){
+      if(!this._mentionItems.length) return;
+      const len = this._mentionItems.length;
+      let i = this._mentionSelectedIndex + delta;
+      // wrap-around (slack 방식 — 위쪽 끝에서 ↑ 누르면 마지막으로)
+      if(i < 0) i = len - 1;
+      if(i >= len) i = 0;
+      this._mentionSelectedIndex = i;
+      this._renderMentionSelection();
     },
 
-    _clearAttachedCard(){
-      this._attachedCard = null;
-      this._renderAttachedPreview();
-      this._refreshSendButton();
+    /** 4단계: selected 클래스 갱신 + 보이지 않으면 스크롤. */
+    _renderMentionSelection(){
+      const panel = document.getElementById(PANEL_ID);
+      if(!panel) return;
+      const dd = panel.querySelector('.cp-mention-dropdown');
+      if(!dd) return;
+      const items = dd.querySelectorAll('.cp-mention-item');
+      items.forEach((el, idx) => {
+        el.classList.toggle('selected', idx === this._mentionSelectedIndex);
+      });
+      // 선택 항목이 가시 영역 밖이면 scrollIntoView
+      const sel = items[this._mentionSelectedIndex];
+      if(sel){
+        const ddRect = dd.getBoundingClientRect();
+        const itemRect = sel.getBoundingClientRect();
+        if(itemRect.top < ddRect.top){
+          dd.scrollTop -= (ddRect.top - itemRect.top);
+        } else if(itemRect.bottom > ddRect.bottom){
+          dd.scrollTop += (itemRect.bottom - ddRect.bottom);
+        }
+      }
     },
 
-    /** updateCounter 재실행 트리거 — 첨부 변경 시 send.disabled 동기화 */
-    _refreshSendButton(){
+    /** 4단계: Enter/Tab 으로 현재 선택 항목 확정. 미선택(-1) 이거나 항목 0개면 first 항목. */
+    _confirmMentionSelection(){
+      if(!this._mentionItems.length) return;
+      let i = this._mentionSelectedIndex;
+      if(i < 0 || i >= this._mentionItems.length) i = 0;
+      this._selectMention(this._mentionItems[i]);
+    },
+
+    /** prefix 기반 매칭 — 한글 startsWith 우선 → includes. 최대 8개. */
+    _filterMentions(prefix){
+      const units = (window.RoF && RoF.Data && RoF.Data.UNITS) ? RoF.Data.UNITS : [];
+      const pool = units.filter(u => !u.id.startsWith('h_') && u.name && u.name.length >= 2);
+      const p = (prefix || '').trim();
+      if(!p){
+        // 빈 prefix — 인기 카드 8개 반환 (rarity 높은 순)
+        const RARITY_ORDER = { divine:5, legendary:4, gold:3, silver:2, bronze:1 };
+        return pool
+          .slice()
+          .sort((a,b) => (RARITY_ORDER[b.rarity]||0) - (RARITY_ORDER[a.rarity]||0))
+          .slice(0, 8);
+      }
+      const lower = p.toLowerCase();
+      const startsWith = [];
+      const includes = [];
+      pool.forEach(u => {
+        const n = u.name.toLowerCase();
+        if(n.startsWith(lower)) startsWith.push(u);
+        else if(n.includes(lower)) includes.push(u);
+      });
+      // startsWith 우선, 그 다음 includes — 합쳐서 8개 cap
+      return [...startsWith, ...includes].slice(0, 8);
+    },
+
+    /** dropdown 닫기 — open/anchor/prefix/items 만 reset.
+     *  selectedIndex 와 lastPrefix 는 보존 (blur 후 refocus 시 같은 prefix 면 idx 유지). */
+    _hideMentionDropdown(){
+      const panel = document.getElementById(PANEL_ID);
+      if(!panel) return;
+      const dd = panel.querySelector('.cp-mention-dropdown');
+      if(dd){
+        dd.hidden = true;
+        dd.innerHTML = '';
+      }
+      this._mentionOpen = false;
+      this._mentionAnchor = -1;
+      this._mentionPrefix = '';
+      this._mentionItems = [];
+      // selectedIndex 와 lastPrefix 는 의도적으로 보존
+    },
+
+    /** 명시적 reset — 선택 완료/패널 닫기 등 "한 번의 mention 흐름 종료" 시 호출. */
+    _resetMentionState(){
+      this._hideMentionDropdown();
+      this._mentionSelectedIndex = -1;
+      this._mentionLastPrefix = null;
+    },
+
+    /** mention 선택 — textarea 의 @prefix 부분을 카드 이름으로 치환.
+     *  자동 링크는 _renderTextWithCardLinks 가 메시지 표시 시 처리하므로
+     *  textarea 에 들어가는 건 plain 카드 이름. */
+    _selectMention(unit){
       const panel = document.getElementById(PANEL_ID);
       if(!panel) return;
       const input = panel.querySelector('.cp-input');
-      if(input) input.dispatchEvent(new Event('input'));
+      if(!input || this._mentionAnchor < 0) return;
+      const value = input.value;
+      const cursor = input.selectionStart || 0;
+      const before = value.substring(0, this._mentionAnchor);
+      const after = value.substring(cursor);
+      // @prefix → 카드이름 + 공백 (다음 입력이 자연스럽게 이어지도록)
+      const newValue = before + unit.name + ' ' + after;
+      input.value = newValue;
+      const newCursor = (before + unit.name + ' ').length;
+      input.setSelectionRange(newCursor, newCursor);
+      input.dispatchEvent(new Event('input'));  // counter 갱신 + 다음 mention 재평가
+      input.focus();
+      this._resetMentionState();   // 한 mention 흐름 종료 — selectedIndex/lastPrefix 도 reset
     },
 
-    /** Step 4d: 첨부 미니카드 클릭 시 풀사이즈 V4 카드 + 어두운 배경 modal */
+    /** 2026-05-02 Step 4 v2: 텍스트 안 카드 이름 자동 링크화.
+     *  UNITS 의 name 매칭 — 일반 유닛만 (영웅 이름은 사용자 닉네임이라 제외).
+     *  매칭된 부분 → <a class="cp-card-link"> + 클릭 시 default 카드 모달.
+     *  textContent 기반 이라 XSS 방지 (innerHTML 사용 X). */
+    _renderTextWithCardLinks(container, raw){
+      if(!raw){ return; }
+      const units = (window.RoF && RoF.Data && RoF.Data.UNITS) ? RoF.Data.UNITS : [];
+      // 영웅 prototype (h_*) 제외, 이름 길이 긴 순 정렬 (긴 이름 우선 매칭으로 부분 일치 회피)
+      const candidates = units
+        .filter(u => !u.id.startsWith('h_') && u.name && u.name.length >= 2)
+        .slice()
+        .sort((a,b) => b.name.length - a.name.length);
+      // 정규식 escape 헬퍼
+      const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // 단순 알고리즘 — 한 번에 한 카드 이름씩 split. 긴 이름 우선.
+      // 2026-05-02: lookbehind/lookahead 한국어 단어 경계 처리 시도 후 회귀 (play-director #C5 결과).
+      //   조사(가/이/을/는/의/를/와) 가 가-힣 범위라 "그리핀이/지니가/도적의" 90% 케이스 매칭 실패 부작용.
+      //   합성어("기사단" 안의 "기사") 회피 효과보다 조사 차단 손실이 큼.
+      //   대안: 긴 이름 우선 정렬(이미 적용) 으로 합성어 일부 완화. 향후 형태소 분석 기반 분리 검토.
+      let segments = [{type:'text', value: raw}];
+      candidates.forEach(u => {
+        const re = new RegExp(escRe(u.name), 'g');
+        const next = [];
+        segments.forEach(seg => {
+          if(seg.type !== 'text'){ next.push(seg); return; }
+          const parts = seg.value.split(re);
+          for(let i=0; i<parts.length; i++){
+            if(parts[i]) next.push({type:'text', value:parts[i]});
+            if(i < parts.length - 1) next.push({type:'card', unit:u});
+          }
+        });
+        segments = next;
+      });
+      // DOM 구성
+      segments.forEach(seg => {
+        if(seg.type === 'text'){
+          if(seg.value) container.appendChild(document.createTextNode(seg.value));
+        } else {
+          const a = document.createElement('a');
+          a.className = 'cp-card-link';
+          a.textContent = seg.unit.name;
+          a.title = `${seg.unit.name} — 클릭하여 상세보기`;
+          a.onclick = e => { e.preventDefault(); this._showCardDetailModal(seg.unit); };
+          container.appendChild(a);
+        }
+      });
+    },
+
+    /** Step 4d: 카드 디테일 모달 — share 폐기 후에도 유지 (향후 링크 시스템에서 재사용). */
     _showCardDetailModal(card){
       // 중복 방지
       if(document.getElementById('cp-card-detail')) return;
@@ -497,31 +754,6 @@
         if(e.target === overlay) overlay.remove();
       });
       document.body.appendChild(overlay);
-    },
-
-    /** 입력창 위 첨부 미리보기 띠. 카드 이름 + ✕ 제거 버튼. */
-    _renderAttachedPreview(){
-      const panel = document.getElementById(PANEL_ID);
-      if(!panel) return;
-      let prev = panel.querySelector('.cp-attach-preview');
-      if(!this._attachedCard){
-        if(prev) prev.remove();
-        return;
-      }
-      if(!prev){
-        prev = document.createElement('div');
-        prev.className = 'cp-attach-preview';
-        const inputRow = panel.querySelector('.cp-input-row');
-        panel.insertBefore(prev, inputRow);
-      }
-      const c = this._attachedCard;
-      const rLabel = {bronze:'일반', silver:'희귀', gold:'고귀한', legendary:'전설의', divine:'신'}[c.rarity] || c.rarity;
-      prev.innerHTML = `
-        <span class="cp-ap-icon">📎</span>
-        <span class="cp-ap-name">${c.isHero ? '⭐ ' : ''}${c.name || c.id} (${rLabel} Lv${c.lv})</span>
-        <button type="button" class="cp-ap-remove" title="첨부 제거">✕</button>
-      `;
-      prev.querySelector('.cp-ap-remove').onclick = () => this._clearAttachedCard();
     },
 
     // ── 내부: 뮤트 상태 ────────────────────────────────

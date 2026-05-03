@@ -1,0 +1,1430 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>카드 도식화 — Realm of Fates</title>
+<style>
+:root{
+  --bg:#120f0c; --panel:#1a1512; --ink:#f1e4c3; --muted:#b89968;
+  --gold:#e8bd4a; --border:#6e4a2a;
+  --rar-bronze:#b8b8c0; --rar-silver:#3a7bd5; --rar-gold:#9b59b6;
+  --rar-legendary:#f39c12; --rar-divine:#e8bd4a;
+  --role-attack:#e74c3c; --role-defense:#3498db; --role-support:#2ecc71;
+  --role-crit:#f39c12;
+  /* 2026-05-02 옵션 A — Lightning↔Light 충돌 해소 + Earth 진한 brown */
+  --elem-fire:#ff6b3d; --elem-water:#1565c0; --elem-lightning:#fdd835;
+  --elem-earth:#5d4037; --elem-holy:#fff8e1; --elem-dark:#4a148c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,'Noto Sans KR',sans-serif}
+body{padding:24px 32px 80px}
+h1{font-size:22px;color:var(--gold);margin:0 0 4px;letter-spacing:.04em}
+h2{font-size:15px;color:var(--gold);margin:24px 0 10px;border-top:1px solid #3a2a1a;padding-top:14px}
+.lead{color:var(--muted);margin:0 0 14px;font-size:12px;line-height:1.6}
+.summary{display:inline-flex;gap:14px;padding:6px 14px;background:#2b1c13;border:1px solid var(--border);border-radius:3px;font-size:11px;margin-bottom:18px;color:var(--muted)}
+.summary b{color:var(--gold);font-weight:700}
+
+/* 탭 */
+.tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:2px solid var(--border)}
+.tab{padding:8px 16px;background:transparent;color:var(--muted);border:none;cursor:pointer;font-size:13px;border-bottom:3px solid transparent;font-family:inherit;letter-spacing:.04em}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:700;background:rgba(232,189,74,.05)}
+.panel{display:none}
+.panel.active{display:block}
+.placeholder{padding:60px 32px;text-align:center;color:var(--muted);background:#1a1512;border:1px dashed var(--border);border-radius:6px;font-size:13px;line-height:1.8}
+.placeholder b{color:var(--gold)}
+
+/* 매트릭스 */
+.matrix{display:grid;grid-template-columns:80px repeat(6,minmax(220px,1fr));gap:6px}
+.matrix-skills-passive{display:grid;grid-template-columns:80px repeat(4,minmax(180px,1fr));gap:6px}
+.matrix-skills-active{display:grid;grid-template-columns:80px repeat(6,minmax(180px,1fr));gap:6px}
+.head-elem{padding:10px 4px;background:#2b1c13;border:1px solid var(--border);text-align:center;font-size:13px;font-weight:700}
+.head-role{padding:10px 4px;background:#2b1c13;border:1px solid var(--border);text-align:center;font-size:13px;font-weight:700}
+.head-rarity{padding:8px 4px;background:#2b1c13;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.head-rarity small{font-size:9px;opacity:.7;margin-top:2px}
+.cell{background:#1a1512;border:1px solid #3a2a1c;padding:6px;min-height:130px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;align-content:start}
+.cell-skill-passive{background:#1a1512;border:1px solid #3a2a1c;padding:6px;min-height:90px;display:flex;flex-direction:column;gap:4px}
+.cell-skill-active{background:#1a1512;border:1px solid #3a2a1c;padding:6px;min-height:90px;display:flex;flex-direction:column;gap:4px}
+
+/* 미니 카드 (유닛) */
+.unit{
+  position:relative;
+  border:2px solid var(--rar);
+  border-radius:3px;
+  background:#0a0810;
+  cursor:pointer;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  transition:transform .1s ease, box-shadow .15s ease;
+}
+.unit:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.5),0 0 8px var(--rar);z-index:5}
+.unit-img{width:100%;aspect-ratio:1/1;background:#2a2018;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden}
+.unit-img img{width:100%;height:100%;object-fit:cover}
+.unit-meta{padding:3px 4px 4px;font-size:9px;line-height:1.15;text-align:center;color:var(--ink);background:rgba(0,0,0,.4)}
+.unit-meta .name{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unit-meta .stats{color:var(--muted);font-size:8px;margin-top:1px}
+.role-bar{height:3px;background:var(--role)}
+
+/* 스킬 미니 카드 */
+.skill{
+  position:relative;
+  border-left:3px solid var(--rar);
+  border-top:1px solid #3a2a1c;
+  border-right:1px solid #3a2a1c;
+  border-bottom:1px solid #3a2a1c;
+  background:#0a0810;
+  padding:5px 7px;
+  border-radius:2px;
+  font-size:11px;
+  cursor:pointer;
+  transition:transform .1s ease, box-shadow .15s ease;
+}
+.skill:hover{transform:translateX(2px);box-shadow:2px 0 8px var(--rar)}
+.skill .name{font-weight:600;color:var(--ink);display:flex;align-items:center;gap:4px}
+.skill .name .icon{font-size:13px}
+.skill .desc{color:var(--muted);font-size:9px;margin-top:2px;line-height:1.3}
+.skill .meta{color:#5a4838;font-size:8px;margin-top:2px;display:flex;gap:6px;flex-wrap:wrap}
+.skill .meta .tag{background:#2a1a08;padding:1px 4px;border-radius:2px;color:var(--muted)}
+
+/* 빈 슬롯 */
+.empty{
+  border:1.5px dashed #3a2a1c;
+  border-radius:3px;
+  background:rgba(255,255,255,0.015);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:18px;color:#3a2a1c;
+  min-height:80px;
+  position:relative;
+  cursor:pointer;
+  transition:border-color .15s ease, color .15s ease;
+}
+.empty::after{content:attr(data-role);font-size:8px;color:#5a4838;margin-top:2px}
+.empty:hover{border-color:var(--role,#5a4838);color:var(--role,#5a4838)}
+.empty.role-attack{--role:var(--role-attack)}
+.empty.role-defense{--role:var(--role-defense)}
+.empty.role-support{--role:var(--role-support)}
+.empty.role-crit{--role:var(--role-crit)}
+
+.empty-skill{
+  border:1.5px dashed #3a2a1c;
+  border-radius:2px;
+  background:rgba(255,255,255,0.015);
+  padding:5px 7px;
+  font-size:11px;
+  color:#5a4838;
+  cursor:pointer;
+  text-align:center;
+  min-height:42px;
+  display:flex;align-items:center;justify-content:center;
+}
+.empty-skill:hover{border-color:var(--gold);color:var(--gold)}
+
+/* placeholder (사용자 입력 — LocalStorage) */
+.placeholder-card{
+  border:2px solid var(--gold);
+  border-radius:3px;
+  background:rgba(232,189,74,.08);
+  padding:8px 6px;
+  text-align:center;
+  font-size:10px;
+  color:var(--gold);
+  cursor:pointer;
+  min-height:80px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;
+}
+.placeholder-card .ph-name{font-weight:700;line-height:1.2;word-break:keep-all}
+.placeholder-card .ph-concept{font-size:8px;color:var(--muted);margin-top:3px;font-style:italic}
+.placeholder-card::before{content:'✏️';position:absolute;top:2px;right:3px;font-size:9px;opacity:.6}
+
+.placeholder-card.skill{
+  border-left-width:3px;
+  flex-direction:column;
+  text-align:left;
+  align-items:stretch;
+  justify-content:flex-start;
+  min-height:42px;
+  padding:5px 7px;
+}
+.placeholder-card.skill .ph-name{font-size:11px;text-align:left}
+.placeholder-card.skill .ph-concept{text-align:left;font-size:9px}
+
+/* 입력 input */
+.inline-input{
+  width:100%;
+  padding:4px 6px;
+  background:#0a0810;
+  color:var(--gold);
+  border:1px solid var(--gold);
+  border-radius:2px;
+  font:600 11px/1.3 'Noto Sans KR',sans-serif;
+  outline:none;
+}
+.inline-input:focus{box-shadow:0 0 0 2px rgba(232,189,74,.3)}
+
+/* 등급/역할/원소 적용 */
+.unit.rar-bronze, .skill.rar-bronze, .placeholder-card.rar-bronze{--rar:var(--rar-bronze)}
+.unit.rar-silver, .skill.rar-silver, .placeholder-card.rar-silver{--rar:var(--rar-silver)}
+.unit.rar-gold, .skill.rar-gold, .placeholder-card.rar-gold{--rar:var(--rar-gold)}
+.unit.rar-legendary, .skill.rar-legendary, .placeholder-card.rar-legendary{--rar:var(--rar-legendary)}
+.unit.rar-divine, .skill.rar-divine, .placeholder-card.rar-divine{--rar:var(--rar-divine);box-shadow:inset 0 0 4px rgba(255,255,255,.3)}
+.unit.role-attack{--role:var(--role-attack)}
+.unit.role-defense{--role:var(--role-defense)}
+.unit.role-support{--role:var(--role-support)}
+
+.head-elem.elem-fire{color:var(--elem-fire)}
+.head-elem.elem-water{color:var(--elem-water)}
+.head-elem.elem-lightning{color:var(--elem-lightning)}
+.head-elem.elem-earth{color:var(--elem-earth)}
+.head-elem.elem-holy{color:var(--elem-holy)}
+.head-elem.elem-dark{color:var(--elem-dark)}
+
+.head-role.role-attack{color:var(--role-attack)}
+.head-role.role-defense{color:var(--role-defense)}
+.head-role.role-support{color:var(--role-support)}
+.head-role.role-crit{color:var(--role-crit)}
+
+.head-rarity.rar-bronze{color:var(--rar-bronze)}
+.head-rarity.rar-silver{color:var(--rar-silver)}
+.head-rarity.rar-gold{color:var(--rar-gold)}
+.head-rarity.rar-legendary{color:var(--rar-legendary)}
+.head-rarity.rar-divine{color:var(--rar-divine)}
+
+/* 가지뷰 (②) */
+.branch{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:14px}
+.branch-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.branch-name{font-size:15px;font-weight:700;color:var(--gold);cursor:pointer;flex:1;min-width:200px;letter-spacing:.04em}
+.branch-name:hover{text-decoration:underline}
+.branch-concept{font-size:11px;color:var(--muted);font-style:italic;margin-top:2px;cursor:pointer}
+.branch-concept:empty::before{content:'(컨셉 입력 — 클릭)';color:#5a4838}
+.branch-actions{display:flex;gap:6px}
+.branch-actions .btn{padding:3px 8px;font-size:10px}
+.branch-stages{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:stretch;position:relative}
+.stage-arrow{position:absolute;top:50%;font-size:18px;color:#5a4838;transform:translateY(-50%);pointer-events:none}
+.stage-slot{
+  border:2px solid var(--rar);
+  border-radius:4px;
+  background:#0a0810;
+  padding:8px 6px;
+  min-height:140px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  gap:5px;
+  cursor:pointer;
+  position:relative;
+  transition:transform .1s ease, box-shadow .15s ease;
+}
+.stage-slot:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.5),0 0 8px var(--rar)}
+.stage-slot.empty{
+  border-style:dashed;
+  border-color:#3a2a1c;
+  background:rgba(255,255,255,0.015);
+  color:#5a4838;
+  font-size:18px;
+}
+.stage-slot.empty:hover{border-color:var(--rar)}
+.stage-slot.placeholder{
+  background:rgba(232,189,74,.05);
+  border-style:solid;
+}
+.stage-slot.placeholder::before{content:'✏️';position:absolute;top:3px;right:4px;font-size:9px;opacity:.6}
+.stage-tier{font-size:9px;color:#5a4838;letter-spacing:.06em;font-weight:700;text-transform:uppercase}
+.stage-img{width:80px;height:80px;background:#2a2018;border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px}
+.stage-img img{width:100%;height:100%;object-fit:cover}
+.stage-name{font-size:11px;font-weight:600;color:var(--ink);text-align:center;line-height:1.2;word-break:keep-all}
+.stage-meta{font-size:9px;color:var(--muted);text-align:center}
+.stage-empty-label{font-size:24px;color:#3a2a1c;line-height:1}
+.stage-empty-hint{font-size:9px;color:#5a4838;text-align:center;margin-top:4px}
+
+.stage-slot.tier-bronze{--rar:var(--rar-bronze)}
+.stage-slot.tier-silver{--rar:var(--rar-silver)}
+.stage-slot.tier-gold{--rar:var(--rar-gold)}
+.stage-slot.tier-legendary{--rar:var(--rar-legendary)}
+.stage-slot.tier-divine{--rar:var(--rar-divine)}
+
+.no-branches{padding:60px 32px;text-align:center;color:var(--muted);background:#1a1512;border:1px dashed var(--border);border-radius:6px;font-size:13px;line-height:1.8}
+.no-branches b{color:var(--gold)}
+
+/* 필터 바 (④) */
+.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.filter-bar input[type=search]{flex:1;min-width:240px;padding:6px 10px;background:#0a0810;color:var(--ink);border:1px solid var(--border);border-radius:3px;font-size:12px;font-family:inherit;outline:none}
+.filter-bar input[type=search]:focus{border-color:var(--gold)}
+.filter-bar select{padding:6px 10px;background:#1a1512;color:var(--ink);border:1px solid var(--border);border-radius:3px;font-size:11px;font-family:inherit;cursor:pointer}
+
+/* 표 (④) */
+.link-table-wrap{overflow:auto;max-height:60vh;border:1px solid var(--border);border-radius:4px}
+.link-table{width:100%;border-collapse:collapse;font-size:11px;background:var(--panel)}
+.link-table thead{position:sticky;top:0;background:#2b1c13;z-index:2}
+.link-table th{padding:8px 10px;text-align:left;color:var(--gold);font-weight:700;border-bottom:2px solid var(--border);cursor:pointer;user-select:none;letter-spacing:.04em}
+.link-table th:hover{background:#3a2a1c}
+.link-table th[data-sort-active]::after{content:attr(data-sort-dir);margin-left:4px;font-size:10px}
+.link-table td{padding:8px 10px;border-bottom:1px solid #2a1e16;vertical-align:middle;color:var(--ink)}
+.link-table tr:hover td{background:rgba(232,189,74,.04)}
+
+.lt-unit{display:flex;align-items:center;gap:8px}
+.lt-unit-img{width:32px;height:32px;border-radius:3px;background:#2a2018;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+.lt-unit-img img{width:100%;height:100%;object-fit:cover}
+.lt-unit-name{font-weight:600;color:var(--ink);font-size:12px}
+
+.lt-meta{display:flex;flex-direction:column;gap:2px;font-size:10px}
+.lt-meta .row{display:flex;gap:4px}
+.lt-tag{display:inline-block;padding:1px 5px;border-radius:2px;font-size:9px;font-weight:600;letter-spacing:.04em}
+.lt-tag.rar-bronze{background:rgba(184,184,192,.2);color:var(--rar-bronze)}
+.lt-tag.rar-silver{background:rgba(58,123,213,.2);color:var(--rar-silver)}
+.lt-tag.rar-gold{background:rgba(155,89,182,.2);color:var(--rar-gold)}
+.lt-tag.rar-legendary{background:rgba(243,156,18,.2);color:var(--rar-legendary)}
+.lt-tag.rar-divine{background:rgba(232,189,74,.25);color:var(--rar-divine)}
+.lt-tag.elem{background:rgba(0,0,0,.3)}
+.lt-tag.elem-fire{color:var(--elem-fire)}
+.lt-tag.elem-water{color:var(--elem-water)}
+.lt-tag.elem-lightning{color:var(--elem-lightning)}
+.lt-tag.elem-earth{color:var(--elem-earth)}
+.lt-tag.elem-holy{color:var(--elem-holy)}
+.lt-tag.elem-dark{color:var(--elem-dark)}
+.lt-tag.role-attack{background:rgba(231,76,60,.2);color:var(--role-attack)}
+.lt-tag.role-defense{background:rgba(52,152,219,.2);color:var(--role-defense)}
+.lt-tag.role-support{background:rgba(46,204,113,.2);color:var(--role-support)}
+
+.lt-skill-key{color:var(--gold);font-weight:600;font-size:11px}
+.lt-skill-desc{color:var(--muted);font-size:10px;margin-top:2px;line-height:1.35}
+.lt-empty-cell{color:#5a4838;font-style:italic;font-size:10px}
+
+.lt-skillids-list{display:flex;flex-direction:column;gap:3px}
+.lt-skillid{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;background:rgba(58,123,213,.15);color:#7ab5e8;border-radius:2px;font-family:ui-monospace,monospace;font-size:10px;cursor:pointer}
+.lt-skillid:hover{background:rgba(58,123,213,.3)}
+.lt-skillid.placeholder{background:rgba(232,189,74,.15);color:var(--gold);border:1px dashed var(--gold)}
+.lt-skillid .x{color:#e74c3c;font-weight:700;cursor:pointer;padding:0 2px}
+.lt-skillid .x:hover{color:#ff6655}
+.lt-add-skill{padding:3px 8px;background:transparent;color:var(--muted);border:1px dashed #3a2a1c;border-radius:2px;font-size:10px;cursor:pointer;font-family:inherit;align-self:flex-start;margin-top:2px}
+.lt-add-skill:hover{border-color:var(--gold);color:var(--gold)}
+
+.lt-status{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;text-align:center}
+.lt-status.none{background:rgba(122,92,58,.2);color:#7a5c3a}
+.lt-status.legacy{background:rgba(155,133,86,.2);color:#9b8556}
+.lt-status.new{background:rgba(90,155,208,.2);color:#5a9bd0}
+.lt-status.both{background:rgba(159,227,138,.2);color:#9fe38a}
+
+/* 액션 바 (export/clear) */
+.actions{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.btn{padding:6px 14px;background:#3a2a1c;color:var(--ink);border:1px solid var(--border);cursor:pointer;border-radius:3px;font-size:11px;font-family:inherit}
+.btn:hover{background:var(--border);color:var(--gold)}
+.btn.primary{background:#6e4a2a;color:#f1e4c3}
+.btn.danger{background:#5a2a2a;color:#e8a8a8}
+.btn.danger:hover{background:#7a3a3a}
+
+/* 범례 */
+.legend{margin-top:18px;font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:18px}
+.legend strong{color:var(--ink);margin-right:6px}
+.legend .item{display:inline-flex;align-items:center;gap:4px}
+.legend .swatch{display:inline-block;width:14px;height:8px;border-radius:1px}
+
+/* 모달 */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;max-width:480px;color:var(--ink);font-size:13px;line-height:1.6}
+.modal h2{margin:0 0 8px;color:var(--gold);font-size:18px;border-top:none;padding-top:0}
+.modal .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 16px;margin:10px 0}
+.modal .stats-grid span{font-size:11px;color:var(--muted)}
+.modal .stats-grid b{color:var(--ink)}
+.modal .desc{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+.modal .close{margin-top:14px;padding:6px 14px;background:#3a2a1c;color:var(--ink);border:1px solid var(--border);cursor:pointer;border-radius:3px}
+</style>
+</head>
+<body>
+
+<h1>🌳 카드 도식화 (Cards Flow Map)</h1>
+<p class="lead">유닛 51 + 스킬 44를 매트릭스로 도식화. 빈칸을 클릭하면 이름·컨셉을 직접 입력할 수 있고 (LocalStorage 저장), 엑셀(.csv) 로 내보낼 수 있습니다.</p>
+
+<div class="tabs">
+  <button class="tab active" data-tab="units">① 유닛 매트릭스</button>
+  <button class="tab" data-tab="branches">② 가지뷰 (진화 트리)</button>
+  <button class="tab" data-tab="skills">③ 스킬 매트릭스</button>
+  <button class="tab" data-tab="links">④ 유닛↔스킬 연결</button>
+</div>
+
+<!-- ① 유닛 매트릭스 -->
+<div class="panel active" id="panel-units">
+  <div class="summary" id="summary-units">로딩 중…</div>
+  <div class="matrix" id="matrix-units"></div>
+
+  <div class="actions">
+    <button class="btn primary" onclick="exportUnitsCSV()">📥 유닛 .csv 다운로드</button>
+    <button class="btn danger" onclick="clearPlaceholders('units')">🗑️ 입력한 빈칸 데이터 초기화</button>
+  </div>
+
+  <div class="legend">
+    <span><strong>역할:</strong>
+      <span class="item"><i class="swatch" style="background:var(--role-attack)"></i>공격</span>
+      <span class="item"><i class="swatch" style="background:var(--role-defense)"></i>방어</span>
+      <span class="item"><i class="swatch" style="background:var(--role-support)"></i>지원</span>
+    </span>
+    <span><strong>등급:</strong>
+      <span class="item" style="color:var(--rar-bronze)">■ 일반</span>
+      <span class="item" style="color:var(--rar-silver)">■ 희귀</span>
+      <span class="item" style="color:var(--rar-gold)">■ 고귀한</span>
+      <span class="item" style="color:var(--rar-legendary)">■ 전설의</span>
+      <span class="item" style="color:var(--rar-divine)">■ 신</span>
+    </span>
+  </div>
+</div>
+
+<!-- ② 가지뷰 (5단계 진화 트리) -->
+<div class="panel" id="panel-branches">
+  <div class="summary" id="summary-branches">로딩 중…</div>
+
+  <div id="branches-list"></div>
+
+  <div class="actions">
+    <button class="btn primary" onclick="addBranch()">+ 새 라인 추가</button>
+    <button class="btn" onclick="exportBranchesCSV()">📥 가지뷰 .csv 다운로드</button>
+    <button class="btn danger" onclick="clearPlaceholders('branches')">🗑️ 모든 라인 초기화</button>
+  </div>
+  <div style="font-size:11px;color:#5a4838;margin-top:8px;text-align:center">
+    💡 추천 9 라인 (lore-bible 기반): <code>design/branch_suggestions_2026-05-02.md</code> 참고
+  </div>
+
+  <div class="legend">
+    <span><strong>슬롯 단계 (좌→우):</strong>
+      <span class="item" style="color:var(--rar-bronze)">■ 일반</span>
+      <span class="item" style="color:var(--rar-silver)">■ 희귀</span>
+      <span class="item" style="color:var(--rar-gold)">■ 고귀한</span>
+      <span class="item" style="color:var(--rar-legendary)">■ 전설의</span>
+      <span class="item" style="color:var(--rar-divine)">■ 신</span>
+    </span>
+    <span><strong>슬롯 클릭:</strong> 유닛 ID(예: <code>militia</code>) 입력 → 자동 매칭 / 빈 이름(예: <code>쌍검 민병</code>) 입력 → placeholder</span>
+  </div>
+</div>
+
+<!-- ③ 스킬 매트릭스 -->
+<div class="panel" id="panel-skills">
+  <div class="summary" id="summary-skills">로딩 중…</div>
+
+  <h2 style="border-top:none;padding-top:0;margin-top:0">🛡️ PASSIVE 스킬 매트릭스 (5등급 × 4역할)</h2>
+  <p class="lead" style="margin:0 0 10px">장착 시 스탯 보정·자동 발동 트리거. cost:0, element 없음.</p>
+  <div class="matrix-skills-passive" id="matrix-skills-passive"></div>
+
+  <h2>⚔️ ACTIVE 스킬 매트릭스 (5등급 × 6원소)</h2>
+  <p class="lead" style="margin:0 0 10px">TP 소모, 명시 발동. attackType: spell/heal/buff/debuff. 셀에 attackType 라벨 표시.</p>
+  <div class="matrix-skills-active" id="matrix-skills-active"></div>
+
+  <div class="actions">
+    <button class="btn primary" onclick="exportSkillsCSV()">📥 스킬 .csv 다운로드</button>
+    <button class="btn danger" onclick="clearPlaceholders('skills')">🗑️ 입력한 빈칸 데이터 초기화</button>
+  </div>
+
+  <div class="legend">
+    <span><strong>PASSIVE 역할:</strong>
+      <span class="item" style="color:var(--role-attack)">■ 공격</span>
+      <span class="item" style="color:var(--role-defense)">■ 방어</span>
+      <span class="item" style="color:var(--role-support)">■ 지원</span>
+      <span class="item" style="color:var(--role-crit)">■ 크릿</span>
+    </span>
+    <span><strong>ACTIVE attackType:</strong> <code>spell</code> · <code>heal</code> · <code>buff</code> · <code>debuff</code> · <code>weapon</code></span>
+  </div>
+</div>
+
+<!-- ④ 유닛↔스킬 연결 (표 형태) -->
+<div class="panel" id="panel-links">
+  <div class="summary" id="summary-links">로딩 중…</div>
+
+  <div class="filter-bar">
+    <input type="search" id="link-search" placeholder="🔍 유닛/스킬 이름·키 검색 (예: 화염, aoe, sk_)" />
+    <select id="link-filter-rarity"><option value="">전 등급</option></select>
+    <select id="link-filter-element"><option value="">전 원소</option></select>
+    <select id="link-filter-role"><option value="">전 역할</option></select>
+    <select id="link-filter-status">
+      <option value="">전 상태</option>
+      <option value="none">스킬 없음</option>
+      <option value="legacy">레거시만</option>
+      <option value="new">신 시스템만</option>
+      <option value="both">둘 다</option>
+    </select>
+  </div>
+
+  <div class="link-table-wrap">
+    <table class="link-table" id="link-table">
+      <thead>
+        <tr>
+          <th data-sort="idx" style="width:40px">#</th>
+          <th data-sort="name" style="width:160px">유닛</th>
+          <th data-sort="meta" style="width:140px">메타</th>
+          <th data-sort="skill" style="width:180px">skill (레거시)</th>
+          <th data-sort="skillIds" style="width:200px">skillIds (신, sk_*)</th>
+          <th data-sort="bonus" style="width:200px">bonusTrigger (특성)</th>
+          <th data-sort="status" style="width:90px">상태</th>
+        </tr>
+      </thead>
+      <tbody id="link-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" onclick="exportLinksCSV()">📥 유닛↔스킬 .csv 다운로드</button>
+    <button class="btn danger" onclick="clearPlaceholders('unit_skill_links')">🗑️ 입력한 skillIds 초기화</button>
+  </div>
+
+  <div class="legend">
+    <span><strong>상태:</strong>
+      <span class="item" style="color:#7a5c3a">■ 스킬 없음</span>
+      <span class="item" style="color:#9b8556">■ 레거시만</span>
+      <span class="item" style="color:#5a9bd0">■ 신 시스템만</span>
+      <span class="item" style="color:#9fe38a">■ 둘 다</span>
+    </span>
+  </div>
+</div>
+
+<!-- 모달 -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<!-- 데이터 부트 -->
+<script>window.RoF={Data:{}};</script>
+<script src="../js/11_data_units.js"></script>
+<script src="../js/12_data_skills.js"></script>
+<script>
+'use strict';
+
+// ─── 상수 ───
+const ELEMENTS=['fire','water','lightning','earth','holy','dark'];
+const ELEM_LABEL={fire:'🔥 불',water:'💧 물',lightning:'⚡ 전기',earth:'🌍 땅',holy:'✨ 신성',dark:'🌑 암흑'};
+const RARITIES=['bronze','silver','gold','legendary','divine'];
+const RARITY_LABEL={bronze:'일반',silver:'희귀',gold:'고귀한',legendary:'전설의',divine:'신'};
+const UNIT_ROLES=['attack','defense','support'];
+const SKILL_PASSIVE_ROLES=['attack','defense','support','crit'];
+const ROLE_LABEL={attack:'공격',defense:'방어',support:'지원',crit:'크릿'};
+
+// ─── LocalStorage placeholder 관리 ───
+const PH_KEY='rof.cards_flow_map.placeholders';
+function loadPH(){try{return JSON.parse(localStorage.getItem(PH_KEY))||{units:{},skills_passive:{},skills_active:{},unit_skill_links:{}}}catch(e){return{units:{},skills_passive:{},skills_active:{},unit_skill_links:{}}}}
+function savePH(ph){localStorage.setItem(PH_KEY,JSON.stringify(ph))}
+function getPH(domain,key){const ph=loadPH();return(ph[domain]||{})[key]}
+function setPH(domain,key,value){const ph=loadPH();if(!ph[domain])ph[domain]={};if(!value||(typeof value==='object'&&!value.name&&!value.concept&&(!Array.isArray(value)||value.length===0)))delete ph[domain][key];else ph[domain][key]=value;savePH(ph)}
+function clearPlaceholders(domain){
+  if(!confirm(`정말 "${domain}" 빈칸 입력 데이터를 초기화할까요?`))return;
+  const ph=loadPH();
+  if(domain==='units')ph.units={};
+  if(domain==='skills'){ph.skills_passive={};ph.skills_active={}}
+  if(domain==='unit_skill_links')ph.unit_skill_links={};
+  if(domain==='branches')ph.branches={};
+  savePH(ph);
+  if(domain==='units')buildUnitsMatrix();
+  if(domain==='skills'){buildSkillsPassive();buildSkillsActive();updateSkillsSummary()}
+  if(domain==='unit_skill_links')buildLinksTable();
+  if(domain==='branches')buildBranchesPanel();
+}
+
+// ─── DOM 헬퍼 ───
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+
+// 원소 헤더 — img(elem_icon3) + 텍스트 (2026-05-02 핸드오프 §4: units_flow_map 첫 사용처)
+function elemHeader(e){
+  const h=document.createElement('div');
+  h.className=`head-elem elem-${e}`;
+  const img=document.createElement('img');
+  img.src=`../img/elem_icon3_${e}.png`;
+  img.style.cssText='width:24px;height:24px;vertical-align:middle;margin-right:4px;display:inline-block';
+  img.alt='';
+  img.onerror=function(){this.style.display='none'};
+  h.appendChild(img);
+  h.appendChild(document.createTextNode(ELEM_LABEL[e]));
+  return h;
+}
+
+// ─── 탭 전환 ───
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+  });
+});
+
+// ════════════════════════════════════════════════════════
+// ① 유닛 매트릭스
+// ════════════════════════════════════════════════════════
+
+function unitCard(u){
+  const card=el('div',`unit rar-${u.rarity} role-${u.role}`);
+  card.title=`${u.name} · ${ROLE_LABEL[u.role]} · ATK ${u.atk}/HP ${u.hp}`;
+  card.onclick=()=>showUnitModal(u);
+  const imgWrap=el('div','unit-img');
+  const img=document.createElement('img');
+  img.src='../img/'+u.id+'.png';
+  img.onerror=function(){this.style.display='none';imgWrap.appendChild(document.createTextNode(u.icon||'?'));};
+  imgWrap.appendChild(img);
+  card.appendChild(imgWrap);
+  const meta=el('div','unit-meta');
+  meta.appendChild(el('span','name',u.name));
+  meta.appendChild(el('span','stats',`⚔${u.atk} ❤${u.hp}`));
+  card.appendChild(meta);
+  card.appendChild(el('div','role-bar'));
+  return card;
+}
+
+function unitPlaceholderCard(rarity,element,role,phData){
+  const card=el('div',`placeholder-card rar-${rarity}`);
+  card.title=`${RARITY_LABEL[rarity]} ${ELEM_LABEL[element]} ${ROLE_LABEL[role]} (입력됨)`;
+  const name=el('div','ph-name',phData.name||'(이름 없음)');
+  card.appendChild(name);
+  if(phData.concept)card.appendChild(el('div','ph-concept',phData.concept));
+  card.onclick=(ev)=>{ev.stopPropagation();editUnitPlaceholder(rarity,element,role)};
+  return card;
+}
+
+function emptyUnitSlot(role,r,e){
+  const slot=el('div',`empty role-${role}`,'+');
+  slot.dataset.role=ROLE_LABEL[role];
+  slot.title=`빈칸 클릭 → 이름 입력. ${RARITY_LABEL[r]} ${ELEM_LABEL[e]} ${ROLE_LABEL[role]}`;
+  slot.onclick=()=>editUnitPlaceholder(r,e,role);
+  return slot;
+}
+
+function editUnitPlaceholder(rarity,element,role){
+  const key=`${rarity}.${element}.${role}`;
+  const cur=getPH('units',key)||{name:'',concept:''};
+  const newName=prompt(`이름을 입력하세요\n(${RARITY_LABEL[rarity]} · ${ELEM_LABEL[element]} · ${ROLE_LABEL[role]})\n\n빈 값으로 두면 삭제됩니다.`,cur.name||'');
+  if(newName===null)return; // 취소
+  let newConcept=cur.concept||'';
+  if(newName.trim()){
+    newConcept=prompt(`컨셉/desc (선택사항, 비워둬도 됨)\n예: "그라힘의 사도, 화염 검을 든 침묵의 전사"`,cur.concept||'')||'';
+  }
+  setPH('units',key,{name:newName.trim(),concept:newConcept.trim()});
+  buildUnitsMatrix();
+}
+
+function buildUnitsMatrix(){
+  const units=RoF.Data.UNITS;
+  if(!units){document.getElementById('summary-units').textContent='❌ RoF.Data.UNITS 로드 실패';return;}
+  const matrix=document.getElementById('matrix-units');
+  matrix.innerHTML='';
+
+  // 헤더 row
+  matrix.appendChild(el('div'));
+  ELEMENTS.forEach(e=>matrix.appendChild(elemHeader(e)));
+
+  let totalSlots=0,filled=0,placeholders=0;
+  RARITIES.forEach(r=>{
+    const lbl=el('div',`head-rarity rar-${r}`);
+    lbl.appendChild(el('div',null,RARITY_LABEL[r]));
+    lbl.appendChild(el('small',null,r));
+    matrix.appendChild(lbl);
+
+    ELEMENTS.forEach(e=>{
+      const cell=el('div','cell');
+      const cellUnits=units.filter(u=>u.element===e&&u.rarity===r);
+      UNIT_ROLES.forEach(role=>{
+        totalSlots++;
+        const u=cellUnits.find(x=>x.role===role);
+        if(u){filled++;cell.appendChild(unitCard(u))}
+        else{
+          const ph=getPH('units',`${r}.${e}.${role}`);
+          if(ph&&(ph.name||ph.concept)){placeholders++;cell.appendChild(unitPlaceholderCard(r,e,role,ph))}
+          else cell.appendChild(emptyUnitSlot(role,r,e));
+        }
+      });
+      // 같은 역할 중복 (예: hunter+wolf)
+      cellUnits.forEach(u=>{
+        if(cellUnits.filter(x=>x.role===u.role).length>1){
+          const idx=cellUnits.filter(x=>x.role===u.role).indexOf(u);
+          if(idx>0)cell.appendChild(unitCard(u));
+        }
+      });
+      matrix.appendChild(cell);
+    });
+  });
+
+  document.getElementById('summary-units').innerHTML=
+    `유닛 <b>${units.length}</b>종 / 슬롯 <b>${totalSlots}</b>개 (6×5×3) · 채움 <b>${filled}</b> · 빈칸 <b>${totalSlots-filled-placeholders}</b> · 입력됨 <b>${placeholders}</b>`;
+}
+
+function showUnitModal(u){
+  const body=document.getElementById('modal-body');
+  body.innerHTML=`
+    <h2>${u.icon||''} ${u.name}</h2>
+    <div style="color:var(--muted);font-size:11px">
+      ${RARITY_LABEL[u.rarity]} · ${ROLE_LABEL[u.role]} · ${ELEM_LABEL[u.element]} · ${u.race} · ${u.range==='melee'?'근거리':'원거리'}
+    </div>
+    <div class="stats-grid">
+      <div><span>ATK</span> <b>${u.atk}</b></div>
+      <div><span>HP</span> <b>${u.hp}</b></div>
+      <div><span>DEF</span> <b>${u.def}</b></div>
+      <div><span>SPD</span> <b>${u.spd}</b></div>
+      <div><span>NRG</span> <b>${u.nrg}</b></div>
+      <div><span>LUCK</span> <b>${u.luck}</b></div>
+      <div><span>EVA</span> <b>${u.eva}</b></div>
+      <div><span>MEVA</span> <b>${u.meva}</b></div>
+    </div>
+    <div class="desc"><b>스킬:</b> ${u.skillDesc||'없음'}</div>
+    ${u.bonusTrigger?`<div class="desc"><b>특성:</b> ${u.bonusTrigger.desc}</div>`:''}
+    <button class="close" onclick="closeModal()">닫기 (ESC)</button>
+  `;
+  document.getElementById('modal-bg').classList.add('show');
+}
+
+// ════════════════════════════════════════════════════════
+// ③ 스킬 매트릭스
+// ════════════════════════════════════════════════════════
+
+function skillCard(sk){
+  const isPassive=sk.passive!==false;
+  const card=el('div',`skill rar-${sk.rarity}`);
+  card.title=`${sk.name} · ${RARITY_LABEL[sk.rarity]} · ${isPassive?'PASSIVE':'ACTIVE '+sk.attackType}`;
+  card.onclick=()=>showSkillModal(sk);
+
+  const name=el('div','name');
+  name.appendChild(el('span','icon',sk.icon||''));
+  name.appendChild(document.createTextNode(' '+sk.name));
+  card.appendChild(name);
+
+  card.appendChild(el('div','desc',sk.desc||''));
+
+  const meta=el('div','meta');
+  if(!isPassive){
+    if(sk.attackType)meta.appendChild(el('span','tag',sk.attackType));
+    if(sk.damage)meta.appendChild(el('span','tag','dmg '+sk.damage));
+    if(sk.heal)meta.appendChild(el('span','tag','heal '+sk.heal));
+    if(sk.cost)meta.appendChild(el('span','tag','nrg '+sk.cost));
+    if(sk.tpCost)meta.appendChild(el('span','tag','TP '+sk.tpCost));
+    if(sk.cooldown)meta.appendChild(el('span','tag','cd '+sk.cooldown));
+  }
+  if(meta.children.length)card.appendChild(meta);
+
+  return card;
+}
+
+function skillPlaceholderCard(domain,key,phData,rarity){
+  const card=el('div',`placeholder-card skill rar-${rarity}`);
+  card.title=`입력됨 — 클릭 편집`;
+  card.appendChild(el('div','ph-name',phData.name||'(이름 없음)'));
+  if(phData.concept)card.appendChild(el('div','ph-concept',phData.concept));
+  card.onclick=(ev)=>{ev.stopPropagation();editSkillPlaceholder(domain,key)};
+  return card;
+}
+
+function emptySkillSlot(domain,key,labelHint){
+  const slot=el('div','empty-skill','+ '+labelHint);
+  slot.title=`빈칸 클릭 → 스킬 이름 입력`;
+  slot.onclick=()=>editSkillPlaceholder(domain,key);
+  return slot;
+}
+
+function editSkillPlaceholder(domain,key){
+  const cur=getPH(domain,key)||{name:'',concept:''};
+  const label=domain==='skills_passive'?'PASSIVE 스킬':'ACTIVE 스킬';
+  const newName=prompt(`${label} 이름을 입력하세요 (${key})\n\n빈 값으로 두면 삭제됩니다.`,cur.name||'');
+  if(newName===null)return;
+  let newConcept=cur.concept||'';
+  if(newName.trim()){
+    newConcept=prompt(`효과/desc (선택사항)\n예: "공격 +5, 행운 +3"`,cur.concept||'')||'';
+  }
+  setPH(domain,key,{name:newName.trim(),concept:newConcept.trim()});
+  if(domain==='skills_passive')buildSkillsPassive();
+  if(domain==='skills_active')buildSkillsActive();
+  updateSkillsSummary();
+}
+
+function buildSkillsPassive(){
+  const skills=RoF.Data.SKILLS;
+  if(!skills){return;}
+  const matrix=document.getElementById('matrix-skills-passive');
+  matrix.innerHTML='';
+
+  // 헤더: 빈칸 + 4 역할
+  matrix.appendChild(el('div'));
+  SKILL_PASSIVE_ROLES.forEach(role=>{
+    matrix.appendChild(el('div',`head-role role-${role}`,ROLE_LABEL[role]));
+  });
+
+  RARITIES.forEach(r=>{
+    const lbl=el('div',`head-rarity rar-${r}`);
+    lbl.appendChild(el('div',null,RARITY_LABEL[r]));
+    lbl.appendChild(el('small',null,r));
+    matrix.appendChild(lbl);
+
+    SKILL_PASSIVE_ROLES.forEach(role=>{
+      const cell=el('div','cell-skill-passive');
+      const cellSkills=skills.filter(sk=>sk.passive!==false&&sk.rarity===r&&sk.role===role);
+      cellSkills.forEach(sk=>cell.appendChild(skillCard(sk)));
+      // placeholder 1개 + 빈 슬롯 1개 (사용자가 추가 입력 가능)
+      const phKey=`${r}.${role}`;
+      const ph=getPH('skills_passive',phKey);
+      if(ph&&(ph.name||ph.concept))cell.appendChild(skillPlaceholderCard('skills_passive',phKey,ph,r));
+      // 추가 입력 받을 빈 슬롯
+      cell.appendChild(emptySkillSlot('skills_passive',phKey,cellSkills.length?'추가':'비어있음'));
+      matrix.appendChild(cell);
+    });
+  });
+}
+
+function buildSkillsActive(){
+  const skills=RoF.Data.SKILLS;
+  if(!skills){return;}
+  const matrix=document.getElementById('matrix-skills-active');
+  matrix.innerHTML='';
+
+  // 헤더: 빈칸 + 6 원소
+  matrix.appendChild(el('div'));
+  ELEMENTS.forEach(e=>matrix.appendChild(elemHeader(e)));
+
+  RARITIES.forEach(r=>{
+    const lbl=el('div',`head-rarity rar-${r}`);
+    lbl.appendChild(el('div',null,RARITY_LABEL[r]));
+    lbl.appendChild(el('small',null,r));
+    matrix.appendChild(lbl);
+
+    ELEMENTS.forEach(e=>{
+      const cell=el('div','cell-skill-active');
+      const cellSkills=skills.filter(sk=>sk.passive===false&&sk.rarity===r&&sk.element===e);
+      cellSkills.forEach(sk=>cell.appendChild(skillCard(sk)));
+      const phKey=`${r}.${e}`;
+      const ph=getPH('skills_active',phKey);
+      if(ph&&(ph.name||ph.concept))cell.appendChild(skillPlaceholderCard('skills_active',phKey,ph,r));
+      cell.appendChild(emptySkillSlot('skills_active',phKey,cellSkills.length?'추가':'비어있음'));
+      matrix.appendChild(cell);
+    });
+  });
+}
+
+function updateSkillsSummary(){
+  const skills=RoF.Data.SKILLS||[];
+  const passives=skills.filter(s=>s.passive!==false).length;
+  const actives=skills.filter(s=>s.passive===false).length;
+  const ph=loadPH();
+  const phPassive=Object.values(ph.skills_passive||{}).filter(v=>v.name||v.concept).length;
+  const phActive=Object.values(ph.skills_active||{}).filter(v=>v.name||v.concept).length;
+  document.getElementById('summary-skills').innerHTML=
+    `스킬 총 <b>${skills.length}</b>장 · PASSIVE <b>${passives}</b> · ACTIVE <b>${actives}</b> · 입력됨 <b>${phPassive+phActive}</b> (P${phPassive}/A${phActive})`;
+}
+
+function showSkillModal(sk){
+  const body=document.getElementById('modal-body');
+  const isPassive=sk.passive!==false;
+  body.innerHTML=`
+    <h2>${sk.icon||''} ${sk.name}</h2>
+    <div style="color:var(--muted);font-size:11px">
+      ${RARITY_LABEL[sk.rarity]} · ${ROLE_LABEL[sk.role]||sk.role} · ${isPassive?'PASSIVE':'ACTIVE'}
+      ${sk.element?'· '+ELEM_LABEL[sk.element]:''}
+      ${sk.attackType?'· '+sk.attackType:''}
+    </div>
+    <div class="stats-grid">
+      ${sk.cost!=null?`<div><span>cost</span> <b>${sk.cost} ${sk.costType||'nrg'}</b></div>`:''}
+      ${sk.tpCost?`<div><span>TP</span> <b>${sk.tpCost}</b></div>`:''}
+      ${sk.damage?`<div><span>damage</span> <b>${sk.damage}</b></div>`:''}
+      ${sk.heal?`<div><span>heal</span> <b>${sk.heal}</b></div>`:''}
+      ${sk.cooldown?`<div><span>cooldown</span> <b>${sk.cooldown}</b></div>`:''}
+      ${sk.targetType?`<div><span>target</span> <b>${sk.targetType}</b></div>`:''}
+      ${sk.procChance?`<div><span>proc</span> <b>${sk.procChance}%</b></div>`:''}
+      ${sk.effect?`<div><span>effect</span> <b>${sk.effect}</b></div>`:''}
+    </div>
+    <div class="desc">${sk.desc||''}</div>
+    <button class="close" onclick="closeModal()">닫기 (ESC)</button>
+  `;
+  document.getElementById('modal-bg').classList.add('show');
+}
+
+function closeModal(){document.getElementById('modal-bg').classList.remove('show')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+// ════════════════════════════════════════════════════════
+// ② 가지뷰 (5단계 진화 트리)
+// ════════════════════════════════════════════════════════
+// LocalStorage 구조:
+//   branches: { <line_id>: { name, concept, slots: { bronze, silver, gold, legendary, divine } } }
+// slot 값: 유닛 id (RoF.Data.UNITS 매칭) 또는 placeholder 이름 문자열
+
+function newLineId(){return'line_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,5)}
+
+function getBranches(){return loadPH().branches||{}}
+
+function saveBranch(lineId,data){
+  const ph=loadPH();
+  if(!ph.branches)ph.branches={};
+  if(!data)delete ph.branches[lineId];
+  else ph.branches[lineId]=data;
+  savePH(ph);
+}
+
+function addBranch(){
+  const name=prompt('새 라인 이름 (예: "민병대 라인", "그라힘의 사도")','');
+  if(!name||!name.trim())return;
+  const concept=prompt('컨셉/lore (선택사항, 비워둬도 됨)\n예: "그라힘 직속 화염 검술 계열"','')||'';
+  const lineId=newLineId();
+  saveBranch(lineId,{
+    name:name.trim(),
+    concept:concept.trim(),
+    slots:{bronze:'',silver:'',gold:'',legendary:'',divine:''}
+  });
+  buildBranchesPanel();
+}
+
+function editBranchName(lineId){
+  const branches=getBranches();
+  const b=branches[lineId];
+  if(!b)return;
+  const name=prompt('라인 이름',b.name);
+  if(name===null)return;
+  if(!name.trim()){if(!confirm('이름이 비었습니다. 라인을 삭제할까요?'))return;saveBranch(lineId,null);buildBranchesPanel();return}
+  b.name=name.trim();
+  saveBranch(lineId,b);
+  buildBranchesPanel();
+}
+
+function editBranchConcept(lineId){
+  const branches=getBranches();
+  const b=branches[lineId];
+  if(!b)return;
+  const concept=prompt('컨셉/lore (비워두면 삭제)',b.concept||'');
+  if(concept===null)return;
+  b.concept=concept.trim();
+  saveBranch(lineId,b);
+  buildBranchesPanel();
+}
+
+function deleteBranch(lineId){
+  const branches=getBranches();
+  const b=branches[lineId];
+  if(!b)return;
+  if(!confirm(`"${b.name}" 라인을 정말 삭제할까요?`))return;
+  saveBranch(lineId,null);
+  buildBranchesPanel();
+}
+
+function editStageSlot(lineId,tier){
+  const branches=getBranches();
+  const b=branches[lineId];
+  if(!b)return;
+  const cur=b.slots[tier]||'';
+  const tierLabel=RARITY_LABEL[tier];
+  const inp=prompt(
+    `${b.name} — ${tierLabel} 단계\n\n` +
+    `유닛 ID 입력 (예: militia, knight) — 자동 매칭\n` +
+    `또는 이름만 입력 (예: 쌍검 민병) — placeholder 로 저장\n\n` +
+    `빈 값으로 두면 슬롯 비웁니다.`,
+    cur
+  );
+  if(inp===null)return;
+  const val=inp.trim();
+  // 유닛 ID 매칭 검증
+  const u=(RoF.Data.UNITS||[]).find(x=>x.id===val);
+  if(val&&u){
+    // 등급 일치 검사
+    if(u.rarity!==tier){
+      if(!confirm(`"${val}" 의 등급은 ${RARITY_LABEL[u.rarity]} 인데, 이 슬롯은 ${tierLabel} 입니다.\n\n그래도 배치할까요?`))return;
+    }
+  }
+  b.slots[tier]=val;
+  saveBranch(lineId,b);
+  buildBranchesPanel();
+}
+
+function buildBranchesPanel(){
+  const branches=getBranches();
+  const list=document.getElementById('branches-list');
+  list.innerHTML='';
+  const keys=Object.keys(branches);
+
+  if(keys.length===0){
+    const empty=el('div','no-branches');
+    empty.innerHTML='<b>아직 정의된 라인이 없습니다.</b><br>아래 "+ 새 라인 추가" 를 눌러 첫 컨셉 라인을 만들어보세요.<br><small style="margin-top:14px;display:block;color:#5a4838">예시: 민병대 라인 / 그라힘의 사도 / 암살자 길드 / 빙결술사 계보</small>';
+    list.appendChild(empty);
+  }
+
+  let totalSlots=0,filledData=0,filledPH=0;
+
+  keys.forEach(lineId=>{
+    const b=branches[lineId];
+    const branch=el('div','branch');
+
+    // Head
+    const head=el('div','branch-head');
+    const nameWrap=document.createElement('div');
+    nameWrap.style.flex='1';
+    nameWrap.style.minWidth='200px';
+    const name=el('div','branch-name',b.name);
+    name.title='클릭 → 이름 편집';
+    name.onclick=()=>editBranchName(lineId);
+    nameWrap.appendChild(name);
+    const concept=el('div','branch-concept',b.concept||'');
+    concept.title='클릭 → 컨셉 편집';
+    concept.onclick=()=>editBranchConcept(lineId);
+    nameWrap.appendChild(concept);
+    head.appendChild(nameWrap);
+
+    const actions=el('div','branch-actions');
+    const delBtn=document.createElement('button');
+    delBtn.className='btn danger';
+    delBtn.textContent='삭제';
+    delBtn.onclick=()=>deleteBranch(lineId);
+    actions.appendChild(delBtn);
+    head.appendChild(actions);
+
+    branch.appendChild(head);
+
+    // Stages (5)
+    const stages=el('div','branch-stages');
+    RARITIES.forEach(tier=>{
+      totalSlots++;
+      const slotVal=(b.slots&&b.slots[tier])||'';
+      const u=slotVal?(RoF.Data.UNITS||[]).find(x=>x.id===slotVal):null;
+      const slot=document.createElement('div');
+      slot.title='클릭 → 편집';
+      slot.onclick=()=>editStageSlot(lineId,tier);
+
+      const tierLabel=el('div','stage-tier',tier);
+
+      if(u){
+        // 유닛 매칭됨
+        slot.className=`stage-slot tier-${tier}`;
+        filledData++;
+        slot.appendChild(tierLabel);
+        const imgWrap=el('div','stage-img');
+        const img=document.createElement('img');
+        img.src='../img/'+u.id+'.png';
+        img.onerror=function(){this.style.display='none';imgWrap.appendChild(document.createTextNode(u.icon||'?'))};
+        imgWrap.appendChild(img);
+        slot.appendChild(imgWrap);
+        slot.appendChild(el('div','stage-name',u.name));
+        slot.appendChild(el('div','stage-meta',`${ELEM_LABEL[u.element].split(' ')[0]} ${ROLE_LABEL[u.role]}`));
+      }else if(slotVal){
+        // placeholder 이름만
+        slot.className=`stage-slot tier-${tier} placeholder`;
+        filledPH++;
+        slot.appendChild(tierLabel);
+        slot.appendChild(el('div','stage-name',slotVal));
+        slot.appendChild(el('div','stage-meta','(placeholder)'));
+      }else{
+        // 빈 슬롯
+        slot.className=`stage-slot tier-${tier} empty`;
+        slot.appendChild(tierLabel);
+        slot.appendChild(el('div','stage-empty-label','+'));
+        slot.appendChild(el('div','stage-empty-hint',RARITY_LABEL[tier]+' 단계'));
+      }
+
+      stages.appendChild(slot);
+    });
+    branch.appendChild(stages);
+
+    list.appendChild(branch);
+  });
+
+  document.getElementById('summary-branches').innerHTML=
+    `라인 <b>${keys.length}</b>개 / 총 슬롯 <b>${totalSlots}</b>개 ` +
+    `· 유닛 매칭 <b>${filledData}</b> · placeholder <b>${filledPH}</b> ` +
+    `· 빈 슬롯 <b>${totalSlots-filledData-filledPH}</b>`;
+}
+
+// 2026-05-02: 추천 9 라인 prefill (design/branch_suggestions_2026-05-02.md 의 안)
+function prefillBranchSuggestions(){
+  const SUGGESTIONS = [
+    {name:'그라힘 직속',     concept:'재의 왕의 불꽃 검사 / 화염 망치 전사 (불·attack)'},
+    {name:'모라스 직속',     concept:'심해의 어머니 — 치유사·기억 사제 (물·support)'},
+    {name:'에이드라 직속',   concept:'외눈의 수호자 — 키클롭스 형 방패병 (땅·defense)'},
+    {name:'브론테스 직속',   concept:'분노의 망치 — 키클롭스 동생 번개 강타 (전기·attack)'},
+    {name:'세라피엘 직속',   concept:'새벽의 창 — 빛의 기사·성기사 (신성·support→attack)'},
+    {name:'네크리온 직속',   concept:'밤의 계약자 — 암살자·계약 마법사 (암흑·attack)'},
+    {name:'폭풍 라인',       concept:'두 신의 경계 — 번개 폭풍 + 비 (전기+물 무파벌)'},
+    {name:'화산 라인',       concept:'그라힘 + 에이드라 경계 — 용암 (불+땅 무파벌)'},
+    {name:'황혼 라인',       concept:'세라피엘 + 네크리온 경계 — 그림자 천사 / 빛의 악마 (신성+암흑 무파벌)'},
+  ];
+  const existing = Object.keys(getBranches()).length;
+  const proceed = existing
+    ? confirm(`이미 ${existing}개 라인이 있습니다. 9 추천 라인을 추가하시겠습니까?\n(기존 라인은 유지됩니다)`)
+    : true;
+  if(!proceed) return;
+  SUGGESTIONS.forEach(s => {
+    const lineId = newLineId();
+    saveBranch(lineId, {
+      name: s.name,
+      concept: s.concept,
+      slots: { bronze:'', silver:'', gold:'', legendary:'', divine:'' },
+    });
+  });
+  buildBranchesPanel();
+  alert(`✅ ${SUGGESTIONS.length}개 추천 라인 추가됨.\n\n각 라인의 슬롯에 유닛 ID 또는 placeholder 이름 입력하세요.`);
+}
+
+function exportBranchesCSV(){
+  const branches=getBranches();
+  const rows=[['line_id','line_name','concept','bronze','silver','gold','legendary','divine']];
+  Object.keys(branches).forEach(lineId=>{
+    const b=branches[lineId];
+    const s=b.slots||{};
+    rows.push([lineId,b.name||'',b.concept||'',s.bronze||'',s.silver||'',s.gold||'',s.legendary||'',s.divine||'']);
+  });
+  if(rows.length===1){alert('아직 라인이 없습니다. 먼저 라인을 추가하세요.');return}
+  downloadCSV('rof_branches_'+new Date().toISOString().slice(0,10)+'.csv',rows);
+}
+
+// ════════════════════════════════════════════════════════
+// ④ 유닛↔스킬 연결 (표)
+// ════════════════════════════════════════════════════════
+
+let linkSort={col:'idx',dir:'asc'};
+
+function getUnitSkillIds(u){
+  // 데이터에 정의된 skillIds + LocalStorage placeholder
+  const dataIds=Array.isArray(u.skillIds)?u.skillIds.slice():[];
+  const phIds=getPH('unit_skill_links',u.id)||[];
+  return {dataIds,phIds,all:dataIds.concat(phIds)};
+}
+
+function getUnitStatus(u){
+  const hasLegacy=u.skill&&u.skill!=='none';
+  const hasNew=getUnitSkillIds(u).all.length>0;
+  if(hasLegacy&&hasNew)return'both';
+  if(hasLegacy)return'legacy';
+  if(hasNew)return'new';
+  return'none';
+}
+
+function statusLabel(s){
+  return{none:'스킬 없음',legacy:'레거시만',new:'신만',both:'둘 다'}[s];
+}
+
+function addSkillIdToUnit(unitId){
+  const skills=RoF.Data.SKILLS||[];
+  const skillIdsList=skills.map(s=>`${s.id} (${s.name})`).join('\n');
+  const inp=prompt(
+    `${unitId} 에 추가할 스킬 ID\n\n` +
+    `사용 가능한 스킬 (12_data_skills.js):\n${skillIdsList}\n\n` +
+    `예: sk_flame_arrow`,
+    ''
+  );
+  if(!inp||!inp.trim())return;
+  const id=inp.trim();
+  // 검증: 실제 스킬인지
+  const exists=skills.find(s=>s.id===id);
+  if(!exists){
+    if(!confirm(`"${id}" 는 12_data_skills.js 에 없는 ID 입니다. 그래도 placeholder 로 추가할까요?`))return;
+  }
+  const cur=getPH('unit_skill_links',unitId)||[];
+  if(cur.includes(id)){alert('이미 추가된 스킬 입니다.');return}
+  cur.push(id);
+  setPH('unit_skill_links',unitId,cur);
+  buildLinksTable();
+}
+
+function removeSkillIdFromUnit(unitId,skillId){
+  const cur=(getPH('unit_skill_links',unitId)||[]).slice();
+  const idx=cur.indexOf(skillId);
+  if(idx<0)return;
+  cur.splice(idx,1);
+  setPH('unit_skill_links',unitId,cur.length?cur:null);
+  buildLinksTable();
+}
+
+function buildLinksTable(){
+  const units=RoF.Data.UNITS||[];
+  const tbody=document.getElementById('link-tbody');
+  tbody.innerHTML='';
+
+  // 필터 옵션 채우기 (1회)
+  const fRar=document.getElementById('link-filter-rarity');
+  const fEle=document.getElementById('link-filter-element');
+  const fRol=document.getElementById('link-filter-role');
+  if(fRar.children.length===1){
+    RARITIES.forEach(r=>fRar.appendChild(new Option(RARITY_LABEL[r],r)));
+    ELEMENTS.forEach(e=>fEle.appendChild(new Option(ELEM_LABEL[e],e)));
+    UNIT_ROLES.forEach(role=>fRol.appendChild(new Option(ROLE_LABEL[role],role)));
+  }
+
+  // 현재 필터 값
+  const q=(document.getElementById('link-search').value||'').toLowerCase().trim();
+  const fr=fRar.value, fe=fEle.value, frole=fRol.value;
+  const fst=document.getElementById('link-filter-status').value;
+
+  // 정렬 + 필터
+  let rows=units.map((u,i)=>{
+    const skinfo=getUnitSkillIds(u);
+    return {
+      idx:i+1,
+      u,
+      legacy:u.skill||'',
+      legacyDesc:u.skillDesc||'',
+      skillIds:skinfo,
+      bonus:u.bonusTrigger,
+      status:getUnitStatus(u),
+    };
+  });
+
+  rows=rows.filter(r=>{
+    if(fr&&r.u.rarity!==fr)return false;
+    if(fe&&r.u.element!==fe)return false;
+    if(frole&&r.u.role!==frole)return false;
+    if(fst&&r.status!==fst)return false;
+    if(q){
+      const hay=[r.u.id,r.u.name,r.legacy,r.legacyDesc,
+                 r.skillIds.all.join(' '),r.bonus?r.bonus.desc||'':''].join(' ').toLowerCase();
+      if(!hay.includes(q))return false;
+    }
+    return true;
+  });
+
+  // 정렬
+  const cmp={
+    idx:(a,b)=>a.idx-b.idx,
+    name:(a,b)=>a.u.name.localeCompare(b.u.name,'ko'),
+    meta:(a,b)=>(a.u.rarity+a.u.element+a.u.role).localeCompare(b.u.rarity+b.u.element+b.u.role),
+    skill:(a,b)=>a.legacy.localeCompare(b.legacy),
+    skillIds:(a,b)=>a.skillIds.all.length-b.skillIds.all.length,
+    bonus:(a,b)=>(a.bonus?a.bonus.effect||'':'').localeCompare(b.bonus?b.bonus.effect||'':''),
+    status:(a,b)=>{const ord={none:0,legacy:1,new:2,both:3};return ord[a.status]-ord[b.status]},
+  }[linkSort.col]||((a,b)=>a.idx-b.idx);
+  rows.sort(cmp);
+  if(linkSort.dir==='desc')rows.reverse();
+
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    const u=r.u;
+
+    // 1. #
+    const tdIdx=document.createElement('td');
+    tdIdx.textContent=r.idx;
+    tdIdx.style.color='var(--muted)';
+    tr.appendChild(tdIdx);
+
+    // 2. 유닛
+    const tdUnit=document.createElement('td');
+    const unitWrap=el('div','lt-unit');
+    const imgWrap=el('div','lt-unit-img');
+    const img=document.createElement('img');
+    img.src='../img/'+u.id+'.png';
+    img.onerror=function(){this.style.display='none';imgWrap.appendChild(document.createTextNode(u.icon||'?'))};
+    imgWrap.appendChild(img);
+    unitWrap.appendChild(imgWrap);
+    const nameWrap=document.createElement('div');
+    const nameEl=el('div','lt-unit-name',u.name);
+    nameEl.style.cursor='pointer';
+    nameEl.onclick=()=>showUnitModal(u);
+    nameWrap.appendChild(nameEl);
+    nameWrap.appendChild(el('div',null,u.id));
+    nameWrap.lastChild.style.cssText='color:#5a4838;font-size:9px;font-family:ui-monospace,monospace';
+    unitWrap.appendChild(nameWrap);
+    tdUnit.appendChild(unitWrap);
+    tr.appendChild(tdUnit);
+
+    // 3. 메타
+    const tdMeta=document.createElement('td');
+    const metaWrap=el('div','lt-meta');
+    const row1=el('div','row');
+    row1.appendChild(el('span',`lt-tag rar-${u.rarity}`,RARITY_LABEL[u.rarity]));
+    row1.appendChild(el('span',`lt-tag elem elem-${u.element}`,ELEM_LABEL[u.element].split(' ')[0]));
+    metaWrap.appendChild(row1);
+    const row2=el('div','row');
+    row2.appendChild(el('span',`lt-tag role-${u.role}`,ROLE_LABEL[u.role]));
+    metaWrap.appendChild(row2);
+    tdMeta.appendChild(metaWrap);
+    tr.appendChild(tdMeta);
+
+    // 4. skill (레거시)
+    const tdLegacy=document.createElement('td');
+    if(r.legacy&&r.legacy!=='none'){
+      tdLegacy.appendChild(el('div','lt-skill-key',r.legacy));
+      if(r.legacyDesc)tdLegacy.appendChild(el('div','lt-skill-desc',r.legacyDesc));
+    }else{
+      tdLegacy.appendChild(el('span','lt-empty-cell','— 없음'));
+    }
+    tr.appendChild(tdLegacy);
+
+    // 5. skillIds (신)
+    const tdNew=document.createElement('td');
+    const idsList=el('div','lt-skillids-list');
+    r.skillIds.dataIds.forEach(sid=>{
+      const chip=el('div','lt-skillid',sid);
+      const sk=(RoF.Data.SKILLS||[]).find(s=>s.id===sid);
+      if(sk)chip.title=sk.name+' — '+(sk.desc||'');
+      chip.onclick=()=>{if(sk)showSkillModal(sk)};
+      idsList.appendChild(chip);
+    });
+    r.skillIds.phIds.forEach(sid=>{
+      const chip=el('div','lt-skillid placeholder');
+      const sk=(RoF.Data.SKILLS||[]).find(s=>s.id===sid);
+      const span=document.createElement('span');
+      span.textContent=sid;
+      span.style.cursor=sk?'pointer':'default';
+      if(sk){chip.title=sk.name+' — '+(sk.desc||'');span.onclick=()=>showSkillModal(sk)}
+      else chip.title='등록되지 않은 ID (12_data_skills.js 에 없음)';
+      chip.appendChild(span);
+      const x=el('span','x','×');
+      x.title='제거';
+      x.onclick=(ev)=>{ev.stopPropagation();removeSkillIdFromUnit(u.id,sid)};
+      chip.appendChild(x);
+      idsList.appendChild(chip);
+    });
+    if(r.skillIds.all.length===0)idsList.appendChild(el('span','lt-empty-cell','— 비어있음'));
+    const addBtn=document.createElement('button');
+    addBtn.className='lt-add-skill';
+    addBtn.textContent='+ 스킬 추가';
+    addBtn.onclick=()=>addSkillIdToUnit(u.id);
+    idsList.appendChild(addBtn);
+    tdNew.appendChild(idsList);
+    tr.appendChild(tdNew);
+
+    // 6. bonusTrigger
+    const tdBonus=document.createElement('td');
+    if(r.bonus){
+      const bn=document.createElement('div');
+      bn.style.fontSize='10px';
+      const head=document.createElement('div');
+      head.style.cssText='color:var(--gold);font-weight:600;font-size:10px';
+      head.textContent=`${r.bonus.on||'?'} ${r.bonus.chance!=null?'·'+(r.bonus.chance*100|0)+'%':''}`;
+      bn.appendChild(head);
+      bn.appendChild(el('div','lt-skill-desc',r.bonus.desc||r.bonus.effect||''));
+      tdBonus.appendChild(bn);
+    }else{
+      tdBonus.appendChild(el('span','lt-empty-cell','— 없음'));
+    }
+    tr.appendChild(tdBonus);
+
+    // 7. 상태
+    const tdStatus=document.createElement('td');
+    tdStatus.appendChild(el('span',`lt-status ${r.status}`,statusLabel(r.status)));
+    tr.appendChild(tdStatus);
+
+    tbody.appendChild(tr);
+  });
+
+  // 누락 카운트
+  const total=units.length;
+  const counts={none:0,legacy:0,new:0,both:0};
+  units.forEach(u=>counts[getUnitStatus(u)]++);
+  const phLinks=loadPH().unit_skill_links||{};
+  const phCount=Object.values(phLinks).reduce((a,v)=>a+(Array.isArray(v)?v.length:0),0);
+  document.getElementById('summary-links').innerHTML=
+    `유닛 <b>${total}</b>종 / 표시 <b>${rows.length}</b>` +
+    ` · 스킬 없음 <b>${counts.none}</b> · 레거시만 <b>${counts.legacy}</b>` +
+    ` · 신만 <b>${counts.new}</b> · 둘 다 <b>${counts.both}</b>` +
+    ` · 입력한 skillIds <b>${phCount}</b>`;
+
+  // 정렬 헤더 표시
+  document.querySelectorAll('#link-table thead th').forEach(th=>{
+    if(th.dataset.sort===linkSort.col){
+      th.dataset.sortActive='1';
+      th.dataset.sortDir=linkSort.dir==='asc'?'▲':'▼';
+    }else{
+      delete th.dataset.sortActive;
+      delete th.dataset.sortDir;
+    }
+  });
+}
+
+// 검색·필터 이벤트
+['link-search','link-filter-rarity','link-filter-element','link-filter-role','link-filter-status'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>buildLinksTable());
+  document.getElementById(id).addEventListener('change',()=>buildLinksTable());
+});
+// 헤더 정렬
+document.querySelectorAll('#link-table thead th').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const col=th.dataset.sort;
+    if(linkSort.col===col)linkSort.dir=linkSort.dir==='asc'?'desc':'asc';
+    else{linkSort.col=col;linkSort.dir='asc'}
+    buildLinksTable();
+  });
+});
+
+function exportLinksCSV(){
+  const units=RoF.Data.UNITS||[];
+  const rows=[['idx','id','name','rarity','element','role','race','range',
+               'skill_legacy','skillDesc','skillIds_data','skillIds_placeholder',
+               'bonusTrigger_on','bonusTrigger_chance','bonusTrigger_effect','bonusTrigger_desc',
+               'status']];
+  units.forEach((u,i)=>{
+    const skinfo=getUnitSkillIds(u);
+    const bn=u.bonusTrigger||{};
+    rows.push([i+1,u.id,u.name,u.rarity,u.element,u.role,u.race||'',u.range||'',
+      u.skill||'',u.skillDesc||'',
+      skinfo.dataIds.join('|'),skinfo.phIds.join('|'),
+      bn.on||'',bn.chance!=null?bn.chance:'',bn.effect||'',bn.desc||'',
+      getUnitStatus(u)]);
+  });
+  downloadCSV('rof_unit_skill_links_'+new Date().toISOString().slice(0,10)+'.csv',rows);
+}
+
+// ════════════════════════════════════════════════════════
+// CSV Export
+// ════════════════════════════════════════════════════════
+
+function csvEscape(v){
+  if(v==null)return'';
+  const s=String(v);
+  if(s.includes(',')||s.includes('"')||s.includes('\n'))return'"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+
+function downloadCSV(filename,rows){
+  const csv='﻿'+rows.map(r=>r.map(csvEscape).join(',')).join('\n'); // BOM for Excel UTF-8
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function exportUnitsCSV(){
+  const units=RoF.Data.UNITS||[];
+  const ph=loadPH().units||{};
+  const rows=[['status','id','name','rarity','element','role','race','range','atk','hp','def','spd','nrg','luck','eva','meva','skillIds','concept']];
+  units.forEach(u=>{
+    rows.push(['filled',u.id,u.name,u.rarity,u.element,u.role,u.race||'',u.range||'',
+      u.atk,u.hp,u.def,u.spd,u.nrg,u.luck||'',u.eva||'',u.meva||'',
+      (u.skillIds||[]).join('|'),u.skillDesc||'']);
+  });
+  // placeholder 추가
+  Object.keys(ph).forEach(key=>{
+    const [r,e,role]=key.split('.');
+    const v=ph[key];
+    if(!v||(!v.name&&!v.concept))return;
+    rows.push(['placeholder','',v.name||'',r,e,role,'','','','','','','','','','','',v.concept||'']);
+  });
+  downloadCSV('rof_units_'+new Date().toISOString().slice(0,10)+'.csv',rows);
+}
+
+function exportSkillsCSV(){
+  const skills=RoF.Data.SKILLS||[];
+  const ph=loadPH();
+  const rows=[['status','id','name','type','rarity','role','element','attackType','cost','tpCost','damage','heal','cooldown','targetType','effect','desc','concept']];
+  skills.forEach(sk=>{
+    const isPassive=sk.passive!==false;
+    rows.push(['filled',sk.id,sk.name,isPassive?'passive':'active',sk.rarity,sk.role||'',sk.element||'',sk.attackType||'',
+      sk.cost!=null?sk.cost:'',sk.tpCost||'',sk.damage||'',sk.heal||'',sk.cooldown||'',sk.targetType||'',sk.effect||'',sk.desc||'','']);
+  });
+  Object.keys(ph.skills_passive||{}).forEach(key=>{
+    const v=ph.skills_passive[key];
+    if(!v||(!v.name&&!v.concept))return;
+    const [r,role]=key.split('.');
+    rows.push(['placeholder','',v.name||'','passive',r,role,'','','','','','','','','','',v.concept||'']);
+  });
+  Object.keys(ph.skills_active||{}).forEach(key=>{
+    const v=ph.skills_active[key];
+    if(!v||(!v.name&&!v.concept))return;
+    const [r,e]=key.split('.');
+    rows.push(['placeholder','',v.name||'','active',r,'',e,'','','','','','','','','',v.concept||'']);
+  });
+  downloadCSV('rof_skills_'+new Date().toISOString().slice(0,10)+'.csv',rows);
+}
+
+// ════════════════════════════════════════════════════════
+// Boot
+// ════════════════════════════════════════════════════════
+
+if(RoF.Data.UNITS)buildUnitsMatrix();
+else document.getElementById('summary-units').textContent='❌ RoF.Data.UNITS 로드 실패';
+
+if(RoF.Data.SKILLS){
+  buildSkillsPassive();
+  buildSkillsActive();
+  updateSkillsSummary();
+}else{
+  document.getElementById('summary-skills').textContent='❌ RoF.Data.SKILLS 로드 실패';
+}
+
+if(RoF.Data.UNITS&&RoF.Data.SKILLS)buildLinksTable();
+else document.getElementById('summary-links').textContent='❌ 데이터 로드 실패';
+
+if(RoF.Data.UNITS)buildBranchesPanel();
+else document.getElementById('summary-branches').textContent='❌ RoF.Data.UNITS 로드 실패';
+</script>
+</body>
+</html>

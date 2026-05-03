@@ -59,6 +59,10 @@ RoF.Data.SKILLS = Object.freeze([
   // 스키마는 Battle v2 엔진(60_turnbattle_v2.js) 과 필드명 통일:
   //   attackType: 'spell' | 'weapon' | 'heal' | 'buff' | 'debuff'
   //   targetType: 'single_enemy' | 'all_enemies' | 'single_ally' | 'all_allies' | 'self'
+  //                | 'single_any' | 'all_units' | 'not_self_ally'   (2026-05-03 STEP 2 신설)
+  //                  · single_any:    적/아군 누구든 1명 (드레인 등 양면 마법)
+  //                  · all_units:     적+아군 모두 AoE (메테오·지진 등 광역 강력 스킬)
+  //                  · not_self_ally: 본인 제외 아군 (부활 스킬 — 자기 자신 부활 X)
   //   cost, costType:'nrg', tpCost, cooldown
   //   element: 공명 시스템 데이터(현재 로직 미적용, 필드만 예약)
   // ─────────────────────────────────────────────────────────────

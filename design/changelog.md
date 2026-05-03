@@ -3,8 +3,316 @@
 > ⚠️ 이 파일은 **append-only**. 과거 기록 수정/삭제 금지. 번복은 새 항목으로.
 >
 > 형식: `## YYYY-MM-DD ▶ 카테고리 ▶ 제목` / 변경 / 이유 / 영향 / 이전 결정 관계
+
+## 2026-05-03 ▶ 전투 ▶ 타격 시퀀스 4건 시각 강화 (사용자 요청 + 추천)
+- **변경**:
+  - **① floating 데미지 숫자** (`js/40_cards.js`): 카드 인스턴스 신규 메서드 `inst.showDamageFloat(amount, {kind})`. damage=빨강 22px / crit=주황 32px+글로우 / heal=녹색 +N. `bv2DmgFloat` keyframe — 카드 정중앙 → 위 (-180%) 1.0s cubic-bezier(.33,0,.5,1) fade.
+  - **② HP 바 부드러운 transition** (`css/41_battle_v2.css`): `.card-v4 .bar.hp/.nrg > i { transition: width .35s cubic-bezier(.4,0,.2,1) }`. 즉시 변경 X. + `.hp-num.is-damaged` 변경 시 `.25s` 1.18배 스케일 펄스.
+  - **③ HP 숫자 카운트다운**: `inst.animateHP(toN, dur?)` 신규 — duration 변화 폭 비례(`Math.min(800, Math.max(240, Math.abs(delta)*35))`), easeInOutQuad. setHP 즉시 갱신 X, RAF 점진. 12 → 8 같은 작은 변화도 카운트다운 체감 가능.
+  - **④ 카메라 셰이크** (`css` keyframe + `js/60_turnbattle_v2.js` performAttack 에 트리거): `battle-stage-grid.is-shaking-light` (일반, ±3px 0.25s) / `is-shaking-strong` (crit, ±9px 0.42s). hit-react 시점에 calc.isCrit 분기.
+  - **performAttack 통합** (`js/60_turnbattle_v2.js:1023~`): damage / heal 효과 적용 시 `inst.showDamageFloat` + `inst.animateHP` 자동 호출. fallback (인스턴스 없으면 `refreshStageCard`).
+- **이유**: 사용자 요청 — "스킬 액션 → 이펙트 → 타격모션 (피격시 카드 흔들림) → 동시에 HP 숫자 뜨면서 피해 받은 거 뜨는걸로. 그리고 적 HP 숫자도 이펙트 주면서 줄어드는걸로." 추천 추가 (카메라 셰이크 + 색상 차등) 사용자 채택.
+- **영향**:
+  - 회귀 12/12 PASS.
+  - ui-inspector 정량 — floating 22→32px 1.45배, crit 글로우 3겹, 셰이크 light↔strong 3배 진폭, HP transition 50/200/450ms 단계적 측정, animateHP RAF 단계적 갱신 모두 명세 일치.
+  - P1 2건 (animateHP duration 짧음 / floating z-index 낮음) 즉시 픽스 — duration 비례 + easeInOutQuad 로 체감 ↑, z-index 30→110 (char-focus 모달 z:100 위 보장).
+  - 사용자가 직접 새로고침해서 전투 진입 → 적 타격 시 floating 빨강/주황 숫자 + stage-grid 흔들림 + HP 바 부드러운 줄어듦 동시 체감 가능.
+
+## 2026-05-03 ▶ 전투 ▶ 회복 시스템 — 라운드 종료 자동 회복 (HP/NRG max/10)
+- **변경**:
+  - 신규 헬퍼 `Battle.tickRegen()` — 매 라운드 종료 시 모든 살아있는 유닛에 `floor(maxHp/10)` HP + `floor(maxNrg/10)` NRG 회복. 죽은 유닛 skip, max cap 적용.
+  - 라운드 종료 시점 (`tickStatusEffects` + `tickCooldowns` 옆) 호출 추가.
+  - 전투 밖 자동 회복은 별도 작업 없이 차단 유지 — 기존 시스템에서 `currentHp` persist 시 보존하고 사용자 액션(교회·여관)만 회복 가능.
+- **이유**: 사용자 결정 — "회복 시스템: HP는 10당 1, NRG도 마찬가지. 시점은 A (전투 라운드 종료 시), 전투 밖은 자동 회복 안 됨."
+- **공식**:
+  - HP 회복 = `floor(maxHp / 10)` per round (예: maxHp=50 → +5, maxHp=12 → +1)
+  - NRG 회복 = `floor(maxNrg / 10)` per round
+  - max cap 적용 (이미 풀이면 회복 0)
+- **영향**: 회귀 12/12 PASS. 데이터 필드 `hpReg`/`nrgReg` (per-card 추가 회복) 는 별도 트랙에서 보강 가능 — 현재는 max/10 단순 공식만. 시각 효과 (회복 +N 플로팅) 도 별도 phase. 사용자가 직접 새로고침해서 라운드 종료 시 HP/NRG 바 회복 체감 확인.
+
+## 2026-05-03 ▶ UI ▶ 편성 슬롯 3개 시스템 + 이름 편집 (성문 출정 편성)
+- **변경**:
+  - **데이터 모델 마이그레이션**: `Game.savedFormations` FIFO 큐 (≤3) → 인덱스 3 고정 슬롯 (각 `{name, units, relics}`). `js/50_game_core.js` `load()` 안에서 정규화 — 기존 데이터 포함 보존, name 누락분은 "1번 편성"·"2번 편성"·"3번 편성" 자동 부여.
+  - **신규 모듈** `js/39_formation_slots.js`: `RoF.FormationSlots = { open, close, save(idx), load(idx), rename(idx), clear(idx) }`. ESC + 백드롭 클릭 닫기. save 시 덮어쓰기 confirm, 빈 출전 동료 가드, persist 통합. load 시 stale uid 자동 필터 (deck/ownedRelics 변경 대응).
+  - **모달 DOM** `#formation-slots-modal`: 3 슬롯 grid 가로 배치. 각 슬롯 헤더 [번호 배지] [이름] [✏️] [🗑️(저장 시)], 정보 "동료 N · 유물 M" 또는 "비어있음", 액션 [💾 저장 green] [📜 불러오기 blue, 빈 슬롯 disabled].
+  - **UI 통합**: 출정 편성 화면 cs-actions 의 "편성 기억" + "편성 소환" 두 버튼 → "📜 편성 슬롯" 1개로 통합.
+  - **CSS** `css/42_screens.css`: `.fs-modal-box` (max-width 760, max-height 600 + overflow-y:auto 안전망) + `.fs-grid` 3열 grid + `.fs-slot` (빈 슬롯 dashed 회색 / 저장된 슬롯 solid 노란) + 헤더 휴지통 hover 빨강.
+  - **호환 redirect**: 기존 `Game.saveFormation()` / `Game.loadFormation()` → `FormationSlots.open()` 으로 위임 (외부 호출자 깨짐 방지).
+- **이유**: 사용자 호소 — "진형 배치 최대 3번까지 저장해서 불러오기. 1·2·3번 별도. UI/UX 잘 만들어보자. 이름도 '리그용', '캠페인용' 같이 사용자가 직접 수정 가능하게."
+- **영향**: 회귀 12/12 PASS. ui-inspector 검수 P0 2건 (🗑️ 슬롯 폭 초과 잘림 / 저장 버튼 색 충돌) 즉시 픽스 — 🗑️ 헤더 ✏️ 옆으로 이동 + 저장 버튼 btn-blue → btn-green. 새로고침 후 마을 → 성문 → 출정 편성 → "📜 편성 슬롯" 클릭으로 즉시 사용 가능.
+
+## 2026-05-03 ▶ 전투 ▶ 스킬 타겟팅 시스템 8종 정비 + 본인 카드 클릭 가능
+- **변경**:
+  - **버그 픽스 (STEP 1)**: `v2.charClick` 핸들러가 selectedSkill 있을 때 `onTargetClick` 호출하도록 분기. 이전엔 ally 카드가 항상 charClick 으로 묶여 있어 single_ally 스킬을 본인/아군에게 못 쓰는 버그.
+  - **신규 타겟 종류 3종 (STEP 2)**:
+    - `single_any` — 적/아군 누구든 1명 (드레인 등 양면 마법)
+    - `all_units` — 적+아군 모두 AoE (메테오·지진 등 광역)
+    - `not_self_ally` — 본인 제외 아군 (부활 스킬 — 자기 부활 X)
+  - **`Battle.isValidTarget(c, sk, target)` 헬퍼 신규** — 단일 진실 (applyTargetDimByType + onTargetClick 공유). 8종 분기 + 죽은 유닛 invalid.
+  - **`applyTargetDimByType`** 가 isValidTarget 사용 — 시각 dim/valid 와 데이터 valid 가 동일 기준.
+  - **`onTargetClick` 시작에 `isValidTarget` 검증 추가** — 무효 타겟 silent return.
+  - **`expandTargets`** 에 `all_units` 분기 추가 — `[].concat(allies, enemies).filter(살아있는)`.
+  - **P0 즉시 픽스**: `css/41_battle_v2.css:740` `.card-v4-compact.is-selected { visibility:hidden }` → `.is-selected:not(.is-target-valid)` 로 변경. 본인 카드가 self/single_ally/single_any/all_units 등 valid 타겟일 때 그리드에 다시 노출 (사용자 호소 "내 카드도 나와야 할 것 같은데?" 직접 해소).
+  - **`12_data_skills.js`** 주석에 8종 targetType 목록 + 새 3종 의도 명시.
+- **이유**: 사용자 호소 — "힐 같은 아군한테 쓰는 스킬 카드는 지금 아군한테 지정이 안 된다", "내 카드도 나와야 할 것 같은데?", "스킬은 1.적 / 2.아군 / 3.적+아군 / 4.범위" 4종 정의 + 더 추천 요청.
+- **영향**: 회귀 12/12 PASS. ui-inspector 정량: isValidTarget 단위 40/40, dim/valid 일관성 36/36, 본인 카드 hit-test P0 픽스 후 클릭 가능. STEP 3·4 (부활 시스템 / 자동 선택형 random_enemy·lowest_hp_ally) 별도 phase.
+
+## 2026-05-03 ▶ 전투 ▶ 전투 스킬 카드 STEP 3 — 쿨다운 런타임 시스템 + 정중앙 노란 숫자 UI
+- **변경**:
+  - **데이터 모델**: `unit._skillCooldowns = { skillId: turnsLeft }` (전투 임시 상태). 헬퍼 `Battle.getCooldown(c, sk)`, `Battle.isOnCooldown(c, sk)`, `Battle.tickCooldowns()` 신규.
+  - **set 시점**: `performAttack` 안에서 `if(skill.cooldown > 0) attacker._skillCooldowns[skill.id] = skill.cooldown` 추가. 스킬 사용 확정 = 쿨다운 시작.
+  - **tick 시점**: 라운드 종료 직후 (status effect tick 옆) `Battle.tickCooldowns()` 호출 — 모든 아군·적군 카운터 -1, 0 도달 시 키 삭제 (cleanup).
+  - **canAfford 통합**: `if(Battle.isOnCooldown(...)) return false` 추가 — 쿨다운 중인 스킬은 큐잉 차단.
+  - **onSkillClick deny**: 쿨다운 중 클릭 시 `is-deny-shake` 0.42s + `UI.toast('⏳ ' + cdLeft + '턴 뒤에 사용 가능합니다', {kind:'warn'})`. 자원 부족 메시지와 분리.
+  - **슬롯 렌더 변경**: `renderSelectedCharFocus` 의 슬롯 순회에서 `is-on-cooldown` 클래스 토글 + `.bsc-cd-overlay` 노드 동적 생성/갱신 (카드 폭 안 정중앙 노란 숫자).
+  - **CSS** (`41_battle_v2.css`): `.bcf-skill-card.is-on-cooldown` 노란 border (#f9b32a) + 노란 글로우 + cursor:not-allowed. `.bsc-cd-overlay` inset:0 검정 .58 오버레이 + 정중앙 노란 숫자 (#ffeb3b, 56px, weight 900, Cinzel/Georgia/serif, text-shadow 검정 외곽선 + 노란 글로우 12px). `:not(.is-on-cooldown) .bsc-cd-overlay` display:none.
+- **이유**: 사용자 요청 — "쿨다운 있으면 카드 정중앙에 노란색 숫자로 남은 턴 수 표시 + 클릭 시 'X턴 뒤에 사용 가능합니다' 메시지." 이전엔 데이터에 cooldown 값만 있고 런타임에서 추적·강제 안 됨 → 사용자가 cooldown 인지 자체를 못 함.
+- **영향**: 회귀 12/12 PASS. ui-inspector 검수 P0 0건, 노란 border/오버레이/숫자 명세 일치, 토스트+shake 정상, tickCooldowns 0 시 키 삭제 검증. 일러스트 식별 유지 (어둠 너머로 보임 — HS/LoR/Snap 공통 패턴). P1 4건은 운영 영향 없거나 별도 phase (UI.toast 디폴트 위치 / `renderSelectedCharFocus` export / 두 자리 cd / 캐스터당 active 1개 한계).
+
+## 2026-05-03 ▶ UI ▶ 전투 스킬 카드 시각·로직 개편 STEP 1+2 (투명화 폐기 + 패시브 프레임 + 정렬 + deny 메시지)
+- **변경**:
+  - **투명화 폐기**: `css/41_battle_v2.css` `.bcf-skill-card.is-passive` 의 `opacity:.6` + `filter:grayscale(.65)` 제거. `.bcf-skill-card.is-unaffordable` 의 `opacity:.68` + `filter:grayscale .55 brightness .85` 제거. 카드 일러스트 100% 식별 유지.
+  - **패시브 프레임**: 보라 dashed border (#a78bfa) + 보라 글로우 + 좌상단 "패시브" 라벨 배지 (`::after` 보라 그라디언트 #a78bfa→#6d28d9). cursor:help.
+  - **자원 부족 표시**: 빨간 테두리 + inset shadow `rgba(0,0,0,.18)` 만으로 "쓸 수 없음" 시각 신호.
+  - **패시브 정렬**: `js/60_turnbattle_v2.js` 의 `renderSelectedCharFocus` 안에서 `getSkillsOf()` 결과를 stable sort (액티브 0, 패시브 1) — 5 슬롯에 액티브 먼저, 패시브 맨 오른쪽 배치.
+  - **패시브 클릭 메시지**: `onSkillClick` 의 `if(sk.passive) return;` silent return → deny shake (`is-deny-shake` 0.42s) + `UI.toast('🌀 {name} — 지속 효과입니다 (자동 발동)', {kind:'info'})`.
+  - **패시브 필터 해제**: `buildUnitSkillSet` 의 `if(src && src.passive !== true)` → `if(src)` 로 변경. 패시브 카드가 슬롯에 노출되도록 (이전엔 데이터 파이프라인이 패시브를 필터링해서 위 시각·정렬·클릭 변경이 dead code 였음).
+- **이유**: 사용자 요청 — "전투 중 투명화 카드 다 없애고, 패시브는 항상 맨 오른쪽 배치 + 누르면 '지속 효과입니다' 안내. 패시브/액티브 프레임 구분." A안 (CSS 차별화 + 라벨) 채택.
+- **영향**: 회귀 12/12 PASS. ui-inspector 검수 P0 0건, 5장 모두 opacity:1 / filter:none, 정렬·라벨·토스트 모두 명세 대로. **STEP 3 별도 phase**: 쿨다운 런타임 시스템 (사용 시 카운터 + 매 라운드 -1 + canCast 체크) + 정중앙 노란 숫자 + "X턴 뒤 사용 가능" 메시지. **데이터 별도 작업**: 카드별 패시브 매핑 (`unit.skillIds` 에 패시브 추가) — 현재 데이터엔 매핑이 거의 없어 자연 흐름에서 패시브 슬롯이 자주 빈 상태.
+
+## 2026-05-03 ▶ UI ▶ 매칭 화면 출전!/철수 버튼 한 화면 fit
+- **변경**: `js/55_game_battle.js` `showMatchmaking()` Phase 2 (도전자 등장 후) 레이아웃 재배치. 이전 = `[적 카드] VS [내 카드]` 가로 행 + 그 아래 `[카운트다운]` + `[출전!] [철수]` (720 뷰포트 밀림). 변경 = `[적 카드] [VS + 카운트다운 + 출전! + 철수 (세로 stack, min-width:140px)] [내 카드]` — 양쪽 카드 사이 VS 영역에 모든 컨트롤 흡수.
+- **이유**: 사용자 호소 — "전투 매칭되면 출전하기/취소하기 한 화면에 담아야 함. 지금은 스크롤 내려야 함." 사용자 추가 정정: "카드 사이즈는 축소하지 말고 버튼만 다른데로 옮겨봐."
+- **영향**: 회귀 12/12 PASS. ui-inspector 정량 측정 — `#match-box` scrollH 694 = clientH 694, overflowing:false, 두 버튼 모두 720 안 (안전 마진 205px). 카드 280×490 사이즈 그대로 유지.
+
+## 2026-05-03 ▶ UI ▶ 마을 좌상단 프로필 슬롯 + 카드 변경 모달 (정체성 ① 보강)
+- **변경**:
+  - `index.html` `town-hud-left` 첫 자식에 `.th-profile` 슬롯 추가 (data-action="profile.open" 클릭 핸들러). 기존 `#menu-welcome` 단일 stat 폐기.
+  - `index.html` `#profile-modal` 신규 (모달 박스 + `#profile-grid`).
+  - `js/38_profile.js` 신규 모듈 — `RoF.Profile = {open, close, select(uid), _renderGrid}`. ESC + 백드롭 클릭 닫기 표준 적용 (다른 모달과 차등 — 향후 일괄 통일 권장).
+  - `js/50_game_core.js` `profileCardId` 필드 + `getProfileCard()` (영웅 default + stale 가드) + `setProfileCard(uid)` + persist 통합. `__gameKeys` 중복 키 화이트리스트 갱신.
+  - `js/51_game_town.js` `showMenu()` 가 `getProfileCard()` 사용 — 영웅이 아닌 다른 카드 일러도 노출 가능.
+  - `js/99_bindings.js` MODULE_MAP `profile: 'Profile'` 등록.
+  - `css/42_screens.css` `.th-profile` 슬롯 + `#profile-modal .profile-grid/.profile-card-mini/.pcm-img/.pcm-hero-badge/.pcm-current-badge` 등 스타일.
+- **이유**: 사용자 요청. 정체성 4단계 진단의 ① "내 카드는 이거" 단계가 🟡 (시그니처 표시 누락) 이었던 것을 직접 메움. 마을 진입 시 매번 "내 카드 = 내 게임" 인지 강화. 미래 A안 호칭/점유자 시스템 도입 시 `profileCardId` 가 그대로 favorite 데이터 슬롯으로 진화.
+- **영향**: 회귀 12/12 PASS, ui-inspector P0 0건. P1 2건 (텍스트 대비 / 일러 얼굴 위치 / ESC / 백드롭) 모두 즉시 픽스 완료. 코드 행수 +180 / -10 (신규 모듈 90줄 + CSS 95줄 + DOM 11줄 + 헬퍼 24줄).
+
+## 2026-05-03 ▶ UI ▶ 설정 모달 게임 종료 버튼 + NRG 바 항상 파랑 + 시즌 캡 곡선 변경
+- **변경**:
+  - `index.html` `#settings-modal` 세션 섹션에 "❌ 게임 종료" 빨간 버튼 추가 (로그아웃 아래).
+  - `js/37_settings.js` `Settings.exitGame()` 신규 — confirm → `Game.persist()` → `window.close()` → fallback alert ("브라우저 탭을 직접 닫아주세요").
+  - `css/32_card_v4.css` NRG 바 `is-damaged` 빨강 규칙 제거 (`.bar.nrg.is-damaged > i`, `.nrg-num.is-damaged`). NRG 는 만피든 부족이든 항상 파란색 그라디언트(#66ccff → #1a4a7a). HP 빨강 전환은 그대로 유지.
+  - `css/42_screens.css` `#settings-modal .set-modal` 에 `max-height:700px; overflow-y:auto` — 게임 종료 버튼 추가로 인한 720 뷰포트 +24px overflow 안전망.
+  - `design/season_cap_plan.md` 시즌 캡 곡선 v1(20→40→60→80→100) → v2(50→60→70→80→100) 사용자 결정 반영. 첫 시즌부터 충분한 카타르시스 + 시즌 4→5 가 +20 으로 가장 어려운 마지막 구간.
+- **이유**:
+  - 게임 종료 — 사용자 요청 (설정창 맨 아래 추가). 로그아웃과 다른 의미 (창 닫기 시도).
+  - NRG 색깔 — 사용자 결정. 파란색이 줄어드는 형태가 직관적, 빨강 전환은 HP 와 혼동.
+  - 시즌 캡 — 사용자 결정 (B안 설계 v2). 시즌 1 캡 20 너무 짧다는 판단.
+- **영향**: 회귀 12/12 PASS, ui-inspector 통과 (P1 overflow 즉시 픽스 완료, 잔여 0). 코드 행수 변화 +18 / -7 (단순 추가·제거).
+
+## 2026-05-03 ▶ 기획 ▶ 자율 2시간 — A·B안 설계 문서 2개 + lore + game-designer 이중 검증 + 14건 반영
+- **변경**: 사용자 외출(2시간) 자율 세션. 코드 변경 0, design 문서 2개 신규 + 1개 보고서.
+  - `design/throne_system_plan.md` (~390 줄): A안 호칭/점유자/신전. 7 신좌(6원소+정점) × 시즌 1위 점유자 × 호칭 × 신전 회랑. SQL 테이블 3개 + 클라이언트 cluster 5단계 의존 그래프.
+  - `design/season_cap_plan.md` (~245 줄): B안 시즌 캡. Lv 20→40→60→80→100, 12주/시즌, 5시즌=15개월. overflow B' (저장+상한). catch-up 3종.
+  - `design/autonomous_session_2026-05-03.md`: 본 세션 종합 보고.
+- **검증**: lore-consistency-auditor + game-designer 병렬 호출. P0 2건 (시즌 길이 8주→12주 / 키클롭스 형제 구분) + P1 8건 + P2 4건 + 보너스 3건 = 17건 모두 반영.
+- **이유**: 사용자 4안 (A/B/C/D) 결정 대기 중이라 임의 구현 위험. 결정에 도움되는 설계 초안 + 검증을 자율로 처리. 사용자 복귀 시 § 7 의 5+5=10건 결정만 받으면 phase 진입 가능 상태.
+- **영향**: 코드 변경 0, 회귀 12/12 PASS (작업 중 + 작업 후 2회 확인). 다음 세션 phase 진입 시 cluster A~F (6단계) 의존 그래프 그대로 사용 가능.
+
+## 2026-05-02 ▶ 정리 ▶ garbage 22건 trash 이동 + 교훈집 등재
+- **변경**: 일회성 probe 14개 (`tools/_inspect_training.cjs`, `tools/_mention_kb_inspect[1-7].js`, `tools/_pd_p[12].js`, `tools/_v4_build[12].js`, `tools/_v4_inspect[12].js`) + 0바이트 `css/10_tokens.css.tmp` + `img/ui/_backup_20260413/btn_stone_*.png` 4장 → `trash/2026-05-02-garbage/`. 빈 디렉토리 2개 (`img/cards/generated/`, `snd/_archive/`) `rmdir`.
+- **이유**: garbage-cleaner 호출 결과 명백 dead. 외부 참조 0, 오늘 세션 디버깅 잔재. `_mention_kb_inspect` 1→7 incremental 시도 흔적도 정리.
+- **영향**: tools/ 폴더 가시성 회복. 회귀 12/12 PASS (참조 0이라 영향 없음).
+- **교훈 등재**: `.claude/rules/08-garbage-lessons.md` 에 "디버깅 probe 스크립트 작업 종료 시 즉시 trash (2회 확인 → 정식 등재)" 패턴 추가. 2026-04-27 12건 + 2026-05-02 14건 = 두 번째 확인이라 일회성 실수에서 반복 패턴으로 승급.
+
+## 2026-05-02 ▶ UX ▶ 미수집 카드 클릭 힌트 + 단련 detail 폴리시 + 채팅 dropdown maxHeight (자율 폴리시)
+- **변경**:
+  - **codex 미수집 힌트 (사용자 backlog 처리)**: `js/53_game_deck.js` `showCodexDetail` 모달에 미수집 시 `_codexAcquireHint(u)` 결과 표시. 등급별 generic 안내 — bronze "선술집·전투 보상" / silver "선술집·시즌 확정" / gold "골드 리그 시즌 보상·업적" / legendary "차원의 균열·절대신 도전·시즌 최고" / divine "절대신 클리어·시즌 최고 업적". 영웅 카드(h_*) 는 별도 "캐릭터 생성 시 선택" 안내. 모두 monetization v2.1 § 0 가챠 폐기 정책 따름.
+  - **채팅 mention dropdown max-height** 220 → 270 (8 항목 무스크롤 표시. 264px < 270px).
+  - **카드 자동 링크 단어 경계 시도 후 회귀**: lookbehind/lookahead 한국어 단어 경계 처리 시도 → 한국어 조사 (가/이/을/는/의) 90% 매칭 실패 부작용 → 단순 매칭 회귀. 향후 형태소 분석 기반 분리 검토.
+  - **단련 detail 패널 폴리시**: fp grid 3열 유지 (가독성), btn padding 6/8→2, font 0.7→0.58rem, min-height 42→28. 약 50px overflow 절감 → 거의 fit (잔여 ~10px 마이너).
+  - **dead code 정리**: castle-tab-upgrade CSS / `--castle-tab-upgrade-*` 좌표 토큰 제거. 62_ghost_pvp showTraining monkey-patch 제거 (훈련장↔결투장 분리).
+- **이유**: 사용자 4시간 외출 동안 자율 작업으로 backlog 폴리시. play-director 권고 적극 반영.
+- **영향**: codex 모달이 미수집 카드 클릭 시 "어디서 얻나" 표시 → 사용자 학습비용 감소. 채팅 dropdown 8항목 모두 가시. 단련 detail 첫 화면 단련 버튼·분배 grid 노출.
+- **검증**: 회귀 12/12 PASS 모든 변경 후. play-director: 채팅 mention 16 케이스, 단어 경계 fail 5건 → 회귀 정책 확정. ui-inspector: 카드 V4 6 사이즈 일관성 확인 (`shots/card_v4_2026-05-02/all_sizes.png`).
+
+## 2026-05-02 ▶ lore ▶ 가챠 표현 일괄 교체 (audit 2026-05-02 Critical 6 + High 3 + M-1 처리)
+- **변경**:
+  - **PHASE1_PLAN.md** (C-1~C-4): "가챠 연출" → "카드 획득 연출" / "카드 뽑기 시" → "카드 파편 수집 완료 시" / "뽑기 사운드" → "카드 완성 사운드" / "강화/뽑기 시" → "강화/카드 완성 시"
+  - **PHASE3_COATING_PLAN.md** (C-5/C-6): 황금 코팅 획득 "가챠" → "업적 확정 보상", 태고 코팅 "0.1% 확률 가챠" → "절대신 클리어 / 시즌 최고 업적 확정". 표 안 가챠 행 삭제 후 업적/시즌 보상 행으로 교체. 코팅 단계 자체의 확정 획득 메커니즘 (조각 누적·미션 단위) 은 별도 phase 재설계 필요 — 주석 추가.
+  - **PHASE2_DECK_EMPTY_STATE_PLAN.md** (H-1): "가챠/이벤트 보상" → "이벤트 확정 보상" / "획득: 차원의 균열, 가챠" → "획득: 차원의 균열, 이벤트 확정 보상" / "획득: 리그 시즌 보상, 단련, 가챠" → "획득: 리그 시즌 보상, 단련, 이벤트 확정 보상"
+  - **PHASE2_TOWN_PLAN.md** (H-2): "전설 뽑기권" → "전설 소환권" (세계관 몰입형 명칭). UI 박스 + 표 양쪽.
+  - **PHASE5_CHAT_PLAN.md** (H-3): 목표 문구 "리그전·가챠 자랑" → "리그전·카드 획득 자랑"
+  - **PHASE2_HUD_FONT_POLISH_PLAN.md** (M-1): "💎 뽑기 전용" → "💎 보석 전용"
+- **이유**: monetization v2.1 § 0 (2026-04-22 가챠 없음 확정) + lore-bible v2 일관성. "가챠"/"뽑기"/"확률 N%" 표기는 우리 게임 정체성과 정면 충돌 — 모든 카드 획득 경로는 확정 지급(시즌 보상·업적·연승·전직·조각 누적) 으로 통일.
+- **영향**: 기획 문서 5개 (PHASE1·2_TOWN·2_DECK·2_HUD·3·5) 의 "가챠/뽑기" 단어 일괄 사라짐. 코드 변경 없음 (기획서 단어 교체만). 코팅 시스템 (PHASE3_COATING) 은 단어 교체 외에 **확정 획득 메커니즘 신규 설계 필요** 가 명시됨 — 별도 phase 에서 처리.
+- **검증**: 회귀 12/12 PASS (코드 변경 0이라 자동 통과). lore audit 의 Critical 6 + High 3 + Medium 1 = 10건 모두 해소. 정보성 경고 1건 (I-1 PHASE4_ARENA "확률 상승") 은 이벤트 가속 의미라 통과 유지. 잔여: M-2 PHASE2_FLAVOR_TEXT_PLAN "신살" 스킬 표현 (재검토 권장만).
+
+## 2026-05-02 ▶ 시스템 ▶ 훈련장 분리 + 단련 재설계 (사용자 펜딩 7번)
+- **변경**:
+  - **왕궁(castle) 단련 탭 폐기** → 퀘스트 + 전직(placeholder) 만. 신규 `#training-screen` (단련 + 스킬 교체 2탭).
+  - **단련 메커니즘 재설계**: 강제 `level+1` + freePoints +5 + rarity 5의 배수 강제 승급 → `골드 → exp` (1:1) + `giveCardXp()` 자동 레벨업.
+  - **exp 곡선**: `100 × L^1.5` (04-balance.md spec 정본화, 이전 `level × 10` 폐기). 만렙 100 cap. Lv1→2 = 100, Lv50→51 = 35,355, Lv99→100 = 98,499. 누적 ~663만 골드.
+  - **freePoints 분배 UI**: 단련 탭 우측 detail 패널. 6 스탯 (atk/hp/def/spd/luck/nrg) 각 +1 = 1포인트 소모. `c.{stat}` 직접 증가 + `growthPts` 기록. 색은 `--stat-*` 토큰 (카드 V4 좌측 stat 과 일관).
+  - **단련 단위**: +100 / +1000 / Max(가용 골드) 3 버튼 가로 분할. tooltip 으로 풀 라벨.
+  - **레벨업 이펙트**: `.lv-up-label` 신규 (2.6rem 골든 텍스트 "Lv N → N+1", z-index 300, 1.2s scale+rise 애니), 기존 `.rarity-burst` + `.upgrade-card-glow` + `.upgrade-particles` (12개 골드) 재활용.
+  - **NPC 변경**: castle.choices = [퀘스트 / 전직 / 대화], training.choices = [단련 / 스킬 교체 / 대화]. 결투장(arena) = showArena 별도 (gate NPC 가 현재 "준비중").
+  - **62_ghost_pvp.js monkey-patch 제거**: showTraining 가로채기 (online → arena 변경) 폐기. 훈련장과 결투장 명확 분리.
+- **이유**: 사용자 결정 (changelog 2026-05-02 14:50 분리 명시). 왕궁의 "단련" 메커니즘이 강제 level+1 + 폐기된 freePoints +5 + rarity 강제승급으로 spec 과 어긋남. 훈련장은 placeholder 모달뿐. 분리하면서 메커니즘 재설계.
+- **영향**: 카드 단련 → 자연 exp 누적 → 레벨업 → 분배 가능. 만렙 도달이 어려워(누적 663만골드) 만렙 카드의 가치 보호. 기존 save 호환 (xp/freePoints/growthPts 필드 이미 존재). rarity 는 단련에서 변경 안 됨 (별도 메커니즘으로 분리 — 합성/진화).
+- **검증**: 회귀 12/12 PASS / ui-inspector blocker 4건 (showTraining 중복 / detail overflow 282 / grid 풀사이즈 / NPC bar 미렌더) 모두 해소. fp 색 토큰화. lv-up-label 2.6rem + z-index 300. / play-director 10 시나리오 PASS — 진입·NPC bar·grid·선택·xp 게이지·+100 단련·자동 레벨업·이펙트 발현·freePoints 분배·만렙 가드·스킬 탭·왕궁 단련 부재 모두 정상.
+- **🟡 잔여 마이너**: detail 패널 fp grid 둘째 줄 ~40px 스크롤 필요 (overflow-y:auto 으로 동작은 OK, 시각상 패널 내부 스크롤바 노출). 직접 디자인 확정 후 추가 압축 또는 layout 재배치.
+
+## 2026-05-02 ▶ PHASE 5 채팅 ▶ Step 4 v2 / 4·5단계: `@` 키보드 navigation + cursor 재평가
+- **변경**: 4단계 — ↑↓로 dropdown 항목 선택(wrap-around), Enter/Tab 으로 확정, Esc 로 닫기, hover 시 selectedIndex 동기화. 5단계 — textarea click·keyup(arrow/home/end)·focus 시 cursor 직전 mention prefix 재평가 → 자동 재오픈. `_hideMentionDropdown` 은 open/anchor/prefix/items 만 reset 하고 `_mentionSelectedIndex`/`_mentionLastPrefix` 는 보존 (blur→refocus 시 같은 prefix 면 idx 유지, prefix 변경 시 자동 0 reset). 선택 완료 시점만 `_resetMentionState()` 로 명시적 reset.
+- **이유**: 마우스 클릭만 가능하면 키보드 사용자에게 불편. ↑↓Enter 는 Slack/Discord 표준이라 사용자 학습비용 거의 0. cursor 재평가는 "@ 입력 → 잠깐 다른 곳 클릭 → 돌아오니 dropdown 사라짐" 의 어색함 해소.
+- **영향**: dropdown 떠 있는 동안 Enter 는 send 가 아닌 mention 확정 분기로 흐름. 확정 또는 Esc/blur 후에는 기존 send 동작 복귀. send 핸들러 변경 없음.
+- **검증**: 회귀 12/12 PASS / ui-inspector 🟢 idx 시퀀스 9/9 정확 + selected `box-shadow inset 2px 0 0 var(--curr-gold)` 인디케이터 명확 / play-director 🟢 18 시나리오 + C5 후속 재검증 PASS (blur 후 idx 보존, Enter 선택 후 reset, prefix 변경 시 reset 모두 OK).
+- **백로그**: dropdown maxHeight 220px vs 8 항목 scrollHeight 263px 마지막 항목 살짝 가려짐. cap 7 또는 maxHeight 240px 로 디자이너와 상의 후 결정 필요. 한국어 단어 경계 미처리(예: "기사단" 안의 "기사" 부분 매칭) 도 백로그 유지.
+- **이전 결정 관계**: 본 세션 직전 entry — `2단계 dropdown 입력 측 도입` 의 4·5단계 후속.
+
+## 2026-05-02 ▶ PHASE 5 채팅 ▶ Step 4 v2 / 2단계: `@` 자동완성 dropdown 입력 측 도입
+- **변경**: `.cp-input` 에 `@` 입력 시 cursor 직전 prefix 추출 → 카드 list dropdown 표시. mousedown 클릭 → textarea 에 `이름 ` 치환 → 메시지 전송 시 1단계 자동 링크와 결합되어 `<a class="cp-card-link">` 로 렌더.
+- **이유**: 1단계(자동 텍스트 링크화)만으로는 사용자가 정확한 카드 이름을 외워야 했음. dropdown 으로 카드 발견·완성을 도움. share 폐기 후 카드 참조 UX 의 정본 입력 경로.
+- **영향**: 채팅 입력 흐름 — 텍스트 입력은 평소대로, `@` 만 추가 단축키. dropdown 미선택 + Esc/blur 로 닫힘 → 기존 흐름과 비충돌. 키보드 navigation(↑↓ Enter)은 4단계로 분리 (이번 단계는 mousedown 만). 한국어 단어 경계 미처리(예: "기사단" 안의 "기사" 부분 매칭) 백로그 유지.
+- **검증**: 회귀 12/12 PASS / ui-inspector 🟢 (마이너 권고 4건 중 gold 등급 라벨 opacity 1건 즉시 수정) / play-director 11/11 시나리오 PASS — 빈/한글 prefix·마우스 클릭·자동 링크 결합·blur/Esc·이메일 회피·공백 종료·cursor 중간 삽입·12자 가드·0건 매칭, 응답 37ms.
+- **이전 결정 관계**: 2026-05-02 share 시스템 폐기(Step 4 v2 / 1단계 자동 텍스트 링크) 후속. 이번 단계로 입력 측 보강 완료.
+
+## 2026-05-02 15:30 ▶ 게임 메커닉 ▶ 회복·훈련·전직 시스템 재설계 + 버그 fix
+
+**변경**:
+- 🐛 **버그 fix**: HP 0 카드 성당 치료 불가 — `showChurch` filter 가 `c.injured` 만 체크하던 것을 `injured || HP<=0` 으로 확장. HP 0 인데 injured:false 인 카드가 자동 injured 처리되어 grid 에 표시됨 (전투 종료 시 setting 누락 보완).
+- **결투장 입장 → 준비중**: 성문(gate) NPC 의 "결투장 입장하기" 버튼을 modal 준비중 안내로 변경 (이전 startGhostBattle).
+- **버프/디버프 색**: stat .mod 의 색 변경 — 버프 황금(`#ffd700` + 검정 텍스트), 디버프 빨강(`#c94a3a` + 흰 텍스트). 이전 녹/적.
+- **HP/NRG 텍스트 빨강 동기화**: bar 외에 hp-num/nrg-num 텍스트도 만피 != 시 빨강 (사용자 결정).
+
+**보류 (다음 phase)**:
+- HP = 성당 / ENG = 여관 회복 시스템 정합 (여관 ENG 회복 메커닉 신규 필요)
+- 왕궁 단련 분리 → **훈련장 신규 화면**:
+  - 훈련장: 단련(경험치/레벨업) + 스킬 교체(골드)
+  - 왕궁: 전직 + 퀘스트만
+- 직업 트리 시스템 (전직 메커닉)
+
+**이유**: 사용자 게임 메커닉 재설계 결정. 현재 castle-upgrade(왕궁 단련) + 직업 트리 미정 + 회복 시스템 모호 → 명확화.
+
+**영향**: HP 0 카드 즉시 치료 가능 (버그 해소). 결투장 비활성. 큰 메커닉 변경(훈련장 신규)은 별도 phase 로 등록.
+
+**검증**: 회귀 12/12 PASS.
+
+---
+
+## 2026-05-02 14:50 ▶ 콘텐츠 ▶ 카드 V4 일러스트 스타일·6원소 색·HP/NRG 색 동기화
+
+**변경**:
+- **elem_icon DOM 구조 재설계**: `.card-v4` 자식 → `.top-row`(이름박스 컨테이너) 자식. `bottom:100% margin-bottom:0; left:0` → 카드 사이즈/parch height 무관 자동으로 이름박스 위 0px 갭, 좌측 변 정렬. 사용처별 좌표 override 모두 제거 (단일 정의).
+- **elem_icon 자산**: `elem_icon5_*.png` (사용자 색상변경 0502, rembg + bbox crop + 512×512 정사각 좌상단 정렬). 6원소 모두.
+- **6원소 색 시스템 (옵션 A 확정)**: 사용자 정의. `--rar-divine-*` 6 색 + 새 `--elem-*` 12 토큰 (메인+accent) `css/10_tokens.css` 등록. Earth `#5d4037` (진한 brown — 카드 황금톤 분리), Holy `#fff8e1` (크림 — Lightning 노랑 분리). 충돌 해소.
+- **HP/NRG bar 색**: 만피 == 일 때 원래색 (HP 초록 / NRG 청), 만피 != 일 때 빨강 (사용자 결정). `.bar.is-damaged` 클래스 toggle 로 처리. setHP/setNRG 에서 자동 반영.
+- **`design/illustration_style.md` 신규**: 일러스트 스타일 + 6원소 색 시스템 정본 (사용자 정의). 캔버스 1024×1536, AAA fantasy concept art, cinematic lighting + volumetric light 등.
+- **메모리 등록**: `project_illustration_style.md` (사용자 prefer).
+- **타이틀 우측 경계선 fix**: `#chat-panel` 의 border-left + box-shadow 가 평상시 letterbox 영역에 노출되던 문제 → `.active` 일 때만 적용.
+- **타이틀 우측 video letterbox**: title-fx canvas 를 body 직계로 끌어올림 (transform:scale 영향 회피) + viewport resize 핸들러.
+- **BGM 추가**: `snd/title4.mp3` (hitslab gospel worship, "조용함" 잔잔). title + town 풀 양쪽 등록.
+
+**이유**: 사용자 다수 결정 — 이름박스 정렬 통일 / 원소 색 구분 / 만피 != 시 빨강 색 / 일러스트 정본화.
+
+**영향**: 모든 카드 V4 — 등급/원소/사이즈 무관 elem_icon 이름박스 바로 위 자동 정렬. divine 등급 + UI 라벨 색 갱신. 만피 != 시 즉시 빨강 visual.
+
+**검증**: 회귀 12/12 PASS.
+
+**이전 결정 관계**: 2026-05-02 09:06 elem_icon 정본 적용의 발전. 사용자 시각 검토 다수 라운드 결과 — top-row 자식 자동 정렬이 정답.
+
+---
+
+## 2026-05-02 11:30 ▶ 콘텐츠 ▶ 카드 V4 elem_icon 사이즈별 좌표 + 채팅 share 폐기
+
+**변경**:
+- **카드 V4 elem_icon CSS 변수화** (`css/32_card_v4.css`) — `--elem-bottom`, `--elem-left`, `--elem-size` 변수 도입. 기본값(260) 외 9 사용처 selector 별 override:
+  - `.card-v4-compact` (172) / `#battle-v2-container .card-v4-compact` (210) / `.bcf-main-card .card-v4-compact` (378)
+  - `#cardselect-screen #cs-grid` (160) / `#form-diamond` (190)
+  - tavern + deck + codex + castle-upgrade + church (235 공유)
+  - `#match-screen` (280) / `.dvf-main-card` (336)
+- 좌표 출처: 사용자 편집기 결정값 (`temp/elem_card_test/preview_multisize.html`, 사이즈별 드래그)
+- bottom 비례가 사이즈별 12.45~53.93% 로 폭 넓음 (parch px 고정 + 카드 height 가변 결과). left/size 는 거의 일관(~-1.5% / ~18.6%)
+
+- **채팅 카드 share 시스템 폐기** (PHASE 5 Step 4):
+  - `css/32_card_v4.css` `.kind-share` 블록 삭제 (9줄)
+  - `js/40_cards.js` `isShare`, kind:'share' 분기 제거
+  - `js/36_chat.js` 5 함수 제거 (`_showCardPicker`, `_setAttachedCard`, `_clearAttachedCard`, `_refreshSendButton`, `_renderAttachedPreview`) + attach 버튼 숨김 + send 시 attached_card 항상 null
+  - `js/36_chat.js` `_showCardDetailModal` 만 보존 (향후 링크 시스템 재사용)
+  - 과거 메시지의 `attached_card` 는 fallback 텍스트 라벨로 표시 (DB 호환)
+  - `PHASE5_CHAT_PLAN.md` Step 4 폐기 표시
+  - `preview_multisize.html` 100 사이즈 제거
+
+**이유**:
+- elem_icon 좌표: 사용자 편집기에서 직접 잡은 값 → 비례 단일안 불가능 (사이즈별 매우 다름) → 사용처별 스코프 정합
+- share 폐기: 미니카드 첨부 UX 가 채팅 흐름을 끊음. 대체안은 텍스트 내 카드 이름 링크(`@불꽃의전사`) → default 카드 모달. 별도 phase 로 이동.
+
+**영향**:
+- 모든 화면(battle/tavern/deckview/match/cardselect/formation 등)의 카드에 elem_icon 표시. 사용처별 좌표 정밀.
+- 채팅 + 버튼 사라짐. 첨부카드 단독 전송 불가 (텍스트 필수).
+- backend `chatSend(channel, text, attached_card)` API 시그니처 유지 (호환), null 만 전달.
+
+**검증**: 회귀 12/12 PASS.
+
+**이전 결정 관계**: 2026-04-27 PHASE 5 Step 4 (카드 공유 4a~4d) 폐기. 향후 "Step 4 v2 — 카드 이름 링크" 별도 phase 로 재기획.
+
+---
+
+## 2026-05-02 09:06 ▶ 콘텐츠 ▶ 카드 V4 원소 아이콘 정본 적용
+
+**변경**:
+- 6원소_0502 자산 분할/투명화 → `img/elem_icon2_*.png` 6장 (rembg 54% 투명 + 페이드)
+- `css/32_card_v4.css` 끝에 `.card-v4-elem-icon` 클래스 추가 — compact 변형 전용, bottom:61 left:1 32×32, PNG 자체가 원형이라 마스크 없음
+- `js/40_cards.js` `create()` 의 elem_fx 슬롯 다음에 elem-icon DOM 추가 (리터럴 매핑 6엔트리)
+
+**이유**: 사이즈 시안 검수관 추천 32px 채택. 이름박스 위 0px 갭 + 좌측 1px 가장자리. 0502 신규 자산 (0430 대비 진하고 생동감↑).
+
+**영향**: 모든 compact 카드 (전장 172×248 / 210×290 / 378×522, tavern 235) 의 좌측 이름박스 위에 원소 아이콘 표시. fixed px (bottom:61) 라 큰 카드에서도 같은 위치 (parch 와 거리 일정).
+
+**이전 결정 관계**: 2026-05-01 시안 비교 (Ⓚ 위치 결정 미완) → 오늘 32px / 갭 0px / left:1 / 마스크 없음 결정. 새 자산 `elem_icon2_*` 는 `elem_icon_*` (0430) 와 별개로 공존 (메모리 정책: 덮어쓰기 금지).
+
+**검증**: 회귀 12/12 PASS.
+
+---
+
+## 2026-05-01 22:56 ▶ 세션 ▶ 핸드오프 저장
+
+**변경**: 세션 상태를 `docs/handoff/handoff-2026-05-01-2256.md` 에 저장
+**이유**: 휴식 (내일 이어서)
+**핵심 작업**: 6원소 아이콘 자산 도입(`img/elem_icon_*.png` 6장 신규) + 카드 UI 위치 시안 비교(결정 미완) + 유닛 가지도 1차안(`tools/units_flow_map.html`)
+**미완**: 카드 안 원소 아이콘 위치 4가지 결정 (위치/사이즈/원형마스크/보호막충돌)
+**영향**: `docs/handoff/`, `img/`, `tools/`
 >
 > 카테고리: `기술 스택`, `수익 모델`, `게임 메커닉`, `밸런스`, `콘텐츠`, `범위`, `팀/협업`, `세션`
+
+---
+
+## 2026-04-30 00:13 ▶ 세션 ▶ 핸드오프 저장 (워밍업 1건 정리)
+
+**변경**: 세션 상태를 `docs/handoff/handoff-2026-04-30-0013.md` 에 저장 + 클립보드 복사
+**이유**: 세션 마무리 (수동 — balance P0 5건 워밍업 완료, 큰 작업 시작 전 휴식)
+**영향**: 다음 세션은 본 문서로 즉시 맥락 복구. 다음 우선순위는 시그널 append + 커밋 → 직업 트리 Step 1 기획서.
+
+---
+
+## 2026-04-30 ▶ 밸런스 ▶ balance P0 5건 적용 (자율감사 2026-04-21 결과)
+
+**변경** (`js/11_data_units.js`, 5줄):
+- **archmage** (gold/attack): hp 12 → **18** (gold/attack hp 범위 15~25 미달 해소)
+- **sniper** (gold/attack): hp 10 → **16** (gold/attack hp 범위 15~25 미달 해소)
+- **lich** (legendary/attack): hp 20 → **28** (legendary/attack hp 범위 25~42 미달 해소)
+- **pirate** (silver 섹션 위치): rarity `bronze` → `silver`, atk 3 → **4**, hp 10 → **12** (코드 섹션 주석과 rarity 일치, silver/attack 하한값)
+- **dark_shaman** (gold 섹션 위치): rarity `silver` → `gold`, atk 2 → **3**, hp 15 → **18** (코드 섹션 주석과 rarity 일치, gold/support 하한값)
+
+**이유**: 2026-04-21 balance-auditor 자율감사에서 P0 지정. archmage/sniper/lich 는 등급별 HP 최저값 미달, pirate/dark_shaman 은 코드 섹션 주석과 rarity 필드 불일치. 둘 다 드롭률·선술집 등장률·진화 계수가 rarity 기준이라 레이블 오류는 밸런스 전체 영향.
+
+**영향**:
+- 회귀 12/12 PASS (`tools/test_run.js`).
+- divine defense/support 셀 0종 문제는 별도 콘텐츠 추가 작업으로 분리.
+- lightning 원소 P0 집중 (archmage/sniper/genie_noble) 은 본 회차에서 archmage·sniper hp 정정으로 일부 해소. genie_noble 의 역할 정체성(서포터 atk 과잉)은 별도.
+
+**이전 결정**: 2026-04-21 A안 정본화 (`.claude/rules/04-balance.md` Source of Truth). 2026-04-29 자율학습 3 감사 changelog 영구 기록 → 본 항목으로 코드 적용 완료.
 
 ---
 

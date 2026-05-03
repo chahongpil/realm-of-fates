@@ -242,12 +242,12 @@ RoF.CardV4Component = (function(){
 
   function create(unit, opts){
     opts = opts || {};
+    // 2026-05-02: opts.kind='share' 폐기 (PHASE 5 Step 4 채팅 카드 미니 폐기).
+    //   향후 채팅에서는 카드 이름 링크 → default 모달 시스템으로 대체 (별도 phase).
     // 2026-04-22: opts.kind='spell'|'relic' 이면 컴팩트 모드 — bars/lv-box/hp-num/stats 생략.
     //   스펠·유물은 HP/NRG/Lv/스탯 5칸이 없으므로 "이름 + 일러스트 + 설명" 만 표시.
-    // 2026-04-27: kind='share' = 채팅 카드 공유용 미니카드. compact 흐름 + Lv 표시 + desc 숨김.
-    //   사이즈/숨김은 CSS .kind-share 에서 처리 (PHASE 5 Step 4).
-    const isCompact = opts.kind === 'spell' || opts.kind === 'relic' || opts.kind === 'share';
-    const isShare = opts.kind === 'share';
+    const isCompact = opts.kind === 'spell' || opts.kind === 'relic';
+    const isShare = false;  // 2026-05-02: share 폐기 — 호환을 위해 변수만 유지 (true 분기 dead code)
     const rarity = unit.rarity || 'bronze';
     const element = unit.element || '';
     const el = document.createElement('div');
@@ -304,6 +304,33 @@ RoF.CardV4Component = (function(){
       el.appendChild(fx);
     }
 
+    // 원소 아이콘 (2026-05-02) — 이름박스 위 좌측. top-row 자식 자동 정렬.
+    // 자산: elem_icon5_* (사용자 색상변경 0502, rembg + bbox crop + 좌상단 정렬 정사각 512).
+    const elemIconSrc = {
+      fire:      'img/elem_icon5_fire.png',
+      water:     'img/elem_icon5_water.png',
+      lightning: 'img/elem_icon5_lightning.png',
+      earth:     'img/elem_icon5_earth.png',
+      dark:      'img/elem_icon5_dark.png',
+      holy:      'img/elem_icon5_holy.png',
+    };
+    // 2026-05-02 (재): elem_icon 을 top-row(이름박스 컨테이너) 자식으로 → 카드별 자동 정렬.
+    //   top-row 가 parch 의 absolute 자식 (bottom:100% margin-bottom:4) 이라
+    //   그 자식 elem_icon 의 bottom:100% 는 top-row 의 top 변 위 = 이름박스 위.
+    //   각 카드의 parch height 와 무관하게 항상 이름박스 위 일정 갭.
+    //   아래 topRow 변수 생성 후 append 하기 위해 ic 만 여기서 만들고 ref 에 보관.
+    let _elemIconRef = null;
+    if(element && elemIconSrc[element]){
+      const ic = document.createElement('div');
+      ic.className = 'card-v4-elem-icon';
+      const icImg = document.createElement('img');
+      icImg.src = elemIconSrc[element];
+      icImg.alt = '';
+      icImg.onerror = function(){ ic.style.display = 'none'; };
+      ic.appendChild(icImg);
+      _elemIconRef = ic;
+    }
+
     // Gild (금박 테두리)
     const gild = document.createElement('div');
     gild.className = 'gild';
@@ -343,6 +370,8 @@ RoF.CardV4Component = (function(){
       bars.className = 'bars';
       const mkBar = (cls, pct, labelTxt) => {
         const bar = document.createElement('div'); bar.className = 'bar ' + cls;
+        // 2026-05-02: 만피 아닐 때 .is-damaged → 빨강 색 (사용자 결정)
+        if(pct < 100) bar.classList.add('is-damaged');
         const fill = document.createElement('i'); fill.style.width = pct + '%';
         const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = labelTxt;
         bar.appendChild(fill); bar.appendChild(lbl);
@@ -359,26 +388,35 @@ RoF.CardV4Component = (function(){
     // Top row — 이름 박스 (+ Lv 박스는 유닛만)
     const topRow = document.createElement('div');
     topRow.className = 'top-row';
+    // 2026-05-02: elem_icon 을 top-row 자식으로 박아 자동으로 이름박스 바로 위 정렬.
+    if(_elemIconRef) topRow.appendChild(_elemIconRef);
 
     const nameBox = document.createElement('div');
     nameBox.className = 'name-box';
     const nmEl = document.createElement('div'); nmEl.className = 'name'; nmEl.textContent = name;
     // 2026-04-23: 영문 이름 자동 감지 → .name-latin 클래스 (폰트 7px) — 한글보다 시각적으로 커 보이는 현상 대응
     if(/[A-Za-z]/.test(name) && !/[ㄱ-힝]/.test(name)) nmEl.classList.add('name-latin');
-    nameBox.appendChild(nmEl);
+    // 2026-05-02: 사용자 결정 — 순서 변경 (HP 위, 이름 아래).
     if(!isCompact){
-      const hpNum = document.createElement('div'); hpNum.className = 'hp-num'; hpNum.textContent = '♥ ' + hpCur;
-      nameBox.appendChild(hpNum);
+      const hpNum = document.createElement('div');
+      hpNum.className = 'hp-num' + (hpCur < hpMax ? ' is-damaged' : '');
+      hpNum.textContent = '♥ ' + hpCur;
+      nameBox.appendChild(hpNum);  // 1. HP 먼저
       refs.hpNum = hpNum;
     }
+    nameBox.appendChild(nmEl);  // 2. 이름 다음
 
     if(!isCompact){
       const lvBox = document.createElement('div');
       lvBox.className = 'lv-box';
       const lvEl = document.createElement('div'); lvEl.className = 'lv'; lvEl.textContent = 'Lv ' + lv;
-      const nrgNum = document.createElement('div'); nrgNum.className = 'nrg-num'; nrgNum.textContent = '◆ ' + nrgCur;
-      lvBox.appendChild(lvEl);
-      lvBox.appendChild(nrgNum);
+      const nrgNum = document.createElement('div');
+      nrgNum.className = 'nrg-num' + (nrgCur < nrgMax ? ' is-damaged' : '');
+      nrgNum.textContent = '◆ ' + nrgCur;
+      // 2026-05-02: 사용자 결정 — 상하 변경 (NRG 위, Lv 아래).
+      lvBox.appendChild(nrgNum);  // 1. NRG 먼저
+      lvBox.appendChild(lvEl);    // 2. Lv 다음
+      // 좌우 위치 — 원래대로 (이름 좌, Lv 우).
       topRow.appendChild(nameBox);
       topRow.appendChild(lvBox);
       refs.nrgNum = nrgNum;
@@ -452,6 +490,11 @@ RoF.CardV4Component = (function(){
         refs.hpFill.style.width = pct + '%';
         refs.hpLbl.textContent = 'HP ' + n + ' / ' + state.maxHP;
         if(refs.hpNum) refs.hpNum.textContent = '♥ ' + n;
+        // 2026-05-02: 만피 != 면 빨강 (bar + hp-num 텍스트 동시).
+        const damaged = pct < 100;
+        const bar = refs.hpFill.parentElement;
+        if(bar) bar.classList.toggle('is-damaged', damaged);
+        if(refs.hpNum) refs.hpNum.classList.toggle('is-damaged', damaged);
       },
       setNRG(n){
         if(!refs.nrgFill) return;  // 스펠/유물 카드엔 NRG UI 없음
@@ -460,6 +503,11 @@ RoF.CardV4Component = (function(){
         refs.nrgFill.style.width = pct + '%';
         refs.nrgLbl.textContent = 'NRG ' + n + ' / ' + state.maxNRG;
         if(refs.nrgNum) refs.nrgNum.textContent = '◆ ' + n;
+        // 2026-05-02: 만 NRG != 면 빨강 (bar + nrg-num 텍스트 동시).
+        const damaged = pct < 100;
+        const bar = refs.nrgFill.parentElement;
+        if(bar) bar.classList.toggle('is-damaged', damaged);
+        if(refs.nrgNum) refs.nrgNum.classList.toggle('is-damaged', damaged);
       },
       setShield(n){
         state.shield = n;
@@ -503,6 +551,48 @@ RoF.CardV4Component = (function(){
         state.selected = !!on;
         el.classList.toggle('selected', !!on);
       },
+
+      // 2026-05-03: 타격 시 카드 위 floating 데미지/회복 숫자.
+      // opts: { kind: 'damage'|'heal'|'crit', amount }. 자동으로 위로 fade-out.
+      // 색상 — damage:빨강 / crit:주황+큰글자 / heal:녹색 +N
+      showDamageFloat(amount, opts){
+        if(!el || amount == null) return;
+        const kind = (opts && opts.kind) || 'damage';
+        const f = document.createElement('div');
+        f.className = 'bv2c-dmg-floating is-' + kind;
+        const sign = kind === 'heal' ? '+' : '-';
+        f.textContent = sign + Math.abs(amount);
+        el.appendChild(f);
+        // 트리거 reflow → 애니 시작
+        void f.offsetWidth;
+        f.classList.add('is-rising');
+        setTimeout(function(){ if(f.parentElement) f.parentElement.removeChild(f); }, 1100);
+      },
+
+      // 2026-05-03: HP 숫자 카운트다운 — 즉시 변경 X, 점진 갱신.
+      // duration 은 변화 폭에 비례 (작은 변화도 사용자가 체감 가능, 큰 변화도 길지 않게 캡).
+      // ease 는 easeInOutQuad — 중간 값 노출 시간 확보 (cubic out 은 50ms 만에 21% 진행되어 카운트다운 약함).
+      animateHP(toN, durationMs){
+        if(!refs.hpFill) { this.setHP(toN); return; }
+        const fromN = state.currentHP || 0;
+        const delta = Math.abs(toN - fromN);
+        // 변화 폭 1당 ~35ms, 최소 240ms (작은 변화도 시각 노출), 최대 800ms (큰 변화도 길지 않게)
+        const dur = durationMs != null
+          ? Math.max(60, durationMs)
+          : Math.min(800, Math.max(240, delta * 35));
+        const start = performance.now();
+        const self = this;
+        const tick = function(now){
+          const t = Math.min(1, (now - start) / dur);
+          // ease-in-out quad — 중간 값 노출 시간 더 길게 (cubic-out 보다 카운트다운 체감 ↑)
+          const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          const cur = Math.round(fromN + (toN - fromN) * eased);
+          self.setHP(cur);
+          if(t < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      },
+
       destroy(){ if(el.parentElement) el.parentElement.removeChild(el); },
       _snapshot(){
         return {

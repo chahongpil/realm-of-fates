@@ -232,8 +232,7 @@
   --tav-info-x:       40px;  --tav-info-y:       175px;  --tav-info-w:       1240px; --tav-info-h:       30px;
   --dv-tab-deck-x:    164px; --dv-tab-deck-y:    122px;  --dv-tab-deck-w:    180px;  --dv-tab-deck-h:    40px;
   --dv-tab-codex-x:   164px; --dv-tab-codex-y:   172px;  --dv-tab-codex-w:    180px; --dv-tab-codex-h:   40px;
-  --castle-tab-upgrade-x: 170px; --castle-tab-upgrade-y: 111px; --castle-tab-upgrade-w: 180px; --castle-tab-upgrade-h: 44px;
-  --castle-tab-quest-x:   170px; --castle-tab-quest-y:   166px; --castle-tab-quest-w:   180px; --castle-tab-quest-h:   44px;
+  /* 2026-05-02: castle-tab-upgrade / -quest 좌표 토큰 제거 — 단련은 훈련장으로 이전, 퀘스트 탭은 단독이라 absolute 좌표 불필요. */
   /* church 는 Type B (부분 absolute) 유지 — #church-info 토큰은 래퍼 기준 상대좌표. */
   --church-info-x:    68px;  --church-info-y:    228px; --church-info-w:    1240px; --church-info-h:    30px;
 }
@@ -336,13 +335,22 @@
   --rar-divine:    #ffffff;   /* 신 — 원소 가변 기본 (흰색) */
   --rar-god:       var(--rar-divine);  /* 한국어 네이밍 별칭 */
 
-  /* 신 등급 — 원소별 안쪽 실선 색 (05-design-direction.md 스펙) */
-  --rar-divine-fire:      #e74c3c;
-  --rar-divine-water:     #3498db;
-  --rar-divine-earth:     #8b5a2b;
-  --rar-divine-lightning: #f1c40f;
-  --rar-divine-holy:      #ffd700;
-  --rar-divine-dark:      #8e44ad;
+  /* 신 등급 — 원소별 안쪽 실선 색 (05-design-direction.md 스펙).
+     2026-05-02: 사용자 정의 옵션 A 적용 (원본 색 + Lightning↔Light 충돌 해소 + Earth 진하게). */
+  --rar-divine-fire:      #ff6b3d;
+  --rar-divine-water:     #1565c0;
+  --rar-divine-earth:     #5d4037;   /* 진한 brown — 카드 황금톤과 분리 */
+  --rar-divine-lightning: #fdd835;
+  --rar-divine-holy:      #fff8e1;   /* 크림 — Lightning 노랑과 분리 */
+  --rar-divine-dark:      #4a148c;
+
+  /* 6원소 메인 + accent (옵션 A, 2026-05-02). UI/그라디언트/glow 활용. */
+  --elem-fire:        #ff6b3d;  --elem-fire-light:      #ff9e80;
+  --elem-water:       #1565c0;  --elem-water-light:     #64b5f6;
+  --elem-earth:       #5d4037;  --elem-earth-light:     #a1887f;
+  --elem-lightning:   #fdd835;  --elem-lightning-light: #fff59d;
+  --elem-holy:        #fff8e1;  --elem-holy-light:      #ffd54f;
+  --elem-dark:        #4a148c;  --elem-dark-light:      #7e57c2;
 
   /* 등급 glow (밝은 변형) */
   --rar-bronze-glow:    #e8e8f0;

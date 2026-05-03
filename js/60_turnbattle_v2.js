@@ -70,11 +70,58 @@
     return Battle.STATE.skills.filter(function(s){ return s.ownerId === unit.id; });
   };
 
+  // 2026-05-03 STEP 3: 쿨다운 헬퍼 + 라운드 tick.
+  // 데이터 구조: unit._skillCooldowns = { skillId: turnsLeft } (전투 임시 상태)
+  Battle.getCooldown = function(caster, skill){
+    if(!caster || !skill || !skill.id) return 0;
+    const cd = caster._skillCooldowns;
+    if(!cd) return 0;
+    return cd[skill.id] || 0;
+  };
+  Battle.isOnCooldown = function(caster, skill){
+    return Battle.getCooldown(caster, skill) > 0;
+  };
+  // 2026-05-03: 라운드 종료 자동 회복 (사용자 결정 — 전투 중만 적용, 전투 밖 자동 회복 X).
+  // 공식: 매 라운드 종료 시 floor(maxHp/10) HP + floor(maxNrg/10) NRG 회복.
+  // 죽은 유닛 skip. max cap 적용.
+  Battle.tickRegen = function(){
+    const regen = function(u){
+      if(!u || Battle.isDead(u)) return;
+      const maxHp  = u.maxHp  || u.hp  || 0;
+      const maxNrg = u.maxNrg || u.nrg || 0;
+      const hpRegen  = Math.floor(maxHp  / 10);
+      const nrgRegen = Math.floor(maxNrg / 10);
+      if(hpRegen > 0){
+        u.currentHp = Math.min(maxHp, (u.currentHp ?? maxHp) + hpRegen);
+      }
+      if(nrgRegen > 0){
+        u.currentNrg = Math.min(maxNrg, (u.currentNrg ?? maxNrg) + nrgRegen);
+      }
+    };
+    (Battle.STATE.allies || []).forEach(regen);
+    (Battle.STATE.enemies || []).forEach(regen);
+  };
+
+  // 매 라운드 종료 시 호출 — 모든 유닛의 모든 스킬 쿨다운 -1.
+  Battle.tickCooldowns = function(){
+    const tick = function(u){
+      if(!u || !u._skillCooldowns) return;
+      Object.keys(u._skillCooldowns).forEach(function(k){
+        u._skillCooldowns[k] = Math.max(0, (u._skillCooldowns[k] || 0) - 1);
+        if(u._skillCooldowns[k] === 0) delete u._skillCooldowns[k];
+      });
+    };
+    (Battle.STATE.allies || []).forEach(tick);
+    (Battle.STATE.enemies || []).forEach(tick);
+  };
+
   // 자원 체크 — 큐잉 시점에 쓸 수 있는가. 적/아군 공용.
   // HS/Snap/LoR 공통 원칙: 자원 없으면 행동 불가. 대칭 필수.
+  // 2026-05-03 STEP 3: 쿨다운 체크 통합 — 쿨다운 남으면 못 씀.
   Battle.canAfford = function(caster, skill){
     if(!caster || !skill) return false;
     if(skill.passive === true) return false;
+    if(Battle.isOnCooldown(caster, skill)) return false;
     const type = skill.costType || 'nrg';
     const cost = skill.cost ?? 0;
     if(cost <= 0) return true;
@@ -521,7 +568,14 @@
     const skillRow = document.querySelector('#battle-char-focus .bcf-skill-row');
     if(skillRow) skillRow.style.display = suppressSkillRow ? 'none' : '';
     if(!suppressSkillRow){
-      const skills = Battle.getSkillsOf(c);
+      // 2026-05-03: 패시브 카드를 맨 오른쪽으로 정렬 (사용자 결정).
+      // 원칙: 액티브 먼저(좌→우), 패시브 나중. stable sort 로 기존 순서 보존.
+      const _skillsRaw = Battle.getSkillsOf(c);
+      const skills = _skillsRaw.slice().sort(function(a, b){
+        const ap = a && a.passive === true ? 1 : 0;
+        const bp = b && b.passive === true ? 1 : 0;
+        return ap - bp;
+      });
       const slots = document.querySelectorAll('#battle-char-focus .bcf-skill-card');
       slots.forEach(function(slot, i){
         const sk = skills[i];
@@ -532,9 +586,20 @@
         }
         slot.style.visibility = '';
         slot.setAttribute('data-skill-id', sk.id);
+        // 2026-05-03 STEP 3: 쿨다운 상태 분기. is-on-cooldown 우선(자원부족과 동시 발생 가능하나 시각은 cooldown 우선).
+        const cdLeft = Battle.getCooldown(c, sk);
         slot.classList.toggle('is-passive', sk.passive === true);
+        slot.classList.toggle('is-on-cooldown', cdLeft > 0);
         slot.classList.toggle('is-unaffordable',
-          sk.passive !== true && !Battle.canAfford(c, sk));
+          sk.passive !== true && cdLeft <= 0 && !Battle.canAfford(c, sk));
+        // 쿨다운 정중앙 노란 숫자 — slot 내부 .bsc-cd-overlay 노드 보장 (없으면 생성).
+        let cdEl = slot.querySelector('.bsc-cd-overlay');
+        if(!cdEl){
+          cdEl = document.createElement('div');
+          cdEl.className = 'bsc-cd-overlay';
+          slot.appendChild(cdEl);
+        }
+        cdEl.textContent = cdLeft > 0 ? cdLeft : '';
         const skImg = Battle.resolveImg(sk.imgKey);
         const skImgEl = slot.querySelector('.bsc-card-img');
         if(skImgEl) skImgEl.innerHTML = skImg ? '<img src="' + skImg + '" alt="">' : '';
@@ -553,31 +618,45 @@
 
   // P1 dim 페이즈 — 스토리보드 10·11·12.png
   // targetType 별로 유효 대상에만 is-target-valid, 나머지 전부 is-dimmed.
-  // single_enemy: 적만 valid, 본인+아군 dim
-  // single_ally:  아군(본인 포함)만 valid, 적 dim
-  // self:         본인만 valid, 그 외 dim
+  // 2026-05-03 STEP 2: 타겟 종류 정의 (단일 진실 — applyTargetDimByType + isValidTarget 가 이 표를 공유).
+  //  single_enemy:    적만 valid
+  //  all_enemies:     적 전체 (AoE)
+  //  single_ally:     아군(본인 포함)만 valid
+  //  all_allies:      아군 전체 (AoE)
+  //  self:            본인만 valid
+  //  single_any:      적/아군 누구든 1명 (드레인 등)
+  //  all_units:       모든 유닛 AoE (메테오·지진 등 적+아군 동시 피해)
+  //  not_self_ally:   본인 제외 아군 (부활 스킬용 — 자기 자신 부활 X)
   const isAllyUnit = function(u){
     return Battle.STATE.allies.indexOf(u) >= 0;
   };
+  // 데이터 단위 valid 검증 — onTargetClick 에서 사용.
+  Battle.isValidTarget = function(caster, skill, target){
+    if(!caster || !skill || !target) return false;
+    if(Battle.isDead(target)) return false;
+    const isAlly = isAllyUnit(target);
+    const isSelf = caster === target;
+    const type = skill.targetType || 'single_enemy';
+    switch(type){
+      case 'single_enemy':
+      case 'all_enemies':   return !isAlly;
+      case 'single_ally':
+      case 'all_allies':    return isAlly;        // 본인 포함
+      case 'self':          return isSelf;
+      case 'single_any':
+      case 'all_units':     return true;          // 적/아군 무관
+      case 'not_self_ally': return isAlly && !isSelf;
+      default:              return !isAlly;
+    }
+  };
   const applyTargetDimByType = function(sk){
     clearTargetHighlight();
-    const type = (sk && sk.targetType) || 'single_enemy';
     const caster = Battle.state.selectedChar;
     const cards = document.querySelectorAll('.battle-stage-grid .card-v4-compact');
     cards.forEach(function(el){
       const u = Battle.findUnitById(el.getAttribute('data-unit-id'));
       if(!u) return;
-      const isAlly = isAllyUnit(u);
-      const isSelf = caster && (u === caster);
-      let valid = false;
-      switch(type){
-        case 'single_enemy': valid = !isAlly; break;
-        case 'single_ally':  valid = isAlly;  break;  // 본인 포함
-        case 'self':         valid = isSelf;  break;
-        case 'all_enemies':  valid = !isAlly; break;  // AoE: 적 전체 하이라이트
-        case 'all_allies':   valid = isAlly;  break;  // AoE: 아군 전체 하이라이트
-        default:             valid = !isAlly;
-      }
+      const valid = Battle.isValidTarget(caster, sk, u);
       if(valid){
         el.classList.add('is-target-valid');
       } else {
@@ -786,7 +865,41 @@
   Battle.onSkillClick = async function(sk){
     const caster = Battle.state.selectedChar;
     if(!sk || !sk.id) sk = Battle.getSkillsOf(caster)[0];
-    if(!sk || sk.passive === true) return;
+    if(!sk) return;
+    // 2026-05-03: 패시브 카드 클릭 시 안내 메시지 (사용자 결정).
+    // 이전엔 silent return 이라 사용자가 "왜 클릭이 안 먹지?" 혼란.
+    if(sk.passive === true){
+      const slotEl = document.querySelector(
+        '#battle-char-focus .bcf-skill-card[data-skill-id="' + sk.id + '"]'
+      );
+      if(slotEl){
+        slotEl.classList.remove('is-deny-shake');
+        void slotEl.offsetWidth;
+        slotEl.classList.add('is-deny-shake');
+        setTimeout(function(){ slotEl.classList.remove('is-deny-shake'); }, 420);
+      }
+      if(typeof UI !== 'undefined' && UI.toast){
+        UI.toast('🌀 ' + (sk.name || '패시브') + ' — 지속 효과입니다 (자동 발동)', {kind:'info'});
+      }
+      return;
+    }
+    // 2026-05-03 STEP 3: 쿨다운 중 클릭 시 별도 안내 (자원 부족 메시지와 분리).
+    if(Battle.isOnCooldown(caster, sk)){
+      const cdLeft = Battle.getCooldown(caster, sk);
+      const slotEl = document.querySelector(
+        '#battle-char-focus .bcf-skill-card[data-skill-id="' + sk.id + '"]'
+      );
+      if(slotEl){
+        slotEl.classList.remove('is-deny-shake');
+        void slotEl.offsetWidth;
+        slotEl.classList.add('is-deny-shake');
+        setTimeout(function(){ slotEl.classList.remove('is-deny-shake'); }, 420);
+      }
+      if(typeof UI !== 'undefined' && UI.toast){
+        UI.toast('⏳ ' + cdLeft + '턴 뒤에 사용 가능합니다', {kind:'warn'});
+      }
+      return;
+    }
     // 자원 부족 시 차단 — HS/Snap/LoR 대칭 원칙
     if(!Battle.canAfford(caster, sk)){
       const slotEl = document.querySelector(
@@ -848,6 +961,11 @@
       const pool = isAllyUnit(attacker) ? Battle.STATE.allies : Battle.STATE.enemies;
       return pool.filter(function(u){ return !Battle.isDead(u); });
     }
+    // 2026-05-03 STEP 2: all_units — 적+아군 동시 광역 (메테오·지진 등)
+    if(tt === 'all_units'){
+      return [].concat(Battle.STATE.allies, Battle.STATE.enemies)
+               .filter(function(u){ return !Battle.isDead(u); });
+    }
     return [tgt];
   };
 
@@ -863,6 +981,13 @@
     if(!attacker || !tgt || !skill) return;
     const preCharged = !!(opts && opts.preCharged);
     if(Battle.isDead(attacker) || Battle.isDead(tgt)) return;
+
+    // 2026-05-03 STEP 3: 스킬 사용 확정 시 쿨다운 시작 (skill.cooldown > 0 인 경우만).
+    // _skillCooldowns 는 전투 임시 상태 — { skillId: turnsLeft }. 매 라운드 종료 시 -1.
+    if(skill.cooldown && skill.cooldown > 0){
+      if(!attacker._skillCooldowns) attacker._skillCooldowns = {};
+      attacker._skillCooldowns[skill.id] = skill.cooldown;
+    }
 
     const kind = skillKind(skill);
     const targets = expandTargets(attacker, tgt, skill);
@@ -895,18 +1020,42 @@
     // ── 효과 적용 (종류별 분기) ──
     if(kind === 'damage'){
       // 데미지: 타겟별 calcDamage → applyDamage (AoE 시 전체 반복)
+      // 2026-05-03: floating 데미지 숫자 + 카드 카운트다운 (HP 점진 갱신)
       targets.forEach(function(t){
         const c = (t === primaryTgt) ? calc : Battle.calcDamage(attacker, t, skill);
+        const beforeHp = t.currentHp != null ? t.currentHp : (t.hp || 0);
         Battle.applyDamage(t, c.dmg, attacker);
-        refreshStageCard(t);
+        const afterHp = t.currentHp != null ? t.currentHp : 0;
+        const inst = (Battle._stageInstances || {})[t.id];
+        if(inst){
+          if(c.dmg > 0 && inst.showDamageFloat){
+            inst.showDamageFloat(c.dmg, { kind: c.isCrit ? 'crit' : 'damage' });
+          }
+          if(inst.animateHP) inst.animateHP(afterHp, 380);
+          else refreshStageCard(t);
+        } else {
+          refreshStageCard(t);
+        }
       });
     } else if(kind === 'heal'){
       // 힐: 타겟별 applyHeal
       const eff = Battle.calcEffect(attacker, primaryTgt, skill);
       if(eff){
         targets.forEach(function(t){
+          const beforeHp = t.currentHp != null ? t.currentHp : (t.hp || 0);
           Battle.applyHeal(t, eff.amount);
-          refreshStageCard(t);
+          const afterHp = t.currentHp != null ? t.currentHp : 0;
+          const realHeal = afterHp - beforeHp;
+          const inst = (Battle._stageInstances || {})[t.id];
+          if(inst){
+            if(realHeal > 0 && inst.showDamageFloat){
+              inst.showDamageFloat(realHeal, { kind: 'heal' });
+            }
+            if(inst.animateHP) inst.animateHP(afterHp, 380);
+            else refreshStageCard(t);
+          } else {
+            refreshStageCard(t);
+          }
         });
       }
     } else if(kind === 'statmod'){
@@ -926,6 +1075,15 @@
       // 데미지만 hit-react + death 시퀀스
       Battle.showScreen(Battle.SCREEN.HIT_REACT, { keepOpen: ['battle-char-focus'] });
       renderHitReact();
+      // 2026-05-03: 카메라 셰이크 — crit 강, 일반 약. battle-stage-grid 컨테이너에 적용.
+      const stageGrid = document.querySelector('.battle-stage-grid');
+      if(stageGrid){
+        const shakeCls = calc.isCrit ? 'is-shaking-strong' : 'is-shaking-light';
+        stageGrid.classList.remove('is-shaking-light', 'is-shaking-strong');
+        void stageGrid.offsetWidth;  // reflow → 애니 재시작 보장
+        stageGrid.classList.add(shakeCls);
+        setTimeout(function(){ stageGrid.classList.remove(shakeCls); }, calc.isCrit ? 460 : 280);
+      }
       if(calc.isCrit) await Battle.beatRaw(Battle.TIMING.HIT_STOP);
       await Battle.beat(Battle.TIMING.HIT_SHAKE);
 
@@ -1234,6 +1392,10 @@
     await Battle.beat(Battle.TIMING.ROUND_END);
     // 버프/디버프 duration 카운트다운 (P1-2: 0 되면 자동 해제)
     Battle.tickStatusEffects();
+    // 2026-05-03 STEP 3: 쿨다운 -1 (모든 유닛). 0 도달 시 키 삭제 (cleanup).
+    Battle.tickCooldowns();
+    // 2026-05-03: 라운드 종료 자동 회복 (HP/NRG 각각 floor(max/10)).
+    Battle.tickRegen();
     Battle.resetState();
     Battle.showScreen(Battle.SCREEN.IDLE);
     renderIdle();
@@ -1243,6 +1405,9 @@
     const c  = Battle.state.selectedChar;
     const sk = Battle.state.selectedSkill;
     if(!c || !sk || !tgt) return;
+    // 2026-05-03 STEP 2: targetType 별 valid 검증 (charClick 통합 후 잘못된 타겟 차단).
+    // 무효 타겟 클릭 시 silent return (dim 카드는 시각적으로 invalid 표시).
+    if(!Battle.isValidTarget(c, sk, tgt)) return;
 
     clearHpPreview();
     clearTargetHighlight();
@@ -1347,7 +1512,14 @@
   Battle.HANDLERS = {
     'v2.charClick':  function(e){
       const u = getUnitFromEl(e.target);
-      if(u) Battle.onCharClick(u);
+      if(!u) return;
+      // 2026-05-03: 스킬 선택 중이면 아군 카드도 타겟으로 처리 (single_ally / all_allies / self / single_any 등).
+      // 이전엔 ally 카드가 항상 charClick 으로 묶여 있어 힐 같은 아군 스킬을 본인/아군에게 못 쓰는 버그.
+      if(Battle.state.selectedSkill){
+        Battle.onTargetClick(u);
+      } else {
+        Battle.onCharClick(u);
+      }
     },
     'v2.skillClick': function(e){
       const s = getSkillFromEl(e.target) || Battle.getSkillsOf(Battle.state.selectedChar)[0];
@@ -1555,12 +1727,12 @@
   const buildUnitSkillSet = function(unit){
     const set = [ makeBasicAttackFor(unit), makeSignatureSkillFor(unit) ];
     const db = (RoF.Data && RoF.Data.SKILLS) || [];
+    // 2026-05-03: 패시브 필터 제거 (사용자 결정) — 패시브 카드도 슬롯에 노출.
+    // 정렬·시각 차별화·클릭 메시지는 renderSelectedCharFocus + onSkillClick 에서 처리.
     if(Array.isArray(unit.skillIds)){
       unit.skillIds.forEach(function(sid){
         const src = db.find(function(s){ return s.id === sid; });
-        if(src && src.passive !== true){
-          set.push(Object.assign({}, src, { ownerId: unit.id }));
-        }
+        if(src) set.push(Object.assign({}, src, { ownerId: unit.id }));
       });
     } else {
       const activeId = pickActiveSkillIdFor(unit);

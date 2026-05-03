@@ -1,7 +1,51 @@
 # Realm of Fates — 핸드오프 문서
-> 마지막 업데이트: **2026-04-22 낮** — P0 자매 버그 수정 (launchBattle 가드)
+> 마지막 업데이트: **2026-05-03 01:50** — 자율 4시간 종합 + **게임 정체성 심도 대화**
 
-## 🟣 2026-04-22 낮 — play-director 실플레이 검수 + P0 자매 버그 수정
+## 🟢 2026-05-03 01:50 — 게임 정체성 정의
+
+### 🎯 정체성 한 문장 (사용자 확정)
+> "**내 카드를 키워 → 시즌마다 신좌 점유자 도전 → 신전 회랑에 이름 새김 → 5시즌 동반자**"
+>
+> 포켓몬스터처럼 **나만의 카드로 1등 하는 희열**. 1~2시즌 만렙 불가, 5시즌째 도달, 시즌별 캡 풀기.
+
+### 🌌 삼각 결합안
+**정체성** (쌍검사의 신) + **lore-bible v2 점유자 신화** + **메커니즘** (신전 회랑 + 호칭 + 시즌 신좌 점유) — 한 번에 해결.
+
+### 🔴 다음 세션 결정 4안
+- **A. 호칭/점유자 시스템 신설** — `design/throne_system_plan.md` 신규 (가장 우선 추천)
+- **B. 시즌 캡 시스템 STEP 1** — `seasonLevelCap` + 5시즌 곡선 + catch-up
+- **C. 카드 V4 모바일 비례화** — px → calc 변수
+- **D. MUST 5 항목 풀 완성 로드맵** — 3~6개월 일정표
+
+상세: [`docs/handoff/handoff-2026-05-03-0150.md`](docs/handoff/handoff-2026-05-03-0150.md)
+
+---
+
+## 🟢 2026-05-03 (이전 세션 2026-05-02 자율 4시간 종합)
+
+> **상세는 [`design/current-focus.md`](design/current-focus.md) + [`design/changelog.md`](design/changelog.md) 최상단 참조** — 본 핸드오프는 "최근 2~3 마일스톤" 만 짧게.
+
+### ✅ 완료
+- **PHASE 5 채팅 Step 4 v2 1+2+3+4+5 단계** — 카드 이름 자동 링크 + `@` mention dropdown (마우스/키보드 nav, cursor 재평가, blur 후 idx 보존)
+- **펜딩 7번 (훈련장 분리)** — 신규 `#training-screen`, 단련 = 골드→exp(1:1, `100×L^1.5`) → 자동 레벨업 + freePoints +5 분배 (6 스탯), rarity 강제승급/freePoints 분배 grid 폐기 잔재 정리, `.lv-up-label` 2.6rem 골든 텍스트 이펙트, 만렙 100 cap. 왕궁 단련 탭 폐기 → 퀘스트+전직(placeholder).
+- **펜딩 8번 (lore audit Critical 6 + High 3 + M-1+M-2)** — PHASE1/2/3/5 가챠/뽑기 표현 단어 교체, "전설 뽑기권" → "전설 소환권", 신살 플레이버 세계관화. 코드 변경 0.
+- **자율 폴리시** — 채팅 dropdown maxHeight 220→270, 단련 detail fp grid 압축, 미수집 카드 codex 힌트 모달 (`_codexAcquireHint` 등급별 generic), castle-tab-upgrade dead code + 62_ghost_pvp showTraining monkey-patch 정리.
+- **garbage 22건 trash** — 일회성 probe 14개 + 0byte tmp + _backup_20260413 PNG 4장. 교훈집 등재 ("디버깅 probe 작업 종료 시 즉시 trash" 2회 확인 → 정식 패턴).
+
+### 🔴 다음 세션 우선순위 (사용자 결정 필요)
+1. **🟠 단련 detail 패널 추가 layout 폴리시** — 약 10px 잔여 마이너 overflow (overflow-y:auto 으로 동작 OK)
+2. **🟠 가지뷰 컨셉 라인 정의** — `design/branch_suggestions_2026-05-02.md` 9 라인 추천 대기
+3. **🟠 카드 V4 내부 요소 비례화** — px 고정 → CSS calc 변수 (큰 작업)
+4. **🟡 직업 트리 시스템 STEP 1** — 왕궁 "전직" placeholder 가 입구
+5. **🟡 코팅 확정 획득 메커니즘 재설계** — PHASE3_COATING 가챠 단어는 교체 완료, 5단계 코팅의 확정 획득 (조각 누적·미션 단위) 시스템 신규 설계
+6. **🟡 하네스 05-game-narrative 도입** + **🟡 CSV import 스크립트**
+
+### 회귀
+- 12/12 PASS (모든 변경 후 매 단계)
+
+---
+
+## 🟣 2026-04-22 낮 — play-director 실플레이 검수 + P0 자매 버그 수정 (이전 마일스톤)
 
 **검수 결과 (rof-play-director)**: `updateSkillBar` 가드 **PASS** — 23.5초 프로브 중 pageError/consoleError 0건. login → town → cardselect → match → battle(시네마틱) → 라운드 2 도달 확인.
 

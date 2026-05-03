@@ -14,7 +14,7 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
     }
     RoF.__gameKeys.add(k);
   }
-})(["round", "hp", "maxHp", "gold", "xp", "level", "honor", "deck", "relics", "maxDeck", "battleSpeed", "battleRunning", "skipReq", "_slowMo", "battleMultiplier", "load", "persist", "logout", "cardXpNext", "giveCardXp", "giveCardHonor", "getHeroLevel", "getActionPoints", "getTotalHonor", "checkTutorial"]);
+})(["round", "hp", "maxHp", "gold", "xp", "level", "honor", "deck", "relics", "maxDeck", "battleSpeed", "battleRunning", "skipReq", "_slowMo", "battleMultiplier", "load", "persist", "logout", "cardXpNext", "giveCardXp", "giveCardHonor", "getHeroLevel", "getActionPoints", "getTotalHonor", "checkTutorial", "getProfileCard", "setProfileCard"]);
 
 Object.assign(RoF.Game, {
   round:0,hp:3,maxHp:3,gold:0,xp:0,level:1,honor:0,deck:[],relics:[],maxDeck:8,
@@ -22,7 +22,19 @@ Object.assign(RoF.Game, {
 
   load(s){
     Object.assign(this,{round:s.round||0,hp:s.hp||3,maxHp:s.maxHp||3,gold:s.gold||2,
-      deck:s.deck||[],relics:s.relics||[],ownedRelics:s.ownedRelics||[],ownedSkills:s.ownedSkills||[],hero:s.hero||null,bestRound:s.bestRound||0,totalWins:s.totalWins||0,totalGames:s.totalGames||0,leaguePoints:s.leaguePoints||0,tutStep:s.tutStep||0,companionName:s.companionName||'동료',blessings:s.blessings||0,winStreak:s.winStreak||0,tavernSlots:s.tavernSlots||null,tavernDate:s.tavernDate||null,savedFormations:s.savedFormations||[]});
+      deck:s.deck||[],relics:s.relics||[],ownedRelics:s.ownedRelics||[],ownedSkills:s.ownedSkills||[],hero:s.hero||null,bestRound:s.bestRound||0,totalWins:s.totalWins||0,totalGames:s.totalGames||0,leaguePoints:s.leaguePoints||0,tutStep:s.tutStep||0,companionName:s.companionName||'동료',blessings:s.blessings||0,winStreak:s.winStreak||0,tavernSlots:s.tavernSlots||null,tavernDate:s.tavernDate||null,
+      profileCardId:s.profileCardId||null});
+    // 2026-05-03: savedFormations FIFO 큐 → 고정 3슬롯 인덱스 (각 {name, units, relics}).
+    // 사용자 결정 — 1·2·3번 슬롯 + 이름 편집 가능. 빈 슬롯은 units.length===0 으로 판정.
+    const _sf = Array.isArray(s.savedFormations) ? s.savedFormations : [];
+    this.savedFormations = [0, 1, 2].map(function(i){
+      const f = _sf[i];
+      return {
+        name:   (f && typeof f.name === 'string' && f.name) ? f.name : ((i+1) + '번 편성'),
+        units:  (f && Array.isArray(f.units))  ? f.units  : [],
+        relics: (f && Array.isArray(f.relics)) ? f.relics : [],
+      };
+    });
     this.deck.forEach(c=>{if(!c.equips)c.equips=[];if(!c.maxHp)c.maxHp=c.hp;if(!c.xp)c.xp=0;if(!c.honor)c.honor=0;if(!c.level)c.level=1;if(c.shield==null)c.shield=0;if(c.meva==null)c.meva=0;if(c.hpReg==null)c.hpReg=0;if(c.nrgReg==null)c.nrgReg=0;if(!c.range)c.range=(c.type==='사수'||c.type==='마법사')?'ranged':'melee';
       if(!c.growthPts)c.growthPts={atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0};if(c.freePoints==null)c.freePoints=0;
     });
@@ -41,7 +53,8 @@ Object.assign(RoF.Game, {
     const lg = this.getLeague ? this.getLeague() : null;
     const leagueId = (lg && lg.id) || 'bronze';
     const sv={round:this.round,hp:this.hp,maxHp:this.maxHp,gold:this.gold,gems:this.gems||0,blessings:this.blessings||0,divineGrace:this.divineGrace||0,
-      deck:this.deck,relics:this.relics,ownedRelics:this.ownedRelics||[],ownedSkills:this.ownedSkills||[],hero:this.hero||null,bestRound:this.bestRound,totalWins:this.totalWins,totalGames:this.totalGames,leaguePoints:this.leaguePoints||0,league:leagueId,tutStep:this.tutStep||0,companionName:this.companionName||'동료',blessings:this.blessings||0,winStreak:this.winStreak||0,tavernSlots:this.tavernSlots||null,tavernDate:this.tavernDate||null,savedFormations:this.savedFormations||[],guild_id:this.guild_id||null};
+      deck:this.deck,relics:this.relics,ownedRelics:this.ownedRelics||[],ownedSkills:this.ownedSkills||[],hero:this.hero||null,bestRound:this.bestRound,totalWins:this.totalWins,totalGames:this.totalGames,leaguePoints:this.leaguePoints||0,league:leagueId,tutStep:this.tutStep||0,companionName:this.companionName||'동료',blessings:this.blessings||0,winStreak:this.winStreak||0,tavernSlots:this.tavernSlots||null,tavernDate:this.tavernDate||null,savedFormations:this.savedFormations||[],guild_id:this.guild_id||null,
+      profileCardId:this.profileCardId||null};
     db[Auth.user].save=sv;
     Auth.save(db);
     // S1: 클라우드 세이브 (비동기, 실패해도 로컬은 이미 저장됨)
@@ -73,12 +86,22 @@ Object.assign(RoF.Game, {
     ['login-msg','signup-msg'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='';});
     UI.show('title-screen');
   },
-  // XP/Level is PER CARD, not global
-  cardXpNext(card){return (card.level||1)*10;}, // Lv1=10, Lv2=20, Lv3=30...
+  // XP/Level is PER CARD, not global.
+  // 2026-05-02: 곡선 변경 — 04-balance.md spec `100 × L^1.5` 적용 (사용자 결정 C안).
+  //   Lv1→2: 100 / Lv10→11: 3,162 / Lv50→51: 35,355 / Lv99→100: 98,499. 누적 ~663만.
+  //   만렙(Lv100) 캡 — 그 이상 exp 부여 시 무시.
+  CARD_LEVEL_CAP: 100,
+  cardXpNext(card){
+    const L=card.level||1;
+    return Math.round(100*Math.pow(L,1.5));
+  },
   giveCardXp(card,xp){
+    if(!card)return false;
+    if((card.level||1)>=this.CARD_LEVEL_CAP){card.xp=0;return false;}
     card.xp=(card.xp||0)+xp;
     let leveled=false;
     while(card.xp>=this.cardXpNext(card)){
+      if((card.level||1)>=this.CARD_LEVEL_CAP){card.xp=0;break;}
       card.xp-=this.cardXpNext(card);
       card.level=(card.level||1)+1;
       card.freePoints=(card.freePoints||0)+5;
@@ -88,6 +111,26 @@ Object.assign(RoF.Game, {
   },
   giveCardHonor(card,honor){card.honor=(card.honor||0)+honor;},
   getHeroLevel(){const h=this.deck.find(c=>c.isHero);return h?(h.level||1):1;},
+  /**
+   * 프로필 카드 — 마을 좌상단 미니 일러스트에 쓸 카드.
+   * profileCardId 가 유효한 보유 카드를 가리키면 그 카드, 아니면 영웅(default).
+   * 카드 변경/삭제로 profileCardId 가 stale 해지면 자동 fallback.
+   */
+  getProfileCard(){
+    if(this.profileCardId){
+      const c = this.deck.find(c => c && c.uid === this.profileCardId);
+      if(c) return c;
+    }
+    return this.deck.find(c => c && c.isHero) || null;
+  },
+  /** 프로필 카드 변경 — uid 입력. 영웅이면 null 로 초기화 (default 동작과 동일하므로). */
+  setProfileCard(uid){
+    const c = this.deck.find(c => c && c.uid === uid);
+    if(!c) return false;
+    this.profileCardId = c.isHero ? null : uid;
+    this.persist();
+    return true;
+  },
   getActionPoints(){const lv=this.getHeroLevel();if(lv>=50)return 4;if(lv>=10)return 3;if(lv>=2)return 2;return 1;},
   getTotalHonor(){return this.deck.reduce((s,c)=>s+(c.honor||0),0);},
 

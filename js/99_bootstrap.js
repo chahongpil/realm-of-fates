@@ -40,6 +40,12 @@
     // body 직계로 끌어올림. 100vw/100vh fixed cover 로 letterbox 영역까지 채움.
     const titleVideo = root.querySelector('#title-bg-video');
     if (titleVideo) document.body.insertBefore(titleVideo, root);
+
+    // 2026-05-02: title-fire 그라디언트도 body 직계로 끌어올림 — game-root 안에 있으면
+    //   transform:scale 영향 받아 ultra-wide letterbox 영역(좌우)에 그라디언트 안 그려지고
+    //   game-root 영역만 어두운 띠 → 우측 경계선처럼 보임. fixed + 100vw 로 letterbox 까지 cover.
+    const titleFire = root.querySelector('.title-fire');
+    if (titleFire) document.body.insertBefore(titleFire, root);
   }
 
   function fitViewport(){

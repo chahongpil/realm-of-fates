@@ -53,6 +53,22 @@
     },
     /** (기존 호환) 저장하고 종료 = 로그아웃과 동일 */
     exitWithSave(){ Settings.logout(); },
+    /** 게임 종료 — 진행 저장 후 창 닫기 시도. 일반 탭에서는 window.close() 가 차단되므로 안내 fallback. */
+    exitGame(){
+      if(!confirm('게임을 종료하시겠습니까?\n\n진행 상황은 자동 저장됩니다.')) return;
+      if(window.Game && typeof Game.persist === 'function'){
+        try { Game.persist(); } catch(e){ console.warn('[Settings.exitGame] persist failed', e); }
+      }
+      Settings.close();
+      // window.close() 는 자기가 연 창에서만 동작. 일반 탭은 차단됨.
+      try { window.close(); } catch(e){}
+      // 차단되면 안내. 약간 지연 후 페이지가 살아있으면 메시지.
+      setTimeout(() => {
+        if(document.visibilityState !== 'hidden'){
+          alert('게임이 저장되었습니다.\n\n브라우저 탭을 직접 닫아주세요.');
+        }
+      }, 300);
+    },
     /** BGM 토글 — 기존 SFX.toggle 재사용 (상태는 SFX.on 에 저장) */
     toggleBgm(){
       if(window.SFX && typeof SFX.toggle === 'function'){

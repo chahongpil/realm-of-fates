@@ -11,69 +11,250 @@ RoF.__gameKeys = RoF.__gameKeys || new Set();
     }
     RoF.__gameKeys.add(k);
   }
-})(["showCastle", "showCastleUpgradeTab", "showCastleQuestTab", "showCastleQuestEntry", "showForge", "showChurch", "showTraining", "showShop", "showTemple", "showInn", "LEAGUES", "getLeague", "getLeagueProgress"]);
+})(["showCastle", "showCastleQuestTab", "showCastleQuestEntry", "showForge", "showChurch", "showTraining", "showTrainingSkillEntry", "showTrainingUpgradeTab", "showTrainingSkillTab", "_trainingSelectCard", "_renderTrainingDetail", "_trainCard", "_allocStat", "_levelUpEffect", "_trainingSelectedUid", "showShop", "showTemple", "showInn", "LEAGUES", "getLeague", "getLeagueProgress"]);
 
 Object.assign(RoF.Game, {
+  // 2026-05-02: 왕궁 = 퀘스트 + 전직 (placeholder). 단련은 훈련장(showTraining)으로 이전.
   showCastle(){
     UI.show('castle-screen');
     const npc=this.getNpc('castle');
     const injured=this.deck.filter(c=>c.injured).length;
-    // 2026-04-24: noGold 필드 폐기 — 골드 부족 시 별도 안내문 사용. 부상자 알림 우선, 없으면 기본 인사.
-    const msg=this.gold<3?'국고가 비어있구려. 전투에서 벌어오시오.':injured>0?`부상자가 ${injured}명이나... 먼저 교회에 다녀오시오.`:npc.greet;
+    const msg=injured>0?`부상자가 ${injured}명이나... 먼저 교회에 다녀오시오.`:npc.greet;
     document.querySelector('#castle-screen .hud').insertAdjacentHTML('afterend',
       `<div id="castle-npc">${this.renderNpcBar('castle',msg)}</div>`);
-    // Remove duplicate on re-render
     const prev=document.querySelectorAll('#castle-npc');if(prev.length>1)prev[0].remove();
-    this._castleTab='upgrade';
-    this.showCastleUpgradeTab();
-  },
-  showCastleUpgradeTab(){
-    this._castleTab='upgrade';
-    document.getElementById('castle-tab-quest').style.borderColor='';document.getElementById('castle-tab-quest').style.color='';
-    document.getElementById('castle-tab-upgrade').style.borderColor='#ffd700';document.getElementById('castle-tab-upgrade').style.color='#ffd700';
-    document.getElementById('castle-quest-area').style.display='none';
-    document.getElementById('castle-upgrade-area').style.display='';
-    // Reuse existing upgrade logic
-    document.getElementById('castle-gold').textContent=this.gold;
-    const g=document.getElementById('castle-upgrade-grid');g.innerHTML='';
-    this.deck.forEach(c=>{
-      const cost=(c.level||1)*3;
-      const el=mkCardElV4(c);
-      const btn=document.createElement('div');btn.style.cssText='text-align:center;margin-top:4px;';
-      btn.innerHTML=`<button class="btn btn-s btn-green" ${this.gold<cost?'disabled':''}>${cost}💰 단련</button>`;
-      btn.querySelector('button').onclick=(e)=>{e.stopPropagation();
-        if(this.gold<cost)return;this.gold-=cost;
-        const oldRar=c.rarity;
-        c.level=(c.level||1)+1;c.freePoints=(c.freePoints||0)+5;
-        if(c.level%5===0){const ni=R_ORDER.indexOf(c.rarity);if(ni<R_ORDER.length-1){c.rarity=R_ORDER[ni+1];}}
-        const rarChanged=c.rarity!==oldRar;
-        if(rarChanged){SFX.play('rarity_up');
-          const burst=document.createElement('div');burst.className='rarity-burst';document.body.appendChild(burst);setTimeout(()=>burst.remove(),1000);
-        } else {SFX.play('upgrade');
-          const flash=document.createElement('div');flash.className='upgrade-flash';document.body.appendChild(flash);setTimeout(()=>flash.remove(),600);
-        }
-        const cardEl=el.parentElement;if(cardEl){const pp=document.createElement('div');pp.className='upgrade-particles';
-          for(let pi=0;pi<12;pi++){const pt=document.createElement('div');pt.className='upgrade-particle';const angle=Math.random()*Math.PI*2;const dist=30+Math.random()*40;pt.style.setProperty('--px',Math.cos(angle)*dist+'px');pt.style.setProperty('--py',Math.sin(angle)*dist+'px');pt.style.background=rarChanged?'#a335ee':'#ffd700';pp.appendChild(pt);}
-          cardEl.style.position='relative';cardEl.appendChild(pp);setTimeout(()=>pp.remove(),800);
-          el.classList.add('upgrade-card-glow');setTimeout(()=>el.classList.remove('upgrade-card-glow'),600);
-        }
-        this.persist();this.checkTutorial('first_upgrade');setTimeout(()=>this.showCastleUpgradeTab(),rarChanged?800:400);};
-      const wrap=document.createElement('div');wrap.appendChild(el);wrap.appendChild(btn);g.appendChild(wrap);
-    });
+    this._castleTab='quest';
+    this.showCastleQuestTab();
   },
   showCastleQuestTab(){
     this._castleTab='quest';
-    document.getElementById('castle-tab-upgrade').style.borderColor='';document.getElementById('castle-tab-upgrade').style.color='';
-    document.getElementById('castle-tab-quest').style.borderColor='#ffd700';document.getElementById('castle-tab-quest').style.color='#ffd700';
-    document.getElementById('castle-upgrade-area').style.display='none';
     document.getElementById('castle-quest-area').style.display='';
+    document.getElementById('castle-gold').textContent=this.gold;
     document.getElementById('castle-quest-area').innerHTML='<div style="color:#888;text-align:center;padding:40px;font-size:.9rem;">📜 왕의 퀘스트가 곧 준비됩니다...<br><br><span style="font-size:.75rem;color:#555;">퀘스트 시스템 개발 중</span></div>';
   },
   // 2026-04-28: 왕궁 NPC "퀘스트 받기" 진입용 wrapper.
-  // showCastle() 가 castle-screen 진입 + HUD + NPC bar + default(upgrade) 탭 셋업을 마친 뒤 quest 탭으로 전환.
   showCastleQuestEntry(){
     this.showCastle();
     this.showCastleQuestTab();
+  },
+
+  // ── 훈련장 (training) — 2026-05-02 신규 ────────────────────────
+  // 단련 + 스킬 교체 두 탭. 단련: 골드 → exp (1:1 환산), exp 임계점 도달 시 자동 레벨업 + freePoints +5.
+  // freePoints 는 6 스탯 (atk/hp/def/spd/luck/nrg) 에 직접 +1 분배. 카드의 c.{stat} 직접 증가 + growthPts 기록.
+  _trainingSelectedUid: null,
+
+  showTraining(){
+    UI.show('training-screen');
+    const npc=this.getNpc('training');
+    document.querySelector('#training-screen .hud').insertAdjacentHTML('afterend',
+      `<div id="training-npc">${this.renderNpcBar('training',npc.greet)}</div>`);
+    const prev=document.querySelectorAll('#training-npc');if(prev.length>1)prev[0].remove();
+    this._trainingTab='upgrade';
+    if(!this._trainingSelectedUid && this.deck.length){
+      this._trainingSelectedUid=this.deck[0].uid;
+    }
+    this.showTrainingUpgradeTab();
+  },
+
+  /** 스킬 교체 탭 직접 진입 wrapper — NPC choice "스킬 교체" 에서 호출. */
+  showTrainingSkillEntry(){
+    this.showTraining();
+    this.showTrainingSkillTab();
+  },
+
+  showTrainingSkillTab(){
+    this._trainingTab='skill';
+    const tabUp=document.getElementById('training-tab-upgrade');
+    const tabSk=document.getElementById('training-tab-skill');
+    if(tabUp){tabUp.style.borderColor='';tabUp.style.color='';}
+    if(tabSk){tabSk.style.borderColor='#ffd700';tabSk.style.color='#ffd700';}
+    document.getElementById('training-upgrade-area').style.display='none';
+    document.getElementById('training-skill-area').style.display='';
+    document.getElementById('training-gold').textContent=this.gold;
+  },
+
+  showTrainingUpgradeTab(){
+    this._trainingTab='upgrade';
+    const tabUp=document.getElementById('training-tab-upgrade');
+    const tabSk=document.getElementById('training-tab-skill');
+    if(tabUp){tabUp.style.borderColor='#ffd700';tabUp.style.color='#ffd700';}
+    if(tabSk){tabSk.style.borderColor='';tabSk.style.color='';}
+    document.getElementById('training-upgrade-area').style.display='';
+    document.getElementById('training-skill-area').style.display='none';
+    document.getElementById('training-gold').textContent=this.gold;
+
+    // 좌측 카드 grid — 클릭 시 선택 변경
+    const g=document.getElementById('training-grid');g.innerHTML='';
+    this.deck.forEach(c=>{
+      const wrap=document.createElement('div');wrap.className='tg-card';
+      wrap.dataset.uid=c.uid;
+      if(c.uid===this._trainingSelectedUid)wrap.classList.add('selected');
+      const el=mkCardElV4(c);
+      wrap.appendChild(el);
+      const lvLine=document.createElement('div');lvLine.className='tg-lv';
+      lvLine.textContent=`Lv ${c.level||1}${(c.freePoints||0)>0?` · 🌟${c.freePoints}`:''}`;
+      wrap.appendChild(lvLine);
+      wrap.onclick=()=>this._trainingSelectCard(c.uid);
+      g.appendChild(wrap);
+    });
+
+    // 우측 디테일 패널 갱신
+    this._renderTrainingDetail();
+  },
+
+  _trainingSelectCard(uid){
+    this._trainingSelectedUid=uid;
+    document.querySelectorAll('#training-grid .tg-card').forEach(el=>{
+      el.classList.toggle('selected', el.dataset.uid===String(uid));
+    });
+    this._renderTrainingDetail();
+  },
+
+  _renderTrainingDetail(){
+    const detail=document.getElementById('training-detail');
+    if(!detail)return;
+    const c=this.deck.find(x=>x.uid===this._trainingSelectedUid);
+    if(!c){
+      detail.innerHTML='<div class="td-empty">왼쪽에서 카드를 선택하세요.</div>';
+      return;
+    }
+    const lv=c.level||1;
+    const isMax=lv>=this.CARD_LEVEL_CAP;
+    const xp=c.xp||0;
+    const xpNext=isMax?0:this.cardXpNext(c);
+    const xpPct=isMax?100:Math.floor(xp/xpNext*100);
+    const fp=c.freePoints||0;
+
+    // 단련 단위 — +100 / +1000 / Max(가용 골드 또는 1레벨업까지)
+    const oneLevelCost=isMax?0:Math.max(1, xpNext-xp);
+    const maxAffordable=Math.min(this.gold, oneLevelCost);
+
+    detail.innerHTML='';
+    // 카드 V4 (확대)
+    const cardWrap=document.createElement('div');cardWrap.className='td-card';cardWrap.id='td-card-host';
+    const cardEl=mkCardElV4(c);cardWrap.appendChild(cardEl);
+    detail.appendChild(cardWrap);
+
+    // 레벨/XP 게이지
+    const xpBlock=document.createElement('div');xpBlock.className='td-xp';
+    xpBlock.innerHTML=isMax
+      ? `<div class="td-lv">Lv <b>${lv}</b> · 만렙 도달</div><div class="td-bar"><div class="td-bar-fill" style="width:100%"></div></div><div class="td-xp-num">MAX</div>`
+      : `<div class="td-lv">Lv <b>${lv}</b> → ${lv+1}</div><div class="td-bar"><div class="td-bar-fill" id="td-bar-fill" style="width:${xpPct}%"></div></div><div class="td-xp-num"><span id="td-xp-cur">${xp}</span> / ${xpNext} EXP</div>`;
+    detail.appendChild(xpBlock);
+
+    // 단련 버튼 3종
+    const trainRow=document.createElement('div');trainRow.className='td-train-row';
+    const mkBtn=(label, exp)=>{
+      const b=document.createElement('button');b.className='btn btn-s btn-green';
+      b.textContent=label;
+      const cost=Math.min(exp, isMax?0:oneLevelCost);
+      b.disabled=isMax||this.gold<1||cost<1;
+      b.onclick=()=>this._trainCard(c, Math.min(exp, this.gold, oneLevelCost));
+      return b;
+    };
+    if(!isMax){
+      // 가로 배치 — 매우 짧은 라벨로 wrap 방지. tooltip 으로 풀텍스트.
+      const b1=mkBtn(`+100`, 100);b1.title=`+100 EXP (100 골드)`;
+      const b2=mkBtn(`+1000`, 1000);b2.title=`+1000 EXP (1000 골드)`;
+      const b3=mkBtn(`Max`, maxAffordable);b3.title=`최대 단련 (현재 가용 ${maxAffordable} 골드)`;
+      trainRow.appendChild(b1);trainRow.appendChild(b2);trainRow.appendChild(b3);
+    } else {
+      const note=document.createElement('div');note.className='td-empty';note.textContent='만렙입니다.';trainRow.appendChild(note);
+    }
+    detail.appendChild(trainRow);
+
+    // freePoints 분배
+    const fpBlock=document.createElement('div');fpBlock.className='td-fp';
+    fpBlock.innerHTML=`<div class="td-fp-head">🌟 자유 포인트: <b id="td-fp-num">${fp}</b></div>`;
+    // 토큰 팔레트 (10_tokens.css --stat-*) 일관성 유지 — 카드 V4 좌측 stat 색과 동일.
+    const stats=[
+      {key:'atk', label:'⚔️ ATK',  color:'var(--stat-atk)'},
+      {key:'hp',  label:'❤️ HP',   color:'var(--stat-hp)'},
+      {key:'def', label:'🛡️ DEF',  color:'var(--stat-def)'},
+      {key:'spd', label:'⚡ SPD',  color:'var(--stat-spd)'},
+      {key:'luck',label:'🍀 LUCK', color:'var(--stat-luck)'},
+      {key:'nrg', label:'◆ NRG',  color:'var(--stat-nrg)'},
+    ];
+    const fpGrid=document.createElement('div');fpGrid.className='td-fp-grid';
+    stats.forEach(st=>{
+      const sBtn=document.createElement('button');sBtn.className='td-fp-btn';
+      sBtn.style.borderColor=st.color;sBtn.style.color=st.color;
+      sBtn.innerHTML=`<span class="td-fp-lbl">${st.label}</span><span class="td-fp-cur">${c[st.key]||0}</span><span class="td-fp-plus">+1</span>`;
+      sBtn.disabled=fp<=0;
+      sBtn.onclick=()=>this._allocStat(c, st.key);
+      fpGrid.appendChild(sBtn);
+    });
+    fpBlock.appendChild(fpGrid);
+    detail.appendChild(fpBlock);
+  },
+
+  _trainCard(c, exp){
+    if(!c||exp<1)return;
+    if((c.level||1)>=this.CARD_LEVEL_CAP)return;
+    if(this.gold<exp)return;
+    this.gold-=exp;
+    const oldLv=c.level||1;
+    const leveled=this.giveCardXp(c, exp);
+    SFX.play(leveled?'rarity_up':'upgrade');
+    // 카드 글로우 + flash
+    const host=document.getElementById('td-card-host');
+    if(host){
+      const cardEl=host.querySelector('.card-v4');
+      if(cardEl){
+        cardEl.classList.add('upgrade-card-glow');
+        setTimeout(()=>cardEl.classList.remove('upgrade-card-glow'), 600);
+        // 골드 → 카드 파티클
+        const pp=document.createElement('div');pp.className='upgrade-particles';
+        for(let pi=0;pi<12;pi++){
+          const pt=document.createElement('div');pt.className='upgrade-particle';
+          const angle=Math.random()*Math.PI*2;const dist=30+Math.random()*40;
+          pt.style.setProperty('--px',Math.cos(angle)*dist+'px');
+          pt.style.setProperty('--py',Math.sin(angle)*dist+'px');
+          pt.style.background='#ffd700';
+          pp.appendChild(pt);
+        }
+        host.style.position='relative';host.appendChild(pp);setTimeout(()=>pp.remove(),800);
+      }
+    }
+    if(leveled){
+      // 레벨업 burst — 사용자 강조 요청 이펙트
+      const burst=document.createElement('div');burst.className='rarity-burst';document.body.appendChild(burst);
+      setTimeout(()=>burst.remove(), 1000);
+      this._levelUpEffect(host, oldLv, c.level);
+    }
+    this.persist();
+    this.checkTutorial('first_upgrade');
+    // 재렌더 (이펙트 후)
+    setTimeout(()=>{
+      this.showTrainingUpgradeTab();
+    }, leveled?900:400);
+  },
+
+  _allocStat(c, stat){
+    if(!c||(c.freePoints||0)<=0)return;
+    if(!['atk','hp','def','spd','luck','nrg'].includes(stat))return;
+    c.freePoints-=1;
+    c[stat]=(c[stat]||0)+1;
+    if(stat==='hp'){c.maxHp=(c.maxHp||c.hp);c.maxHp+=1;}
+    if(!c.growthPts)c.growthPts={atk:0,hp:0,def:0,spd:0,nrg:0,luck:0,eva:0};
+    c.growthPts[stat]=(c.growthPts[stat]||0)+1;
+    SFX.play('upgrade');
+    // 작은 sparkle
+    const fp=document.getElementById('td-fp-num');
+    if(fp){fp.textContent=c.freePoints;
+      fp.classList.add('fp-pulse');setTimeout(()=>fp.classList.remove('fp-pulse'),400);}
+    this.persist();
+    this._renderTrainingDetail();
+  },
+
+  /** 레벨업 시 카드 머리 위 "Lv N → N+1" 큰 텍스트 + 골든 광선 burst. */
+  _levelUpEffect(host, oldLv, newLv){
+    if(!host)return;
+    const lab=document.createElement('div');
+    lab.className='lv-up-label';
+    lab.textContent=`Lv ${oldLv} → ${newLv}`;
+    host.appendChild(lab);
+    setTimeout(()=>lab.remove(), 1200);
   },
 
   showForge(){
@@ -81,6 +262,50 @@ Object.assign(RoF.Game, {
   },
 
   showChurch(){
+    // 2026-05-02: 성당 modal 일괄 회복 (사용자 결정).
+    //   대상: HP 가 부족한 모든 카드 (영웅 포함 — 사용자 보고: 영웅 HP 0 일 때 치료 못 하던 버그 해소).
+    //   장례 옵션은 일단 보류 (별도 phase).
+    const targets=this.deck.filter(c=>{
+      if(c.injured)return true;
+      const hp=c.currentHp!=null?c.currentHp:c.hp;
+      if(hp<=0){c.injured=true;return true;}
+      if(hp<c.hp)return true;
+      return false;
+    });
+    if(targets.length===0){
+      UI.modal('⛪ 성당','동료 전원의 HP 가 만전입니다.\n\n다음 전투를 준비하세요.',null);
+      return;
+    }
+    // 비용 합산: 부상 카드는 level×2, 부분 손상은 깎인 HP 만큼 (1 HP = 0.5 골드, 최소 1).
+    let totalCost=0;
+    const lines=targets.map(c=>{
+      const hp=c.currentHp!=null?c.currentHp:c.hp;
+      let cost;
+      if(c.injured){
+        cost=Math.max(1,Math.floor((c.level||1)*2));
+      }else{
+        const diff=c.hp-hp;
+        cost=Math.max(1,Math.floor(diff*0.5));
+      }
+      totalCost+=cost;
+      const status=c.injured?'🩹 부상':`HP ${hp}/${c.hp}`;
+      return `• ${c.icon||'🗡️'} ${c.name} — ${status} (${cost}💰)`;
+    }).join('\n');
+    if(this.gold<totalCost){
+      UI.modal('⛪ 성당',`💰 부족합니다.\n\n총 ${totalCost}💰 필요 (보유 ${this.gold}💰)\n\n${lines}`,null);
+      return;
+    }
+    UI.modal('⛪ 성당 치료',`${targets.length}명의 동료를 치료합니다.\n\n${lines}\n\n총 비용: ${totalCost}💰\n\n전원 치료하시겠습니까?\n(에너지 회복은 여관에서)`,()=>{
+      this.gold-=totalCost;
+      targets.forEach(c=>{c.injured=false;c.currentHp=c.hp;});
+      SFX.play('heal');
+      this.persist();
+      UI.modal('⛪ 치료 완료','동료 전원의 HP 가 만전으로 회복되었습니다.',null);
+    });
+  },
+
+  // 2026-05-02: 폐기된 grid 코드. 향후 장례(funeral) 기능 추가 시 별도 함수로 부활 예정.
+  _showChurchGridLegacy(){
     UI.show('church-screen');
     document.getElementById('church-gold').textContent=this.gold;
     const injured=this.deck.filter(c=>c.injured&&!c.isHero);
@@ -112,9 +337,9 @@ Object.assign(RoF.Game, {
       const revBtn=document.createElement('button');revBtn.className='btn btn-s btn-green';
       revBtn.textContent=`✨ 치료 (${cost}💰)`;revBtn.disabled=this.gold<cost;
       revBtn.onclick=()=>{
-        UI.modal('✨ 치료 확인',`${c.icon} ${c.name}을(를) ${cost}💰로 치료하시겠습니까?\n\n부상이 치유되고 HP/에너지가 만전으로 회복됩니다.`,()=>{
-          // 2026-04-27: injured 해제 + 영구 currentHp/curNrg 풀 reset (전투 종료 시 깎인 상태 폐기).
-          this.gold-=cost;c.injured=false;c.currentHp=c.hp;c.curNrg=c.nrg||0;
+        UI.modal('✨ 치료 확인',`${c.icon} ${c.name}을(를) ${cost}💰로 치료하시겠습니까?\n\n부상이 치유되고 HP가 만전으로 회복됩니다.\n(에너지는 여관에서 회복)`,()=>{
+          // 2026-05-02: 성당 = HP 전담 / 여관 = NRG 전담 (사용자 결정). NRG reset 제거.
+          this.gold-=cost;c.injured=false;c.currentHp=c.hp;
           SFX.play('heal');
           const flash=document.createElement('div');flash.className='upgrade-flash';document.body.appendChild(flash);setTimeout(()=>flash.remove(),600);
           this.persist();this.showChurch();
@@ -140,9 +365,7 @@ Object.assign(RoF.Game, {
     });
   },
 
-  showTraining(){
-    UI.modal('🏟️ 훈련장','동료 수련 기능이 곧 열립니다.\n\n골드를 사용하여 동료에게 경험을 쌓게 할 수 있습니다.\n\n(수련 시스템 준비 중)',null);
-  },
+  // 2026-05-02: 구버전 modal showTraining() 정의 제거 — 신규 훈련장 화면 진입 (line 46) 으로 대체.
 
   showShop(){
     UI.modal('🎭 암시장','비전과 유물 6 원소 로테이션 상점이 곧 문을 엽니다.\n\n(암시장 시스템 준비 중)',null);
@@ -155,27 +378,27 @@ Object.assign(RoF.Game, {
 
   // 2026-04-27: 여관 = 휴식 → 살아있는 동료 전원 HP/NRG 풀 회복 (무료, 부상자 제외).
   // 부상자(죽은 자) 회복은 교회 골드 치료. 여관은 살아있는 동료의 누적 소모만 회복.
+  // 2026-05-02: 사용자 결정 — 여관(inn) = ENG 회복 전담 / 성당(church) = HP 회복+장례. 역할 분리.
   showInn(){
     const alive=this.deck.filter(c=>!c.injured);
     const needRest=alive.filter(c=>{
-      const hpCur=c.currentHp!=null?c.currentHp:c.hp;
       const nrgCur=c.curNrg!=null?c.curNrg:0;
-      return hpCur<c.hp||nrgCur<(c.nrg||0);
+      return nrgCur<(c.nrg||0);
     });
     if(needRest.length===0){
-      UI.modal('🛏️ 여관','동료 전원이 만전입니다.\n\n다음 전투를 준비하세요.',null);
+      UI.modal('🛏️ 여관','동료 전원의 에너지가 만전입니다.\n\n다음 전투를 준비하세요.',null);
       return;
     }
     const lines=needRest.map(c=>{
-      const hpCur=c.currentHp!=null?c.currentHp:c.hp;
       const nrgCur=c.curNrg!=null?c.curNrg:0;
-      return `• ${c.icon||'🗡️'} ${c.name} — HP ${hpCur}/${c.hp}, ⚡${nrgCur}/${c.nrg||0}`;
+      return `• ${c.icon||'🗡️'} ${c.name} — ⚡${nrgCur}/${c.nrg||0}`;
     }).join('\n');
-    UI.modal('🛏️ 여관 휴식',`${needRest.length}명의 동료가 휴식이 필요합니다.\n\n${lines}\n\n잠을 청해 만전으로 회복하시겠습니까?`,()=>{
-      alive.forEach(c=>{c.currentHp=c.hp;c.curNrg=c.nrg||0;});
+    UI.modal('🛏️ 여관 휴식',`${needRest.length}명의 동료가 에너지 회복이 필요합니다.\n\n${lines}\n\n잠을 청해 에너지를 만전으로 회복하시겠습니까?`,()=>{
+      // 에너지만 회복 (HP 는 성당 담당). injured 카드도 동일 흐름이지만 alive 만 대상.
+      alive.forEach(c=>{c.curNrg=c.nrg||0;});
       SFX.play('heal');
       this.persist();
-      UI.modal('🛏️ 휴식 완료','동료 전원이 만전으로 회복되었습니다.',null);
+      UI.modal('🛏️ 휴식 완료','동료 전원의 에너지가 만전으로 회복되었습니다.\n(HP 회복은 성당에서)',null);
     });
   },
 

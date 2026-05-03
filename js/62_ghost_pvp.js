@@ -292,23 +292,13 @@
   // ── 마을 연동: 콜로세움 건물 액션 ─────────────────────
   // 51_game_town.js 의 BUILDINGS[training].action = 'showTraining'
   // 여기서 오버라이드해서 아레나 진입으로 연결
-  const _origShowTraining = RoF.Game && RoF.Game.showTraining;
+  // 2026-05-02: showTraining monkey-patch 제거 — 훈련장(training) 과 결투장(arena) 분리.
+  //   훈련장 = 단련 + 스킬 교체 (54_game_castle.js showTraining 정본). 결투장 = 별도 진입 (showArena).
+  //   gate NPC 의 결투장 진입은 현재 "준비중" 으로 비활성 (51_game_town.js).
   if(typeof RoF.Game !== 'undefined'){
     RoF.Game.showArena = function(){
       Arena.enter();
     };
-    // showTraining 이 이미 있으면 아레나로 래핑
-    if(typeof RoF.Game.showTraining === 'function'){
-      const orig = RoF.Game.showTraining.bind(RoF.Game);
-      RoF.Game.showTraining = function(){
-        // 온라인이면 아레나, 아니면 기존 훈련
-        if(Backend && Backend.isReady && Backend.getCurrentUser()){
-          Arena.enter();
-        } else {
-          orig();
-        }
-      };
-    }
   }
 
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -446,21 +446,151 @@
               0 0 24px rgba(136, 204, 255, .6);
   z-index: 100;
 }
+/* 2026-05-03: 패시브 프레임 차별화 (사용자 결정 A안 — 투명화 폐기 + CSS 차별화 + "패시브" 라벨).
+   원칙: 카드 식별 100% 유지(opacity·grayscale 0), 보라 dashed border + 우상단 "패시브" 라벨 배지로 구분. */
 .bcf-skill-card.is-passive{
-  opacity: .6;
-  filter: grayscale(.65);
   border-style: dashed !important;
+  border-color: #a78bfa !important;          /* 보라색 — 액티브와 명확히 구분 */
+  box-shadow: 0 4px 14px rgba(167, 139, 250, .35);
+  cursor: help;                               /* not-allowed 대신 help — 클릭 시 안내 메시지 의도 표현 */
+}
+.bcf-skill-card.is-passive::after{
+  content: '패시브';
+  position: absolute;
+  top: 4px; left: 4px;
+  z-index: 5;
+  background: linear-gradient(135deg, #a78bfa, #6d28d9);
+  color: #fff;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+  pointer-events: none;
+}
+/* 2026-05-03: 자원 부족 — 투명화 폐기 (사용자 결정). border + 살짝 어둠 + 좌상단 부족 마크만.
+   원칙: 일러스트 식별 유지, 대신 "쓸 수 없음" 시각 신호는 빨간 테두리 + 살짝 어두운 배경. */
+.bcf-skill-card.is-unaffordable{
+  border-color: #c44 !important;
+  box-shadow: 0 4px 14px rgba(196, 64, 64, .45),
+              inset 0 0 0 9999px rgba(0,0,0,.18);
   cursor: not-allowed;
 }
-/* 자원 부족 — 클릭 가능하지만 시각적으로 억제. HS/Snap/LoR 공통 UX.
-   2026-04-27: 사용자 피드백 — opacity .42 는 너무 투명해서 카드 내용 확인 어려움.
-   .68 + grayscale 완화로 "보이지만 억제" 명확화. */
-.bcf-skill-card.is-unaffordable{
-  opacity: .68;
-  filter: grayscale(.55) brightness(.85);
-  border-color: #6e3a3a !important;
-  box-shadow: 0 4px 12px rgba(140, 50, 50, .4);
+/* 2026-05-03 STEP 3: 쿨다운 중 — 다크 오버레이 + 정중앙 노란 숫자.
+   원칙: 일러스트 식별 유지(어둠 .58), 노란 숫자(#ffeb3b)로 남은 턴 강조. HS/LoR/Snap 공통 패턴. */
+.bcf-skill-card.is-on-cooldown{
+  border-color: #f9b32a !important;            /* 노란 테두리 — 쿨다운 식별 */
+  box-shadow: 0 4px 14px rgba(249, 179, 42, .35);
   cursor: not-allowed;
+}
+.bcf-skill-card.is-on-cooldown .bsc-cd-overlay{
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .58);              /* 일러 어둡게 + 식별 유지 */
+  color: #ffeb3b;
+  font-size: 56px;                              /* 카드 90px wide × ~62% */
+  font-weight: 900;
+  font-family: 'Cinzel', 'Georgia', serif;
+  text-shadow: 0 2px 4px rgba(0,0,0,.95),
+               0 0 12px rgba(255, 235, 59, .5);
+  pointer-events: none;
+  border-radius: inherit;
+}
+/* 평상시(쿨다운 아님) bsc-cd-overlay 숨김 */
+.bcf-skill-card:not(.is-on-cooldown) .bsc-cd-overlay{
+  display: none;
+}
+
+/* ════════════════════════════════════════════════════════════
+   2026-05-03 전투 타격 시퀀스 시각화 (사용자 결정)
+   ① floating 데미지 숫자 (-N 빨강 / +N 녹색 / crit 주황 큰글자)
+   ② HP 바 부드러운 transition + 빨강 잔상
+   ③ HP 숫자 카운트다운 (animateHP 가 점진 갱신)
+   ④ 카메라 셰이크 (battle-stage-grid.is-shaking)
+   ════════════════════════════════════════════════════════════ */
+
+/* ① floating 데미지/회복 숫자 — 카드 위에서 떠올라 fade-out */
+.bv2c-dmg-floating{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(.6);
+  z-index: 110;  /* char-focus 모달(z:100) 위로 노출 보장 */
+  font: 900 22px/1 'Cinzel', 'Georgia', serif;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  opacity: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,.95), 0 0 8px rgba(0,0,0,.7);
+  white-space: nowrap;
+  letter-spacing: .02em;
+}
+.bv2c-dmg-floating.is-damage{ color: #ff5555; }
+.bv2c-dmg-floating.is-crit{
+  color: #ffb74d;
+  font-size: 32px;
+  text-shadow: 0 2px 6px rgba(0,0,0,.95),
+               0 0 14px rgba(255,140,0,.85),
+               0 0 24px rgba(255,180,40,.45);
+}
+.bv2c-dmg-floating.is-heal{ color: #44ff88; }
+
+.bv2c-dmg-floating.is-rising{
+  animation: bv2DmgFloat 1.0s cubic-bezier(.33,.0,.5,1) forwards;
+}
+@keyframes bv2DmgFloat{
+  0%   { opacity: 0; transform: translate(-50%, -30%) scale(.6); }
+  18%  { opacity: 1; transform: translate(-50%, -85%) scale(1.15); }
+  35%  { opacity: 1; transform: translate(-50%, -110%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -180%) scale(.92); }
+}
+
+/* ② HP 바 부드러운 transition (즉시 변경 X, .35s ease) */
+.card-v4 .bar.hp > i,
+.card-v4 .bar.nrg > i{
+  transition: width .35s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ③ HP 숫자 카운트다운 — animateHP() 가 점진 갱신, 별도 CSS 불필요.
+   단, hp-num 변경 시 살짝 스케일 펄스로 시각 강조. */
+.card-v4 .hp-num.is-damaged{
+  animation: bv2HpPulse .25s ease-out;
+}
+@keyframes bv2HpPulse{
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* ④ 카메라 셰이크 — battle-stage-grid 부모 컨테이너 흔들림.
+   .is-shaking-light: 일반 타격 (강도 약)
+   .is-shaking-strong: crit 타격 (강도 강) */
+.battle-stage-grid.is-shaking-light{
+  animation: bv2ShakeLight .25s ease-out;
+}
+.battle-stage-grid.is-shaking-strong{
+  animation: bv2ShakeStrong .42s cubic-bezier(.36, .07, .19, .97);
+}
+@keyframes bv2ShakeLight{
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  20%      { transform: translate3d(-3px, 1px, 0); }
+  40%      { transform: translate3d(3px, -1px, 0); }
+  60%      { transform: translate3d(-2px, 1px, 0); }
+  80%      { transform: translate3d(2px, 0, 0); }
+}
+@keyframes bv2ShakeStrong{
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  10%      { transform: translate3d(-7px, 2px, 0); }
+  20%      { transform: translate3d(7px, -3px, 0); }
+  30%      { transform: translate3d(-9px, 4px, 0); }
+  40%      { transform: translate3d(8px, -2px, 0); }
+  55%      { transform: translate3d(-5px, 3px, 0); }
+  70%      { transform: translate3d(5px, -1px, 0); }
+  85%      { transform: translate3d(-2px, 1px, 0); }
 }
 .bcf-skill-card.is-unaffordable:hover{
   transform: none;
@@ -693,8 +823,10 @@
   z-index: 5;
 }
 
-/* 선택 — focus 오버레이로 이동한 상태, stage 카드는 숨김 */
-.card-v4-compact.is-selected {
+/* 선택 — focus 오버레이로 이동한 상태, stage 카드는 숨김.
+   2026-05-03 STEP 2: 단, 본인이 self/single_ally/single_any 등 valid 타겟이면 그리드에 다시 노출
+   (사용자 호소 "내 카드도 나와야 할 것 같은데?"). is-target-valid 가 함께 부여될 때 visibility 복원. */
+.card-v4-compact.is-selected:not(.is-target-valid) {
   visibility: hidden;
 }
 

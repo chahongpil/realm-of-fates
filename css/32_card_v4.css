@@ -135,16 +135,19 @@
   letter-spacing: .02em;
 }
 
-/* 둘째 줄 — HP/NRG 숫자. font/padding/border 양쪽 동일하게 */
+/* HP/NRG 숫자. 2026-05-02: 폰트 10 → 14 + weight 700 → 900 (사용자 결정) */
 .card-v4 .hp-num,
 .card-v4 .nrg-num {
-  font: 700 10px/1 ui-monospace, monospace;
+  font: 900 14px/1 ui-monospace, monospace;
   padding-top: 2px;
   border-top: 1px solid rgba(232,189,74,.25);
   font-variant-numeric: tabular-nums;
 }
 .card-v4 .hp-num  { color: #9fe38a; }
 .card-v4 .nrg-num { color: #9cd0f0; text-align: right; }
+/* 2026-05-02: HP 텍스트는 만피 != 시 빨강. */
+/* 2026-05-03: NRG 는 빨강 전환 폐기 — 항상 파란색 유지 (사용자 결정). */
+.card-v4 .hp-num.is-damaged  { color: #ff6666; }
 
 /* HP / NRG bars — 2026-04-21 redesign: 기본 숨김, 전투 중만 표시.
    발동 조건: .with-bars 명시 OR .card-v4-compact (전투 스테이지 타일 자동) */
@@ -160,7 +163,7 @@
 .card-v4.card-v4-compact .bars { display: flex; }
 .card-v4 .bar {
   position: relative;
-  height: 8px;
+  height: 14px;  /* 2026-05-02: 8 → 14 (lbl 12px 텍스트 fit, 사용자 결정 atk 수준) */
   background: rgba(0,0,0,.88);
   border: 1px solid rgba(0,0,0,.9);
   border-radius: 2px;
@@ -176,15 +179,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font: 700 8px/1 ui-monospace, monospace;
+  font: 700 12px/1 ui-monospace, monospace;  /* 2026-05-02: 8 → 12 (atk 숫자 수준) */
   color: #fff;
   text-shadow: 0 1px 1px rgba(0,0,0,.9);
 }
+/* HP/NRG bar — 그라디언트 fill (원래 디자인 복원, 2026-05-02 사용자 재결정) */
 .card-v4 .bar.hp > i {
   background: linear-gradient(180deg, #44ff88, #1a6633);
 }
 .card-v4 .bar.nrg > i {
   background: linear-gradient(180deg, #66ccff, #1a4a7a);
+}
+/* HP 만피 != 시 빨강. NRG 는 빨강 전환 없음 — 항상 파랑 (2026-05-03 사용자 결정). */
+.card-v4 .bar.hp.is-damaged > i {
+  background: linear-gradient(180deg, #ff5555, #993333);
 }
 
 /* Parchment plate — v3 양피지 톤다운 (parchment-2) */
@@ -208,8 +216,7 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 3px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--ink-2);
+  /* 2026-05-02: stats ↔ desc 분리선 제거 (사용자 결정) */
 }
 .card-v4 .stat {
   display: flex;
@@ -237,6 +244,18 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+/* 2026-05-02: desc 비어있으면 hide + parch compact 스타일 적용 (사용자 결정).
+   compact 카드(172/210/378)와 동일하게 padding/gap 압축. 분리선(stats border-bottom) 이미 제거. */
+.card-v4 .desc:empty {
+  display: none;
+}
+.card-v4 .parch:not(:has(.desc:not(:empty))) {
+  padding: 3px 5px;   /* compact padding */
+  gap: 0;             /* compact gap */
+}
+.card-v4 .parch:not(:has(.desc:not(:empty))) .stats {
+  gap: 2px;
 }
 .card-v4 .desc::first-letter {
   font: 900 18px/1 'Cinzel Decorative', serif;
@@ -397,8 +416,9 @@
   border-radius: 2px;
   vertical-align: top;
 }
-.card-v4 .stat .mod.is-buff   { background: rgba(74,160,96,.9); color: #fff; }
-.card-v4 .stat .mod.is-debuff { background: rgba(201,74,58,.9); color: #fff; }
+/* 2026-05-02: 사용자 결정 — 버프 황금 / 디버프 빨강 (이전 녹/적). */
+.card-v4 .stat .mod.is-buff   { background: rgba(255,215,0,.92); color: #1a0a04; font-weight: 900; }
+.card-v4 .stat .mod.is-debuff { background: rgba(201,74,58,.92); color: #fff; }
 
 /* Selected state — V2 와 동일한 golden drop-shadow 오라 */
 .card-v4.selected {
@@ -454,8 +474,8 @@
 
 /* Bars — 카드 최상단 (top:3), 두 바 gap:0 서로 딱 붙음. 높이 12. */
 .card-v4-compact .bars { left: 6px; right: 6px; top: 3px; gap: 0; }
-.card-v4-compact .bar  { height: 6px; }
-.card-v4-compact .bar .lbl { font-size: 7px; }
+.card-v4-compact .bar  { height: 11px; }   /* 2026-05-02: 6 → 11 (lbl 10px fit) */
+.card-v4-compact .bar .lbl { font-size: 10px; }  /* 7 → 10 (atk 수준, 일관성) */
 
 /* Parchment 압축 — 2026-04-23 검수관 권장: 높이 80→58px (27.6%→20%) 로 축소 → 일러스트 노출 63% 근접 복원 */
 .card-v4-compact .parch {
@@ -494,18 +514,119 @@
 /* Shield badge 위치/크기 축소 */
 .card-v4-compact .shield-badge { top: 26px; left: 6px; font-size: 9px; padding: 2px 4px; }
 
+/* 2026-05-02: PHASE 5 Step 4 카드 share 시스템 폐기 — .card-v4.kind-share 블록 제거.
+   향후 채팅 카드 링크는 텍스트 내 이름 인식 → default 모달 (별도 phase). */
+
 /* ===================================================================
-   2026-04-27 PHASE 5 Step 4 — 공유 카드 미니 (kind:'share')
-   채팅 메시지 풍선 안에 첨부되는 미니카드. 100×175 (aspect 4/7 유지).
-   클릭 시 풀사이즈 상세 팝업 (Step 4d).
+   사용처별 카드 내부 요소 조정 (2026-05-02 사용자 결정)
+   ===================================================================
+   - 160 (cardselect) / 190 (formation): desc 삭제
+   - 210 (battle stage compact): ATK/DEF 폰트 크게 (190 과 동일 8/12px)
+   - 336 (deckview 확대): 내부 폰트 키움
+   - 378 (battle focus compact): 내부 폰트 키움
    =================================================================== */
-.card-v4.kind-share {
-  --card-v4-w: 100px;
-  /* aspect-ratio 4/7 자동 → height ≈ 175 */
-  cursor: pointer;
-  margin-top: 6px;
-  transition: transform .15s ease;
+
+/* 160 cardselect, 190 formation — desc 삭제 + parch 압축 (compact 와 동일).
+   desc 가 display:none !important 라 :has(.desc:not(:empty)) 매칭 X → parch 압축 직접 override. */
+body.game-mode #cardselect-screen #cs-grid .card-v4 .desc,
+body.game-mode #form-diamond .card-v4 .desc {
+  display: none !important;
 }
-.card-v4.kind-share:hover {
-  transform: scale(1.05);
+body.game-mode #cardselect-screen #cs-grid .card-v4 .parch,
+body.game-mode #form-diamond .card-v4 .parch {
+  padding: 3px 5px;
+  gap: 0;
+}
+body.game-mode #cardselect-screen #cs-grid .card-v4 .stats,
+body.game-mode #form-diamond .card-v4 .stats {
+  gap: 2px;
+}
+
+/* 210 battle stage — stat 폰트 키움 (190 non-compact 와 동일 8/12px).
+   compact default 6/8px 보다 크게. .bcf-main-card 는 더 specific selector 로 별도 override. */
+body.game-mode #battle-v2-container .card-v4.card-v4-compact .stat .l { font-size: 8px; }
+body.game-mode #battle-v2-container .card-v4.card-v4-compact .stat .v { font-size: 12px; }
+
+/* 336 deckview 확대 — 모든 내부 폰트 키움 */
+body.game-mode .dvf-main-card .card-v4 .name { font-size: 18px; }
+body.game-mode .dvf-main-card .card-v4 .lv   { font-size: 14px; padding: 3px 7px; }
+body.game-mode .dvf-main-card .card-v4 .hp-num,
+body.game-mode .dvf-main-card .card-v4 .nrg-num { font-size: 13px; }
+body.game-mode .dvf-main-card .card-v4 .stat .l { font-size: 11px; }
+body.game-mode .dvf-main-card .card-v4 .stat .v { font-size: 16px; }
+body.game-mode .dvf-main-card .card-v4 .desc { font-size: 13px; }
+
+/* 378 battle focus — compact 인데 큰 사이즈, 폰트 키움. specificity 강화 (#battle-v2-container 와 충돌 회피) */
+body.game-mode #battle-v2-container .bcf-main-card .card-v4.card-v4-compact .name { font-size: 16px; }
+body.game-mode #battle-v2-container .bcf-main-card .card-v4.card-v4-compact .lv   { font-size: 13px; padding: 3px 6px; }
+body.game-mode #battle-v2-container .bcf-main-card .card-v4.card-v4-compact .stat .l { font-size: 11px; }
+body.game-mode #battle-v2-container .bcf-main-card .card-v4.card-v4-compact .stat .v { font-size: 16px; }
+body.game-mode #battle-v2-container .bcf-main-card .card-v4.card-v4-compact .bar .lbl { font-size: 10px; }
+
+/* ===================================================================
+   Card Back (codex 미수집 카드, 2026-05-02)
+   ===================================================================
+   카드뒷면 PNG 를 카드 V4 와 동일 사이즈 + 비율로 표시.
+   생명의 서(codex) 의 미수집 카드 placeholder.
+   =================================================================== */
+.card-back {
+  width: var(--card-v4-w, 235px);
+  aspect-ratio: 4/7;
+  background: url('../img/card_back.png') center/cover no-repeat, #1a1410;
+  border: 2px solid #4a3a2a;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .2s;
+  position: relative;
+  flex-shrink: 0;
+}
+.card-back:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(255,200,80,.3), 0 0 16px rgba(255,200,80,.2);
+  border-color: var(--curr-gold, #d4a84a);
+}
+.card-back::after {
+  content: '?';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  font-weight: 900;
+  color: rgba(255,215,0,.15);
+  font-family: 'Cinzel', serif;
+  pointer-events: none;
+  text-shadow: 0 0 12px rgba(0,0,0,.8);
+}
+
+/* ===================================================================
+   Card V4 Element Icon (2026-05-02 — top-row 자식 자동 정렬)
+   ===================================================================
+   elem_icon 은 .top-row(이름박스 컨테이너)의 absolute 자식.
+   .top-row 자체가 .parch 의 absolute 자식(bottom:100% margin-bottom:4)이라
+   elem_icon 의 bottom:100% 는 자동으로 top-row 의 top 변 위 = 이름박스 위.
+   카드 사이즈/등급/parch height 무관, 모든 카드 동일 규칙: 이름박스 바로 위 4px gap, 좌측 정렬.
+   자산: img/elem_icon4_*.png (좌·상단 padding crop, 콘텐츠 좌상단 정렬).
+   =================================================================== */
+.card-v4 .top-row > .card-v4-elem-icon {
+  position: absolute;
+  bottom: 100%;          /* top-row(이름박스) 의 top 변 바로 위 */
+  margin-bottom: 0;      /* 이름박스 위 여백 = 0px (사용자 결정 2026-05-02) */
+  left: 0;               /* top-row 좌측 = 이름박스 좌측 변 */
+  width: 32px;
+  height: 32px;
+  z-index: 6;
+  pointer-events: none;
+  display: block;
+}
+.card-v4.card-v4-compact .top-row > .card-v4-elem-icon {
+  width: 28px;           /* compact 는 약간 작게 */
+  height: 28px;
+}
+.card-v4 .card-v4-elem-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }

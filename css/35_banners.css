@@ -5,20 +5,25 @@
    (.claude/rules/08-garbage-lessons.md 참고)
    ========================================================== */
 
-/* 2. 화면 타이틀 — banner_screen_title.png (900×220 원본, 640×96 슬롯) */
+/* 2026-05-02: stone 텍스처 PNG 폐기 (사용자 결정) — 단순 색 + border 로 롤백.
+   banner_screen_title.png / banner_modal_box.png 모두 trash 이동. */
+
+/* 화면 타이틀 — 단순 황금 border + 어두운 그라디언트 */
 body.game-mode .char-select-title,
 body.game-mode .form-title,
 body.game-mode .upgrade-title,
 body.game-mode .choice-title,
 body.game-mode .reward-title,
 body.game-mode .pick-title {
-  background:url('../img/ui/banner_screen_title.png') center/100% 100% no-repeat,#0a0810;
-  border: none;
+  background:linear-gradient(180deg, #2a1f14, #1a0f08);
+  border: 2px solid var(--curr-gold, #d4a84a);
+  border-radius: 4px;
   padding: 14px 32px;
 }
 
-/* 3. 일반 모달 박스 — banner_modal_box.png (스컬 장식 + X 버튼 포함) */
+/* 일반 모달 박스 — 단순 색 (30_components.css 의 .modal-box default 와 통일) */
 body.game-mode .modal-box {
-  background:url('../img/ui/banner_modal_box.png') center/100% 100% no-repeat,#0a0810;
-  border: none;
+  background:linear-gradient(180deg, #1f1812, #0f0a06);
+  border: 2px solid var(--curr-gold-dark, #6e4a2a);
+  border-radius: 6px;
 }

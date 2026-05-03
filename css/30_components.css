@@ -1,35 +1,36 @@
 /* Reusable UI components: buttons, auth box, HUD, cards, deck-mini, modals, sound panel, npc bar, timer bar, tutorial. */
-/* 돌판 버튼 스킨 (2026-04-13 block2 에셋 기반)
-   상태별 PNG: btn_stone_normal/hover/active/disabled
-   원본 비율 ~3.3:1 (565×171). border/box-shadow 제거, 텍스트만 강조. */
+/* 2026-05-02: 사용자 결정 — btn_stone_*.png 텍스처 폐기, 단순 단색 + border 로 롤백.
+   PNG 파일은 img/ui/ 에 보존 (필요 시 복구 가능). */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;
   padding:10px 28px;font-size:1rem;
-  border:none;
-  background:url('../img/ui/btn_stone_normal.png') center/100% 100% no-repeat,#0a0810;
+  border:1px solid var(--curr-gold-dark, #6e4a2a);
+  background:linear-gradient(180deg, #2a1f14, #1a0f08);
   color:var(--curr-gold-pale);
   cursor:pointer;
   letter-spacing:1px;
   font-family:var(--font-title);
   font-weight:700;
-  text-shadow:0 2px 4px rgba(0,0,0,.95),0 0 6px rgba(0,0,0,.7);
-  transition:transform .1s ease-out,filter .2s ease-out,color .2s ease-out;
+  text-shadow:0 2px 4px rgba(0,0,0,.95);
+  transition:transform .1s ease-out,filter .2s ease-out,color .2s ease-out, border-color .2s, background .2s;
   position:relative;
   white-space:nowrap;
   box-sizing:border-box;
+  border-radius:4px;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
 }
-/* zone 에 의해 width/height 가 강제되면 PNG 가 그 크기에 맞춰 늘어남 */
-.btn[style*="width"],.btn[style*="height"]{padding:0;}
 .btn:hover{
-  background:url('../img/ui/btn_stone_hover.png') center/100% 100% no-repeat,#0a0810;
+  background:linear-gradient(180deg, #3a2c1c, #251810);
+  border-color:var(--curr-gold, #d4a84a);
   color:#fff;
 }
 .btn:active{
-  background:url('../img/ui/btn_stone_active.png') center/100% 100% no-repeat,#0a0810;
+  background:linear-gradient(180deg, #1a0f08, #0a0510);
   transform:scale(.97);
 }
 .btn:disabled,.btn.disabled{
-  background:url('../img/ui/btn_stone_disabled.png') center/100% 100% no-repeat,#0a0810;
+  background:#1a1410;
+  border-color:#3a2a1c;
   cursor:not-allowed;
   color:var(--text-3);
   filter:grayscale(.5) brightness(.7);
@@ -49,13 +50,14 @@
 /* ═══ .btn-banner — 주요 결정 배너형 버튼 (2026-04-12 FATES 레퍼런스) ═══
    팔각 금속 프레임 + 좌우 화살표 + 2배 크기 + 상시 맥동 glow.
    사용처: "⚔️ 도전자 찾기", "⚔️ 출전!", "✅ 확정" 같은 세션 결정 버튼. */
+/* 2026-05-02: btn-banner 도 stone PNG 폐기 → 단색 + border + glow */
 .btn-banner{
   padding:14px 40px;
   font-size:1.2rem;
   font-weight:900;
   letter-spacing:2px;
-  border:none;
-  background:url('../img/ui/btn_stone_hover.png') center/100% 100% no-repeat;
+  border:2px solid var(--curr-gold, #d4a84a);
+  background:linear-gradient(180deg, #2a1f14, #1a0f08);
   color:#fff;
   text-shadow:
     0 2px 4px rgba(0,0,0,.95),
@@ -65,22 +67,25 @@
   clip-path:none;
   animation:btnBannerPulse 2.4s ease-in-out infinite;
   box-sizing:border-box;
+  border-radius:4px;
 }
 .btn-banner::before,
 .btn-banner::after{content:none;}
 .btn-banner:hover{
-  background-image:url('../img/ui/btn_stone_hover.png');
+  background:linear-gradient(180deg, #3a2c1c, #251810);
+  border-color:#fff;
   color:#fff;
   filter:drop-shadow(0 0 28px rgba(150,200,255,.75));
   animation-play-state:paused;
 }
 .btn-banner:active{
-  background-image:url('../img/ui/btn_stone_active.png');
+  background:linear-gradient(180deg, #1a0f08, #0a0510);
   transform:scale(.97);
 }
 .btn-banner:disabled,
 .btn-banner.disabled{
-  background-image:url('../img/ui/btn_stone_disabled.png');
+  background:#1a1410;
+  border-color:#3a2a1c;
   cursor:not-allowed;
   animation:none;
   filter:grayscale(.6) brightness(.7);

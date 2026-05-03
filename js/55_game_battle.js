@@ -87,17 +87,18 @@ Object.assign(RoF.Game, {
       const bot=this.generateBot();
       this._currentBot=bot;
       SFX.play('magic');
+      // 2026-05-03: 버튼/카운트다운을 양쪽 카드 사이 VS 영역에 세로 stack 으로 이동 (사용자 결정 — 카드 사이즈 유지하며 720 뷰포트 fit).
       box.innerHTML=`
         <div style="color:#44ff88;font-size:1.2rem;margin-bottom:15px;" class="match-found">도전자가 나타났다!</div>
         <div class="match-row match-found" style="display:flex;align-items:center;justify-content:center;gap:40px;width:100%;">
           <div class="match-side match-enemy" style="text-align:center;" id="match-enemy-side"></div>
-          <div class="match-vs" style="font-size:2.4rem;font-weight:bold;">VS</div>
+          <div class="match-center" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-width:140px;">
+            <div class="match-vs" style="font-size:2.4rem;font-weight:bold;">VS</div>
+            <div id="match-countdown" style="color:#ffcc44;font-size:.95rem;text-align:center;">⏳ <span id="match-cd-num">15</span>초<br><span style="opacity:.85;font-size:.85rem;">후 자동 출전</span></div>
+            <button class="btn" onclick="Game._matchCDClear&&Game._matchCDClear();Game.startBattleFromMatch()" style="font-size:1.15rem;width:100%;">⚔️ 출전!</button>
+            <button class="btn btn-s btn-red" onclick="Game._matchCDClear&&Game._matchCDClear();Game.showMenu()" style="width:100%;">철수</button>
+          </div>
           <div class="match-side match-player" style="text-align:center;" id="match-player-side"></div>
-        </div>
-        <div id="match-countdown" style="color:#ffcc44;font-size:1rem;margin-top:15px;text-align:center;">⏳ <span id="match-cd-num">15</span>초 후 자동 출전</div>
-        <div style="display:flex;gap:15px;justify-content:center;margin-top:10px;">
-          <button class="btn" onclick="Game._matchCDClear&&Game._matchCDClear();Game.startBattleFromMatch()" style="font-size:1.2rem;">⚔️ 출전!</button>
-          <button class="btn btn-s btn-red" onclick="Game._matchCDClear&&Game._matchCDClear();Game.showMenu()">철수</button>
         </div>`;
       // 상대 V4 카드
       const enemySide=document.getElementById('match-enemy-side');
@@ -271,35 +272,11 @@ Object.assign(RoF.Game, {
     document.getElementById('cs-go-btn').disabled=false;
   },
 
-  saveFormation(){
-    const f={units:[...this.selectedForBattle],relics:[...this.selectedRelics]};
-    this.savedFormations=this.savedFormations||[];
-    if(this.savedFormations.length>=3)this.savedFormations.shift(); // max 3
-    this.savedFormations.push(f);
-    this.persist();SFX.play('upgrade');
-    document.getElementById('cs-info').textContent=`📜 편성이 기억되었습니다! (${this.savedFormations.length}/3)`;
-  },
-  loadFormation(){
-    if(!this.savedFormations||!this.savedFormations.length){
-      document.getElementById('cs-info').textContent='⚠️ 저장된 편성이 없습니다. 먼저 "편성 기억"을 눌러주세요.';return;
-    }
-    // Show selection if multiple
-    if(this.savedFormations.length===1){
-      this._applyFormation(this.savedFormations[0]);return;
-    }
-    const items=this.savedFormations.map((f,i)=>`편성 ${i+1}: 동료 ${f.units.length}명, 유물 ${f.relics.length}개`).join('\n');
-    // Use last saved
-    this._applyFormation(this.savedFormations[this.savedFormations.length-1]);
-  },
-  _applyFormation(f){
-    // Only apply units that still exist in deck
-    const validUnits=f.units.filter(uid=>this.deck.some(c=>c.uid===uid&&!c.injured));
-    const validRelics=f.relics.filter(uid=>(this.ownedRelics||[]).some(r=>r.uid===uid));
-    this.selectedForBattle=validUnits;this.selectedRelics=validRelics;
-    SFX.play('card_reveal');
-    this.renderCardSelect();
-    document.getElementById('cs-info').textContent=`📜 편성이 소환되었습니다! (동료 ${validUnits.length}명)`;
-  },
+  // 2026-05-03: saveFormation / loadFormation / _applyFormation 단일 인터페이스 폐기.
+  // 신규: RoF.FormationSlots (39_formation_slots.js) — 3 고정 슬롯 + 이름 편집.
+  // 호환 redirect — 외부 호출자(있다면) 가 깨지지 않도록 새 모달 open 으로 위임.
+  saveFormation(){ if(window.FormationSlots && FormationSlots.open) FormationSlots.open(); },
+  loadFormation(){ if(window.FormationSlots && FormationSlots.open) FormationSlots.open(); },
 
   confirmCardSelect(){
     const battleDeck=this.deck.filter(c=>this.selectedForBattle.includes(c.uid));
@@ -576,8 +553,23 @@ Object.assign(RoF.Game, {
     const enemyHeroDead=eH&&eH.currentHp<=0;
     const myHeroDead=pH&&pH.currentHp<=0;
 
+    // 2026-05-02: 전투 종료 시 deck 동기화 (currentHp/curNrg/injured) — play-director 진단 결과.
+    //   bs.pCards 는 spread 복사본이라 mutation 이 deck 에 자동 반영 X. 명시 동기화.
+    //   round survived 분기는 pCards 가 다음 라운드까지 유지되므로 동기화 불필요.
+    const _syncDeckFromBattle = () => {
+      if(!bs || !bs.pCards) return;
+      bs.pCards.forEach(pc => {
+        const dc = this.deck.find(x => x.uid === pc.uid);
+        if(!dc) return;
+        dc.currentHp = Math.max(0, pc.currentHp|0);
+        dc.curNrg = Math.max(0, pc.curNrg|0);
+        if(dc.currentHp <= 0 && !dc.isHero) dc.injured = true;
+      });
+    };
+
     if(enemyHeroDead){
       // === VICTORY ===
+      _syncDeckFromBattle();
       this.totalWins++;SFX.play('fanfare');
       // Victory banner + sparkles
       const vb=document.createElement('div');vb.className='victory-banner';vb.textContent='승전!';document.body.appendChild(vb);setTimeout(()=>vb.remove(),2000);
@@ -596,6 +588,7 @@ Object.assign(RoF.Game, {
       this.showBattleEnd(true,goldR,xpR,honorR,levelUps);
     } else if(myHeroDead){
       // === DEFEAT ===
+      _syncDeckFromBattle();
       const goldR=3,xpR=10,honorR=1,lpR=-5;
       this.gold+=goldR;this.leaguePoints=Math.max(0,(this.leaguePoints||0)+lpR);
       const participated=bs.battleDeck.map(c=>c.uid);

@@ -40,9 +40,18 @@ Object.assign(RoF.Game, {
   renderCodex(filter){
     if(filter)this._codexFilter=filter;
     const f=this._codexFilter;
-    // Filters
+    // 2026-05-02: 수집/미수집 필터 추가 + 미수집 카드는 card_back PNG.
     const fd=document.getElementById('codex-filters');fd.innerHTML='';
-    const filters=[{id:'all',label:'전체'},{id:'bronze',label:'일반'},{id:'silver',label:'희귀'},{id:'gold',label:'고귀한'},{id:'legendary',label:'전설의'},{id:'divine',label:'신'}];
+    const filters=[
+      {id:'all',label:'전체'},
+      {id:'owned',label:'수집'},
+      {id:'missing',label:'미수집'},
+      {id:'bronze',label:'일반'},
+      {id:'silver',label:'희귀'},
+      {id:'gold',label:'고귀한'},
+      {id:'legendary',label:'전설의'},
+      {id:'divine',label:'신'},
+    ];
     filters.forEach(ft=>{
       const btn=document.createElement('button');btn.className='btn btn-s';
       btn.style.cssText=`padding:3px 10px;font-size:.7rem;${f===ft.id?'border-color:#ffd700;color:#ffd700;':''}`;
@@ -53,21 +62,38 @@ Object.assign(RoF.Game, {
     const owned=new Set(this.deck.map(c=>c.id));
     // Filter units (exclude hero templates)
     let pool=UNITS.filter(u=>!u.id.startsWith('h_'));
-    if(f!=='all')pool=pool.filter(u=>u.rarity===f);
-    if(!pool.length){grid.innerHTML='<div style="color:#555;font-size:.85rem;padding:20px;">해당 혈통의 동료가 없습니다</div>';return;}
+    if(f==='owned')pool=pool.filter(u=>owned.has(u.id));
+    else if(f==='missing')pool=pool.filter(u=>!owned.has(u.id));
+    else if(f!=='all')pool=pool.filter(u=>u.rarity===f);
+    // Summary 헤더 (강조)
+    const total=UNITS.filter(u=>!u.id.startsWith('h_')).length;
+    const ownedCount=UNITS.filter(u=>!u.id.startsWith('h_')&&owned.has(u.id)).length;
+    const pct=Math.floor(ownedCount/total*100);
+    const summary=document.createElement('div');
+    summary.style.cssText='width:100%;text-align:center;font-size:1rem;color:#ffd700;padding:10px;font-weight:700;letter-spacing:.05em;';
+    summary.innerHTML=`📖 수집 <span style="color:#fff;">${ownedCount}</span> / ${total} <span style="color:#aaa;font-size:.8rem;">(${pct}%)</span>`;
+    grid.appendChild(summary);
+    if(!pool.length){
+      const empty=document.createElement('div');
+      empty.style.cssText='color:#555;font-size:.85rem;padding:20px;width:100%;text-align:center;';
+      empty.textContent='해당 조건의 동료가 없습니다';
+      grid.appendChild(empty);
+      return;
+    }
     pool.forEach(u=>{
       const have=owned.has(u.id);
-      const el=mkCardElV4(u);  // Step 5A-1: V4 프레임 (2026-04-21)
-      if(!have){el.style.filter='grayscale(.7) brightness(.5)';el.style.opacity='.6';}
+      let el;
+      if(have){
+        el=mkCardElV4(u);  // 수집: 카드 V4 앞면
+      }else{
+        // 미수집: 카드뒷면 PNG
+        el=document.createElement('div');
+        el.className='card-back';
+        el.title=`미수집 — 클릭하여 정보 보기`;
+      }
       el.onclick=()=>this.showCodexDetail(u,have);
       grid.appendChild(el);
     });
-    // Summary
-    const total=UNITS.filter(u=>!u.id.startsWith('h_')).length;
-    const ownedCount=UNITS.filter(u=>!u.id.startsWith('h_')&&owned.has(u.id)).length;
-    const summary=document.createElement('div');summary.style.cssText='width:100%;text-align:center;font-size:.75rem;color:#888;padding:8px;';
-    summary.textContent=`수집: ${ownedCount}/${total} (${Math.floor(ownedCount/total*100)}%)`;
-    grid.prepend(summary);
   },
   showCodexDetail(u,owned){
     const m=document.getElementById('detail-modal');
@@ -94,8 +120,33 @@ Object.assign(RoF.Game, {
         <div style="font-size:.85rem;color:#fff;margin-bottom:4px;">⚡ 비전</div>
         <div style="font-size:.75rem;color:#ddd;">${u.skillDesc||'없음'}</div>
         ${u.bonusTrigger?`<div style="font-size:.7rem;color:#ff88cc;margin-top:4px;">🎲 보너스: ${u.bonusTrigger.desc}</div>`:''}
-      </div>`;
+      </div>
+      ${owned?'':`<div style="border-top:1px solid #333;padding-top:8px;margin-top:8px;">
+        <div style="font-size:.85rem;color:#ffd700;margin-bottom:4px;">🗺️ 획득 경로</div>
+        <div style="font-size:.75rem;color:#ddd;line-height:1.5;">${this._codexAcquireHint(u)}</div>
+      </div>`}`;
     m.classList.add('active');
+  },
+
+  /** 2026-05-02: 미수집 카드 클릭 시 표시할 등급별 generic 획득 경로 힌트.
+   *  카드 데이터에 별도 acquireHint 필드 없으므로 rarity 기반.
+   *  monetization v2.1 § 0 가챠 폐기 — 모두 확정 지급 경로. */
+  _codexAcquireHint(u){
+    const r=u.rarity||'bronze';
+    const role=u.role||'attack';
+    const HINTS={
+      bronze:    '🍺 선술집에서 자주 만나볼 수 있습니다.<br>전투 보상 으로도 종종 등장.',
+      silver:    '🍺 선술집에서 만나거나 전투 보상으로 획득 가능.<br>리그 시즌 종료 시 확정 보상 후보.',
+      gold:      '🍺 선술집에서 드물게 등장.<br>🏆 골드 리그 이상 시즌 보상 / 업적 확정 보상.',
+      legendary: '🌌 차원의 균열 보상 / 절대신 도전 / 시즌 최고 업적 확정 보상.<br>선술집에서는 거의 등장하지 않습니다.',
+      divine:    '👑 절대신 클리어 시 영웅에게 부여 / 시즌 최고 업적 확정.<br>일반 획득 경로로는 만날 수 없는 신성 영역.',
+    };
+    let hint=HINTS[r]||HINTS.bronze;
+    // 영웅 카드 (h_*) 는 별도 안내
+    if(u.id&&u.id.startsWith('h_')){
+      hint='⚜️ 영웅 카드 — 캐릭터 생성 시 원소·역할·성별 선택으로 정해집니다.<br>전직 시스템(예정) 으로 다른 영웅 길로 전환 가능.';
+    }
+    return hint;
   },
 
   showDeckView(){

@@ -6,7 +6,7 @@
 
 ## 🎯 목표
 
-온라인 생태계 소통 레이어 도입. 고립되어 있던 싱글 플레이어 흐름에 **같은 리그/세계관 유저와의 대화** 를 추가해서 리그전·가챠 자랑·정보 공유·길드 결속을 유도.
+온라인 생태계 소통 레이어 도입. 고립되어 있던 싱글 플레이어 흐름에 **같은 리그/세계관 유저와의 대화** 를 추가해서 리그전·카드 획득 자랑·정보 공유·길드 결속을 유도.
 
 StS2/Balatro 처럼 싱글만 강한 카드게임은 이 레이어가 없어서 커뮤니티가 외부(디스코드) 로 유출된다. Hearthstone Duels / LoR / Marvel Snap 은 내부 채팅이 약해서 문제. 우리는 **카드 공유 + 리그 채널** 로 차별화.
 
@@ -208,10 +208,14 @@ const channel = supabase
 - 리그는 유저의 `user_league` 에서 자동 바인딩
 - 길드는 `user_guild_id` null 이면 "길드 없음" placeholder
 
-### Step 4 — 카드 공유 (2시간)
-- `+` 버튼 → 덱 picker 모달 → 선택 → attached_card JSON 첨부
-- 메시지에 `.card-v4.kind-share` 미니카드 렌더
-- 클릭 시 풀사이즈 상세 팝업 (기존 showCardDetail 재사용)
+### Step 4 — 카드 공유 ❌ 폐기 (2026-05-02)
+- ~~`+` 버튼 → 덱 picker 모달 → 선택 → attached_card JSON 첨부~~
+- ~~메시지에 `.card-v4.kind-share` 미니카드 렌더~~
+- ~~클릭 시 풀사이즈 상세 팝업~~
+
+**폐기 이유 (2026-05-02)**: 미니카드 첨부 UX 가 채팅 흐름을 끊고 + 데이터 동봉 무거움.
+**대체안**: 채팅 텍스트 내 카드 이름 인식 → 파란 링크 → 클릭 시 default 카드 모달 팝업 (`@불꽃의전사` 디스코드 패턴). 별도 phase 로 이동 (Step 4 v2).
+**제거된 코드**: `.card-v4.kind-share` CSS / 40_cards.js share 분기 / 36_chat.js picker+attached_card 시스템 (5 함수). `_showCardDetailModal` 만 향후 링크 시스템용으로 보존.
 
 ### Step 5 — 발언 제한 세부 (1시간)
 - 레벨 5 이하 world 차단

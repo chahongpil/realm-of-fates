@@ -4,6 +4,13 @@
 >
 > 형식: `## YYYY-MM-DD ▶ 카테고리 ▶ 제목` / 변경 / 이유 / 영향 / 이전 결정 관계
 
+## 2026-05-03 23:58 ▶ 세션 ▶ 핸드오프 저장 + 마무리
+
+- **변경**: 세션 상태를 `docs/handoff/handoff-2026-05-03-2358.md` 에 저장 (역대급 큰 세션 — 자율 2시간 + 코드 11 phase + 로그라이크 깊이 대화 + Design System (2) 시안 도입).
+- **이유**: 사용자 요청 "오늘 여기까지 핸드오프 하고 마무리하자".
+- **GitHub 동기**: ✅ origin/master 와 일치. 오늘 push 2회 — `ce3c8d8` 종합 + `1955273` 시안 토큰.
+- **다음 세션 시작점**: P0 = 시안 적용 방향 (4 옵션) / A·B안 § 10 결정 5+5 / 로그라이크 노드 종류.
+
 ## 2026-05-03 ▶ 디자인 ▶ Design System (2) 시안 도입 — 참고 보존 + 토큰 19개
 - **변경**:
   - `design/refs/design_system_v2/` 신규 — 사용자가 받은 시안 zip 풀어서 보존 (refined.html / design-canvas.jsx / screens.jsx / assets/bg_title.png + README.md).

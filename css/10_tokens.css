@@ -375,6 +375,38 @@
   --amber-stop-2:   #3a2a00;   /* 그라디언트 정지점 (카드 하단) */
   --amber-stop-3:   #5a4010;   /* 그라디언트 정지점 (버튼) */
 
+  /* ─────────────────────────────────────────────
+     Design System v2 (2026-05-03) — refined refs
+     ─────────────────────────────────────────────
+     출처: Realm of Fates Design System (2) 시안 — `design/refs/design_system_v2/`
+     별도 prefix `--ds2-*` 로 도입 — 기존 토큰과 충돌 회피, 화면별 점진 적용.
+     주의: 등급 라벨 "평범" 같은 시안 표기는 정본(03-terminology.md) 의 "일반/희귀/고귀한/전설의/신" 으로 사용.
+     색상 토큰만 차용. */
+  --ds2-ink:            #0d0a06;  /* 가장 어두운 배경 (다크 갈색 베이스) */
+  --ds2-stone-1:        #1c150e;  /* 다크 스톤 1 (HUD 배경 그라디언트 시작점) */
+  --ds2-stone-2:        #2a1f15;  /* 다크 스톤 2 (HUD 그라디언트 끝점, 버튼 기본) */
+  --ds2-stone-3:        #3a2c1f;  /* 다크 스톤 3 (버튼 hover) */
+  --ds2-edge:           #5a4a2a;  /* 테두리 기본 (= 기존 --amber-plate, 동일값) */
+  --ds2-edge-bright:    #9b7a3e;  /* 테두리 강조 (HUD 외곽) */
+  --ds2-amber:          #e8bd4a;  /* 앰버 골드 (강조 액센트) */
+  --ds2-amber-pale:     #d4a84a;  /* 앰버 페일 */
+  --ds2-parchment:      #e8d5a3;  /* 양피지 (= 기존 --amber-bright/--parchment-1, 동일값) */
+  --ds2-parchment-mid:  #a89876;  /* 중간 양피지 */
+  --ds2-scarlet:        #8b1a1a;  /* 혈색 (danger 버튼 기본) */
+  --ds2-scarlet-bright: #c83838;  /* 혈색 강조 (= --bad, 동일값) */
+  --ds2-text-hi:        #f1e4c3;  /* 텍스트 최강조 (= 기존 --parchment-0, 동일값) */
+  --ds2-text-mid:       #a89876;  /* 텍스트 중간 (양피지 톤) */
+  --ds2-text-low:       #6e5a3e;  /* 텍스트 약함 */
+  --ds2-divine:         #f1e4c3;  /* 신 등급 텍스트 (= text-hi) */
+  --ds2-ok:             #5fb874;  /* 성공 (밝은 녹) */
+  --ds2-warn:           #c89a3a;  /* 경고 (= --amber-mid 와 유사) */
+  --ds2-bad:            #c83838;  /* 위험 (= --bad) */
+
+  /* DS2 폰트 스택 (이미 index.html 에 Google Fonts 로드됨) */
+  --ds2-font-display: 'Cinzel Decorative','Cinzel','Noto Serif KR',serif;
+  --ds2-font-title:   'Cinzel','Noto Serif KR',serif;
+  --ds2-font-body:    'Noto Sans KR',sans-serif;
+
   /* 시맨틱 경고 (기존 --success/--danger과 세트) */
   --warn:           #ffaa44;   /* 주의/알람 (녹슨 주황) */
 

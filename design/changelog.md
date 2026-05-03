@@ -4,6 +4,18 @@
 >
 > 형식: `## YYYY-MM-DD ▶ 카테고리 ▶ 제목` / 변경 / 이유 / 영향 / 이전 결정 관계
 
+## 2026-05-03 ▶ 디자인 ▶ Design System (2) 시안 도입 — 참고 보존 + 토큰 19개
+- **변경**:
+  - `design/refs/design_system_v2/` 신규 — 사용자가 받은 시안 zip 풀어서 보존 (refined.html / design-canvas.jsx / screens.jsx / assets/bg_title.png + README.md).
+  - `css/10_tokens.css` 에 시안 토큰 19개 + 폰트 변수 3개 도입 — 별도 prefix `--ds2-*`.
+    - 색: ink/stone-1/2/3 / edge / edge-bright / amber / amber-pale / parchment / parchment-mid / scarlet / scarlet-bright / text-hi/mid/low / divine / ok / warn / bad
+    - 폰트: --ds2-font-display (Cinzel Decorative) / --ds2-font-title (Cinzel) / --ds2-font-body (Noto Sans KR)
+  - 기존 토큰 변경 0 (충돌 회피 위해 별도 prefix).
+  - 등급 색상 정본 유지 — 시안의 silver #7ab4d8 / gold #b56fc8 등은 무시 (`03-terminology.md` 정본 우선).
+  - 등급 라벨 "평범/희귀/고귀/전설" 시안 표기 무시 — 정본 "일반/희귀/고귀한/전설의/신" 유지.
+- **이유**: 사용자가 다운로드 폴더에 시안을 받아두고 "디자인 적용하자" 명시. 큰 phase 변경 (시각 광범위 적용) 보다 **A 보존 + B 토큰만 추가** 추천 채택. 점진 적용 가능 기반 마련.
+- **영향**: 회귀 12/12 PASS. 시안의 4 화면 (Title / Town / Collection / Result) 별 점진 적용은 별도 phase. 시각 변경 시 `rof-ui-inspector` 동반 의무 (사용자 명시 2026-05-02).
+
 ## 2026-05-03 ▶ 전투 ▶ 타격 시퀀스 4건 시각 강화 (사용자 요청 + 추천)
 - **변경**:
   - **① floating 데미지 숫자** (`js/40_cards.js`): 카드 인스턴스 신규 메서드 `inst.showDamageFloat(amount, {kind})`. damage=빨강 22px / crit=주황 32px+글로우 / heal=녹색 +N. `bv2DmgFloat` keyframe — 카드 정중앙 → 위 (-180%) 1.0s cubic-bezier(.33,0,.5,1) fade.
